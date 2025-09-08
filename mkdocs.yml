@@ -36,3 +36,7 @@ plugins:
         - locale: de
           name: Deutsch
           build: true
+
+markdown_extensions:
+  - attr_list
+  - md_in_html
