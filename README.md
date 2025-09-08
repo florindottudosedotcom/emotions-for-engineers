@@ -23,22 +23,22 @@ The repository is organized to support multiple courses and multiple languages i
 ```
 .
 ├── docs/
-│   ├── en/                  # English language content
+│   ├── en/
 │   │   └── course-example/
-│   │       ├── assets/
-│   │       │   └── placeholder.png
-│   │       ├── 01-introduction.md
-│   │       └── 02-advanced-topics.md
-│   └── de/                  # German language content
-│       └── course-example/
-│           └── 01-introduction.md
-├── mkdocs.yml             # Main configuration file for the site
-└── requirements.txt       # Python dependencies
+│   │       ├── index.md     # Course homepage with metadata
+│   │       └── ...
+│   └── de/
+│       └── ...
+├── scripts/
+│   └── build_index.py       # Script to generate the main homepage
+├── .gitignore
+├── mkdocs.yml
+└── requirements.txt
 ```
 
-- **`docs/`**: This is the heart of your repository, containing all source content.
-- **`docs/<lang>/`**: Each language gets its own sub-folder (e.g., `en` for English, `de` for German).
-- **`docs/<lang>/<course-name>/`**: Inside each language folder, create a folder for each course.
+- **`docs/`**: Contains all source content. The main `index.md` in this folder is auto-generated and should not be edited manually.
+- **`docs/<lang>/<course-name>/`**: Each course has its own folder within a language.
+- **`scripts/`**: Contains helper scripts, like the one to build the main homepage.
 
 ## Getting Started
 
@@ -63,13 +63,18 @@ To work with this repository on your local machine, you'll need Python installed
 
 ## Local Development
 
-To preview your website as you make changes, run the MkDocs live-reloading server.
+To preview your website as you make changes, you first need to generate the main homepage, then start the live-reloading server.
 
-```bash
-mkdocs serve
-```
+1.  **Generate the Homepage:**
+    ```bash
+    python scripts/build_index.py
+    ```
+2.  **Run the Server:**
+    ```bash
+    mkdocs serve
+    ```
 
-This will start a local web server, typically at `http://127.0.0.1:8000`, where you can preview your site. The `mkdocs-static-i18n` plugin handles serving all languages at once under different paths (e.g., `/` for English, `/de/` for German), so the single `mkdocs serve` command is sufficient. The website will automatically refresh whenever you save a file.
+This will start a local web server, typically at `http://127.0.0.1:8000`. If you add a new course, you will need to re-run the `build_index.py` script to see it on the main homepage.
 
 ## Managing Content
 
@@ -77,8 +82,17 @@ This will start a local web server, typically at `http://127.0.0.1:8000`, where 
 
 1.  Decide on a short, descriptive name for your course folder (e.g., `new-course`).
 2.  Create a new directory for the course inside the default language folder: `docs/en/new-course`.
-3.  Add your Markdown (`.md`) files to this new directory.
-4.  There is no need to manually update the navigation; the site will automatically discover the new files.
+3.  **Create a course homepage:** Add an `index.md` file inside your new course directory (`docs/en/new-course/index.md`).
+4.  **Add metadata:** At the top of this new `index.md`, add a "front matter" block with a description. This description will be shown on the main site landing page.
+    ```yaml
+    ---
+    description: "A short, exciting description for your new course."
+    ---
+
+    # Welcome to the New Course
+    ...
+    ```
+5.  Add your other chapter Markdown (`.md`) files to the course directory.
 
 ### Adding a New Chapter
 
