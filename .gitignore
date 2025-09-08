@@ -1,5 +1,6 @@
 # MkDocs
 site/
+docs/index.md
 
 # Python
 venv/
