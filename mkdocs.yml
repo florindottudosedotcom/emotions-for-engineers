@@ -1,5 +1,6 @@
 site_name: My Awesome Course
-repo_url: https://github.com/user/repo-name # Replace with your repo URL
+site_url: https://florindottudosedotcom.github.io/emotions-for-engineers/
+repo_url: https://github.com/florindottudosedotcom/emotions-for-engineers
 
 theme:
   name: material
