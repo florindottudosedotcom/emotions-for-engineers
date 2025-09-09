@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Universal Course Creator</title>
+    <script src="libs/webllm.js" defer></script>
     <link rel="stylesheet" href="https://uicdn.toast.com/editor/latest/toastui-editor.min.css" />
     <style>
         body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; line-height: 1.6; color: #333; max-width: 800px; margin: 2rem auto; padding: 0 1rem; background-color: #f9f9f9; }
@@ -28,17 +29,25 @@
         .btn-danger { background-color: #e74c3c; padding: 0.25rem 0.75rem; }
         .btn-danger:hover { background-color: #c0392b; }
         #download-section { margin-top: 2rem; padding: 1rem; background-color: #f0fff4; border: 1px solid #2ecc71; border-radius: 4px; display: none; }
+        .input-group { display: flex; align-items: center; gap: 0.5rem; margin-bottom: 1rem; }
+        .input-group input, .input-group textarea { flex-grow: 1; margin-bottom: 0 !important; }
+        .btn-ai { padding: 0.5rem 1rem; }
+        .ai-assistant { background-color: #f8f9fa; border: 1px solid #dee2e6; border-radius: 4px; padding: 1rem; margin-top: 1rem; }
+        .ai-assistant h4 { margin-top: 0; }
+        #ai-status { margin: 1rem 0; padding: 1rem; background-color: #fefae0; border: 1px solid #f0ad4e; border-radius: 4px; white-space: pre-wrap; display: none; }
     </style>
 </head>
 <body>
 
     <div class="container">
         <h1>Universal Course Creator</h1>
+        <div id="ai-status"></div>
 
         <div class="instructions">
             <h3>How to Use This Tool</h3>
             <ol>
                 <li>Fill out the form below with your course details. English is the primary language.</li>
+                <li>Use the "AI" buttons to generate content for the course name, description, and chapters.</li>
                 <li>Click "Generate Course Files". This will create a <strong>.zip</strong> file containing all the necessary folders and files for your new course.</li>
                 <li>Extract the contents of the downloaded .zip file into the <strong>`docs/`</strong> directory of your project.</li>
                 <li>Commit and push the changes and create a pull request on main. Upon merging, the workflow generates the pages for the newly added course. </li>
@@ -48,10 +57,16 @@
         <form id="course-form">
             <h2>Course Details</h2>
             <label for="course-name">Course Name</label>
-            <input type="text" id="course-name" placeholder="e.g., Introduction to Python" required>
+            <div class="input-group">
+                <input type="text" id="course-name" placeholder="e.g., Introduction to Python" required>
+                <button type="button" id="generate-name-btn" class="btn btn-secondary btn-ai">AI</button>
+            </div>
 
             <label for="course-desc">Course Description (for main landing page)</label>
-            <textarea id="course-desc" placeholder="A short, exciting description for your new course." required></textarea>
+            <div class="input-group">
+                <textarea id="course-desc" placeholder="A short, exciting description for your new course." required></textarea>
+                <button type="button" id="generate-desc-btn" class="btn btn-secondary btn-ai">AI</button>
+            </div>
 
             <fieldset>
                 <legend>Course Languages</legend>
@@ -101,9 +116,112 @@
             const addChapterBtn = document.getElementById('add-chapter');
             const downloadSection = document.getElementById('download-section');
             const downloadZipLink = document.getElementById('download-zip');
+            const aiStatus = document.getElementById('ai-status');
+            const courseNameInput = document.getElementById('course-name');
+            const courseDescTextarea = document.getElementById('course-desc');
+            const generateNameBtn = document.getElementById('generate-name-btn');
+            const generateDescBtn = document.getElementById('generate-desc-btn');
 
             let chapterCount = 0;
             const editorInstances = {};
+            let engine;
+
+            async function init() {
+                aiStatus.style.display = 'block';
+                aiStatus.innerText = "Loading AI model (this may take a while, please be patient)...\n";
+                try {
+                    engine = await webllm.CreateMLCEngine("Llama-3-8B-Instruct-q4f32_1-MLC", {
+                        initProgressCallback: (report) => {
+                            aiStatus.innerText = report.text;
+                        }
+                    });
+                    aiStatus.innerText += "\n✅ AI Model loaded! You can now use the AI generation features.";
+                } catch (err) {
+                    aiStatus.innerText = "Error loading AI model: \n" + err.message;
+                    console.error(err);
+                }
+            }
+
+            async function generate(prompt, target) {
+                if (!engine) {
+                    alert("AI engine is not ready yet. Please wait for the model to load.");
+                    return;
+                }
+
+                const thinkingMessage = "🤖 Generating content...";
+                if (target.exec) { // ToastUI Editor
+                    target.setMarkdown(thinkingMessage);
+                } else { // Standard input/textarea
+                    target.value = thinkingMessage;
+                }
+
+                try {
+                    const reply = await engine.chat.completions.create({
+                        messages: [{ role: "user", content: prompt }],
+                        stream: true
+                    });
+
+                    let firstChunk = true;
+                    for await (const chunk of reply) {
+                        const delta = chunk.choices[0]?.delta?.content || "";
+                        if (firstChunk) {
+                            if (target.exec) {
+                                target.setMarkdown(delta);
+                            } else {
+                                target.value = delta;
+                            }
+                            firstChunk = false;
+                        } else {
+                            if (target.exec) {
+                                target.exec('insertText', { text: delta });
+                            } else {
+                                target.value += delta;
+                            }
+                        }
+                    }
+                } catch (err) {
+                    const errorMessage = "\n\nError: " + err.message;
+                    if (target.exec) {
+                        target.exec('insertText', { text: errorMessage });
+                    } else {
+                        target.value += errorMessage;
+                    }
+                    console.error(err);
+                }
+            }
+
+            init();
+
+            generateNameBtn.addEventListener('click', () => {
+                const topic = prompt("Enter a topic for the course name:", "Introduction to Artificial Intelligence");
+                if (topic) {
+                    const promptText = `Generate a short, catchy course name about "${topic}". The name should be concise and suitable for a course title. Do not add any extra text or quotation marks, just the name itself.`;
+                    generate(promptText, courseNameInput);
+                }
+            });
+
+            generateDescBtn.addEventListener('click', () => {
+                const courseName = courseNameInput.value || "this course";
+                const userPrompt = prompt(`Enter a prompt to generate a description for "${courseName}":`, `Write an exciting, short description for a course named "${courseName}". The description should be engaging and informative for a main landing page.`);
+                if (userPrompt) {
+                    generate(userPrompt, courseDescTextarea);
+                }
+            });
+
+            chaptersContainer.addEventListener('click', (e) => {
+                if (e.target && e.target.classList.contains('generate-content-btn')) {
+                    const chapterId = e.target.dataset.chapterId;
+                    const promptTextarea = document.getElementById(`ai-prompt-${chapterId}`);
+                    const prompt = promptTextarea.value;
+                    const editor = editorInstances[chapterId];
+
+                    if (prompt && editor) {
+                        generate(prompt, editor);
+                    } else if (!prompt) {
+                        alert("Please enter a prompt for the AI assistant.");
+                    }
+                }
+            });
 
             const slugify = (text) => {
                 return text.toString().toLowerCase()
@@ -129,6 +247,12 @@
                     <input type="text" id="chapter-title-${chapterId}" class="chapter-title" placeholder="e.g., Getting Started" required>
                     <label for="editor-${chapterId}">Chapter Content</label>
                     <div id="editor-${chapterId}" class="chapter-editor"></div>
+                    <div class="ai-assistant">
+                        <h4>AI Assistant</h4>
+                        <label for="ai-prompt-${chapterId}">Prompt</label>
+                        <textarea id="ai-prompt-${chapterId}" placeholder="e.g., 'Explain the concept of...' or 'Create a quiz about...'"></textarea>
+                        <button type="button" class="btn btn-secondary generate-content-btn" data-chapter-id="${chapterId}">Generate Content</button>
+                    </div>
                 `;
                 chaptersContainer.appendChild(chapterDiv);
 
