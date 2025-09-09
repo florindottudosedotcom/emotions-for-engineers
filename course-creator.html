@@ -356,7 +356,7 @@
 
                     const courseName = document.getElementById('course-name').value;
                 const courseDesc = document.getElementById('course-desc').value;
-                const selectedLangs = Array.from(document.querySelectorAll('input[type="checkbox"]:checked')).map(cb => cb.value);
+                const selectedLangs = Array.from(document.querySelectorAll('.lang-grid input[type="checkbox"]:checked')).map(cb => cb.value);
 
                 if (selectedLangs.length === 0) {
                     alert('Please select at least one language.');
