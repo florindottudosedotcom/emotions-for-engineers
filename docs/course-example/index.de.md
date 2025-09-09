@@ -1,7 +1,3 @@
----
-description: Ein Beispielkurs, um die Struktur dieses Repositories und die Funktionen der generierten Website zu demonstrieren.
----
-
 # Willkommen bei Emotionen für Ingenieure
 
 Dies ist die Homepage für den Kurs "Emotionen für Ingenieure".
