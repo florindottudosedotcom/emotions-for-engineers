@@ -174,7 +174,7 @@
                             firstChunk = false;
                         } else {
                             if (target.exec) {
-                                target.exec('insertText', { text: delta });
+                                target.insertText(delta);
                             } else {
                                 target.value += delta;
                             }
@@ -183,7 +183,7 @@
                 } catch (err) {
                     const errorMessage = "\n\nError: " + err.message;
                     if (target.exec) {
-                        target.exec('insertText', { text: errorMessage });
+                        target.insertText(errorMessage);
                     } else {
                         target.value += errorMessage;
                     }
