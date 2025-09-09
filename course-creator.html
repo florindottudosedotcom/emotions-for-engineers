@@ -58,8 +58,8 @@
             <legend>Ollama Configuration</legend>
             <div class="input-group">
                 <label for="ollama-model" style="flex-shrink: 0; margin-bottom: 0;">Ollama Model:</label>
-                <input type="text" id="ollama-model" value="llama3" style="margin-bottom: 0;">
-                <button type="button" id="test-ollama-btn" class="btn btn-secondary">Test Connection</button>
+                <select id="ollama-model" style="margin-bottom: 0;"></select>
+                <button type="button" id="refresh-models-btn" class="btn btn-secondary">Refresh List</button>
             </div>
             <div id="ollama-status" style="margin-top: 0.5rem; font-weight: bold;"></div>
         </fieldset>
@@ -193,8 +193,8 @@
         const courseDescTextarea = document.getElementById('course-desc');
 
         // Ollama UI
-        const ollamaModelInput = document.getElementById('ollama-model');
-        const testOllamaBtn = document.getElementById('test-ollama-btn');
+        const ollamaModelSelect = document.getElementById('ollama-model');
+        const refreshModelsBtn = document.getElementById('refresh-models-btn');
         const ollamaStatus = document.getElementById('ollama-status');
 
         // Master AI UI
@@ -207,8 +207,9 @@
 
         // --- Ollama Functions ---
 
-        async function testOllamaConnection() {
-            ollamaStatus.textContent = 'Testing...';
+        async function loadOllamaModels() {
+            ollamaStatus.textContent = 'Loading models...';
+            ollamaModelSelect.innerHTML = ''; // Clear existing options
             try {
                 const response = await fetch('http://localhost:11434/api/tags');
                 if (!response.ok) {
@@ -216,10 +217,16 @@
                 }
                 const data = await response.json();
                 if (data.models && data.models.length > 0) {
-                    ollamaStatus.textContent = `✅ Connection successful. Found ${data.models.length} model(s).`;
+                    data.models.forEach(model => {
+                        const option = document.createElement('option');
+                        option.value = model.name;
+                        option.textContent = model.name;
+                        ollamaModelSelect.appendChild(option);
+                    });
+                    ollamaStatus.textContent = `✅ Found ${data.models.length} model(s).`;
                     ollamaStatus.style.color = 'green';
                 } else {
-                    ollamaStatus.textContent = '⚠️ Connection successful, but no models found. Please pull a model, e.g., `ollama pull llama3`.';
+                    ollamaStatus.textContent = '⚠️ No models found. Please pull a model, e.g., `ollama pull llama3`.';
                     ollamaStatus.style.color = 'orange';
                 }
             } catch (err) {
@@ -231,8 +238,12 @@
         async function generateCourse() {
             const userPrompt = masterPromptTextarea.value;
             const numChapters = numChaptersSelect.value;
-            const model = ollamaModelInput.value;
+            const model = ollamaModelSelect.value;
 
+            if (!model) {
+                alert('Please select an Ollama model first. If the list is empty, make sure Ollama is running and click "Refresh List".');
+                return;
+            }
             if (!userPrompt) {
                 alert('Please enter a prompt for the course.');
                 return;
@@ -332,8 +343,9 @@ Ensure the "chapters" array contains exactly ${numChapters} objects.`;
         }
 
         // --- Event Listeners ---
-        testOllamaBtn.addEventListener('click', testOllamaConnection);
+        refreshModelsBtn.addEventListener('click', loadOllamaModels);
         generateCourseBtn.addEventListener('click', generateCourse);
+        document.addEventListener('DOMContentLoaded', loadOllamaModels);
 
 
         // --- Existing Functions (to be refactored) ---
@@ -394,7 +406,11 @@ Ensure the "chapters" array contains exactly ${numChapters} objects.`;
         addChapter();
 
         async function translate(textToTranslate, targetLangName) {
-            const model = ollamaModelInput.value;
+            const model = ollamaModelSelect.value;
+            if (!model) {
+                alert('Cannot translate without a selected Ollama model.');
+                return textToTranslate; // Return original text if no model
+            }
             const prompt = `Translate the following text to ${targetLangName}. Only provide the raw, translated text. Do not include any explanations, introductory phrases, or quotation marks. The text to translate is:\n\n"${textToTranslate}"`;
 
             try {
