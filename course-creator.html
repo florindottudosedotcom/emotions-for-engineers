@@ -465,6 +465,7 @@
 
                 await Promise.all(processingPromises);
 
+                aiStatus.innerText = 'All translations complete. Now packaging your course files into a .zip file...';
                 const zipBlob = await zip.generateAsync({ type: 'blob' });
                 downloadZipLink.href = URL.createObjectURL(zipBlob);
                 downloadZipLink.download = `${courseSlug}.zip`;
