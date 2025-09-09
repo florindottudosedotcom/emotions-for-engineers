@@ -1,20 +1,17 @@
 # Universal Course Content Repository
 
-This repository is designed to be the "absolute source" for your course content. It uses Markdown for content and MkDocs for generating a beautiful, searchable, and multi-language website.
+This repository is designed to be the "absolute source" for your course content. It uses Markdown for content and MkDocs for generating a beautiful, searchable, and multi-language website that is automatically deployed to GitHub Pages.
 
 [![License: CC BY-SA 4.0](https://licensebuttons.net/l/by-sa/4.0/88x31.png)](https://creativecommons.org/licenses/by-sa/4.0/)
 
 This project is licensed under the [Creative Commons Attribution-ShareAlike 4.0 International License](./LICENSE).
 
-## Table of Contents
-- [Folder Structure](#folder-structure)
-- [Getting Started](#getting-started)
-- [Local Development](#local-development)
-- [Managing Content](#managing-content)
-- [Translation Workflow](#translation-workflow)
-- [Building the Website](#building-the-website)
-- [Deployment to GitHub Pages](#deployment-to-github-pages)
-- [Generating PDFs](#generating-pdfs)
+## Features
+- **Dynamic Homepage:** A main landing page that automatically lists all available courses in a card grid.
+- **Multi-Language Support:** Fully configured for English and German, with a language switcher. Easily extensible to other languages.
+- **Automated Deployment:** Every push to the `main` branch automatically builds and deploys the latest version of the site to GitHub Pages.
+- **Clean Navigation:** A contextual sidebar shows only the chapters for the course you are currently viewing.
+- **Markdown-Based:** All content is written in simple Markdown files.
 
 ## Folder Structure
 
@@ -46,8 +43,8 @@ To work with this repository on your local machine, you'll need Python installed
 
 1.  **Clone the repository:**
     ```bash
-    git clone <your-repository-url>
-    cd <your-repository-name>
+    git clone https://github.com/florindottudosedotcom/emotions-for-engineers.git
+    cd emotions-for-engineers
     ```
 
 2.  **Create a virtual environment (recommended):**
@@ -74,16 +71,16 @@ To preview your website as you make changes, you first need to generate the main
     mkdocs serve
     ```
 
-This will start a local web server, typically at `http://127.0.0.1:8000`. If you add a new course, you will need to re-run the `build_index.py` script to see it on the main homepage.
+This will start a local web server, typically at `http://127.0.0.1:8000`. If you add or remove a course, you will need to re-run the `build_index.py` script to see the change on the main homepage.
 
 ## Managing Content
 
 ### Adding a New Course
 
-1.  Decide on a short, descriptive name for your course folder (e.g., `new-course`).
-2.  Create a new directory for the course inside the default language folder: `docs/en/new-course`.
-3.  **Create a course homepage:** Add an `index.md` file inside your new course directory (`docs/en/new-course/index.md`).
-4.  **Add metadata:** At the top of this new `index.md`, add a "front matter" block with a description. This description will be shown on the main site landing page.
+1.  Decide on a short, descriptive name for your course folder (e.g., `new-awesome-course`).
+2.  Create a new directory for the course inside the default language folder (e.g., `docs/en/new-awesome-course`).
+3.  **Create a course homepage:** Add an `index.md` file inside your new course directory.
+4.  **Add metadata:** At the top of this new `index.md`, add a "front matter" block with a `description`. This description will be shown on the main site landing page.
     ```yaml
     ---
     description: "A short, exciting description for your new course."
@@ -93,63 +90,27 @@ This will start a local web server, typically at `http://127.0.0.1:8000`. If you
     ...
     ```
 5.  Add your other chapter Markdown (`.md`) files to the course directory.
+6.  The new course will automatically appear on the main homepage the next time the site is built.
 
-### Adding a New Chapter
+### Translation Workflow
 
-Simply add a new, numbered Markdown file to the appropriate course folder (e.g., `docs/en/course-example/03-new-chapter.md`).
+The system is designed to gracefully handle courses that exist in one language but not another.
 
-## Translation Workflow
-
-This setup is designed for your "automatic translation + human review" workflow.
-
-### Adding Translations for an Existing Course
-
-1.  Mirror the directory structure in the target language's folder. For example, to translate `course-example` to German, ensure the `docs/de/course-example/` directory exists.
-2.  Copy the Markdown file you want to translate from the source language (e.g., `docs/en/course-example/01-introduction.md`) to the target language folder (`docs/de/course-example/01-introduction.md`).
-3.  Translate the content of the new file. You can use an automatic translation tool to get the initial version and then have a human translator review and correct it.
-
-### Adding a New Language
-
-1.  Choose the two-letter ISO 639-1 code for the new language (e.g., `fr` for French).
-2.  Update `mkdocs.yml` by adding the new language to the `plugins.i18n.languages` list and the `extra.alternate` list.
-3.  Create the corresponding language folder in `docs` (e.g., `docs/fr/`).
-4.  Start translating content into that folder.
-
-## Building the Website
-
-To generate the final, static website that you can deploy to any web host:
-
-```bash
-mkdocs build
-```
-
-This command will create a `site/` directory. This directory contains the complete website, with all languages. The default language will be at the root, and other languages will be in subdirectories (e.g., `site/de/`).
+1.  To add a translation for a course, create a corresponding course folder under the target language's directory (e.g., `docs/de/new-awesome-course`).
+2.  Copy the markdown files from the source language and translate their content.
+3.  The language switcher on the website will automatically link between the translated pages.
 
 ## Deployment to GitHub Pages
 
-This repository is configured with a GitHub Actions workflow to automatically deploy your website to GitHub Pages.
-
-### How it Works
-1.  Every time you push a commit or merge a pull request to the `main` branch, the workflow will run.
-2.  It automatically builds your MkDocs site, including all languages.
-3.  It then pushes the contents of the generated `site/` directory to a special branch named `gh-pages`.
+Deployment is fully automated. Simply push your changes to the `main` branch, and the GitHub Actions workflow will build and deploy your site automatically.
 
 ### One-Time Setup
 To get your site live, you need to enable GitHub Pages in your repository settings:
 
 1.  Go to your repository on GitHub and click on the **Settings** tab.
-2.  In the left sidebar, click on **Pages**.
+2.  In the left sidebar, under "Code and automation", click on **Pages**.
 3.  Under "Build and deployment", for the **Source**, select **Deploy from a branch**.
 4.  Under "Branch", select `gh-pages` as the source branch and `/ (root)` as the folder.
 5.  Click **Save**.
 
-After a few minutes, your website will be live at the URL shown on that page (usually `https://<your-username>.github.io/<your-repo-name>/`).
-
-## Generating PDFs
-
-The easiest way to generate a PDF of a chapter is to use your web browser's built-in "Print to PDF" functionality.
-
-1.  Navigate to the page you want to save as a PDF in your browser (either in the local development server or on the live website).
-2.  Go to `File > Print...`.
-3.  Choose "Save as PDF" as the destination.
-4.  The generated website theme is print-friendly, so the output should be clean.
+After a few minutes, your website will be live at: **https://florindottudosedotcom.github.io/emotions-for-engineers/**

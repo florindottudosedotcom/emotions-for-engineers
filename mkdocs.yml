@@ -4,8 +4,9 @@ repo_url: https://github.com/florindottudosedotcom/emotions-for-engineers
 
 theme:
   name: material
-  language: en # Sets the default language for the site
+  language: en
   features:
+    - navigation.tracking
     - navigation.sections
     - toc.integrate
     - navigation.top
@@ -23,7 +24,7 @@ extra:
       lang: de
 
 plugins:
-  - search # The search plugin is required and must be listed first
+  - search
   - i18n:
       languages:
         - locale: en
