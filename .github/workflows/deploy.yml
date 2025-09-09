@@ -32,8 +32,6 @@ jobs:
           python-version: '3.x'
       - name: Install dependencies
         run: pip install -r requirements.txt
-      - name: Generate course index page
-        run: python scripts/build_index.py
       - name: Build the MkDocs site
         run: mkdocs build
       - name: Upload artifact
