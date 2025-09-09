@@ -17,37 +17,37 @@ theme:
 extra:
   alternate:
     - name: English
-      link: /
+      link: ./
       lang: en
     - name: Deutsch
-      link: /de/
+      link: ./de/
       lang: de
     - name: Français
-      link: /fr/
+      link: ./fr/
       lang: fr
     - name: हिन्दी
-      link: /hi/
+      link: ./hi/
       lang: hi
     - name: Italiano
-      link: /it/
+      link: ./it/
       lang: it
     - name: 日本語
-      link: /ja/
+      link: ./ja/
       lang: ja
     - name: Português
-      link: /pt/
+      link: ./pt/
       lang: pt
     - name: Română
-      link: /ro/
+      link: ./ro/
       lang: ro
     - name: Русский
-      link: /ru/
+      link: ./ru/
       lang: ru
     - name: Español
-      link: /es/
+      link: ./es/
       lang: es
     - name: 中文
-      link: /zh/
+      link: ./zh/
       lang: zh
 
 plugins:
