@@ -7,7 +7,6 @@ This repository is designed to be the "absolute source" for your course content.
 This project is licensed under the [Creative Commons Attribution-ShareAlike 4.0 International License](./LICENSE).
 
 ## Features
-- **Dynamic Homepage:** A main landing page that automatically lists all available courses in a card grid.
 - **Multi-Language Support:** Fully configured for English and German, with a language switcher. Easily extensible to other languages.
 - **Automated Deployment:** Every push to the `main` branch automatically builds and deploys the latest version of the site to GitHub Pages.
 - **Clean Navigation:** A contextual sidebar shows only the chapters for the course you are currently viewing.
@@ -15,27 +14,25 @@ This project is licensed under the [Creative Commons Attribution-ShareAlike 4.0 
 
 ## Folder Structure
 
-The repository is organized to support multiple courses and multiple languages in a clean way.
+The repository is organized to support multiple courses and multiple languages using a file-suffix convention.
 
 ```
 .
 ├── docs/
-│   ├── en/
-│   │   └── course-example/
-│   │       ├── index.md     # Course homepage with metadata
-│   │       └── ...
-│   └── de/
+│   ├── index.en.md          # Homepage for English
+│   ├── index.de.md          # Homepage for German
+│   └── course-example/
+│       ├── 01-introduction.en.md
+│       ├── 01-introduction.de.md
 │       └── ...
-├── scripts/
-│   └── build_index.py       # Script to generate the main homepage
 ├── .gitignore
 ├── mkdocs.yml
 └── requirements.txt
 ```
 
-- **`docs/`**: Contains all source content. The main `index.md` in this folder is auto-generated and should not be edited manually.
-- **`docs/<lang>/<course-name>/`**: Each course has its own folder within a language.
-- **`scripts/`**: Contains helper scripts, like the one to build the main homepage.
+- **`docs/`**: Contains all source content for all languages.
+- **`*.en.md`**: English language files are identified by the `.en.md` suffix.
+- **`*.de.md`**: German language files are identified by the `.de.md` suffix.
 
 ## Getting Started
 
@@ -60,45 +57,29 @@ To work with this repository on your local machine, you'll need Python installed
 
 ## Local Development
 
-To preview your website as you make changes, you first need to generate the main homepage, then start the live-reloading server.
+To preview your website as you make changes, start the live-reloading server:
 
-1.  **Generate the Homepage:**
-    ```bash
-    python scripts/build_index.py
-    ```
-2.  **Run the Server:**
-    ```bash
-    mkdocs serve
-    ```
+```bash
+mkdocs serve
+```
 
-This will start a local web server, typically at `http://127.0.0.1:8000`. If you add or remove a course, you will need to re-run the `build_index.py` script to see the change on the main homepage.
+This will start a local web server, typically at `http://127.0.0.1:8000`. The server will automatically rebuild the site when you save a file.
 
 ## Managing Content
 
 ### Adding a New Course
 
 1.  Decide on a short, descriptive name for your course folder (e.g., `new-awesome-course`).
-2.  Create a new directory for the course inside the default language folder (e.g., `docs/en/new-awesome-course`).
-3.  **Create a course homepage:** Add an `index.md` file inside your new course directory.
-4.  **Add metadata:** At the top of this new `index.md`, add a "front matter" block with a `description`. This description will be shown on the main site landing page.
-    ```yaml
-    ---
-    description: "A short, exciting description for your new course."
-    ---
-
-    # Welcome to the New Course
-    ...
-    ```
-5.  Add your other chapter Markdown (`.md`) files to the course directory.
-6.  The new course will automatically appear on the main homepage the next time the site is built.
+2.  Create a new directory for the course inside the `docs/` folder (e.g., `docs/new-awesome-course`).
+3.  Add your chapter Markdown (`.md`) files to the course directory, making sure to use the correct language suffix (e.g., `chapter-1.en.md`).
+4.  Add the new course to the navigation in the `mkdocs.yml` file. You will need to add an entry for each language you are supporting.
 
 ### Translation Workflow
 
-The system is designed to gracefully handle courses that exist in one language but not another.
+The system uses file suffixes to manage translations.
 
-1.  To add a translation for a course, create a corresponding course folder under the target language's directory (e.g., `docs/de/new-awesome-course`).
-2.  Copy the markdown files from the source language and translate their content.
-3.  The language switcher on the website will automatically link between the translated pages.
+1.  To add a translation for a page, create a new file with the same name but the target language's suffix. For example, to translate `course-example/intro.en.md`, you would create `course-example/intro.de.md`.
+2.  The language switcher on the website will automatically link between the translated pages if they share the same base filename.
 
 ## Deployment to GitHub Pages
 
