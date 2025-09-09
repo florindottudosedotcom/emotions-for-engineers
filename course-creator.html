@@ -396,44 +396,59 @@
                         .map(cb => [cb.value, cb])
                 );
 
-                // Create files for all selected languages in a single, streamlined loop.
-                for (const lang of selectedLangs) {
+                const nonEnglishLangs = selectedLangs.filter(l => l !== 'en');
+                const progress = {
+                    completed: 0,
+                    total: nonEnglishLangs.length * (1 + 1 + chapters.length * 2) // course name, desc, and for each chapter: title, content
+                };
+
+                if (progress.total > 0) {
+                    aiStatus.innerText = `Starting translation of ${progress.total} items across ${nonEnglishLangs.length} language(s)...`;
+                }
+
+                // Process all selected languages in parallel for faster translation and file generation.
+                const processingPromises = selectedLangs.map(async (lang) => {
                     const langName = langCheckboxes[lang]?.dataset.name;
                     if (!langName) {
                         console.warn(`Could not find language details for code: ${lang}. Skipping this language.`);
-                        continue;
+                        return; // Skip this iteration
                     }
+
                     let translatedCourseName = courseName;
                     let translatedCourseDesc = courseDesc;
                     let translatedChapters = chapters;
-
                     const isPrimaryLang = lang === 'en';
 
                     if (!isPrimaryLang) {
-                        aiStatus.innerText = `Translating course to ${langName}...`;
+                        const updateProgress = () => {
+                            progress.completed++;
+                            aiStatus.innerText = `Translating... ${progress.completed} of ${progress.total} items completed.`;
+                        };
 
-                        // Translate course title and description in parallel
-                        [translatedCourseName, translatedCourseDesc] = await Promise.all([
-                            translate(courseName, langName),
-                            translate(courseDesc, langName)
-                        ]);
+                        updateProgress();
+                        translatedCourseName = await translate(courseName, langName);
 
-                        translatedChapters = [];
+                        updateProgress();
+                        translatedCourseDesc = await translate(courseDesc, langName);
+
+                        const newChapters = [];
                         for (let i = 0; i < chapters.length; i++) {
                             const chapter = chapters[i];
-                            aiStatus.innerText = `Translating chapter ${i + 1}/${chapters.length} ('${chapter.title}') to ${langName}...`;
 
-                            const [translatedTitle, translatedContent] = await Promise.all([
-                                translate(chapter.title, langName),
-                                translate(chapter.content, langName)
-                            ]);
+                            updateProgress();
+                            const translatedTitle = await translate(chapter.title, langName);
 
-                            translatedChapters.push({
+                            updateProgress();
+                            const translatedContent = await translate(chapter.content, langName);
+
+
+                            newChapters.push({
                                 ...chapter,
                                 title: translatedTitle,
                                 content: translatedContent
                             });
                         }
+                        translatedChapters = newChapters;
                     }
 
                     // Create index file
@@ -446,7 +461,9 @@
                         const chapterContent = `# ${chapter.title}\n\n${chapter.content}`;
                         courseFolder.file(chapterFilename, chapterContent);
                     }
-                }
+                });
+
+                await Promise.all(processingPromises);
 
                 const zipBlob = await zip.generateAsync({ type: 'blob' });
                 downloadZipLink.href = URL.createObjectURL(zipBlob);
