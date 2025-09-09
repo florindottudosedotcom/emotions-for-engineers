@@ -253,7 +253,19 @@
                 }
 
                 try {
-                    const config = jsyaml.load(mkdocsContent);
+                    // Regex to find the markdown_extensions block and preserve it,
+                    // as it may contain Python-specific tags that js-yaml cannot parse.
+                    const mdExtRegex = /^markdown_extensions:([\s\S]*?)(?=\n^\S|$)/m;
+                    let mdExtBlock = '';
+                    let contentToParse = mkdocsContent;
+
+                    const mdExtMatch = mkdocsContent.match(mdExtRegex);
+                    if (mdExtMatch) {
+                        mdExtBlock = mdExtMatch[0];
+                        contentToParse = mkdocsContent.replace(mdExtRegex, '').trim();
+                    }
+
+                    const config = jsyaml.load(contentToParse);
 
                     const selectedLangs = Array.from(document.querySelectorAll('input[type="checkbox"]:checked'));
                     const newLangs = selectedLangs.map(cb => ({
@@ -298,7 +310,6 @@
                         return;
                     }
 
-                    // Sort languages to be neat, default 'en' first
                     i18nPlugin.i18n.languages.sort((a, b) => {
                         if (a.default) return -1;
                         if (b.default) return 1;
@@ -310,8 +321,12 @@
                          return a.lang.localeCompare(b.lang);
                     });
 
+                    let newMkdocsContent = jsyaml.dump(config, { indent: 2, lineWidth: -1 }).trim();
 
-                    const newMkdocsContent = jsyaml.dump(config, { indent: 2 });
+                    if (mdExtBlock) {
+                        newMkdocsContent += `\n\n${mdExtBlock}`;
+                    }
+
                     const blob = new Blob([newMkdocsContent], { type: 'text/yaml' });
                     downloadMkdocsLink.href = URL.createObjectURL(blob);
                     downloadMkdocsLink.download = 'mkdocs.updated.yml';
