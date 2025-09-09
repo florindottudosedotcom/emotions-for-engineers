@@ -22,6 +22,33 @@ extra:
     - name: Deutsch
       link: /de/
       lang: de
+    - name: Français
+      link: /fr/
+      lang: fr
+    - name: हिन्दी
+      link: /hi/
+      lang: hi
+    - name: Italiano
+      link: /it/
+      lang: it
+    - name: 日本語
+      link: /ja/
+      lang: ja
+    - name: Português
+      link: /pt/
+      lang: pt
+    - name: Română
+      link: /ro/
+      lang: ro
+    - name: Русский
+      link: /ru/
+      lang: ru
+    - name: Español
+      link: /es/
+      lang: es
+    - name: 中文
+      link: /zh/
+      lang: zh
 
 plugins:
   - search
@@ -32,6 +59,24 @@ plugins:
           default: true
         - locale: de
           name: Deutsch
+        - locale: fr
+          name: Français
+        - locale: hi
+          name: हिन्दी
+        - locale: it
+          name: Italiano
+        - locale: ja
+          name: 日本語
+        - locale: pt
+          name: Português
+        - locale: ro
+          name: Română
+        - locale: ru
+          name: Русский
+        - locale: es
+          name: Español
+        - locale: zh
+          name: 中文
 
 markdown_extensions:
   - attr_list

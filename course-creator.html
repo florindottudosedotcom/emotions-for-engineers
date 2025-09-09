@@ -40,7 +40,6 @@
                 <li>Fill out the form below with your course details. English is the primary language.</li>
                 <li>Click "Generate Course Files". This will create a <strong>.zip</strong> file containing all the necessary folders and files for your new course.</li>
                 <li>Extract the contents of the downloaded .zip file into the <strong>`docs/`</strong> directory of your project.</li>
-                <li>(Optional) If you selected new languages, update your <strong>`mkdocs.yml`</strong> file using the tool at the bottom of the page.</li>
                 <li>Run <code>python scripts/build_index.py</code> and then <code>mkdocs serve</code> in your terminal to see your new course.</li>
             </ol>
         </div>
@@ -57,6 +56,7 @@
                 <legend>Course Languages</legend>
                 <div class="lang-grid">
                     <div class="lang-item"><input type="checkbox" id="lang-en" value="en" data-name="English" checked> <label for="lang-en">English</label></div>
+                    <div class="lang-item"><input type="checkbox" id="lang-de" value="de" data-name="German"> <label for="lang-de">German</label></div>
                     <div class="lang-item"><input type="checkbox" id="lang-zh" value="zh" data-name="Mandarin Chinese"> <label for="lang-zh">Mandarin Chinese</label></div>
                     <div class="lang-item"><input type="checkbox" id="lang-es" value="es" data-name="Spanish"> <label for="lang-es">Spanish</label></div>
                     <div class="lang-item"><input type="checkbox" id="lang-hi" value="hi" data-name="Hindi"> <label for="lang-hi">Hindi</label></div>
@@ -84,20 +84,6 @@
             <h3>Downloads</h3>
             <p>Your files have been generated. Download them below.</p>
             <a id="download-zip" class="btn btn-primary">Download Course Files (.zip)</a>
-        </div>
-
-        <hr style="margin: 2rem 0;">
-
-        <h2>`mkdocs.yml` Updater</h2>
-        <div class="instructions">
-            <p>If you selected a language that is not already in your `mkdocs.yml` file, use this tool to update it. This will ensure the language switcher appears correctly on your site.</p>
-        </div>
-        <label for="mkdocs-upload">1. Upload your current `mkdocs.yml` file:</label>
-        <input type="file" id="mkdocs-upload" accept=".yml,.yaml">
-        <br><br>
-        <button id="update-mkdocs" class="btn btn-secondary" disabled>2. Generate Updated `mkdocs.yml`</button>
-        <div id="mkdocs-download-section" style="display: none; margin-top: 1rem;">
-             <a id="download-mkdocs" class="btn btn-primary">Download Updated `mkdocs.yml`</a>
         </div>
     </div>
 
@@ -226,119 +212,6 @@
 
             // Add the first chapter on page load
             addChapter();
-
-            // MKDocs Updater Logic
-            const mkdocsUpload = document.getElementById('mkdocs-upload');
-            const updateMkdocsBtn = document.getElementById('update-mkdocs');
-            const mkdocsDownloadSection = document.getElementById('mkdocs-download-section');
-            const downloadMkdocsLink = document.getElementById('download-mkdocs');
-            let mkdocsContent = null;
-
-            mkdocsUpload.addEventListener('change', (e) => {
-                const file = e.target.files[0];
-                if (file) {
-                    const reader = new FileReader();
-                    reader.onload = (event) => {
-                        mkdocsContent = event.target.result;
-                        updateMkdocsBtn.disabled = false;
-                    };
-                    reader.readAsText(file);
-                }
-            });
-
-            updateMkdocsBtn.addEventListener('click', () => {
-                if (!mkdocsContent) {
-                    alert('Please upload your mkdocs.yml file first.');
-                    return;
-                }
-
-                try {
-                    // Regex to find the markdown_extensions block and preserve it,
-                    // as it may contain Python-specific tags that js-yaml cannot parse.
-                    const mdExtRegex = /^markdown_extensions:([\s\S]*?)(?=\n^\S|$)/m;
-                    let mdExtBlock = '';
-                    let contentToParse = mkdocsContent;
-
-                    const mdExtMatch = mkdocsContent.match(mdExtRegex);
-                    if (mdExtMatch) {
-                        mdExtBlock = mdExtMatch[0];
-                        contentToParse = mkdocsContent.replace(mdExtRegex, '').trim();
-                    }
-
-                    const config = jsyaml.load(contentToParse);
-
-                    const selectedLangs = Array.from(document.querySelectorAll('input[type="checkbox"]:checked'));
-                    const newLangs = selectedLangs.map(cb => ({
-                        locale: cb.value,
-                        name: cb.dataset.name
-                    }));
-
-                    // Ensure sections exist
-                    if (!config.extra) config.extra = {};
-                    if (!config.extra.alternate) config.extra.alternate = [];
-                    if (!config.plugins) config.plugins = [];
-
-                    let i18nPlugin = config.plugins.find(p => p.i18n);
-                    if (!i18nPlugin) {
-                        i18nPlugin = { i18n: { languages: [] } };
-                        config.plugins.push(i18nPlugin);
-                    }
-                    if (!i18nPlugin.i18n.languages) i18nPlugin.i18n.languages = [];
-
-                    const existingLocales = new Set(i18nPlugin.i18n.languages.map(l => l.locale));
-
-                    let updated = false;
-                    for (const lang of newLangs) {
-                        if (!existingLocales.has(lang.locale)) {
-                            updated = true;
-                            // Add to plugins.i18n.languages
-                            const newLangPluginEntry = { locale: lang.locale, name: lang.name };
-                            if (lang.locale === 'en') {
-                                newLangPluginEntry.default = true;
-                            }
-                            i18nPlugin.i18n.languages.push(newLangPluginEntry);
-
-                            // Add to extra.alternate
-                            const newAlternateEntry = { name: lang.name, lang: lang.locale };
-                            newAlternateEntry.link = lang.locale === 'en' ? '/' : `/${lang.locale}/`;
-                            config.extra.alternate.push(newAlternateEntry);
-                        }
-                    }
-
-                    if (!updated) {
-                        alert('No new languages to add. Your mkdocs.yml file is already up to date with the selected languages.');
-                        return;
-                    }
-
-                    i18nPlugin.i18n.languages.sort((a, b) => {
-                        if (a.default) return -1;
-                        if (b.default) return 1;
-                        return a.locale.localeCompare(b.locale);
-                    });
-                    config.extra.alternate.sort((a, b) => {
-                         if (a.lang === 'en') return -1;
-                         if (b.lang === 'en') return 1;
-                         return a.lang.localeCompare(b.lang);
-                    });
-
-                    let newMkdocsContent = jsyaml.dump(config, { indent: 2, lineWidth: -1 }).trim();
-
-                    if (mdExtBlock) {
-                        newMkdocsContent += `\n\n${mdExtBlock}`;
-                    }
-
-                    const blob = new Blob([newMkdocsContent], { type: 'text/yaml' });
-                    downloadMkdocsLink.href = URL.createObjectURL(blob);
-                    downloadMkdocsLink.download = 'mkdocs.updated.yml';
-                    mkdocsDownloadSection.style.display = 'block';
-
-                    alert('Success! Your mkdocs.yml has been updated. Download the new file and replace your old one.');
-
-                } catch (error) {
-                    console.error('Error processing mkdocs.yml:', error);
-                    alert(`An error occurred: ${error.message}. Please check the console for details.`);
-                }
-            });
         });
     </script>
 
