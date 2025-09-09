@@ -398,7 +398,11 @@
 
                 // Create files for all selected languages in a single, streamlined loop.
                 for (const lang of selectedLangs) {
-                    const langName = langCheckboxes[lang].dataset.name;
+                    const langName = langCheckboxes[lang]?.dataset.name;
+                    if (!langName) {
+                        console.warn(`Could not find language details for code: ${lang}. Skipping this language.`);
+                        continue;
+                    }
                     let translatedCourseName = courseName;
                     let translatedCourseDesc = courseDesc;
                     let translatedChapters = chapters;
