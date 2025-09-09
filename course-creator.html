@@ -425,21 +425,21 @@
                             aiStatus.innerText = `Translating... ${progress.completed} of ${progress.total} items completed.`;
                         };
 
-                        updateProgress();
                         translatedCourseName = await translate(courseName, langName);
-
                         updateProgress();
+
                         translatedCourseDesc = await translate(courseDesc, langName);
+                        updateProgress();
 
                         const newChapters = [];
                         for (let i = 0; i < chapters.length; i++) {
                             const chapter = chapters[i];
 
-                            updateProgress();
                             const translatedTitle = await translate(chapter.title, langName);
-
                             updateProgress();
+
                             const translatedContent = await translate(chapter.content, langName);
+                            updateProgress();
 
 
                             newChapters.push({
