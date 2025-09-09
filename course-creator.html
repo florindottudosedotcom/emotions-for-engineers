@@ -89,143 +89,143 @@
     </div>
 
     <!-- JS Libraries -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js" defer></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/js-yaml/4.1.0/js-yaml.min.js" defer></script>
-    <script src="https://cdn.jsdelivr.net/npm/@toast-ui/editor@3.2.2/dist/toastui-editor-all.min.js" defer></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/js-yaml/4.1.0/js-yaml.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@toast-ui/editor@3.2.2/dist/toastui-editor-all.min.js"></script>
 
     <!-- Main Application Logic -->
-    <script defer>
-        document.addEventListener('DOMContentLoaded', () => {
+    <script>
+        window.onload = () => {
             const courseForm = document.getElementById('course-form');
             const chaptersContainer = document.getElementById('chapters-container');
-        const addChapterBtn = document.getElementById('add-chapter');
-        const downloadSection = document.getElementById('download-section');
-        const downloadZipLink = document.getElementById('download-zip');
+            const addChapterBtn = document.getElementById('add-chapter');
+            const downloadSection = document.getElementById('download-section');
+            const downloadZipLink = document.getElementById('download-zip');
 
-        let chapterCount = 0;
-        const editorInstances = {};
+            let chapterCount = 0;
+            const editorInstances = {};
 
-        const slugify = (text) => {
-            return text.toString().toLowerCase()
-                .replace(/\s+/g, '-')           // Replace spaces with -
-                .replace(/[^\w\-]+/g, '')       // Remove all non-word chars
-                .replace(/\-\-+/g, '-')         // Replace multiple - with single -
-                .replace(/^-+/, '')             // Trim - from start of text
-                .replace(/-+$/, '');            // Trim - from end of text
-        };
+            const slugify = (text) => {
+                return text.toString().toLowerCase()
+                    .replace(/\s+/g, '-')           // Replace spaces with -
+                    .replace(/[^\w\-]+/g, '')       // Remove all non-word chars
+                    .replace(/\-\-+/g, '-')         // Replace multiple - with single -
+                    .replace(/^-+/, '')             // Trim - from start of text
+                    .replace(/-+$/, '');            // Trim - from end of text
+            };
 
-        const addChapter = () => {
-            chapterCount++;
-            const chapterId = chapterCount;
-            const chapterDiv = document.createElement('div');
-            chapterDiv.className = 'chapter';
-            chapterDiv.id = `chapter-${chapterId}`;
-            chapterDiv.innerHTML = `
-                <div class="chapter-header">
-                    <h3>Chapter ${chapterId}</h3>
-                    <button type="button" class="btn btn-danger remove-chapter-btn" data-chapter-id="${chapterId}">Remove</button>
-                </div>
-                <label for="chapter-title-${chapterId}">Chapter Title</label>
-                <input type="text" id="chapter-title-${chapterId}" class="chapter-title" placeholder="e.g., Getting Started" required>
-                <label for="editor-${chapterId}">Chapter Content</label>
-                <div id="editor-${chapterId}" class="chapter-editor"></div>
-            `;
-            chaptersContainer.appendChild(chapterDiv);
+            const addChapter = () => {
+                chapterCount++;
+                const chapterId = chapterCount;
+                const chapterDiv = document.createElement('div');
+                chapterDiv.className = 'chapter';
+                chapterDiv.id = `chapter-${chapterId}`;
+                chapterDiv.innerHTML = `
+                    <div class="chapter-header">
+                        <h3>Chapter ${chapterId}</h3>
+                        <button type="button" class="btn btn-danger remove-chapter-btn" data-chapter-id="${chapterId}">Remove</button>
+                    </div>
+                    <label for="chapter-title-${chapterId}">Chapter Title</label>
+                    <input type="text" id="chapter-title-${chapterId}" class="chapter-title" placeholder="e.g., Getting Started" required>
+                    <label for="editor-${chapterId}">Chapter Content</label>
+                    <div id="editor-${chapterId}" class="chapter-editor"></div>
+                `;
+                chaptersContainer.appendChild(chapterDiv);
 
-            const editor = new toastui.Editor({
-                el: document.querySelector(`#editor-${chapterId}`),
-                height: '250px',
-                initialEditType: 'wysiwyg',
-                previewStyle: 'vertical',
-                toolbarItems: [
-                    ['heading', 'bold', 'italic', 'strike'],
-                    ['hr', 'quote'],
-                    ['ul', 'ol', 'task', 'indent', 'outdent'],
-                    ['table', 'image', 'link'],
-                    ['code', 'codeblock'],
-                    ['scrollSync'],
-                ]
-            });
-            editorInstances[chapterId] = editor;
+                const editor = new toastui.Editor({
+                    el: document.querySelector(`#editor-${chapterId}`),
+                    height: '250px',
+                    initialEditType: 'wysiwyg',
+                    previewStyle: 'vertical',
+                    toolbarItems: [
+                        ['heading', 'bold', 'italic', 'strike'],
+                        ['hr', 'quote'],
+                        ['ul', 'ol', 'task', 'indent', 'outdent'],
+                        ['table', 'image', 'link'],
+                        ['code', 'codeblock'],
+                        ['scrollSync'],
+                    ]
+                });
+                editorInstances[chapterId] = editor;
 
-            chapterDiv.querySelector('.remove-chapter-btn').addEventListener('click', () => {
-                const id = chapterDiv.querySelector('.remove-chapter-btn').dataset.chapterId;
-                delete editorInstances[id];
-                document.getElementById(`chapter-${id}`).remove();
-            });
-        };
+                chapterDiv.querySelector('.remove-chapter-btn').addEventListener('click', () => {
+                    const id = chapterDiv.querySelector('.remove-chapter-btn').dataset.chapterId;
+                    delete editorInstances[id];
+                    document.getElementById(`chapter-${id}`).remove();
+                });
+            };
 
-        addChapterBtn.addEventListener('click', addChapter);
+            addChapterBtn.addEventListener('click', addChapter);
 
-        courseForm.addEventListener('submit', async (e) => {
-            e.preventDefault();
+            courseForm.addEventListener('submit', async (e) => {
+                e.preventDefault();
 
-            const courseName = document.getElementById('course-name').value;
-            const courseDesc = document.getElementById('course-desc').value;
-            const selectedLangs = Array.from(document.querySelectorAll('input[type="checkbox"]:checked')).map(cb => cb.value);
+                const courseName = document.getElementById('course-name').value;
+                const courseDesc = document.getElementById('course-desc').value;
+                const selectedLangs = Array.from(document.querySelectorAll('input[type="checkbox"]:checked')).map(cb => cb.value);
 
-            if (selectedLangs.length === 0) {
-                alert('Please select at least one language.');
-                return;
-            }
-
-            const courseSlug = slugify(courseName);
-            if (!courseSlug) {
-                alert('Please enter a valid course name.');
-                return;
-            }
-
-            const chapters = [];
-            document.querySelectorAll('.chapter').forEach((chapterDiv, index) => {
-                const title = chapterDiv.querySelector('.chapter-title').value;
-                const chapterId = chapterDiv.id.split('-')[1];
-                const editor = editorInstances[chapterId];
-                const content = editor.getMarkdown();
-                const chapterSlug = slugify(title);
-                const chapterNumber = String(index + 1).padStart(2, '0');
-                chapters.push({ title, content, slug: chapterSlug, number: chapterNumber });
-            });
-
-            if (chapters.length === 0) {
-                alert('Please add at least one chapter.');
-                return;
-            }
-
-            const zip = new JSZip();
-            const courseFolder = zip.folder(courseSlug);
-
-            // Create the assets folder once.
-            courseFolder.folder('assets');
-
-            // Create files for all selected languages in a single, streamlined loop.
-            for (const lang of selectedLangs) {
-                const isPrimaryLang = lang === 'en';
-
-                // Create index file
-                const indexContent = `---\ndescription: ${courseDesc}\n---\n\n# ${courseName}` +
-                                   (isPrimaryLang ? '' : `\n\n<!-- TODO: Translate this page to ${lang} -->`);
-                courseFolder.file(`index.${lang}.md`, indexContent);
-
-                // Create chapter files
-                for (const chapter of chapters) {
-                    const chapterFilename = `${chapter.number}-${chapter.slug}.${lang}.md`;
-                    const chapterContent = `# ${chapter.title}\n\n${chapter.content}` +
-                                       (isPrimaryLang ? '' : `\n\n<!-- TODO: Translate this chapter to ${lang} -->`);
-                    courseFolder.file(chapterFilename, chapterContent);
+                if (selectedLangs.length === 0) {
+                    alert('Please select at least one language.');
+                    return;
                 }
-            }
 
-            const zipBlob = await zip.generateAsync({ type: 'blob' });
-            downloadZipLink.href = URL.createObjectURL(zipBlob);
-            downloadZipLink.download = `${courseSlug}.zip`;
-            downloadSection.style.display = 'block';
+                const courseSlug = slugify(courseName);
+                if (!courseSlug) {
+                    alert('Please enter a valid course name.');
+                    return;
+                }
 
-            alert('Success! Your course files have been packaged. Click the download link that has appeared.');
-        });
+                const chapters = [];
+                document.querySelectorAll('.chapter').forEach((chapterDiv, index) => {
+                    const title = chapterDiv.querySelector('.chapter-title').value;
+                    const chapterId = chapterDiv.id.split('-')[1];
+                    const editor = editorInstances[chapterId];
+                    const content = editor.getMarkdown();
+                    const chapterSlug = slugify(title);
+                    const chapterNumber = String(index + 1).padStart(2, '0');
+                    chapters.push({ title, content, slug: chapterSlug, number: chapterNumber });
+                });
 
-        // Add the first chapter on page load
-        addChapter();
-    });
+                if (chapters.length === 0) {
+                    alert('Please add at least one chapter.');
+                    return;
+                }
+
+                const zip = new JSZip();
+                const courseFolder = zip.folder(courseSlug);
+
+                // Create the assets folder once.
+                courseFolder.folder('assets');
+
+                // Create files for all selected languages in a single, streamlined loop.
+                for (const lang of selectedLangs) {
+                    const isPrimaryLang = lang === 'en';
+
+                    // Create index file
+                    const indexContent = `---\ndescription: ${courseDesc}\n---\n\n# ${courseName}` +
+                                       (isPrimaryLang ? '' : `\n\n<!-- TODO: Translate this page to ${lang} -->`);
+                    courseFolder.file(`index.${lang}.md`, indexContent);
+
+                    // Create chapter files
+                    for (const chapter of chapters) {
+                        const chapterFilename = `${chapter.number}-${chapter.slug}.${lang}.md`;
+                        const chapterContent = `# ${chapter.title}\n\n${chapter.content}` +
+                                           (isPrimaryLang ? '' : `\n\n<!-- TODO: Translate this chapter to ${lang} -->`);
+                        courseFolder.file(chapterFilename, chapterContent);
+                    }
+                }
+
+                const zipBlob = await zip.generateAsync({ type: 'blob' });
+                downloadZipLink.href = URL.createObjectURL(zipBlob);
+                downloadZipLink.download = `${courseSlug}.zip`;
+                downloadSection.style.display = 'block';
+
+                alert('Success! Your course files have been packaged. Click the download link that has appeared.');
+            });
+
+            // Add the first chapter on page load
+            addChapter();
+        };
     </script>
 
 </body>
