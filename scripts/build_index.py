@@ -26,7 +26,7 @@ def generate_index_for_language(lang_dir, translations):
                     courses.append({
                         "title": title,
                         "description": description,
-                        "path": f"{course_dir.name}/"
+                        "path": f"/{lang_code}/{course_dir.name}/"
                     })
                 except Exception as e:
                     print(f"Could not process {course_index_path}: {e}")
