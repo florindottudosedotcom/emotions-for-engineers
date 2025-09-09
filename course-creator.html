@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Universal Course Creator</title>
-    <script type="module" src="libs/webllm.js" defer></script>
+    <script src="libs/webllm.js" defer></script>
     <link rel="stylesheet" href="https://uicdn.toast.com/editor/latest/toastui-editor.min.css" />
     <style>
         body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; line-height: 1.6; color: #333; max-width: 800px; margin: 2rem auto; padding: 0 1rem; background-color: #f9f9f9; }
@@ -109,9 +109,10 @@
     <script src="https://uicdn.toast.com/editor/latest/toastui-editor-all.min.js"></script>
 
     <!-- Main Application Logic -->
-    <script>
-        document.addEventListener('DOMContentLoaded', () => {
-            const courseForm = document.getElementById('course-form');
+    <script type="module">
+        import * as webllm from './libs/webllm.js';
+
+        const courseForm = document.getElementById('course-form');
             const chaptersContainer = document.getElementById('chapters-container');
             const addChapterBtn = document.getElementById('add-chapter');
             const downloadSection = document.getElementById('download-section');
@@ -349,7 +350,6 @@
 
             // Add the first chapter on page load
             addChapter();
-        });
     </script>
 
 </body>
