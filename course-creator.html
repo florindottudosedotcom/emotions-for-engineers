@@ -236,6 +236,25 @@
                 }
             }
 
+            async function translate(textToTranslate, targetLangName) {
+                if (!engine) {
+                    throw new Error("AI engine is not ready for translation.");
+                }
+
+                const prompt = `Translate the following text to ${targetLangName}. Only provide the raw, translated text. Do not include any explanations, introductory phrases, or quotation marks. The text to translate is:\n\n"${textToTranslate}"`;
+
+                try {
+                    const reply = await engine.chat.completions.create({
+                        messages: [{ role: "user", content: prompt }],
+                    });
+                    return reply.choices[0]?.message?.content.trim() || "";
+                } catch (err) {
+                    console.error(`Translation to ${targetLangName} failed:`, err);
+                    // Return original text as a fallback
+                    return textToTranslate;
+                }
+            }
+
             init();
 
             generateNameBtn.addEventListener('click', () => {
@@ -329,8 +348,14 @@
 
             courseForm.addEventListener('submit', async (e) => {
                 e.preventDefault();
+                const submitBtn = courseForm.querySelector('button[type="submit"]');
 
-                const courseName = document.getElementById('course-name').value;
+                try {
+                    submitBtn.disabled = true;
+                    aiStatus.style.display = 'block';
+                    aiStatus.innerText = 'Gathering course content...';
+
+                    const courseName = document.getElementById('course-name').value;
                 const courseDesc = document.getElementById('course-desc').value;
                 const selectedLangs = Array.from(document.querySelectorAll('input[type="checkbox"]:checked')).map(cb => cb.value);
 
@@ -367,20 +392,55 @@
                 // Create the assets folder once.
                 courseFolder.folder('assets');
 
+                const langCheckboxes = Object.fromEntries(
+                    Array.from(document.querySelectorAll('.lang-item input[type="checkbox"]'))
+                        .map(cb => [cb.value, cb])
+                );
+
                 // Create files for all selected languages in a single, streamlined loop.
                 for (const lang of selectedLangs) {
+                    const langName = langCheckboxes[lang].dataset.name;
+                    let translatedCourseName = courseName;
+                    let translatedCourseDesc = courseDesc;
+                    let translatedChapters = chapters;
+
                     const isPrimaryLang = lang === 'en';
 
+                    if (!isPrimaryLang) {
+                        aiStatus.innerText = `Translating course to ${langName}...`;
+
+                        // Translate course title and description in parallel
+                        [translatedCourseName, translatedCourseDesc] = await Promise.all([
+                            translate(courseName, langName),
+                            translate(courseDesc, langName)
+                        ]);
+
+                        translatedChapters = [];
+                        for (let i = 0; i < chapters.length; i++) {
+                            const chapter = chapters[i];
+                            aiStatus.innerText = `Translating chapter ${i + 1}/${chapters.length} ('${chapter.title}') to ${langName}...`;
+
+                            const [translatedTitle, translatedContent] = await Promise.all([
+                                translate(chapter.title, langName),
+                                translate(chapter.content, langName)
+                            ]);
+
+                            translatedChapters.push({
+                                ...chapter,
+                                title: translatedTitle,
+                                content: translatedContent
+                            });
+                        }
+                    }
+
                     // Create index file
-                    const indexContent = `---\ndescription: ${courseDesc}\n---\n\n# ${courseName}` +
-                                       (isPrimaryLang ? '' : `\n\n<!-- TODO: Translate this page to ${lang} -->`);
+                    const indexContent = `---\ndescription: ${translatedCourseDesc}\n---\n\n# ${translatedCourseName}`;
                     courseFolder.file(`index.${lang}.md`, indexContent);
 
                     // Create chapter files
-                    for (const chapter of chapters) {
+                    for (const chapter of translatedChapters) {
                         const chapterFilename = `${chapter.number}-${chapter.slug}.${lang}.md`;
-                        const chapterContent = `# ${chapter.title}\n\n${chapter.content}` +
-                                           (isPrimaryLang ? '' : `\n\n<!-- TODO: Translate this chapter to ${lang} -->`);
+                        const chapterContent = `# ${chapter.title}\n\n${chapter.content}`;
                         courseFolder.file(chapterFilename, chapterContent);
                     }
                 }
@@ -391,6 +451,10 @@
                 downloadSection.style.display = 'block';
 
                 alert('Success! Your course files have been packaged. Click the download link that has appeared.');
+                } finally {
+                    submitBtn.disabled = false;
+                    aiStatus.innerText += '\n\nAll tasks finished.';
+                }
             });
 
             // Add the first chapter on page load
