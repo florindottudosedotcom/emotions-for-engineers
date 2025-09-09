@@ -15,11 +15,9 @@ theme:
 
 extra:
   alternate:
-    # Link to the English version
     - name: English
-      link: /
+      link: /en/
       lang: en
-    # Link to the German version
     - name: Deutsch
       link: /de/
       lang: de

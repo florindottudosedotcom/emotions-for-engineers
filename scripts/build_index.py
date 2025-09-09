@@ -38,7 +38,8 @@ def main():
     courses.sort(key=lambda x: x["title"])
 
     # Generate the content for the root index.md file
-    content = "# Available Courses\n\n"
+    content = "---\nhide:\n  - navigation\n---\n\n"
+    content += "# Available Courses\n\n"
     content += "Here is a list of all available courses. Please select one to get started.\n\n"
 
     if not courses:
