@@ -1,1 +1,1 @@
-This is a placeholder for an image.
+This is a placeholder for a local asset like an image or a supplementary file.

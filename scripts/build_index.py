@@ -17,6 +17,7 @@ def main():
     courses = []
     for course_dir in en_dir.iterdir():
         if course_dir.is_dir():
+            # Look for the course's own index file for metadata
             course_index_path = course_dir / "index.md"
             if course_index_path.is_file():
                 try:
