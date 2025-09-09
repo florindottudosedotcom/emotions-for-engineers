@@ -293,6 +293,12 @@ Ensure the "chapters" array contains exactly ${numChapters} objects.`;
 
                 const data = await response.json();
                 const content = data.message.content;
+
+                if (!content || content.trim() === '') {
+                    aiStatus.textContent = `Error: The AI model returned an empty response. This can happen if the model is not suitable for generating structured JSON. Please try a different model (e.g., llama3) or a simpler prompt.`;
+                    return;
+                }
+
                 aiStatus.textContent = "AI generation complete. Parsing response and populating form...";
                 populateFormWithAIResponse(content);
             } catch (err) {
@@ -303,7 +309,12 @@ Ensure the "chapters" array contains exactly ${numChapters} objects.`;
 
         function populateFormWithAIResponse(jsonString) {
             try {
-                const courseData = JSON.parse(jsonString);
+                let cleanJsonString = jsonString.trim();
+                if (cleanJsonString.startsWith("```json")) {
+                    cleanJsonString = cleanJsonString.substring(7, cleanJsonString.lastIndexOf("```")).trim();
+                }
+
+                const courseData = JSON.parse(cleanJsonString);
 
                 if (!courseData.course_title || !courseData.course_description || !courseData.chapters) {
                     throw new Error("The AI response is missing required fields (course_title, course_description, chapters).");
