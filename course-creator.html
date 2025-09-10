@@ -309,11 +309,14 @@ Ensure the "chapters" array contains exactly ${numChapters} objects.`;
 
         function populateFormWithAIResponse(jsonString) {
             try {
-                let cleanJsonString = jsonString.trim();
-                if (cleanJsonString.startsWith("```json")) {
-                    cleanJsonString = cleanJsonString.substring(7, cleanJsonString.lastIndexOf("```")).trim();
+                const firstBrace = jsonString.indexOf('{');
+                const lastBrace = jsonString.lastIndexOf('}');
+
+                if (firstBrace === -1 || lastBrace === -1 || lastBrace < firstBrace) {
+                    throw new Error("Could not find a valid JSON object in the AI's response.");
                 }
 
+                const cleanJsonString = jsonString.substring(firstBrace, lastBrace + 1);
                 const courseData = JSON.parse(cleanJsonString);
 
                 if (!courseData.course_title || !courseData.course_description || !courseData.chapters) {
