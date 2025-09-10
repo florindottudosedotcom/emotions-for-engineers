@@ -252,15 +252,13 @@
             aiStatus.style.display = 'block';
             aiStatus.textContent = 'Generating course details...';
 
-            const systemPrompt = `You are an expert course creator. A user wants to create a course based on the following prompt: "${userPrompt}".
+            const systemPrompt = `You are an expert course creator. A user wants a course about the following topic: "${userPrompt}".
 
 Your task is to generate a course title and a short, compelling course description.
-You MUST respond with ONLY a single, valid JSON object. Do not include any other text, explanations, or markdown formatting.
-The JSON object must have the following structure:
-{
-  "course_title": "A creative and engaging title for the course",
-  "course_description": "A short, compelling description for the course landing page"
-}`;
+Do not include any other text, explanations, or markdown formatting.
+You MUST format your response as follows:
+Title: [The course title]
+Description: [The course description]`;
 
             aiStatus.textContent = `DEBUG: Sending request to Ollama for course details...\nPrompt:\n${systemPrompt}`;
             console.log("DEBUG: Sending prompt for course details:", systemPrompt);
@@ -273,8 +271,7 @@ The JSON object must have the following structure:
                     body: JSON.stringify({
                         model: model,
                         messages: [{ role: 'user', content: systemPrompt }],
-                        stream: false,
-                        format: 'json'
+                        stream: false
                     }),
                 });
 
@@ -301,24 +298,25 @@ The JSON object must have the following structure:
             }
         }
 
-        function parseAndPopulateCourseDetails(jsonString) {
+        function parseAndPopulateCourseDetails(textResponse) {
             try {
-                const firstBrace = jsonString.indexOf('{');
-                const lastBrace = jsonString.lastIndexOf('}');
+                const lines = textResponse.split('\n');
+                const titleLine = lines.find(line => line.toLowerCase().startsWith('title:'));
+                const descriptionLine = lines.find(line => line.toLowerCase().startsWith('description:'));
 
-                if (firstBrace === -1 || lastBrace === -1 || lastBrace < firstBrace) {
-                    throw new Error("Could not find a valid JSON object in the AI's response for course details.");
+                if (!titleLine || !descriptionLine) {
+                    throw new Error("AI response did not follow the expected 'Title: ...' and 'Description: ...' format.");
                 }
 
-                const cleanJsonString = jsonString.substring(firstBrace, lastBrace + 1);
-                const courseData = JSON.parse(cleanJsonString);
+                const courseTitle = titleLine.substring('title:'.length).trim();
+                const courseDescription = descriptionLine.substring('description:'.length).trim();
 
-                if (!courseData.course_title || !courseData.course_description) {
-                    throw new Error("The AI response is missing 'course_title' or 'course_description'.");
+                if (!courseTitle || !courseDescription) {
+                     throw new Error("Extracted title or description is empty.");
                 }
 
-                courseNameInput.value = courseData.course_title;
-                courseDescTextarea.value = courseData.course_description;
+                courseNameInput.value = courseTitle;
+                courseDescTextarea.value = courseDescription;
 
                 // Clear existing chapters before generating new ones
                 chaptersContainer.innerHTML = '';
@@ -342,12 +340,11 @@ The JSON object must have the following structure:
 This is chapter number ${chapterIndex} of ${totalChapters}.
 
 Your task is to generate a title and the full content for this single chapter.
-You MUST respond with ONLY a single, valid JSON object.
-The JSON object must have the following structure:
-{
-  "title": "Title of Chapter ${chapterIndex}",
-  "content": "The full content of Chapter ${chapterIndex} as a single string of Markdown text."
-}`;
+Do not include any other text or explanations.
+You MUST format your response as follows, with the content starting on the line immediately after the "Content:" marker:
+Title: [The chapter title]
+Content:
+[The full chapter content in Markdown]`;
 
             console.log(`DEBUG: Sending prompt for chapter ${chapterIndex}:`, systemPrompt);
 
@@ -357,8 +354,7 @@ The JSON object must have the following structure:
                 body: JSON.stringify({
                     model: model,
                     messages: [{ role: 'user', content: systemPrompt }],
-                    stream: false,
-                    format: 'json'
+                        stream: false
                 }),
             });
 
@@ -368,19 +364,29 @@ The JSON object must have the following structure:
             const data = await response.json();
             console.log(`DEBUG: Received raw response for chapter ${chapterIndex}:`, data);
 
-            const content = data.message.content;
-            if (!content) {
+            const textResponse = data.message.content;
+            if (!textResponse) {
                 aiStatus.textContent = `DEBUG: Raw response for chapter ${chapterIndex}:\n${JSON.stringify(data, null, 2)}`;
                 throw new Error(`AI returned an empty response for chapter ${chapterIndex}.`);
             }
 
-            const firstBrace = content.indexOf('{');
-            const lastBrace = content.lastIndexOf('}');
-            if (firstBrace === -1 || lastBrace === -1 || lastBrace < firstBrace) {
-                throw new Error(`Could not find a valid JSON object in the AI's response for chapter ${chapterIndex}.`);
+            const lines = textResponse.split('\n');
+            const titleLine = lines.find(line => line.toLowerCase().startsWith('title:'));
+            const contentStartIndex = lines.findIndex(line => line.toLowerCase().startsWith('content:'));
+
+            if (!titleLine || contentStartIndex === -1) {
+                throw new Error(`AI response for chapter ${chapterIndex} did not follow the expected format.`);
             }
-            const cleanJsonString = content.substring(firstBrace, lastBrace + 1);
-            return JSON.parse(cleanJsonString);
+
+            const title = titleLine.substring('title:'.length).trim();
+            // The content is everything after the "Content:" marker line
+            const content = lines.slice(contentStartIndex + 1).join('\n').trim();
+
+            if (!title || !content) {
+                throw new Error(`Extracted title or content for chapter ${chapterIndex} is empty.`);
+            }
+
+            return { title, content };
         }
 
         async function generateChaptersInLoop() {
