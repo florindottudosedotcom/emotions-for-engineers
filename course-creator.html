@@ -100,7 +100,10 @@
             <div id="chapters-container">
                 <!-- Chapters will be dynamically added here by the master AI or manually -->
             </div>
-            <button type="button" id="add-chapter" class="btn btn-secondary">Add Chapter Manually</button>
+            <div class="input-group">
+                <button type="button" id="add-chapter" class="btn btn-secondary">Add Chapter Manually</button>
+                <button type="button" id="clear-form-btn" class="btn btn-danger" style="margin-left: auto;">Clear Form & Start New</button>
+            </div>
 
             <fieldset style="margin-top: 2rem;">
                 <legend>Course Languages</legend>
@@ -418,14 +421,87 @@ Content:
                 }
             }
              aiStatus.textContent = "✅ All chapters have been successfully generated!";
+             saveState(); // Save the final generated state
              setTimeout(() => { aiStatus.style.display = 'none'; }, 5000);
         }
 
 
+        // --- State Management ---
+        const LOCAL_STORAGE_KEY = "courseCreatorState";
+
+        function saveState() {
+            const chapters = [];
+            document.querySelectorAll('.chapter').forEach(chapterDiv => {
+                const chapterId = chapterDiv.id.split('-')[1];
+                const title = document.getElementById(`chapter-title-${chapterId}`).value;
+                const editor = editorInstances[chapterId];
+                const content = editor ? editor.getMarkdown() : '';
+                chapters.push({ title, content });
+            });
+
+            const state = {
+                courseName: courseNameInput.value,
+                courseDesc: courseDescTextarea.value,
+                chapters: chapters
+            };
+
+            localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(state));
+            console.log("State saved.");
+        }
+
+        function loadState() {
+            const savedState = localStorage.getItem(LOCAL_STORAGE_KEY);
+            if (!savedState) return;
+
+            console.log("Found saved state, loading...");
+            const state = JSON.parse(savedState);
+
+            courseNameInput.value = state.courseName || '';
+            courseDescTextarea.value = state.courseDesc || '';
+
+            chaptersContainer.innerHTML = '';
+            Object.keys(editorInstances).forEach(key => delete editorInstances[key]);
+            chapterCount = 0;
+
+            if (state.chapters && state.chapters.length > 0) {
+                state.chapters.forEach(chapterData => {
+                    addChapter();
+                    const newChapterId = chapterCount;
+                    const titleInput = document.getElementById(`chapter-title-${newChapterId}`);
+                    const editor = editorInstances[newChapterId];
+                    if (titleInput) titleInput.value = chapterData.title;
+                    if (editor) editor.setMarkdown(chapterData.content);
+                });
+            } else {
+                // If there are no chapters in state, add one empty one
+                addChapter();
+            }
+        }
+
+        function clearState() {
+            if (confirm("Are you sure you want to clear the form and start a new course? All current content will be lost.")) {
+                localStorage.removeItem(LOCAL_STORAGE_KEY);
+                location.reload();
+            }
+        }
+
         // --- Event Listeners ---
         refreshModelsBtn.addEventListener('click', loadOllamaModels);
         generateCourseBtn.addEventListener('click', generateCourse);
-        document.addEventListener('DOMContentLoaded', loadOllamaModels);
+        document.addEventListener('DOMContentLoaded', () => {
+            loadOllamaModels();
+            loadState();
+        });
+        document.getElementById('clear-form-btn').addEventListener('click', clearState);
+
+        // Auto-save on manual edits
+        courseNameInput.addEventListener('input', saveState);
+        courseDescTextarea.addEventListener('input', saveState);
+        chaptersContainer.addEventListener('input', (e) => {
+            if (e.target && e.target.classList.contains('chapter-title')) {
+                saveState();
+            }
+        });
 
 
         // --- Existing Functions (to be refactored) ---
@@ -469,7 +545,10 @@ Content:
                     ['table', 'image', 'link'],
                     ['code', 'codeblock'],
                     ['scrollSync'],
-                ]
+                ],
+                events: {
+                    change: () => saveState()
+                }
             });
             editorInstances[chapterId] = editor;
 
