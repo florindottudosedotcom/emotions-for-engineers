@@ -250,7 +250,7 @@
             }
 
             aiStatus.style.display = 'block';
-            aiStatus.textContent = 'Generating course structure with Ollama... This may take a moment.';
+            aiStatus.textContent = 'Generating course details...';
 
             const systemPrompt = `You are an expert course creator. A user wants to create a course based on the following prompt: "${userPrompt}".
 
@@ -261,6 +261,10 @@ The JSON object must have the following structure:
   "course_title": "A creative and engaging title for the course",
   "course_description": "A short, compelling description for the course landing page"
 }`;
+
+            aiStatus.textContent = `DEBUG: Sending request to Ollama for course details...\nPrompt:\n${systemPrompt}`;
+            console.log("DEBUG: Sending prompt for course details:", systemPrompt);
+
 
             try {
                 const response = await fetch('http://localhost:11434/api/chat', {
@@ -279,14 +283,17 @@ The JSON object must have the following structure:
                 }
 
                 const data = await response.json();
+                aiStatus.textContent = `DEBUG: Received raw response from Ollama for course details:\n${JSON.stringify(data, null, 2)}`;
+                console.log("DEBUG: Received raw response for course details:", data);
+
                 const content = data.message.content;
 
                 if (!content || content.trim() === '') {
-                    aiStatus.textContent = `Error: The AI model returned an empty response. This can happen if the model is not suitable for generating structured JSON. Please try a different model (e.g., llama3) or a simpler prompt.`;
+                    aiStatus.textContent += `\n\nError: The AI model returned an empty response. This can happen if the model is not suitable for generating structured JSON. Please try a different model (e.g., llama3) or a simpler prompt.`;
                     return;
                 }
 
-                aiStatus.textContent = "AI generation complete. Parsing response and populating form...";
+                aiStatus.textContent += "\n\nAI generation complete. Parsing response and populating form...";
                 parseAndPopulateCourseDetails(content);
             } catch (err) {
                 aiStatus.textContent = `Error generating course: ${err.message}`;
@@ -342,6 +349,8 @@ The JSON object must have the following structure:
   "content": "The full content of Chapter ${chapterIndex} as a single string of Markdown text."
 }`;
 
+            console.log(`DEBUG: Sending prompt for chapter ${chapterIndex}:`, systemPrompt);
+
             const response = await fetch('http://localhost:11434/api/chat', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
@@ -357,8 +366,13 @@ The JSON object must have the following structure:
                 throw new Error(`Ollama API request failed for chapter ${chapterIndex} with status ${response.status}`);
             }
             const data = await response.json();
+            console.log(`DEBUG: Received raw response for chapter ${chapterIndex}:`, data);
+
             const content = data.message.content;
-            if (!content) throw new Error(`AI returned an empty response for chapter ${chapterIndex}.`);
+            if (!content) {
+                aiStatus.textContent = `DEBUG: Raw response for chapter ${chapterIndex}:\n${JSON.stringify(data, null, 2)}`;
+                throw new Error(`AI returned an empty response for chapter ${chapterIndex}.`);
+            }
 
             const firstBrace = content.indexOf('{');
             const lastBrace = content.lastIndexOf('}');
