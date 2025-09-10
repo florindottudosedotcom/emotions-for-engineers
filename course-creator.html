@@ -442,7 +442,10 @@ Content:
             const state = {
                 courseName: courseNameInput.value,
                 courseDesc: courseDescTextarea.value,
-                chapters: chapters
+                chapters: chapters,
+                ollamaModel: ollamaModelSelect.value,
+                masterPrompt: masterPromptTextarea.value,
+                numChapters: numChaptersSelect.value
             };
 
             localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(state));
@@ -458,6 +461,9 @@ Content:
 
             courseNameInput.value = state.courseName || '';
             courseDescTextarea.value = state.courseDesc || '';
+            ollamaModelSelect.value = state.ollamaModel || 'llama3';
+            masterPromptTextarea.value = state.masterPrompt || '';
+            numChaptersSelect.value = state.numChapters || '5';
 
             chaptersContainer.innerHTML = '';
             Object.keys(editorInstances).forEach(key => delete editorInstances[key]);
@@ -497,6 +503,9 @@ Content:
         // Auto-save on manual edits
         courseNameInput.addEventListener('input', saveState);
         courseDescTextarea.addEventListener('input', saveState);
+        masterPromptTextarea.addEventListener('input', saveState);
+        ollamaModelSelect.addEventListener('change', saveState);
+        numChaptersSelect.addEventListener('change', saveState);
         chaptersContainer.addEventListener('input', (e) => {
             if (e.target && e.target.classList.contains('chapter-title')) {
                 saveState();
