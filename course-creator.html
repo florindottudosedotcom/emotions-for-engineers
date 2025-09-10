@@ -252,28 +252,15 @@
             aiStatus.style.display = 'block';
             aiStatus.textContent = 'Generating course structure with Ollama... This may take a moment.';
 
-            const systemPrompt = `You are an expert course creator. A user wants to create a course.
-User's prompt: "${userPrompt}"
-Number of chapters: ${numChapters}
+            const systemPrompt = `You are an expert course creator. A user wants to create a course based on the following prompt: "${userPrompt}".
 
-Your task is to generate a complete course structure based on this prompt.
+Your task is to generate a course title and a short, compelling course description.
 You MUST respond with ONLY a single, valid JSON object. Do not include any other text, explanations, or markdown formatting.
 The JSON object must have the following structure:
 {
   "course_title": "A creative and engaging title for the course",
-  "course_description": "A short, compelling description for the course landing page",
-  "chapters": [
-    {
-      "title": "Title of Chapter 1",
-      "content": "The full content of Chapter 1 as a single string of Markdown text."
-    },
-    {
-      "title": "Title of Chapter 2",
-      "content": "The full content of Chapter 2 as a single string of Markdown text."
-    }
-  ]
-}
-Ensure the "chapters" array contains exactly ${numChapters} objects.`;
+  "course_description": "A short, compelling description for the course landing page"
+}`;
 
             try {
                 const response = await fetch('http://localhost:11434/api/chat', {
@@ -300,61 +287,120 @@ Ensure the "chapters" array contains exactly ${numChapters} objects.`;
                 }
 
                 aiStatus.textContent = "AI generation complete. Parsing response and populating form...";
-                populateFormWithAIResponse(content);
+                parseAndPopulateCourseDetails(content);
             } catch (err) {
                 aiStatus.textContent = `Error generating course: ${err.message}`;
                 console.error(err);
             }
         }
 
-        function populateFormWithAIResponse(jsonString) {
+        function parseAndPopulateCourseDetails(jsonString) {
             try {
                 const firstBrace = jsonString.indexOf('{');
                 const lastBrace = jsonString.lastIndexOf('}');
 
                 if (firstBrace === -1 || lastBrace === -1 || lastBrace < firstBrace) {
-                    throw new Error("Could not find a valid JSON object in the AI's response.");
+                    throw new Error("Could not find a valid JSON object in the AI's response for course details.");
                 }
 
                 const cleanJsonString = jsonString.substring(firstBrace, lastBrace + 1);
                 const courseData = JSON.parse(cleanJsonString);
 
-                if (!courseData.course_title || !courseData.course_description || !courseData.chapters) {
-                    throw new Error("The AI response is missing required fields (course_title, course_description, chapters).");
+                if (!courseData.course_title || !courseData.course_description) {
+                    throw new Error("The AI response is missing 'course_title' or 'course_description'.");
                 }
 
                 courseNameInput.value = courseData.course_title;
                 courseDescTextarea.value = courseData.course_description;
 
-                // Clear existing chapters
+                // Clear existing chapters before generating new ones
                 chaptersContainer.innerHTML = '';
                 Object.keys(editorInstances).forEach(key => delete editorInstances[key]);
                 chapterCount = 0;
 
-                // Add new chapters from AI response
-                courseData.chapters.forEach(chapterData => {
-                    addChapter(); // This creates the chapter div and editor instance
+                aiStatus.textContent = "✅ Course details populated. Now generating chapters one by one...";
+
+                // This is where the next step will kick in.
+                generateChaptersInLoop();
+
+            } catch (err) {
+                aiStatus.textContent = `Error parsing course details from AI. Please try again.\n\nError: ${err.message}`;
+                console.error("Invalid JSON response from Ollama for course details:", jsonString);
+            }
+        }
+
+        async function generateChapter(courseTitle, chapterIndex, totalChapters) {
+            const model = ollamaModelSelect.value;
+            const systemPrompt = `You are an expert course creator generating a chapter for a course titled "${courseTitle}".
+This is chapter number ${chapterIndex} of ${totalChapters}.
+
+Your task is to generate a title and the full content for this single chapter.
+You MUST respond with ONLY a single, valid JSON object.
+The JSON object must have the following structure:
+{
+  "title": "Title of Chapter ${chapterIndex}",
+  "content": "The full content of Chapter ${chapterIndex} as a single string of Markdown text."
+}`;
+
+            const response = await fetch('http://localhost:11434/api/chat', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    model: model,
+                    messages: [{ role: 'user', content: systemPrompt }],
+                    stream: false,
+                    format: 'json'
+                }),
+            });
+
+            if (!response.ok) {
+                throw new Error(`Ollama API request failed for chapter ${chapterIndex} with status ${response.status}`);
+            }
+            const data = await response.json();
+            const content = data.message.content;
+            if (!content) throw new Error(`AI returned an empty response for chapter ${chapterIndex}.`);
+
+            const firstBrace = content.indexOf('{');
+            const lastBrace = content.lastIndexOf('}');
+            if (firstBrace === -1 || lastBrace === -1 || lastBrace < firstBrace) {
+                throw new Error(`Could not find a valid JSON object in the AI's response for chapter ${chapterIndex}.`);
+            }
+            const cleanJsonString = content.substring(firstBrace, lastBrace + 1);
+            return JSON.parse(cleanJsonString);
+        }
+
+        async function generateChaptersInLoop() {
+            const numChapters = parseInt(numChaptersSelect.value, 10);
+            const courseTitle = courseNameInput.value;
+
+            for (let i = 1; i <= numChapters; i++) {
+                try {
+                    aiStatus.textContent = `Generating chapter ${i} of ${numChapters}...`;
+                    addChapter(); // Add a new chapter section to the UI
+
+                    const chapterData = await generateChapter(courseTitle, i, numChapters);
+
+                    if (!chapterData.title || !chapterData.content) {
+                         throw new Error("The AI response for the chapter is missing 'title' or 'content'.");
+                    }
+
                     const newChapterId = chapterCount;
                     const titleInput = document.getElementById(`chapter-title-${newChapterId}`);
                     const editor = editorInstances[newChapterId];
 
-                    if (titleInput) {
-                        titleInput.value = chapterData.title;
-                    }
-                    if (editor) {
-                        editor.setMarkdown(chapterData.content);
-                    }
-                });
+                    if (titleInput) titleInput.value = chapterData.title;
+                    if (editor) editor.setMarkdown(chapterData.content);
 
-                aiStatus.textContent = "✅ Course content has been successfully populated!";
-                setTimeout(() => { aiStatus.style.display = 'none'; }, 5000);
-
-
-            } catch (err) {
-                aiStatus.textContent = `Error parsing AI response. The response was not valid JSON or was missing fields. Please try generating again.\n\nError: ${err.message}`;
-                console.error("Invalid JSON response from Ollama:", jsonString);
+                } catch (err) {
+                    aiStatus.textContent = `Error generating chapter ${i}. Please try again.\n\nError: ${err.message}`;
+                    // Stop the loop if a chapter fails
+                    return;
+                }
             }
+             aiStatus.textContent = "✅ All chapters have been successfully generated!";
+             setTimeout(() => { aiStatus.style.display = 'none'; }, 5000);
         }
+
 
         // --- Event Listeners ---
         refreshModelsBtn.addEventListener('click', loadOllamaModels);
