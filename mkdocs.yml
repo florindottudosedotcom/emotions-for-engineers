@@ -20,39 +20,39 @@ extra_css:
 
 extra:
   alternate:
-  - name: English
-    link: /
+  - name: EN
     lang: en
-  - name: Deutsch
-    link: /de/
+    link: /
+  - name: DE
     lang: de
-  - name: Français
-    link: /fr/
+    link: /de/
+  - name: FR
     lang: fr
-  - name: हिन्दी
-    link: /hi/
+    link: /fr/
+  - name: HI
     lang: hi
-  - name: Italiano
-    link: /it/
+    link: /hi/
+  - name: IT
     lang: it
-  - name: 日本語
-    link: /ja/
+    link: /it/
+  - name: JA
     lang: ja
-  - name: Português
-    link: /pt/
+    link: /ja/
+  - name: PT
     lang: pt
-  - name: Română
-    link: /ro/
+    link: /pt/
+  - name: RO
     lang: ro
-  - name: Русский
-    link: /ru/
+    link: /ro/
+  - name: RU
     lang: ru
-  - name: Español
-    link: /es/
+    link: /ru/
+  - name: ES
     lang: es
-  - name: 中文
-    link: /zh/
+    link: /es/
+  - name: ZH
     lang: zh
+    link: /zh/
 
 plugins:
 - search
@@ -89,7 +89,8 @@ markdown_extensions:
     emoji_index: !!python/name:material.extensions.emoji.twemoji
     emoji_generator: !!python/name:material.extensions.emoji.to_svg
 nav:
-- Available Courses: index.md
+- Home: index.md
+- Available Courses: courses.md
 - About: about.md
 - Collect Emotions:
   - Overview: collect-emotions/index.md

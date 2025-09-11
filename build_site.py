@@ -89,7 +89,8 @@ def main():
     print("Building navigation structure for mkdocs.yml...")
     course_dirs = get_course_dirs()
     new_nav = [
-        {'Available Courses': 'index.md'},
+        {'Home': 'index.md'},
+        {'Available Courses': 'courses.md'},
         {'About': 'about.md'}
     ]
 
@@ -169,9 +170,9 @@ def main():
         index_content += "\n</div>\n"
 
         if cards_content:
-            index_file_path = DOCS_DIR / f"index.{lang}.md"
-            index_file_path.write_text(index_content, encoding="utf-8")
-            print(f"✅ Successfully generated index.{lang}.md")
+            courses_file_path = DOCS_DIR / f"courses.{lang}.md"
+            courses_file_path.write_text(index_content, encoding="utf-8")
+            print(f"✅ Successfully generated courses.{lang}.md")
 
 if __name__ == "__main__":
     main()
