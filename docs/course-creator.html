@@ -34,12 +34,42 @@
         .ai-assistant { background-color: #f8f9fa; border: 1px solid #dee2e6; border-radius: 4px; padding: 1rem; margin-top: 1rem; }
         .ai-assistant h4 { margin-top: 0; }
         #ai-status { margin: 1rem 0; padding: 1rem; background-color: #fefae0; border: 1px solid #f0ad4e; border-radius: 4px; white-space: pre-wrap; display: none; }
+        .header-container { display: flex; justify-content: space-between; align-items: center; }
+        .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-color: rgba(0,0,0,0.5); display: none; justify-content: center; align-items: center; z-index: 1000; }
+        .modal-content { background-color: #fff; padding: 2rem; border-radius: 8px; box-shadow: 0 4px 15px rgba(0,0,0,0.2); width: 90%; max-width: 500px; }
+        .modal-content.hidden { display: none; }
+        .modal-overlay.visible { display: flex; }
     </style>
 </head>
 <body>
 
+    <div id="settings-modal" class="modal-overlay">
+        <div class="modal-content">
+            <h2>Cloud API Settings</h2>
+            <p>Enter your API keys for cloud providers. Keys are saved in your browser's local storage and are not sent anywhere else.</p>
+            <form id="api-keys-form">
+                <label for="openai-api-key">OpenAI API Key</label>
+                <input type="password" id="openai-api-key" placeholder="sk-...">
+
+                <label for="anthropic-api-key">Anthropic API Key</label>
+                <input type="password" id="anthropic-api-key" placeholder="sk-ant-...">
+
+                <label for="google-api-key">Google Gemini API Key</label>
+                <input type="password" id="google-api-key" placeholder="AIzaSy...">
+
+                <div class="input-group" style="margin-top: 1.5rem;">
+                    <button type="submit" class="btn btn-primary">Save Keys</button>
+                    <button type="button" id="close-settings-btn" class="btn btn-danger" style="margin-left: auto;">Close</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
     <div class="container">
-        <h1>Universal Course Creator</h1>
+        <div class="header-container">
+            <h1>Universal Course Creator</h1>
+            <button type="button" id="settings-btn" class="btn btn-secondary">Settings</button>
+        </div>
         <div id="ai-status" style="white-space: pre-wrap; display: none;"></div>
 
         <div class="instructions">
@@ -55,10 +85,14 @@
         </div>
 
         <fieldset>
-            <legend>Ollama Configuration</legend>
+            <legend>AI Provider</legend>
             <div class="input-group">
-                <label for="ollama-model" style="flex-shrink: 0; margin-bottom: 0;">Ollama Model:</label>
-                <select id="ollama-model" style="margin-bottom: 0;"></select>
+                <label for="ai-provider-select" style="flex-shrink: 0; margin-bottom: 0;">Provider:</label>
+                <select id="ai-provider-select" style="margin-bottom: 0;"></select>
+            </div>
+            <div class="input-group" id="ai-model-selection-group" style="display: none;">
+                <label for="ai-model-select" style="flex-shrink: 0; margin-bottom: 0;">Model:</label>
+                <select id="ai-model-select" style="margin-bottom: 0;"></select>
                 <button type="button" id="refresh-models-btn" class="btn btn-secondary">Refresh List</button>
             </div>
             <div id="ollama-status" style="margin-top: 0.5rem; font-weight: bold;"></div>
@@ -202,11 +236,22 @@
         const courseNameInput = document.getElementById('course-name');
         const courseDescTextarea = document.getElementById('course-desc');
 
-        // Ollama UI
-        const ollamaModelSelect = document.getElementById('ollama-model');
+        // Settings UI
+        const settingsBtn = document.getElementById('settings-btn');
+        const settingsModal = document.getElementById('settings-modal');
+        const closeSettingsBtn = document.getElementById('close-settings-btn');
+        const apiKeysForm = document.getElementById('api-keys-form');
+        const openAiApiKeyInput = document.getElementById('openai-api-key');
+        const anthropicApiKeyInput = document.getElementById('anthropic-api-key');
+        const googleApiKeyInput = document.getElementById('google-api-key');
+
+        // AI Provider UI
+        const aiProviderSelect = document.getElementById('ai-provider-select');
+        const aiModelSelect = document.getElementById('ai-model-select');
+        const aiModelSelectionGroup = document.getElementById('ai-model-selection-group');
         const refreshModelsBtn = document.getElementById('refresh-models-btn');
         const ollamaStatus = document.getElementById('ollama-status');
-        const ollamaConfigFieldset = document.querySelector('fieldset');
+        const providerConfigFieldset = document.querySelector('fieldset');
 
 
         // Master AI UI
@@ -220,26 +265,16 @@
         // --- AI Provider Functions ---
 
         async function initializeWebLLM() {
-            AI_PROVIDER = 'webllm';
-            console.log("Ollama connection failed. Falling back to WebLLM.");
-
-            // Update UI to reflect WebLLM mode
-            ollamaConfigFieldset.querySelector('legend').textContent = "AI Provider Configuration";
-            ollamaModelSelect.parentElement.querySelector('label').textContent = "AI Model:";
-            refreshModelsBtn.style.display = 'none';
-            ollamaModelSelect.innerHTML = `<option value="${WEBLLM_MODEL_ID}">${WEBLLM_MODEL_ID} (in-browser)</option>`;
-            ollamaStatus.textContent = `🔵 Using in-browser AI. Initializing model...`;
+            // This function is now only for initializing the engine
+            ollamaStatus.textContent = `🔵 Initializing WebLLM...`;
             ollamaStatus.style.color = 'blue';
-
             try {
                 const initProgressCallback = (report) => {
                     ollamaStatus.textContent = `🔵 Initializing WebLLM: ${report.text}`;
                 };
-                const engine = await webllm.CreateMLCEngine(WEBLLM_MODEL_ID, {
-                    initProgressCallback: initProgressCallback
-                });
+                const engine = await webllm.CreateMLCEngine(WEBLLM_MODEL_ID, { initProgressCallback });
                 webllmEngine = engine;
-                ollamaStatus.textContent = `✅ WebLLM is ready. Model: ${WEBLLM_MODEL_ID}`;
+                ollamaStatus.textContent = `✅ WebLLM is ready.`;
                 ollamaStatus.style.color = 'green';
             } catch (err) {
                 ollamaStatus.textContent = `❌ Error initializing WebLLM: ${err.message}`;
@@ -248,69 +283,175 @@
             }
         }
 
-        async function loadOllamaModels() {
-            ollamaStatus.textContent = 'Checking for local Ollama server...';
-            ollamaModelSelect.innerHTML = ''; // Clear existing options
+        async function updateAvailableProviders() {
+            ollamaStatus.textContent = 'Detecting available AI providers...';
+            aiProviderSelect.innerHTML = '';
+
+            // 1. Check for Cloud Providers
+            if (localStorage.getItem(API_KEYS.openai)) {
+                aiProviderSelect.add(new Option("OpenAI (Cloud)", "openai"));
+            }
+            if (localStorage.getItem(API_KEYS.anthropic)) {
+                aiProviderSelect.add(new Option("Anthropic (Cloud)", "anthropic"));
+            }
+            if (localStorage.getItem(API_KEYS.google)) {
+                aiProviderSelect.add(new Option("Google Gemini (Cloud)", "google"));
+            }
+
+            // 2. Check for Ollama
             try {
                 const response = await fetch('http://localhost:11434/api/tags');
-                if (!response.ok) {
-                    throw new Error(`Ollama server responded with status: ${response.status}`);
-                }
-                const data = await response.json();
-                if (data.models && data.models.length > 0) {
-                    AI_PROVIDER = 'ollama';
-                    data.models.forEach(model => {
-                        const option = document.createElement('option');
-                        option.value = model.name;
-                        option.textContent = model.name;
-                        ollamaModelSelect.appendChild(option);
-                    });
-                    ollamaStatus.textContent = `✅ Connected to Ollama. Found ${data.models.length} model(s).`;
-                    ollamaStatus.style.color = 'green';
-                } else {
-                    ollamaStatus.textContent = '⚠️ Ollama is running but no models found. Falling back to WebLLM.';
-                    ollamaStatus.style.color = 'orange';
-                    await initializeWebLLM();
+                if (response.ok) {
+                    const data = await response.json();
+                    if (data.models && data.models.length > 0) {
+                        aiProviderSelect.add(new Option("Ollama (Local)", "ollama"));
+                    }
                 }
             } catch (err) {
-                await initializeWebLLM();
+                // Ollama is not available, do nothing.
+            }
+
+            // 3. Add WebLLM as the final fallback
+            aiProviderSelect.add(new Option("WebLLM (In-Browser)", "webllm"));
+
+            // Set the best available provider as the default
+            aiProviderSelect.selectedIndex = 0;
+            handleProviderChange();
+        }
+
+        function handleProviderChange() {
+            const selectedProvider = aiProviderSelect.value;
+            AI_PROVIDER = selectedProvider;
+
+            aiModelSelectionGroup.style.display = 'none';
+            refreshModelsBtn.style.display = 'none';
+            ollamaStatus.textContent = '';
+
+            if (selectedProvider === 'ollama') {
+                aiModelSelectionGroup.style.display = 'flex';
+                refreshModelsBtn.style.display = 'block';
+                loadOllamaModels();
+            } else if (selectedProvider === 'webllm') {
+                if (!webllmEngine) {
+                    initializeWebLLM();
+                } else {
+                    ollamaStatus.textContent = `✅ WebLLM is ready.`;
+                }
+            } else { // Cloud providers
+                 ollamaStatus.textContent = `✅ Ready to use ${selectedProvider}.`;
+            }
+        }
+
+        async function loadOllamaModels() {
+            ollamaStatus.textContent = 'Loading Ollama models...';
+            aiModelSelect.innerHTML = '';
+            try {
+                const response = await fetch('http://localhost:11434/api/tags');
+                const data = await response.json();
+                if (data.models && data.models.length > 0) {
+                    data.models.forEach(model => {
+                        aiModelSelect.add(new Option(model.name, model.name));
+                    });
+                    ollamaStatus.textContent = `✅ Ollama connected. ${data.models.length} model(s) found.`;
+                } else {
+                     ollamaStatus.textContent = `⚠️ Ollama is running but no models found.`;
+                }
+            } catch(err) {
+                 ollamaStatus.textContent = `❌ Could not connect to Ollama.`;
             }
         }
 
         async function generateAIText(systemPrompt) {
-            if (AI_PROVIDER === 'ollama') {
-                const model = ollamaModelSelect.value;
-                if (!model) {
-                    throw new Error("No Ollama model selected.");
-                }
-                const response = await fetch('http://localhost:11434/api/chat', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({
-                        model: model,
+            const provider = aiProviderSelect.value;
+            let endpoint = '';
+            let headers = { 'Content-Type': 'application/json' };
+            let body = {};
+            let apiKey = '';
+
+            switch (provider) {
+                case 'openai':
+                    apiKey = localStorage.getItem(API_KEYS.openai);
+                    if (!apiKey) throw new Error("OpenAI API key is missing.");
+                    endpoint = 'https://api.openai.com/v1/chat/completions';
+                    headers['Authorization'] = `Bearer ${apiKey}`;
+                    body = {
+                        model: "gpt-4o",
                         messages: [{ role: 'user', content: systemPrompt }],
                         stream: false
-                    }),
-                });
-                if (!response.ok) {
-                    throw new Error(`Ollama API request failed with status ${response.status}`);
-                }
-                const data = await response.json();
-                return data.message.content;
+                    };
+                    break;
 
-            } else if (AI_PROVIDER === 'webllm') {
-                if (!webllmEngine) {
-                    throw new Error("WebLLM engine is not initialized.");
-                }
-                // Use the OpenAI-compatible chat completions API
-                const reply = await webllmEngine.chat.completions.create({
-                    messages: [{ role: 'user', content: systemPrompt }],
-                    stream: false
-                });
-                return reply.choices[0].message.content;
+                case 'anthropic':
+                    apiKey = localStorage.getItem(API_KEYS.anthropic);
+                    if (!apiKey) throw new Error("Anthropic API key is missing.");
+                    endpoint = 'https://api.anthropic.com/v1/messages';
+                    headers['x-api-key'] = apiKey;
+                    headers['anthropic-version'] = '2023-06-01';
+                    body = {
+                        model: "claude-3-haiku-20240307",
+                        max_tokens: 4096,
+                        messages: [{ role: 'user', content: systemPrompt }]
+                    };
+                    break;
 
-            } else {
-                throw new Error("No valid AI provider is configured.");
+                case 'google':
+                    apiKey = localStorage.getItem(API_KEYS.google);
+                    if (!apiKey) throw new Error("Google Gemini API key is missing.");
+                    endpoint = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${apiKey}`;
+                    body = {
+                        contents: [{ parts:[{ text: systemPrompt }] }]
+                    };
+                    // Google uses the key in the URL, so no special auth header is needed.
+                    break;
+
+                case 'ollama':
+                    const ollamaModel = aiModelSelect.value;
+                    if (!ollamaModel) throw new Error("No Ollama model selected.");
+                    endpoint = 'http://localhost:11434/api/chat';
+                    body = {
+                        model: ollamaModel,
+                        messages: [{ role: 'user', content: systemPrompt }],
+                        stream: false
+                    };
+                    break;
+
+                case 'webllm':
+                    if (!webllmEngine) throw new Error("WebLLM engine is not initialized.");
+                    const webllmReply = await webllmEngine.chat.completions.create({
+                        messages: [{ role: 'user', content: systemPrompt }],
+                        stream: false
+                    });
+                    return webllmReply.choices[0].message.content;
+
+                default:
+                    throw new Error(`Unknown or unsupported AI provider: ${provider}`);
+            }
+
+            const response = await fetch(endpoint, {
+                method: 'POST',
+                headers: headers,
+                body: JSON.stringify(body)
+            });
+
+            if (!response.ok) {
+                const errorBody = await response.text();
+                throw new Error(`${provider} API request failed with status ${response.status}: ${errorBody}`);
+            }
+
+            const data = await response.json();
+
+            // Parse response based on provider
+            switch (provider) {
+                case 'openai':
+                    return data.choices[0].message.content;
+                case 'anthropic':
+                    return data.content[0].text;
+                case 'google':
+                    return data.candidates[0].content.parts[0].text;
+                case 'ollama':
+                    return data.message.content;
+                default:
+                    throw new Error(`Cannot parse response for unknown provider: ${provider}`);
             }
         }
 
@@ -521,8 +662,53 @@ Content:
         // --- Event Listeners ---
         refreshModelsBtn.addEventListener('click', loadOllamaModels);
         generateCourseBtn.addEventListener('click', generateCourse);
+        // --- Settings Modal Logic & Key Storage ---
+        const API_KEYS = {
+            openai: "openai_api_key",
+            anthropic: "anthropic_api_key",
+            google: "google_api_key"
+        };
+
+        function saveApiKeys(e) {
+            e.preventDefault();
+            localStorage.setItem(API_KEYS.openai, openAiApiKeyInput.value);
+            localStorage.setItem(API_KEYS.anthropic, anthropicApiKeyInput.value);
+            localStorage.setItem(API_KEYS.google, googleApiKeyInput.value);
+            hideSettingsModal();
+            updateAvailableProviders();
+            alert("API Keys saved!");
+        }
+
+        function loadApiKeys() {
+            openAiApiKeyInput.value = localStorage.getItem(API_KEYS.openai) || '';
+            anthropicApiKeyInput.value = localStorage.getItem(API_KEYS.anthropic) || '';
+            googleApiKeyInput.value = localStorage.getItem(API_KEYS.google) || '';
+        }
+
+        function showSettingsModal() {
+            settingsModal.classList.add('visible');
+        }
+        function hideSettingsModal() {
+            settingsModal.classList.remove('visible');
+        }
+
+        settingsBtn.addEventListener('click', showSettingsModal);
+        closeSettingsBtn.addEventListener('click', hideSettingsModal);
+        apiKeysForm.addEventListener('submit', saveApiKeys);
+        settingsModal.addEventListener('click', (e) => {
+            // Close if clicking on the overlay but not the content
+            if (e.target === settingsModal) {
+                hideSettingsModal();
+            }
+        });
+
+
+        aiProviderSelect.addEventListener('change', handleProviderChange);
+
+
         document.addEventListener('DOMContentLoaded', () => {
-            loadOllamaModels();
+            loadApiKeys();
+            updateAvailableProviders();
             loadState();
         });
         document.getElementById('clear-form-btn').addEventListener('click', clearState);
