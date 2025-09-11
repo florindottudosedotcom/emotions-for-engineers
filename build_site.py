@@ -90,6 +90,7 @@ def main():
     course_dirs = get_course_dirs()
     new_nav = [
         {'Home': 'index.md'},
+        {'Course Creator': 'course-creator.html'},
         {'Available Courses': 'courses.md'},
         {'About': 'about.md'}
     ]
