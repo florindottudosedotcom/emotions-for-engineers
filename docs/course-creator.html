@@ -302,9 +302,12 @@
                 if (!webllmEngine) {
                     throw new Error("WebLLM engine is not initialized.");
                 }
-                // The WebLLM API is slightly different, we can use the simple `generate` method
-                const reply = await webllmEngine.generate(systemPrompt);
-                return reply;
+                // Use the OpenAI-compatible chat completions API
+                const reply = await webllmEngine.chat.completions.create({
+                    messages: [{ role: 'user', content: systemPrompt }],
+                    stream: false
+                });
+                return reply.choices[0].message.content;
 
             } else {
                 throw new Error("No valid AI provider is configured.");
