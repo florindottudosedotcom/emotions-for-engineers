@@ -18,6 +18,9 @@ theme:
 extra_css:
 - assets/css/custom.css
 
+extra_javascript:
+- assets/js/language_display.js
+
 extra:
   alternate:
   - name: English
@@ -81,7 +84,6 @@ plugins:
       name: Español
     - locale: zh
       name: 中文
-    reconfigure_material: false
 
 markdown_extensions:
 - attr_list
