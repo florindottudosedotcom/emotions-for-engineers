@@ -6,7 +6,7 @@
 /* We want to show "Available Courses" (2nd) and "About" (3rd). */
 /* So, we hide the "Home" tab (1st) and all course tabs (from 4th onwards). */
 .md-tabs__item:first-child,
-.md-tabs__item:nth-child(n+4) {
+.md-tabs__item:nth-child(n+5) {
     display: none;
 }
 

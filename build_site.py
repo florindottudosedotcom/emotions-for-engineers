@@ -91,6 +91,7 @@ def main():
     new_nav = [
         {'Home': 'index.md'},
         {'Available Courses': 'courses.md'},
+        {'Course Creator': 'course-creator.html'},
         {'About': 'about.md'}
     ]
 

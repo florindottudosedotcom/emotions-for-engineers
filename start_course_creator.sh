@@ -8,7 +8,7 @@ SERVER_PID=$!
 # Give the server a moment to start
 sleep 1
 
-URL="http://localhost:8000/course-creator.html"
+URL="http://localhost:8000/docs/course-creator.html"
 echo "Opening $URL in your default browser..."
 
 # Open the URL in the default browser based on OS
