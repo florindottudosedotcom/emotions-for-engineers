@@ -91,7 +91,8 @@ def main():
     new_nav = [
         {'Home': 'index.md'},
         {'Available Courses': 'courses.md'},
-        {'About': 'about.md'}
+        {'About': 'about.md'},
+        {'Course Creator': 'course-creator.html'}
     ]
 
     for course_dir in sorted(course_dirs):

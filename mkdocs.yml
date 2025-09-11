@@ -95,6 +95,7 @@ nav:
 - Home: index.md
 - Available Courses: courses.md
 - About: about.md
+- Course Creator: course-creator.html
 - Collect Emotions:
   - Overview: collect-emotions/index.md
   - First Day Collecting: collect-emotions/01-first-day-collecting.md
