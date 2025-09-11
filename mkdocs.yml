@@ -1,55 +1,143 @@
+# ==============================================================================
+# Welcome to your MkDocs configuration file!
+#
+# This file configures your site's theme, navigation, plugins, and more.
+# For more information, see the MkDocs documentation: https://www.mkdocs.org/
+# ==============================================================================
+
 site_name: Emotions for Engineers
 site_url: https://florindottudosedotcom.github.io/emotions-for-engineers/
 repo_url: https://github.com/florindottudosedotcom/emotions-for-engineers
 
+# ------------------------------------------------------------------------------
+# THEME CONFIGURATION
+#
+# This section configures the look and feel of your site. We're using the
+# Material for MkDocs theme.
+# See: https://squidfunk.github.io/mkdocs-material/getting-started/
+# ------------------------------------------------------------------------------
 theme:
   name: material
   language: en
   features:
-    - navigation.tracking
+    # Adds a bar at the top for main navigation sections.
+    # We use this for "Available Courses" and "About".
+    - navigation.tabs
+    # Enables instant loading for a smoother, app-like experience.
+    - navigation.instant
+    # Arranges the navigation in expandable sections in the sidebar.
+    # This is key for showing only the current course's chapters.
     - navigation.sections
+    - navigation.tracking
     - toc.integrate
     - navigation.top
     - search.suggest
     - search.highlight
     - content.tabs.link
 
+# ------------------------------------------------------------------------------
+# CUSTOMIZATION
+#
+# This section allows for custom assets like CSS and JavaScript.
+# ------------------------------------------------------------------------------
+extra_css:
+  - assets/css/custom.css
+
 extra:
   alternate:
     - name: English
-      link: ./
+      link: /emotions-for-engineers/
       lang: en
     - name: Deutsch
-      link: ./de/
+      link: /emotions-for-engineers/de/
       lang: de
     - name: Français
-      link: ./fr/
+      link: /emotions-for-engineers/fr/
       lang: fr
     - name: हिन्दी
-      link: ./hi/
+      link: /emotions-for-engineers/hi/
       lang: hi
     - name: Italiano
-      link: ./it/
+      link: /emotions-for-engineers/it/
       lang: it
     - name: 日本語
-      link: ./ja/
+      link: /emotions-for-engineers/ja/
       lang: ja
     - name: Português
-      link: ./pt/
+      link: /emotions-for-engineers/pt/
       lang: pt
     - name: Română
-      link: ./ro/
+      link: /emotions-for-engineers/ro/
       lang: ro
     - name: Русский
-      link: ./ru/
+      link: /emotions-for-engineers/ru/
       lang: ru
     - name: Español
-      link: ./es/
+      link: /emotions-for-engineers/es/
       lang: es
     - name: 中文
-      link: ./zh/
+      link: /emotions-for-engineers/zh/
       lang: zh
 
+# ------------------------------------------------------------------------------
+# NAVIGATION STRUCTURE
+#
+# This section defines the site's navigation.
+#
+# HOW TO ADD A NEW COURSE:
+# 1. Add your new course folder to the `docs` directory.
+# 2. Add a new top-level entry to this `nav` section for your course.
+#    - The title is what appears in the sidebar (e.g., "- My New Course:").
+#    - The first item should be an "Overview" pointing to the course's `index.md`.
+#    - List all the chapter markdown files for the course.
+#    - The i18n plugin will automatically handle language versions (e.g., `.en.md`, `.de.md`).
+# 3. Add a new card for your course in the `docs/index.md` file so it appears
+#    on the main page.
+#
+# NOTE: The course entries below will appear as hidden navigation sections.
+# They are hidden from the top tabs by `custom.css`, but the structure allows
+# MkDocs to generate the correct sidebar navigation for each course.
+# ------------------------------------------------------------------------------
+nav:
+  - 'Available Courses': index.md
+  - 'About': about.md
+  - 'Course Example':
+    - 'Overview': course-example/index.md
+    - 'Introduction': course-example/01-introduction.md
+    - 'Advanced Topics': course-example/02-advanced-topics.md
+  - 'Collect Emotions':
+    - 'Overview': collect-emotions/index.md
+    - 'First Day Collecting': collect-emotions/01-first-day-collecting.md
+    - 'Second Day Collecting': collect-emotions/02-second-day-collecting.md
+  - 'Emotional Mastery':
+    - 'Overview': emotional-mastery-unleashing-your-inner-balance/index.md
+    - 'Chapter 1: Understanding Emotions': emotional-mastery-unleashing-your-inner-balance/01-chapter-1-understanding-emotions-101.md
+    - 'Chapter 2: Recognizing and Labeling Emotions': emotional-mastery-unleashing-your-inner-balance/02-chapter-2-recognizing-and-labeling-emotions.md
+    - 'Chapter 3: Understanding Emotional Triggers': emotional-mastery-unleashing-your-inner-balance/03-chapter-3-understanding-emotional-triggers.md
+    - 'Chapter 4: Emotional Regulation Strategies': emotional-mastery-unleashing-your-inner-balance/04-chapter-4-emotional-regulation-strategies.md
+    - 'Chapter 5: Emotional Expression and Boundaries': emotional-mastery-unleashing-your-inner-balance/05-chapter-5-emotional-expression-and-boundaries.md
+    - 'Chapter 6: Building Emotional Resilience': emotional-mastery-unleashing-your-inner-balance/06-chapter-6-building-emotional-resilience.md
+    - 'Chapter 7: Mastering Emotional Balance': emotional-mastery-unleashing-your-inner-balance/07-chapter-7-mastering-emotional-balance.md
+  - 'Tuning The Machines':
+      - 'Overview': tuning-the-machines-mastering-emotional-intelligence-for-machinery-construction-engineers/index.md
+      - 'Chapter 1: The Intersection of EI and Engineering': tuning-the-machines-mastering-emotional-intelligence-for-machinery-construction-engineers/01-understanding-the-intersection-of-emotional-intelligence-and-machinery-construction-engineering.md
+      - 'Chapter 2: Implementing EI in Machine Design': tuning-the-machines-mastering-emotional-intelligence-for-machinery-construction-engineers/02-implementing-emotional-intelligence-into-machinery-design-and-development.md
+  - 'Unlock The Power of Emotional Awareness':
+      - 'Overview': unlock-the-power-of-emotional-awareness-collecting-your-daily-emotions/index.md
+      - 'Chapter 1: The Art of Awareness': unlock-the-power-of-emotional-awareness-collecting-your-daily-emotions/01-chapter-1-the-art-of-awareness.md
+      - 'Chapter 2: Emotional Cartography': unlock-the-power-of-emotional-awareness-collecting-your-daily-emotions/02-emotional-cartography.md
+      - 'Chapter 3: The Power of Reflection': unlock-the-power-of-emotional-awareness-collecting-your-daily-emotions/03-the-power-of-reflection.md
+      - 'Chapter 4: Embracing the Full Spectrum': unlock-the-power-of-emotional-awareness-collecting-your-daily-emotions/04-embracing-the-full-spectrum.md
+      - 'Chapter 5: The Language of Emotions': unlock-the-power-of-emotional-awareness-collecting-your-daily-emotions/05-the-language-of-emotions.md
+      - 'Chapter 6: The Wisdom of Emotional Patterns': unlock-the-power-of-emotional-awareness-collecting-your-daily-emotions/06-the-wisdom-of-emotional-patterns.md
+      - 'Chapter 7: The Art of Integration': unlock-the-power-of-emotional-awareness-collecting-your-daily-emotions/07-the-art-of-integration.md
+
+# ------------------------------------------------------------------------------
+# PLUGINS
+#
+# This section configures MkDocs plugins.
+# The i18n plugin is used for internationalization.
+# ------------------------------------------------------------------------------
 plugins:
   - search
   - i18n:
@@ -78,6 +166,11 @@ plugins:
         - locale: zh
           name: 中文
 
+# ------------------------------------------------------------------------------
+# MARKDOWN EXTENSIONS
+#
+# This section configures extensions for Python-Markdown.
+# ------------------------------------------------------------------------------
 markdown_extensions:
   - attr_list
   - md_in_html
