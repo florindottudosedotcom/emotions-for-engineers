@@ -20,37 +20,37 @@ extra_css:
 
 extra:
   alternate:
-  - name: EN
+  - name: English
     lang: en
     link: /
-  - name: DE
+  - name: Deutsch
     lang: de
     link: /de/
-  - name: FR
+  - name: Français
     lang: fr
     link: /fr/
-  - name: HI
+  - name: हिन्दी
     lang: hi
     link: /hi/
-  - name: IT
+  - name: Italiano
     lang: it
     link: /it/
-  - name: JA
+  - name: 日本語
     lang: ja
     link: /ja/
-  - name: PT
+  - name: Português
     lang: pt
     link: /pt/
-  - name: RO
+  - name: Română
     lang: ro
     link: /ro/
-  - name: RU
+  - name: Русский
     lang: ru
     link: /ru/
-  - name: ES
+  - name: Español
     lang: es
     link: /es/
-  - name: ZH
+  - name: 中文
     lang: zh
     link: /zh/
 
@@ -81,6 +81,7 @@ plugins:
       name: Español
     - locale: zh
       name: 中文
+    reconfigure_material: false
 
 markdown_extensions:
 - attr_list
