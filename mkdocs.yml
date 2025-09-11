@@ -21,39 +21,40 @@ extra_css:
 
 extra:
   alternate:
-  - name: English
-    link: /emotions-for-engineers/
-    lang: en
-  - name: Deutsch
-    link: /emotions-for-engineers/de/
-    lang: de
-  - name: Français
-    link: /emotions-for-engineers/fr/
-    lang: fr
-  - name: हिन्दी
-    link: /emotions-for-engineers/hi/
-    lang: hi
-  - name: Italiano
-    link: /emotions-for-engineers/it/
-    lang: it
-  - name: 日本語
-    link: /emotions-for-engineers/ja/
-    lang: ja
-  - name: Português
-    link: /emotions-for-engineers/pt/
-    lang: pt
-  - name: Română
-    link: /emotions-for-engineers/ro/
-    lang: ro
-  - name: Русский
-    link: /emotions-for-engineers/ru/
-    lang: ru
-  - name: Español
-    link: /emotions-for-engineers/es/
-    lang: es
-  - name: 中文
-    link: /emotions-for-engineers/zh/
-    lang: zh
+    - name: English
+      link: ./
+      lang: en
+    - name: Deutsch
+      link: ./de/
+      lang: de
+    - name: Français
+      link: ./fr/
+      lang: fr
+    - name: हिन्दी
+      link: ./hi/
+      lang: hi
+    - name: Italiano
+      link: ./it/
+      lang: it
+    - name: 日本語
+      link: ./ja/
+      lang: ja
+    - name: Português
+      link: ./pt/
+      lang: pt
+    - name: Română
+      link: ./ro/
+      lang: ro
+    - name: Русский
+      link: ./ru/
+      lang: ru
+    - name: Español
+      link: ./es/
+      lang: es
+    - name: 中文
+      link: ./zh/
+      lang: zh
+
 
 plugins:
 - search
