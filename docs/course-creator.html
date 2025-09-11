@@ -275,6 +275,8 @@
                 generateCourseBtn.disabled = false;
             } catch (err) {
                 // Fallback to WebLLM
+                aiEngineStatus.textContent = 'Local Ollama server not found. Loading in-browser model...';
+                aiEngineStatus.style.color = '#e67e22'; // A warning-like color
                 console.error("Ollama connection failed, falling back to WebLLM.", err);
                 activeAIEngine = 'webllm';
                 console.log("Setting up WebLLM UI...");
@@ -577,9 +579,12 @@ Content:
         }
 
         document.addEventListener('DOMContentLoaded', () => {
-            initializeAI().then(() => {
-                loadState();
-            });
+            // Defer AI initialization to keep the UI responsive
+            setTimeout(() => {
+                initializeAI().then(() => {
+                    loadState();
+                });
+            }, 100);
 
             if (settingsBtn) {
                 settingsBtn.onclick = () => {
