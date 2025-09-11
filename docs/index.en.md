@@ -4,7 +4,15 @@ Welcome! This is your central hub for learning and growth. Below you'll find a c
 
 <div class="grid cards" markdown>
 
--   __Course Example__
+-   __Collect Emotions__
+
+    ---
+
+    asadasaf
+
+    [:octicons-arrow-right-24: Start Learning](collect-emotions/index.md)
+
+-   __Welcome to Emotions for Engineers__
 
     ---
 
@@ -12,15 +20,7 @@ Welcome! This is your central hub for learning and growth. Below you'll find a c
 
     [:octicons-arrow-right-24: Start Learning](course-example/index.md)
 
--   __Collect Emotions__
-
-    ---
-
-    A short course to guide you through the process of collecting and understanding your daily emotions.
-
-    [:octicons-arrow-right-24: Start Learning](collect-emotions/index.md)
-
--   __Emotional Mastery__
+-   __Emotional Mastery: Unleashing Your Inner Balance__
 
     ---
 
@@ -28,19 +28,19 @@ Welcome! This is your central hub for learning and growth. Below you'll find a c
 
     [:octicons-arrow-right-24: Start Learning](emotional-mastery-unleashing-your-inner-balance/index.md)
 
--   __Tuning the Machines__
+-   __Tuning the Machines: Mastering Emotional Intelligence for Machinery Construction Engineers__
 
     ---
 
-    Equips machinery construction engineers with emotional intelligence strategies to excel in high-pressure environments.
+    Take your engineering skills to the next level by learning how to navigate complex emotions, build stronger teams, and deliver projects on time. This comprehensive course equips machinery construction engineers with emotional intelligence strategies to excel in high-pressure environments, manage conflicts effectively, and drive innovation through collaboration.
 
     [:octicons-arrow-right-24: Start Learning](tuning-the-machines-mastering-emotional-intelligence-for-machinery-construction-engineers/index.md)
 
--   __Unlock Emotional Awareness__
+-   __Unlock the Power of Emotional Awareness: Collecting Your Daily Emotions__
 
     ---
 
-    Develop a deeper understanding of your emotional landscape through interactive exercises and expert insights.
+    Are you tired of feeling like you're living on autopilot, unaware of the emotions that drive your thoughts and behaviors? Do you struggle to identify and manage your emotions, leading to feelings of overwhelm and stress?
 
     [:octicons-arrow-right-24: Start Learning](unlock-the-power-of-emotional-awareness-collecting-your-daily-emotions/index.md)
 
