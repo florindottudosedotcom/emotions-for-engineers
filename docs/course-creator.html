@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Universal Course Creator</title>
+    <base href="/emotions-for-engineers/">
     <link rel="stylesheet" href="https://uicdn.toast.com/editor/latest/toastui-editor.min.css" />
     <style>
         body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; line-height: 1.6; color: #333; max-width: 800px; margin: 2rem auto; padding: 0 1rem; background-color: #f9f9f9; }
@@ -225,7 +226,7 @@
 
     <!-- Main Application Logic -->
     <script type="module">
-        import { CreateWebWorkerEngine } from './libs/webllm.js';
+        import { CreateWebWorkerEngine } from 'libs/webllm.js';
 
         const WEBLLM_MODEL_ID = "Phi-3-mini-4k-instruct";
 
