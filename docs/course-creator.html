@@ -185,6 +185,13 @@
 
     <!-- Main Application Logic -->
     <script type="module">
+        import * as webllm from "https://esm.run/@mlc-ai/web-llm";
+
+        // --- AI Provider State ---
+        let AI_PROVIDER = 'ollama'; // 'ollama' or 'webllm'
+        let webllmEngine = null;
+        const WEBLLM_MODEL_ID = "Phi-3-mini-4k-instruct-q4f16_1-MLC";
+
         // DOM Elements
         const courseForm = document.getElementById('course-form');
         const chaptersContainer = document.getElementById('chapters-container');
@@ -199,6 +206,8 @@
         const ollamaModelSelect = document.getElementById('ollama-model');
         const refreshModelsBtn = document.getElementById('refresh-models-btn');
         const ollamaStatus = document.getElementById('ollama-status');
+        const ollamaConfigFieldset = document.querySelector('fieldset');
+
 
         // Master AI UI
         const masterPromptTextarea = document.getElementById('master-prompt');
@@ -208,10 +217,39 @@
         let chapterCount = 0;
         const editorInstances = {};
 
-        // --- Ollama Functions ---
+        // --- AI Provider Functions ---
+
+        async function initializeWebLLM() {
+            AI_PROVIDER = 'webllm';
+            console.log("Ollama connection failed. Falling back to WebLLM.");
+
+            // Update UI to reflect WebLLM mode
+            ollamaConfigFieldset.querySelector('legend').textContent = "AI Provider Configuration";
+            ollamaModelSelect.parentElement.querySelector('label').textContent = "AI Model:";
+            refreshModelsBtn.style.display = 'none';
+            ollamaModelSelect.innerHTML = `<option value="${WEBLLM_MODEL_ID}">${WEBLLM_MODEL_ID} (in-browser)</option>`;
+            ollamaStatus.textContent = `🔵 Using in-browser AI. Initializing model...`;
+            ollamaStatus.style.color = 'blue';
+
+            try {
+                const initProgressCallback = (report) => {
+                    ollamaStatus.textContent = `🔵 Initializing WebLLM: ${report.text}`;
+                };
+                const engine = await webllm.CreateMLCEngine(WEBLLM_MODEL_ID, {
+                    initProgressCallback: initProgressCallback
+                });
+                webllmEngine = engine;
+                ollamaStatus.textContent = `✅ WebLLM is ready. Model: ${WEBLLM_MODEL_ID}`;
+                ollamaStatus.style.color = 'green';
+            } catch (err) {
+                ollamaStatus.textContent = `❌ Error initializing WebLLM: ${err.message}`;
+                ollamaStatus.style.color = 'red';
+                console.error("WebLLM Initialization Error:", err);
+            }
+        }
 
         async function loadOllamaModels() {
-            ollamaStatus.textContent = 'Loading models...';
+            ollamaStatus.textContent = 'Checking for local Ollama server...';
             ollamaModelSelect.innerHTML = ''; // Clear existing options
             try {
                 const response = await fetch('http://localhost:11434/api/tags');
@@ -220,33 +258,64 @@
                 }
                 const data = await response.json();
                 if (data.models && data.models.length > 0) {
+                    AI_PROVIDER = 'ollama';
                     data.models.forEach(model => {
                         const option = document.createElement('option');
                         option.value = model.name;
                         option.textContent = model.name;
                         ollamaModelSelect.appendChild(option);
                     });
-                    ollamaStatus.textContent = `✅ Found ${data.models.length} model(s).`;
+                    ollamaStatus.textContent = `✅ Connected to Ollama. Found ${data.models.length} model(s).`;
                     ollamaStatus.style.color = 'green';
                 } else {
-                    ollamaStatus.textContent = '⚠️ No models found. Please pull a model, e.g., `ollama pull llama3`.';
+                    ollamaStatus.textContent = '⚠️ Ollama is running but no models found. Falling back to WebLLM.';
                     ollamaStatus.style.color = 'orange';
+                    await initializeWebLLM();
                 }
             } catch (err) {
-                ollamaStatus.textContent = `❌ Connection failed. Make sure Ollama is running. Error: ${err.message}`;
-                ollamaStatus.style.color = 'red';
+                await initializeWebLLM();
             }
         }
+
+        async function generateAIText(systemPrompt) {
+            if (AI_PROVIDER === 'ollama') {
+                const model = ollamaModelSelect.value;
+                if (!model) {
+                    throw new Error("No Ollama model selected.");
+                }
+                const response = await fetch('http://localhost:11434/api/chat', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        model: model,
+                        messages: [{ role: 'user', content: systemPrompt }],
+                        stream: false
+                    }),
+                });
+                if (!response.ok) {
+                    throw new Error(`Ollama API request failed with status ${response.status}`);
+                }
+                const data = await response.json();
+                return data.message.content;
+
+            } else if (AI_PROVIDER === 'webllm') {
+                if (!webllmEngine) {
+                    throw new Error("WebLLM engine is not initialized.");
+                }
+                // The WebLLM API is slightly different, we can use the simple `generate` method
+                const reply = await webllmEngine.generate(systemPrompt);
+                return reply;
+
+            } else {
+                throw new Error("No valid AI provider is configured.");
+            }
+        }
+
 
         async function generateCourse() {
             const userPrompt = masterPromptTextarea.value;
             const numChapters = numChaptersSelect.value;
-            const model = ollamaModelSelect.value;
 
-            if (!model) {
-                alert('Please select an Ollama model first. If the list is empty, make sure Ollama is running and click "Refresh List".');
-                return;
-            }
             if (!userPrompt) {
                 alert('Please enter a prompt for the course.');
                 return;
@@ -263,37 +332,12 @@ You MUST format your response as follows:
 Title: [The course title]
 Description: [The course description]`;
 
-            aiStatus.textContent = `DEBUG: Sending request to Ollama for course details...\nPrompt:\n${systemPrompt}`;
-            console.log("DEBUG: Sending prompt for course details:", systemPrompt);
-
-
             try {
-                const response = await fetch('http://localhost:11434/api/chat', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({
-                        model: model,
-                        messages: [{ role: 'user', content: systemPrompt }],
-                        stream: false
-                    }),
-                });
-
-                if (!response.ok) {
-                    throw new Error(`Ollama API request failed with status ${response.status}`);
-                }
-
-                const data = await response.json();
-                aiStatus.textContent = `DEBUG: Received raw response from Ollama for course details:\n${JSON.stringify(data, null, 2)}`;
-                console.log("DEBUG: Received raw response for course details:", data);
-
-                const content = data.message.content;
-
+                const content = await generateAIText(systemPrompt);
                 if (!content || content.trim() === '') {
-                    aiStatus.textContent += `\n\nError: The AI model returned an empty response. This can happen if the model is not suitable for generating structured JSON. Please try a different model (e.g., llama3) or a simpler prompt.`;
-                    return;
+                    throw new Error("The AI model returned an empty response.");
                 }
-
-                aiStatus.textContent += "\n\nAI generation complete. Parsing response and populating form...";
+                aiStatus.textContent = "AI generation complete. Parsing response and populating form...";
                 parseAndPopulateCourseDetails(content);
             } catch (err) {
                 aiStatus.textContent = `Error generating course: ${err.message}`;
@@ -338,7 +382,6 @@ Description: [The course description]`;
         }
 
         async function generateChapter(courseTitle, chapterIndex, totalChapters) {
-            const model = ollamaModelSelect.value;
             const systemPrompt = `You are an expert course creator generating a chapter for a course titled "${courseTitle}".
 This is chapter number ${chapterIndex} of ${totalChapters}.
 
@@ -349,27 +392,8 @@ Title: [The chapter title]
 Content:
 [The full chapter content in Markdown]`;
 
-            console.log(`DEBUG: Sending prompt for chapter ${chapterIndex}:`, systemPrompt);
-
-            const response = await fetch('http://localhost:11434/api/chat', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    model: model,
-                    messages: [{ role: 'user', content: systemPrompt }],
-                        stream: false
-                }),
-            });
-
-            if (!response.ok) {
-                throw new Error(`Ollama API request failed for chapter ${chapterIndex} with status ${response.status}`);
-            }
-            const data = await response.json();
-            console.log(`DEBUG: Received raw response for chapter ${chapterIndex}:`, data);
-
-            const textResponse = data.message.content;
+            const textResponse = await generateAIText(systemPrompt);
             if (!textResponse) {
-                aiStatus.textContent = `DEBUG: Raw response for chapter ${chapterIndex}:\n${JSON.stringify(data, null, 2)}`;
                 throw new Error(`AI returned an empty response for chapter ${chapterIndex}.`);
             }
 
@@ -574,31 +598,15 @@ Content:
         addChapter();
 
         async function translate(textToTranslate, targetLangName) {
-            const model = ollamaModelSelect.value;
-            if (!model) {
-                alert('Cannot translate without a selected Ollama model.');
-                return textToTranslate; // Return original text if no model
-            }
             const prompt = `Translate the following text to ${targetLangName}. Only provide the raw, translated text. Do not include any explanations, introductory phrases, or quotation marks. The text to translate is:\n\n"${textToTranslate}"`;
 
             try {
-                const response = await fetch('http://localhost:11434/api/chat', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({
-                        model: model,
-                        messages: [{ role: 'user', content: prompt }],
-                        stream: false,
-                    }),
-                });
-                if (!response.ok) {
-                    throw new Error(`Ollama API request failed with status ${response.status}`);
-                }
-                const data = await response.json();
-                return data.message.content.trim() || textToTranslate;
+                const translatedText = await generateAIText(prompt);
+                return translatedText.trim() || textToTranslate;
             } catch (err) {
                 console.error(`Translation to ${targetLangName} failed:`, err);
-                return textToTranslate; // Return original text as a fallback
+                // Fallback to original text if translation fails
+                return textToTranslate;
             }
         }
 
