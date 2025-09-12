@@ -1,71 +1,46 @@
-import * as webllm from "./assets/vendor/webllm/webllm.js";
-
 // --- AI Provider State ---
 let AI_PROVIDER = 'ollama'; // 'ollama' or 'webllm'
-let webllmEngine = null;
-const WEBLLM_MODEL_ID = "Phi-3-mini-4k-instruct-q4f16_1-MLC";
+let isWebllmReady = false;
 const SESSION_API_KEYS = {
     openai: null,
     anthropic: null,
     google: null
 };
 
-// DOM Elements
-const courseForm = document.getElementById('course-form');
-const chaptersContainer = document.getElementById('chapters-container');
-const addChapterBtn = document.getElementById('add-chapter');
-const downloadSection = document.getElementById('download-section');
-const downloadZipLink = document.getElementById('download-zip');
-const aiStatus = document.getElementById('ai-status');
-const courseNameInput = document.getElementById('course-name');
-const courseDescTextarea = document.getElementById('course-desc');
-
-// Settings UI
-const settingsBtn = document.getElementById('settings-btn');
-const settingsModal = document.getElementById('settings-modal');
-const closeSettingsBtn = document.getElementById('close-settings-btn');
-const apiKeysForm = document.getElementById('api-keys-form');
-const openAiApiKeyInput = document.getElementById('openai-api-key');
-const anthropicApiKeyInput = document.getElementById('anthropic-api-key');
-const googleApiKeyInput = document.getElementById('google-api-key');
-
-// AI Provider UI
-const aiProviderSelect = document.getElementById('ai-provider-select');
-const aiModelSelect = document.getElementById('ai-model-select');
-const aiModelSelectionGroup = document.getElementById('ai-model-selection-group');
-const refreshModelsBtn = document.getElementById('refresh-models-btn');
-const ollamaStatus = document.getElementById('ollama-status');
-const providerConfigFieldset = document.querySelector('fieldset');
-
-
-// Master AI UI
-const masterPromptTextarea = document.getElementById('master-prompt');
-const numChaptersSelect = document.getElementById('num-chapters');
-const generateCourseBtn = document.getElementById('generate-course-btn');
+// --- DOM Element variables ---
+let courseForm, chaptersContainer, addChapterBtn, downloadSection, downloadZipLink, aiStatus, courseNameInput, courseDescTextarea, settingsBtn, settingsModal, closeSettingsBtn, apiKeysForm, openAiApiKeyInput, anthropicApiKeyInput, googleApiKeyInput, aiProviderSelect, aiModelSelect, aiModelSelectionGroup, refreshModelsBtn, ollamaStatus, providerConfigFieldset, masterPromptTextarea, numChaptersSelect, generateCourseBtn, webllmIframe;
 
 let chapterCount = 0;
 const editorInstances = {};
 
-// --- AI Provider Functions ---
+// --- WebLLM Iframe Communication ---
+let webllmPromiseResolvers = {};
 
-async function initializeWebLLM() {
-    // This function is now only for initializing the engine
-    ollamaStatus.textContent = `🔵 Initializing WebLLM...`;
-    ollamaStatus.style.color = 'blue';
-    try {
-        const initProgressCallback = (report) => {
-            ollamaStatus.textContent = `🔵 Initializing WebLLM: ${report.text}`;
-        };
-        const engine = await webllm.CreateMLCEngine(WEBLLM_MODEL_ID, { initProgressCallback });
-        webllmEngine = engine;
-        ollamaStatus.textContent = `✅ WebLLM is ready.`;
+window.addEventListener('message', (event) => {
+    if (event.source !== webllmIframe.contentWindow) return;
+
+    const { type, id, result, error } = event.data;
+
+    if (type === 'webllm-ready') {
+        isWebllmReady = true;
+        ollamaStatus.textContent = '✅ WebLLM is ready.';
         ollamaStatus.style.color = 'green';
-    } catch (err) {
-        ollamaStatus.textContent = `❌ Error initializing WebLLM: ${err.message}`;
+    } else if (type === 'webllm-error') {
+        isWebllmReady = false;
+        ollamaStatus.textContent = `❌ Error initializing WebLLM: ${error}`;
         ollamaStatus.style.color = 'red';
-        console.error("WebLLM Initialization Error:", err);
+    } else if (id && webllmPromiseResolvers[id]) {
+        if (type === 'generation-result') {
+            webllmPromiseResolvers[id].resolve(result);
+        } else if (type === 'generation-error') {
+            webllmPromiseResolvers[id].reject(new Error(error));
+        }
+        delete webllmPromiseResolvers[id]; // Clean up
     }
-}
+});
+
+
+// --- AI Provider Functions ---
 
 async function updateAvailableProviders() {
     ollamaStatus.textContent = 'Detecting available AI providers...';
@@ -117,8 +92,9 @@ function handleProviderChange() {
         refreshModelsBtn.style.display = 'block';
         loadOllamaModels();
     } else if (selectedProvider === 'webllm') {
-        if (!webllmEngine) {
-            initializeWebLLM();
+        if (!isWebllmReady) {
+            ollamaStatus.textContent = `🔵 Initializing WebLLM...`;
+            ollamaStatus.style.color = 'blue';
         } else {
             ollamaStatus.textContent = `✅ WebLLM is ready.`;
         }
@@ -186,7 +162,6 @@ async function generateAIText(systemPrompt) {
             body = {
                 contents: [{ parts:[{ text: systemPrompt }] }]
             };
-            // Google uses the key in the URL, so no special auth header is needed.
             break;
 
         case 'ollama':
@@ -201,12 +176,12 @@ async function generateAIText(systemPrompt) {
             break;
 
         case 'webllm':
-            if (!webllmEngine) throw new Error("WebLLM engine is not initialized.");
-            const webllmReply = await webllmEngine.chat.completions.create({
-                messages: [{ role: 'user', content: systemPrompt }],
-                stream: false
+            if (!isWebllmReady) throw new Error("WebLLM engine is not ready. Please wait for it to initialize.");
+            return new Promise((resolve, reject) => {
+                const requestId = Date.now() + Math.random();
+                webllmPromiseResolvers[requestId] = { resolve, reject };
+                webllmIframe.contentWindow.postMessage({ type: 'generate-text', prompt: systemPrompt, id: requestId }, '*');
             });
-            return webllmReply.choices[0].message.content;
 
         default:
             throw new Error(`Unknown or unsupported AI provider: ${provider}`);
@@ -225,7 +200,6 @@ async function generateAIText(systemPrompt) {
 
     const data = await response.json();
 
-    // Parse response based on provider
     switch (provider) {
         case 'openai':
             return data.choices[0].message.content;
@@ -294,19 +268,15 @@ function parseAndPopulateCourseDetails(textResponse) {
         courseNameInput.value = courseTitle;
         courseDescTextarea.value = courseDescription;
 
-        // Clear existing chapters before generating new ones
         chaptersContainer.innerHTML = '';
         Object.keys(editorInstances).forEach(key => delete editorInstances[key]);
         chapterCount = 0;
 
         aiStatus.textContent = "✅ Course details populated. Now generating chapters one by one...";
-
-        // This is where the next step will kick in.
         generateChaptersInLoop();
 
     } catch (err) {
         aiStatus.textContent = `Error parsing course details from AI. Please try again.\n\nError: ${err.message}`;
-        console.error("Invalid JSON response from Ollama for course details:", jsonString);
     }
 }
 
@@ -335,7 +305,6 @@ Content:
     }
 
     const title = titleLine.substring('title:'.length).trim();
-    // The content is everything after the "Content:" marker line
     const content = lines.slice(contentStartIndex + 1).join('\n').trim();
 
     if (!title || !content) {
@@ -352,7 +321,7 @@ async function generateChaptersInLoop() {
     for (let i = 1; i <= numChapters; i++) {
         try {
             aiStatus.textContent = `Generating chapter ${i} of ${numChapters}...`;
-            addChapter(); // Add a new chapter section to the UI
+            addChapter();
 
             const chapterData = await generateChapter(courseTitle, i, numChapters);
 
@@ -369,17 +338,14 @@ async function generateChaptersInLoop() {
 
         } catch (err) {
             aiStatus.textContent = `Error generating chapter ${i}. Please try again.\n\nError: ${err.message}`;
-            // Stop the loop if a chapter fails
             return;
         }
     }
      aiStatus.textContent = "✅ All chapters have been successfully generated!";
-     saveState(); // Save the final generated state
+     saveState();
      setTimeout(() => { aiStatus.style.display = 'none'; }, 5000);
 }
 
-
-// --- State Management ---
 const LOCAL_STORAGE_KEY = "courseCreatorState";
 
 function saveState() {
@@ -396,7 +362,7 @@ function saveState() {
         courseName: courseNameInput.value,
         courseDesc: courseDescTextarea.value,
         chapters: chapters,
-        ollamaModel: ollamaModelSelect.value,
+        ollamaModel: aiModelSelect.value,
         masterPrompt: masterPromptTextarea.value,
         numChapters: numChaptersSelect.value
     };
@@ -414,7 +380,7 @@ function loadState() {
 
     courseNameInput.value = state.courseName || '';
     courseDescTextarea.value = state.courseDesc || '';
-    ollamaModelSelect.value = state.ollamaModel || 'llama3';
+    aiModelSelect.value = state.ollamaModel || 'llama3';
     masterPromptTextarea.value = state.masterPrompt || '';
     numChaptersSelect.value = state.numChapters || '5';
 
@@ -432,7 +398,6 @@ function loadState() {
             if (editor) editor.setMarkdown(chapterData.content);
         });
     } else {
-        // If there are no chapters in state, add one empty one
         addChapter();
     }
 }
@@ -444,18 +409,12 @@ function clearState() {
     }
 }
 
-// --- Event Listeners ---
-refreshModelsBtn.addEventListener('click', loadOllamaModels);
-generateCourseBtn.addEventListener('click', generateCourse);
-// --- Settings Modal Logic & Key Storage ---
 function saveApiKeys(e) {
     e.preventDefault();
-    // Save keys to session variables instead of localStorage
     SESSION_API_KEYS.openai = openAiApiKeyInput.value || null;
     SESSION_API_KEYS.anthropic = anthropicApiKeyInput.value || null;
     SESSION_API_KEYS.google = googleApiKeyInput.value || null;
 
-    // Clear the form fields after "saving" to session
     openAiApiKeyInput.value = '';
     anthropicApiKeyInput.value = '';
     googleApiKeyInput.value = '';
@@ -471,42 +430,6 @@ function showSettingsModal() {
 function hideSettingsModal() {
     settingsModal.classList.remove('visible');
 }
-
-settingsBtn.addEventListener('click', showSettingsModal);
-closeSettingsBtn.addEventListener('click', hideSettingsModal);
-apiKeysForm.addEventListener('submit', saveApiKeys);
-settingsModal.addEventListener('click', (e) => {
-    // Close if clicking on the overlay but not the content
-    if (e.target === settingsModal) {
-        hideSettingsModal();
-    }
-});
-
-
-aiProviderSelect.addEventListener('change', handleProviderChange);
-
-
-document.addEventListener('DOMContentLoaded', () => {
-    // No longer loading keys from storage, just initialize the providers
-    updateAvailableProviders();
-    loadState();
-});
-document.getElementById('clear-form-btn').addEventListener('click', clearState);
-
-// Auto-save on manual edits
-courseNameInput.addEventListener('input', saveState);
-courseDescTextarea.addEventListener('input', saveState);
-masterPromptTextarea.addEventListener('input', saveState);
-ollamaModelSelect.addEventListener('change', saveState);
-numChaptersSelect.addEventListener('change', saveState);
-chaptersContainer.addEventListener('input', (e) => {
-    if (e.target && e.target.classList.contains('chapter-title')) {
-        saveState();
-    }
-});
-
-
-// --- Existing Functions (to be refactored) ---
 
 const slugify = (text) => {
     return text.toString().toLowerCase()
@@ -561,11 +484,6 @@ const addChapter = () => {
     });
 };
 
-addChapterBtn.addEventListener('click', addChapter);
-
-// Add one chapter by default so the page isn't empty
-addChapter();
-
 async function translate(textToTranslate, targetLangName) {
     const prompt = `Translate the following text to ${targetLangName}. Only provide the raw, translated text. Do not include any explanations, introductory phrases, or quotation marks. The text to translate is:\n\n"${textToTranslate}"`;
 
@@ -574,120 +492,175 @@ async function translate(textToTranslate, targetLangName) {
         return translatedText.trim() || textToTranslate;
     } catch (err) {
         console.error(`Translation to ${targetLangName} failed:`, err);
-        // Fallback to original text if translation fails
         return textToTranslate;
     }
 }
 
-courseForm.addEventListener('submit', async (e) => {
-    e.preventDefault();
-    const submitBtn = courseForm.querySelector('button[type="submit"]');
+document.addEventListener('DOMContentLoaded', () => {
+    courseForm = document.getElementById('course-form');
+    chaptersContainer = document.getElementById('chapters-container');
+    addChapterBtn = document.getElementById('add-chapter');
+    downloadSection = document.getElementById('download-section');
+    downloadZipLink = document.getElementById('download-zip');
+    aiStatus = document.getElementById('ai-status');
+    courseNameInput = document.getElementById('course-name');
+    courseDescTextarea = document.getElementById('course-desc');
+    settingsBtn = document.getElementById('settings-btn');
+    settingsModal = document.getElementById('settings-modal');
+    closeSettingsBtn = document.getElementById('close-settings-btn');
+    apiKeysForm = document.getElementById('api-keys-form');
+    openAiApiKeyInput = document.getElementById('openai-api-key');
+    anthropicApiKeyInput = document.getElementById('anthropic-api-key');
+    googleApiKeyInput = document.getElementById('google-api-key');
+    aiProviderSelect = document.getElementById('ai-provider-select');
+    aiModelSelect = document.getElementById('ai-model-select');
+    aiModelSelectionGroup = document.getElementById('ai-model-selection-group');
+    refreshModelsBtn = document.getElementById('refresh-models-btn');
+    ollamaStatus = document.getElementById('ollama-status');
+    providerConfigFieldset = document.querySelector('fieldset');
+    masterPromptTextarea = document.getElementById('master-prompt');
+    numChaptersSelect = document.getElementById('num-chapters');
+    generateCourseBtn = document.getElementById('generate-course-btn');
+    webllmIframe = document.getElementById('webllm-iframe');
 
-    try {
-        submitBtn.disabled = true;
-        aiStatus.style.display = 'block';
-        aiStatus.textContent = 'Gathering course content...';
-
-        const courseName = courseNameInput.value;
-        const courseDesc = courseDescTextarea.value;
-        const selectedLangs = Array.from(document.querySelectorAll('.lang-grid input[type="checkbox"]:checked')).map(cb => cb.value);
-
-        if (selectedLangs.length === 0) {
-            alert('Please select at least one language.');
-            return;
+    refreshModelsBtn.addEventListener('click', loadOllamaModels);
+    generateCourseBtn.addEventListener('click', generateCourse);
+    settingsBtn.addEventListener('click', showSettingsModal);
+    closeSettingsBtn.addEventListener('click', hideSettingsModal);
+    apiKeysForm.addEventListener('submit', saveApiKeys);
+    settingsModal.addEventListener('click', (e) => {
+        if (e.target === settingsModal) {
+            hideSettingsModal();
         }
-        const courseSlug = slugify(courseName);
-        if (!courseSlug) {
-            alert('Please enter a valid course name.');
-            return;
+    });
+    aiProviderSelect.addEventListener('change', handleProviderChange);
+    document.getElementById('clear-form-btn').addEventListener('click', clearState);
+    courseNameInput.addEventListener('input', saveState);
+    courseDescTextarea.addEventListener('input', saveState);
+    masterPromptTextarea.addEventListener('input', saveState);
+    aiModelSelect.addEventListener('change', saveState);
+    numChaptersSelect.addEventListener('change', saveState);
+    chaptersContainer.addEventListener('input', (e) => {
+        if (e.target && e.target.classList.contains('chapter-title')) {
+            saveState();
         }
+    });
+    addChapterBtn.addEventListener('click', addChapter);
 
-        const chapters = [];
-        document.querySelectorAll('.chapter').forEach((chapterDiv) => {
-            const chapterId = chapterDiv.id.split('-')[1];
-            const title = document.getElementById(`chapter-title-${chapterId}`).value;
-            const editor = editorInstances[chapterId];
-            const content = editor ? editor.getMarkdown() : '';
-            const chapterSlug = slugify(title);
-            const chapterNumber = String(chapters.length + 1).padStart(2, '0');
-            chapters.push({ title, content, slug: chapterSlug, number: chapterNumber });
-        });
+    courseForm.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const submitBtn = courseForm.querySelector('button[type="submit"]');
 
-        if (chapters.length === 0) {
-            alert('Please add at least one chapter.');
-            return;
-        }
+        try {
+            submitBtn.disabled = true;
+            aiStatus.style.display = 'block';
+            aiStatus.textContent = 'Gathering course content...';
 
-        const zip = new JSZip();
-        const courseFolder = zip.folder(courseSlug);
-        courseFolder.folder('assets');
+            const courseName = courseNameInput.value;
+            const courseDesc = courseDescTextarea.value;
+            const selectedLangs = Array.from(document.querySelectorAll('.lang-grid input[type="checkbox"]:checked')).map(cb => cb.value);
 
-        const langCheckboxes = Object.fromEntries(
-            Array.from(document.querySelectorAll('.lang-item input[type="checkbox"]'))
-            .map(cb => [cb.value, cb])
-        );
+            if (selectedLangs.length === 0) {
+                alert('Please select at least one language.');
+                return;
+            }
+            const courseSlug = slugify(courseName);
+            if (!courseSlug) {
+                alert('Please enter a valid course name.');
+                return;
+            }
 
-        const nonEnglishLangs = selectedLangs.filter(l => l !== 'en');
-        const progress = {
-            completed: 0,
-            total: nonEnglishLangs.length * (1 + 1 + chapters.length * 2)
-        };
+            const chapters = [];
+            document.querySelectorAll('.chapter').forEach((chapterDiv) => {
+                const chapterId = chapterDiv.id.split('-')[1];
+                const title = document.getElementById(`chapter-title-${chapterId}`).value;
+                const editor = editorInstances[chapterId];
+                const content = editor ? editor.getMarkdown() : '';
+                const chapterSlug = slugify(title);
+                const chapterNumber = String(chapters.length + 1).padStart(2, '0');
+                chapters.push({ title, content, slug: chapterSlug, number: chapterNumber });
+            });
 
-        if (progress.total > 0) {
-            aiStatus.textContent = `Starting translation of ${progress.total} items across ${nonEnglishLangs.length} language(s)...`;
-        }
+            if (chapters.length === 0) {
+                alert('Please add at least one chapter.');
+                return;
+            }
 
-        const processingPromises = selectedLangs.map(async (lang) => {
-            const langName = langCheckboxes[lang]?.dataset.name;
-            if (!langName) return;
+            const zip = new JSZip();
+            const courseFolder = zip.folder(courseSlug);
+            courseFolder.folder('assets');
 
-            let translatedCourseName = courseName;
-            let translatedCourseDesc = courseDesc;
-            let translatedChapters = chapters;
-            const isPrimaryLang = lang === 'en';
+            const langCheckboxes = Object.fromEntries(
+                Array.from(document.querySelectorAll('.lang-item input[type="checkbox"]'))
+                .map(cb => [cb.value, cb])
+            );
 
-            if (!isPrimaryLang) {
-                const updateProgress = () => {
-                    progress.completed++;
-                    aiStatus.textContent = `Translating... ${progress.completed} of ${progress.total} items completed.`;
-                };
+            const nonEnglishLangs = selectedLangs.filter(l => l !== 'en');
+            const progress = {
+                completed: 0,
+                total: nonEnglishLangs.length * (1 + 1 + chapters.length * 2)
+            };
 
-                translatedCourseName = await translate(courseName, langName);
-                updateProgress();
-                translatedCourseDesc = await translate(courseDesc, langName);
-                updateProgress();
+            if (progress.total > 0) {
+                aiStatus.textContent = `Starting translation of ${progress.total} items across ${nonEnglishLangs.length} language(s)...`;
+            }
 
-                const newChapters = [];
-                for (const chapter of chapters) {
-                    const translatedTitle = await translate(chapter.title, langName);
+            const processingPromises = selectedLangs.map(async (lang) => {
+                const langName = langCheckboxes[lang]?.dataset.name;
+                if (!langName) return;
+
+                let translatedCourseName = courseName;
+                let translatedCourseDesc = courseDesc;
+                let translatedChapters = chapters;
+                const isPrimaryLang = lang === 'en';
+
+                if (!isPrimaryLang) {
+                    const updateProgress = () => {
+                        progress.completed++;
+                        aiStatus.textContent = `Translating... ${progress.completed} of ${progress.total} items completed.`;
+                    };
+
+                    translatedCourseName = await translate(courseName, langName);
                     updateProgress();
-                    const translatedContent = await translate(chapter.content, langName);
+                    translatedCourseDesc = await translate(courseDesc, langName);
                     updateProgress();
-                    newChapters.push({ ...chapter, title: translatedTitle, content: translatedContent });
+
+                    const newChapters = [];
+                    for (const chapter of chapters) {
+                        const translatedTitle = await translate(chapter.title, langName);
+                        updateProgress();
+                        const translatedContent = await translate(chapter.content, langName);
+                        updateProgress();
+                        newChapters.push({ ...chapter, title: translatedTitle, content: translatedContent });
+                    }
+                    translatedChapters = newChapters;
                 }
-                translatedChapters = newChapters;
-            }
 
-            const indexContent = `---\ndescription: ${translatedCourseDesc}\n---\n\n# ${translatedCourseName}`;
-            courseFolder.file(`index.${lang}.md`, indexContent);
+                const indexContent = `---\ndescription: ${translatedCourseDesc}\n---\n\n# ${translatedCourseName}`;
+                courseFolder.file(`index.${lang}.md`, indexContent);
 
-            for (const chapter of translatedChapters) {
-                const chapterFilename = `${chapter.number}-${chapter.slug}.${lang}.md`;
-                const chapterContent = `# ${chapter.title}\n\n${chapter.content}`;
-                courseFolder.file(chapterFilename, chapterContent);
-            }
-        });
+                for (const chapter of translatedChapters) {
+                    const chapterFilename = `${chapter.number}-${chapter.slug}.${lang}.md`;
+                    const chapterContent = `# ${chapter.title}\n\n${chapter.content}`;
+                    courseFolder.file(chapterFilename, chapterContent);
+                }
+            });
 
-        await Promise.all(processingPromises);
+            await Promise.all(processingPromises);
 
-        aiStatus.textContent = 'All translations complete. Now packaging your course files into a .zip file...';
-        const zipBlob = await zip.generateAsync({ type: 'blob' });
-        downloadZipLink.href = URL.createObjectURL(zipBlob);
-        downloadZipLink.download = `${courseSlug}.zip`;
-        downloadSection.style.display = 'block';
-        aiStatus.textContent = '✅ Success! Your course files have been packaged. Click the download link that has appeared.';
+            aiStatus.textContent = 'All translations complete. Now packaging your course files into a .zip file...';
+            const zipBlob = await zip.generateAsync({ type: 'blob' });
+            downloadZipLink.href = URL.createObjectURL(zipBlob);
+            downloadZipLink.download = `${courseSlug}.zip`;
+            downloadSection.style.display = 'block';
+            aiStatus.textContent = '✅ Success! Your course files have been packaged. Click the download link that has appeared.';
 
-    } finally {
-        submitBtn.disabled = false;
-    }
+        } finally {
+            submitBtn.disabled = false;
+        }
+    });
+
+    updateAvailableProviders();
+    loadState();
+    addChapter();
 });
