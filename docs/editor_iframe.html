@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="Content-Security-Policy" content="style-src 'self' 'unsafe-inline';">
+    <title>Editor</title>
+    <link rel="stylesheet" href="./assets/css/toastui-editor.min.css" />
+    <style>
+        html, body {
+            margin: 0;
+            padding: 0;
+            height: 100%;
+            overflow: hidden;
+        }
+    </style>
+</head>
+<body>
+    <div id="editor"></div>
+
+    <script src="./assets/js/toastui-editor-all.min.js"></script>
+    <script>
+        const urlParams = new URLSearchParams(window.location.search);
+        const chapterId = urlParams.get('id');
+
+        const editor = new toastui.Editor({
+            el: document.querySelector('#editor'),
+            height: '100%',
+            initialEditType: 'wysiwyg',
+            previewStyle: 'vertical',
+            events: {
+                change: () => {
+                    parent.postMessage({
+                        type: 'content-changed',
+                        content: editor.getMarkdown(),
+                        id: chapterId
+                    }, '*');
+                }
+            }
+        });
+
+        window.addEventListener('message', (event) => {
+            if (event.data.type === 'set-content') {
+                editor.setMarkdown(event.data.content || '');
+            }
+        });
+
+        parent.postMessage({ type: 'editor-ready', id: chapterId }, '*');
+    </script>
+</body>
+</html>

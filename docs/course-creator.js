@@ -11,31 +11,52 @@ const SESSION_API_KEYS = {
 let courseForm, chaptersContainer, addChapterBtn, downloadSection, downloadZipLink, aiStatus, courseNameInput, courseDescTextarea, settingsBtn, settingsModal, closeSettingsBtn, apiKeysForm, openAiApiKeyInput, anthropicApiKeyInput, googleApiKeyInput, aiProviderSelect, aiModelSelect, aiModelSelectionGroup, refreshModelsBtn, ollamaStatus, providerConfigFieldset, masterPromptTextarea, numChaptersSelect, generateCourseBtn, webllmIframe;
 
 let chapterCount = 0;
-const editorInstances = {};
+const editorInstances = {}; // Will now store { content, isReady, iframe }
 
-// --- WebLLM Iframe Communication ---
+// --- Iframe Communication ---
 let webllmPromiseResolvers = {};
 
 window.addEventListener('message', (event) => {
-    if (event.source !== webllmIframe.contentWindow) return;
+    // WebLLM Iframe messages
+    if (event.source === webllmIframe.contentWindow) {
+        const { type, id, result, error } = event.data;
 
-    const { type, id, result, error } = event.data;
-
-    if (type === 'webllm-ready') {
-        isWebllmReady = true;
-        ollamaStatus.textContent = '✅ WebLLM is ready.';
-        ollamaStatus.style.color = 'green';
-    } else if (type === 'webllm-error') {
-        isWebllmReady = false;
-        ollamaStatus.textContent = `❌ Error initializing WebLLM: ${error}`;
-        ollamaStatus.style.color = 'red';
-    } else if (id && webllmPromiseResolvers[id]) {
-        if (type === 'generation-result') {
-            webllmPromiseResolvers[id].resolve(result);
-        } else if (type === 'generation-error') {
-            webllmPromiseResolvers[id].reject(new Error(error));
+        if (type === 'webllm-ready') {
+            isWebllmReady = true;
+            ollamaStatus.textContent = '✅ WebLLM is ready.';
+            ollamaStatus.style.color = 'green';
+        } else if (type === 'webllm-error') {
+            isWebllmReady = false;
+            ollamaStatus.textContent = `❌ Error initializing WebLLM: ${error}`;
+            ollamaStatus.style.color = 'red';
+        } else if (id && webllmPromiseResolvers[id]) {
+            if (type === 'generation-result') {
+                webllmPromiseResolvers[id].resolve(result);
+            } else if (type === 'generation-error') {
+                webllmPromiseResolvers[id].reject(new Error(error));
+            }
+            delete webllmPromiseResolvers[id];
         }
-        delete webllmPromiseResolvers[id]; // Clean up
+        return;
+    }
+
+    // Editor Iframes messages
+    const { type, id, content } = event.data;
+    if (id && editorInstances[id]) {
+        if (type === 'editor-ready') {
+            editorInstances[id].isReady = true;
+            // If there's pending content, set it now
+            if (editorInstances[id].pendingContent) {
+                editorInstances[id].iframe.contentWindow.postMessage({
+                    type: 'set-content',
+                    content: editorInstances[id].pendingContent
+                }, '*');
+                delete editorInstances[id].pendingContent;
+            }
+        } else if (type === 'content-changed') {
+            editorInstances[id].content = content;
+            saveState();
+        }
     }
 });
 
@@ -321,7 +342,7 @@ async function generateChaptersInLoop() {
     for (let i = 1; i <= numChapters; i++) {
         try {
             aiStatus.textContent = `Generating chapter ${i} of ${numChapters}...`;
-            addChapter();
+            addChapter(); // This now creates an iframe
 
             const chapterData = await generateChapter(courseTitle, i, numChapters);
 
@@ -331,10 +352,22 @@ async function generateChaptersInLoop() {
 
             const newChapterId = chapterCount;
             const titleInput = document.getElementById(`chapter-title-${newChapterId}`);
-            const editor = editorInstances[newChapterId];
-
             if (titleInput) titleInput.value = chapterData.title;
-            if (editor) editor.setMarkdown(chapterData.content);
+
+            // Set content in the iframe
+            const editorInstance = editorInstances[newChapterId];
+            if (editorInstance) {
+                if (editorInstance.isReady) {
+                    editorInstance.iframe.contentWindow.postMessage({
+                        type: 'set-content',
+                        content: chapterData.content
+                    }, '*');
+                } else {
+                    // If not ready, store it and it will be sent when the 'editor-ready' message arrives
+                    editorInstance.pendingContent = chapterData.content;
+                }
+                editorInstance.content = chapterData.content;
+            }
 
         } catch (err) {
             aiStatus.textContent = `Error generating chapter ${i}. Please try again.\n\nError: ${err.message}`;
@@ -353,8 +386,7 @@ function saveState() {
     document.querySelectorAll('.chapter').forEach(chapterDiv => {
         const chapterId = chapterDiv.id.split('-')[1];
         const title = document.getElementById(`chapter-title-${chapterId}`).value;
-        const editor = editorInstances[chapterId];
-        const content = editor ? editor.getMarkdown() : '';
+        const content = editorInstances[chapterId] ? editorInstances[chapterId].content : '';
         chapters.push({ title, content });
     });
 
@@ -393,9 +425,21 @@ function loadState() {
             addChapter();
             const newChapterId = chapterCount;
             const titleInput = document.getElementById(`chapter-title-${newChapterId}`);
-            const editor = editorInstances[newChapterId];
             if (titleInput) titleInput.value = chapterData.title;
-            if (editor) editor.setMarkdown(chapterData.content);
+
+            // Set content in the iframe
+            const editorInstance = editorInstances[newChapterId];
+            if (editorInstance) {
+                if (editorInstance.isReady) {
+                    editorInstance.iframe.contentWindow.postMessage({
+                        type: 'set-content',
+                        content: chapterData.content
+                    }, '*');
+                } else {
+                    editorInstance.pendingContent = chapterData.content;
+                }
+                editorInstance.content = chapterData.content;
+            }
         });
     } else {
         addChapter();
@@ -453,29 +497,13 @@ const addChapter = () => {
         </div>
         <label for="chapter-title-${chapterId}">Chapter Title</label>
         <input type="text" id="chapter-title-${chapterId}" class="chapter-title" placeholder="e.g., Getting Started" required>
-        <label for="editor-${chapterId}">Chapter Content</label>
-        <div id="editor-${chapterId}" class="chapter-editor"></div>
+        <label for="editor-iframe-${chapterId}">Chapter Content</label>
+        <iframe id="editor-iframe-${chapterId}" src="editor_iframe.html?id=${chapterId}" style="width: 100%; height: 250px; border: 1px solid #ccc;"></iframe>
     `;
     chaptersContainer.appendChild(chapterDiv);
 
-    const editor = new toastui.Editor({
-        el: document.querySelector(`#editor-${chapterId}`),
-        height: '250px',
-        initialEditType: 'wysiwyg',
-        previewStyle: 'vertical',
-        toolbarItems: [
-            ['heading', 'bold', 'italic', 'strike'],
-            ['hr', 'quote'],
-            ['ul', 'ol', 'task', 'indent', 'outdent'],
-            ['table', 'image', 'link'],
-            ['code', 'codeblock'],
-            ['scrollSync'],
-        ],
-        events: {
-            change: () => saveState()
-        }
-    });
-    editorInstances[chapterId] = editor;
+    const iframe = document.getElementById(`editor-iframe-${chapterId}`);
+    editorInstances[chapterId] = { content: '', isReady: false, iframe: iframe };
 
     chapterDiv.querySelector('.remove-chapter-btn').addEventListener('click', () => {
         const id = chapterDiv.querySelector('.remove-chapter-btn').dataset.chapterId;
@@ -540,11 +568,6 @@ document.addEventListener('DOMContentLoaded', () => {
     masterPromptTextarea.addEventListener('input', saveState);
     aiModelSelect.addEventListener('change', saveState);
     numChaptersSelect.addEventListener('change', saveState);
-    chaptersContainer.addEventListener('input', (e) => {
-        if (e.target && e.target.classList.contains('chapter-title')) {
-            saveState();
-        }
-    });
     addChapterBtn.addEventListener('click', addChapter);
 
     courseForm.addEventListener('submit', async (e) => {
@@ -574,8 +597,7 @@ document.addEventListener('DOMContentLoaded', () => {
             document.querySelectorAll('.chapter').forEach((chapterDiv) => {
                 const chapterId = chapterDiv.id.split('-')[1];
                 const title = document.getElementById(`chapter-title-${chapterId}`).value;
-                const editor = editorInstances[chapterId];
-                const content = editor ? editor.getMarkdown() : '';
+                const content = editorInstances[chapterId] ? editorInstances[chapterId].content : '';
                 const chapterSlug = slugify(title);
                 const chapterNumber = String(chapters.length + 1).padStart(2, '0');
                 chapters.push({ title, content, slug: chapterSlug, number: chapterNumber });
