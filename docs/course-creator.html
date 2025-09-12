@@ -215,7 +215,7 @@
     <script src="./assets/js/toastui-editor-all.min.js"></script>
 
     <!-- Main Application Logic -->
-    <iframe id="webllm-iframe" src="webllm_iframe.html" style="display: none;"></iframe>
+    <iframe id="webllm-iframe" src="webllm_iframe.html" style="display: none;" csp="script-src 'self' 'unsafe-eval' blob:; worker-src 'self' blob:;"></iframe>
     <script type="module" src="./course-creator.js"></script>
 
 </body>
