@@ -3,6 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self' https://esm.run blob: 'sha256-Mhui3gHKiDz0EtjK9/43ruJT+CukogqIH3mlEiP3FDs='; style-src 'self' 'sha256-DwDirBHag57VKXmMgLajjqFzjUV+1IAfBuMYnN/Kc28='; img-src 'self' data:; connect-src 'self' http://localhost:11434 https://api.openai.com https://api.anthropic.com https://generativelanguage.googleapis.com https://huggingface.co https://raw.githubusercontent.com/mlc-ai/binary-mlc-llm-libs; font-src 'self'; object-src 'none'; base-uri 'self'; form-action 'self'; frame-ancestors 'none'; worker-src 'self' blob:;">
     <title>Universal Course Creator</title>
     <link rel="stylesheet" href="./assets/css/toastui-editor.min.css" />
     <style>
@@ -212,6 +213,35 @@
         </div>
     </div>
 
+    <!--
+    THIRD-PARTY LIBRARIES
+    ---------------------
+    This application uses the following open-source libraries.
+
+    1. JSZip
+       - Version: 3.10.1
+       - Path: ./assets/jszip/3.10.1/jszip.min.js
+       - License: MIT / GPLv3
+       - Website: https://stuk.github.io/jszip/
+
+    2. js-yaml
+       - Version: 4.1.0
+       - Path: ./assets/js-yaml/4.1.0/js-yaml.min.js
+       - License: MIT
+       - Website: https://github.com/nodeca/js-yaml
+
+    3. Toast UI Editor
+       - Version: Not specified in file path.
+       - Path: ./assets/toastui-editor-all.min.js
+       - License: MIT
+       - Website: https://ui.toast.com/tui-editor
+
+    4. WebLLM
+       - Version: Dynamically loaded from CDN.
+       - Path: https://esm.run/@mlc-ai/web-llm
+       - License: Apache 2.0
+       - Website: https://webllm.mlc.ai/
+    -->
     <!-- JS Libraries -->
     <script src="./assets/jszip/3.10.1/jszip.min.js"></script>
     <script src="./assets/js-yaml/4.1.0/js-yaml.min.js"></script>
