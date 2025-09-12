@@ -505,7 +505,7 @@ const addChapter = () => {
         <label for="chapter-title-${chapterId}">Chapter Title</label>
         <input type="text" id="chapter-title-${chapterId}" class="chapter-title" placeholder="e.g., Getting Started" required>
         <label for="editor-iframe-${chapterId}">Chapter Content</label>
-        <iframe id="editor-iframe-${chapterId}" class="editor-iframe" src="editor_iframe.html?id=${chapterId}" csp="style-src 'self' 'unsafe-inline';"></iframe>
+        <iframe id="editor-iframe-${chapterId}" class="editor-iframe" src="editor_iframe.html?id=${chapterId}"></iframe>
     `;
     chaptersContainer.appendChild(chapterDiv);
 

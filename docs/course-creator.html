@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self' 'unsafe-eval' blob:; style-src 'self' 'unsafe-inline'; frame-src 'self'; img-src 'self' data:; connect-src 'self' http://localhost:11434 https://api.openai.com https://api.anthropic.com https://generativelanguage.googleapis.com https://huggingface.co https://raw.githubusercontent.com/mlc-ai/binary-mlc-llm-libs; font-src 'self'; object-src 'none'; base-uri 'self'; form-action 'self'; worker-src 'self' blob:;">
+    <meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self' 'unsafe-eval' 'unsafe-inline' blob:; style-src 'self' 'unsafe-inline'; frame-src 'self'; img-src 'self' data:; connect-src 'self' http://localhost:11434 https://api.openai.com https://api.anthropic.com https://generativelanguage.googleapis.com https://huggingface.co https://raw.githubusercontent.com/mlc-ai/binary-mlc-llm-libs; font-src 'self'; object-src 'none'; base-uri 'self'; form-action 'self'; worker-src 'self' blob:;">
     <title>Universal Course Creator</title>
     <link rel="stylesheet" href="./assets/css/toastui-editor.min.css" />
     <link rel="stylesheet" href="./course-creator.css" />
@@ -216,7 +216,7 @@
     <script src="./assets/js/toastui-editor-all.min.js"></script>
 
     <!-- Main Application Logic -->
-    <iframe id="webllm-iframe" src="webllm_iframe.html" style="display: none;" csp="script-src 'self' 'unsafe-eval' blob:; worker-src 'self' blob:;"></iframe>
+    <iframe id="webllm-iframe" src="webllm_iframe.html" style="display: none;"></iframe>
     <script type="module" src="./course-creator.js"></script>
 
 </body>
