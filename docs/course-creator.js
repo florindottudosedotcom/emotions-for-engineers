@@ -24,11 +24,11 @@ window.addEventListener('message', (event) => {
         if (type === 'webllm-ready') {
             isWebllmReady = true;
             ollamaStatus.textContent = '✅ WebLLM is ready.';
-            ollamaStatus.style.color = 'green';
+            ollamaStatus.className = 'ollama-status-style ollama-status-ok';
         } else if (type === 'webllm-error') {
             isWebllmReady = false;
             ollamaStatus.textContent = `❌ Error initializing WebLLM: ${error}`;
-            ollamaStatus.style.color = 'red';
+            ollamaStatus.className = 'ollama-status-style ollama-status-error';
         } else if (id && webllmPromiseResolvers[id]) {
             if (type === 'generation-result') {
                 webllmPromiseResolvers[id].resolve(result);
@@ -107,6 +107,7 @@ function handleProviderChange() {
     aiModelSelectionGroup.style.display = 'none';
     refreshModelsBtn.style.display = 'none';
     ollamaStatus.textContent = '';
+    ollamaStatus.className = 'ollama-status-style'; // Reset class
 
     if (selectedProvider === 'ollama') {
         aiModelSelectionGroup.style.display = 'flex';
@@ -115,17 +116,20 @@ function handleProviderChange() {
     } else if (selectedProvider === 'webllm') {
         if (!isWebllmReady) {
             ollamaStatus.textContent = `🔵 Initializing WebLLM...`;
-            ollamaStatus.style.color = 'blue';
+            ollamaStatus.className = 'ollama-status-style ollama-status-info';
         } else {
             ollamaStatus.textContent = `✅ WebLLM is ready.`;
+            ollamaStatus.className = 'ollama-status-style ollama-status-ok';
         }
     } else { // Cloud providers
          ollamaStatus.textContent = `✅ Ready to use ${selectedProvider}.`;
+         ollamaStatus.className = 'ollama-status-style ollama-status-ok';
     }
 }
 
 async function loadOllamaModels() {
     ollamaStatus.textContent = 'Loading Ollama models...';
+    ollamaStatus.className = 'ollama-status-style';
     aiModelSelect.innerHTML = '';
     try {
         const response = await fetch('http://localhost:11434/api/tags');
@@ -135,11 +139,14 @@ async function loadOllamaModels() {
                 aiModelSelect.add(new Option(model.name, model.name));
             });
             ollamaStatus.textContent = `✅ Ollama connected. ${data.models.length} model(s) found.`;
+            ollamaStatus.className = 'ollama-status-style ollama-status-ok';
         } else {
              ollamaStatus.textContent = `⚠️ Ollama is running but no models found.`;
+             ollamaStatus.className = 'ollama-status-style'; // Default color
         }
     } catch(err) {
          ollamaStatus.textContent = `❌ Could not connect to Ollama.`;
+         ollamaStatus.className = 'ollama-status-style ollama-status-error';
     }
 }
 
@@ -498,7 +505,7 @@ const addChapter = () => {
         <label for="chapter-title-${chapterId}">Chapter Title</label>
         <input type="text" id="chapter-title-${chapterId}" class="chapter-title" placeholder="e.g., Getting Started" required>
         <label for="editor-iframe-${chapterId}">Chapter Content</label>
-        <iframe id="editor-iframe-${chapterId}" src="editor_iframe.html?id=${chapterId}" style="width: 100%; height: 250px; border: 1px solid #ccc;" csp="style-src 'self' 'unsafe-inline';"></iframe>
+        <iframe id="editor-iframe-${chapterId}" class="editor-iframe" src="editor_iframe.html?id=${chapterId}" csp="style-src 'self' 'unsafe-inline';"></iframe>
     `;
     chaptersContainer.appendChild(chapterDiv);
 
