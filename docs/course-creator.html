@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self' https://esm.run blob: 'sha256-Mhui3gHKiDz0EtjK9/43ruJT+CukogqIH3mlEiP3FDs='; style-src 'self' 'sha256-DwDirBHag57VKXmMgLajjqFzjUV+1IAfBuMYnN/Kc28='; img-src 'self' data:; connect-src 'self' http://localhost:11434 https://api.openai.com https://api.anthropic.com https://generativelanguage.googleapis.com https://huggingface.co https://raw.githubusercontent.com/mlc-ai/binary-mlc-llm-libs; font-src 'self'; object-src 'none'; base-uri 'self'; form-action 'self'; frame-ancestors 'none'; worker-src 'self' blob:;">
+    <meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self' blob: 'sha256-qs0Tzi14TyC+tQ//xnIkcJz9mGFYKPAZ87ptsO2kn8U='; style-src 'self' 'sha256-DwDirBHag57VKXmMgLajjqFzjUV+1IAfBuMYnN/Kc28='; img-src 'self' data:; connect-src 'self' http://localhost:11434 https://api.openai.com https://api.anthropic.com https://generativelanguage.googleapis.com https://huggingface.co https://raw.githubusercontent.com/mlc-ai/binary-mlc-llm-libs; font-src 'self'; object-src 'none'; base-uri 'self'; form-action 'self'; frame-ancestors 'none'; worker-src 'self' blob:;">
     <title>Universal Course Creator</title>
     <link rel="stylesheet" href="./assets/css/toastui-editor.min.css" />
     <style>
@@ -249,7 +249,7 @@
 
     <!-- Main Application Logic -->
     <script type="module">
-        import * as webllm from "https://esm.run/@mlc-ai/web-llm";
+        import * as webllm from "./assets/vendor/webllm/webllm.js";
 
         // --- AI Provider State ---
         let AI_PROVIDER = 'ollama'; // 'ollama' or 'webllm'
