@@ -1,4 +1,4 @@
-import * as webllm from "../vendor/webllm/webllm.js";
+import * as webllm from "./webllm.js";
 
 let webllmEngine;
 const WEBLLM_MODEL_ID = "Phi-3-mini-4k-instruct-q4f16_1-MLC";
