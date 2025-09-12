@@ -1,0 +1,5 @@
+---
+description: "Tauchen Sie ins Reich der emotionalen Intelligenz (EQ) ein, speziell für Maschinenbauingenieure. "Engineering Emotions" ist ein transformativer Kurs, der Ihre beruflichen und persönlichen Beziehungen, Führungsfähigkeiten und Konfliktlösungsfähigkeiten verbessern soll. Entdecken Sie die entscheidende Rolle der EQ im Ingenieurwesen, lernen Sie, Ihre Emotionen zu identifizieren und zu managen, und verstehen Sie, wie Sie effektiv mit diversen Teams zusammenarbeiten können. Gelernte praktische Fähigkeiten, um Ihre Karriere erfolgreich zu leiten und Innovation mit Empathie und Verständnis zu leiten. Bereiten Sie sich mit den Werkzeugen für emotionale Intelligenz auf, und werden Sie zu einem effektiveren Ingenieur und Führer in Ihrem Bereich."
+---
+
+# "Engineering Emotionen: Nutzung emotionalen Intelligenz für Mechaniker"
