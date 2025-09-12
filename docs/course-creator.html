@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self' blob:; style-src 'self'; frame-src 'self'; img-src 'self' data:; connect-src 'self' http://localhost:11434 https://api.openai.com https://api.anthropic.com https://generativelanguage.googleapis.com https://huggingface.co https://raw.githubusercontent.com/mlc-ai/binary-mlc-llm-libs; font-src 'self'; object-src 'none'; base-uri 'self'; form-action 'self'; worker-src 'self' blob:;">
+    <meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self' blob:; style-src 'self' 'unsafe-inline'; frame-src 'self'; img-src 'self' data:; connect-src 'self' http://localhost:11434 https://api.openai.com https://api.anthropic.com https://generativelanguage.googleapis.com https://huggingface.co https://raw.githubusercontent.com/mlc-ai/binary-mlc-llm-libs; font-src 'self'; object-src 'none'; base-uri 'self'; form-action 'self'; worker-src 'self' blob:;">
     <title>Universal Course Creator</title>
     <link rel="stylesheet" href="./assets/css/toastui-editor.min.css" />
     <link rel="stylesheet" href="./course-creator.css" />
@@ -43,6 +43,7 @@
             <h3>How to Use This Tool</h3>
             <ol>
                 <li>Make sure Ollama is running on your computer and you have downloaded a model (e.g., `ollama pull llama3`).</li>
+                <li><b>Ollama Users:</b> If you are running this page from a local file (`file:///...`), you might need to configure Ollama to allow requests from this origin. See the project's `README.md` file for detailed instructions on how to do this.</li>
                 <li>Enter a topic for your course below and select the number of chapters.</li>
                 <li>Click "Generate Course". The AI will populate the course details and chapters for you.</li>
                 <li>Review and edit the generated content as needed.</li>

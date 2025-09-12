@@ -48,3 +48,22 @@ input[type="checkbox"] { margin-right: 0.5rem; }
 .modal-content { background-color: #fff; padding: 2rem; border-radius: 8px; box-shadow: 0 4px 15px rgba(0,0,0,0.2); width: 90%; max-width: 500px; }
 .modal-content.hidden { display: none; }
 .modal-overlay.visible { display: flex; }
+
+/* Styles for dynamically added elements */
+.editor-iframe {
+    width: 100%;
+    height: 250px;
+    border: 1px solid #ccc;
+}
+
+.ollama-status-ok {
+    color: green;
+}
+
+.ollama-status-error {
+    color: red;
+}
+
+.ollama-status-info {
+    color: blue;
+}
