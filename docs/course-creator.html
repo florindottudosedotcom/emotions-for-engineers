@@ -46,7 +46,7 @@
     <div id="settings-modal" class="modal-overlay">
         <div class="modal-content">
             <h2>Cloud API Settings</h2>
-            <p>Enter your API keys for cloud providers. Keys are saved in your browser's local storage and are not sent anywhere else.</p>
+            <p>Enter your API keys to use cloud providers. <strong>Keys are only used for this session and are not stored permanently.</strong></p>
             <form id="api-keys-form">
                 <label for="openai-api-key">OpenAI API Key</label>
                 <input type="password" id="openai-api-key" placeholder="sk-...">
@@ -58,7 +58,7 @@
                 <input type="password" id="google-api-key" placeholder="AIzaSy...">
 
                 <div class="input-group" style="margin-top: 1.5rem;">
-                    <button type="submit" class="btn btn-primary">Save Keys</button>
+                    <button type="submit" class="btn btn-primary">Use Keys for Session</button>
                     <button type="button" id="close-settings-btn" class="btn btn-danger" style="margin-left: auto;">Close</button>
                 </div>
             </form>
@@ -225,6 +225,11 @@
         let AI_PROVIDER = 'ollama'; // 'ollama' or 'webllm'
         let webllmEngine = null;
         const WEBLLM_MODEL_ID = "Phi-3-mini-4k-instruct-q4f16_1-MLC";
+        const SESSION_API_KEYS = {
+            openai: null,
+            anthropic: null,
+            google: null
+        };
 
         // DOM Elements
         const courseForm = document.getElementById('course-form');
@@ -285,16 +290,17 @@
 
         async function updateAvailableProviders() {
             ollamaStatus.textContent = 'Detecting available AI providers...';
+            const selectedProviderBeforeUpdate = aiProviderSelect.value;
             aiProviderSelect.innerHTML = '';
 
-            // 1. Check for Cloud Providers
-            if (localStorage.getItem(API_KEYS.openai)) {
+            // 1. Check for Cloud Providers with session keys
+            if (SESSION_API_KEYS.openai) {
                 aiProviderSelect.add(new Option("OpenAI (Cloud)", "openai"));
             }
-            if (localStorage.getItem(API_KEYS.anthropic)) {
+            if (SESSION_API_KEYS.anthropic) {
                 aiProviderSelect.add(new Option("Anthropic (Cloud)", "anthropic"));
             }
-            if (localStorage.getItem(API_KEYS.google)) {
+            if (SESSION_API_KEYS.google) {
                 aiProviderSelect.add(new Option("Google Gemini (Cloud)", "google"));
             }
 
@@ -370,7 +376,7 @@
 
             switch (provider) {
                 case 'openai':
-                    apiKey = localStorage.getItem(API_KEYS.openai);
+                    apiKey = SESSION_API_KEYS.openai;
                     if (!apiKey) throw new Error("OpenAI API key is missing.");
                     endpoint = 'https://api.openai.com/v1/chat/completions';
                     headers['Authorization'] = `Bearer ${apiKey}`;
@@ -382,7 +388,7 @@
                     break;
 
                 case 'anthropic':
-                    apiKey = localStorage.getItem(API_KEYS.anthropic);
+                    apiKey = SESSION_API_KEYS.anthropic;
                     if (!apiKey) throw new Error("Anthropic API key is missing.");
                     endpoint = 'https://api.anthropic.com/v1/messages';
                     headers['x-api-key'] = apiKey;
@@ -395,7 +401,7 @@
                     break;
 
                 case 'google':
-                    apiKey = localStorage.getItem(API_KEYS.google);
+                    apiKey = SESSION_API_KEYS.google;
                     if (!apiKey) throw new Error("Google Gemini API key is missing.");
                     endpoint = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${apiKey}`;
                     body = {
@@ -663,26 +669,21 @@ Content:
         refreshModelsBtn.addEventListener('click', loadOllamaModels);
         generateCourseBtn.addEventListener('click', generateCourse);
         // --- Settings Modal Logic & Key Storage ---
-        const API_KEYS = {
-            openai: "openai_api_key",
-            anthropic: "anthropic_api_key",
-            google: "google_api_key"
-        };
-
         function saveApiKeys(e) {
             e.preventDefault();
-            localStorage.setItem(API_KEYS.openai, openAiApiKeyInput.value);
-            localStorage.setItem(API_KEYS.anthropic, anthropicApiKeyInput.value);
-            localStorage.setItem(API_KEYS.google, googleApiKeyInput.value);
+            // Save keys to session variables instead of localStorage
+            SESSION_API_KEYS.openai = openAiApiKeyInput.value || null;
+            SESSION_API_KEYS.anthropic = anthropicApiKeyInput.value || null;
+            SESSION_API_KEYS.google = googleApiKeyInput.value || null;
+
+            // Clear the form fields after "saving" to session
+            openAiApiKeyInput.value = '';
+            anthropicApiKeyInput.value = '';
+            googleApiKeyInput.value = '';
+
             hideSettingsModal();
             updateAvailableProviders();
-            alert("API Keys saved!");
-        }
-
-        function loadApiKeys() {
-            openAiApiKeyInput.value = localStorage.getItem(API_KEYS.openai) || '';
-            anthropicApiKeyInput.value = localStorage.getItem(API_KEYS.anthropic) || '';
-            googleApiKeyInput.value = localStorage.getItem(API_KEYS.google) || '';
+            alert("API Keys will be used for this session only.");
         }
 
         function showSettingsModal() {
@@ -707,7 +708,7 @@ Content:
 
 
         document.addEventListener('DOMContentLoaded', () => {
-            loadApiKeys();
+            // No longer loading keys from storage, just initialize the providers
             updateAvailableProviders();
             loadState();
         });
