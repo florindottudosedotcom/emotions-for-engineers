@@ -1,0 +1,228 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self' blob:; style-src 'self' 'unsafe-inline'; frame-src 'self'; img-src 'self' data:; connect-src 'self' http://localhost:11434; font-src 'self'; object-src 'none'; base-uri 'self'; form-action 'self'; worker-src 'self' blob:;">
+    <title>Universal Course Creator</title>
+    <link rel="stylesheet" href="./assets/css/toastui-editor.min.css" />
+    <link rel="stylesheet" href="./assets/css/course-creator.css" />
+</head>
+<body>
+
+    <div id="help-modal" class="modal-overlay">
+        <div class="modal-content">
+            <h2>How to Use This Tool</h2>
+            <div id="help-content">
+                <ol>
+                    <li><strong>Select AI Provider:</strong> Choose your preferred AI provider. For Ollama, you must be running this tool on a local server. For WebLLM and Cloud providers, the hosted version is fine.</li>
+                    <li><strong>Enter Course Topic:</strong> In the "Master AI Assistant" section, write a prompt for the course you want to create (e.g., "A beginner's guide to Python programming").</li>
+                    <li><strong>Generate Course Outline:</strong> Click "Generate Entire Course". The AI will create a title, description, and a full set of chapter titles and content.</li>
+                    <li><strong>Review and Edit:</strong> Manually edit the course and chapter titles or content as needed. You can also add or remove chapters.</li>
+                    <li><strong>Choose Languages:</strong> Select one or more languages for your course. The content will be translated automatically.</li>
+                    <li><strong>Generate Files:</strong> Click "Generate Course Files" to package everything into a downloadable `.zip` file.</li>
+                </ol>
+                <p>For more detailed instructions, including how to set up local providers, please see the project's <a href="../README.md" target="_blank">README.md</a> file.</p>
+            </div>
+            <div class="input-group margin-top-1-5rem">
+                <button type="button" id="close-help-btn" class="btn btn-danger margin-left-auto">Close</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="settings-modal" class="modal-overlay">
+        <div class="modal-content">
+            <h2>Cloud API Settings</h2>
+            <p>Enter your API keys to use cloud providers. <strong>Keys are only used for this session and are not stored permanently.</strong></p>
+            <form id="api-keys-form">
+                <label for="openai-api-key">OpenAI API Key</label>
+                <input type="password" id="openai-api-key" placeholder="sk-...">
+
+                <label for="anthropic-api-key">Anthropic API Key</label>
+                <input type="password" id="anthropic-api-key" placeholder="sk-ant-...">
+
+                <label for="google-api-key">Google Gemini API Key</label>
+                <input type="password" id="google-api-key" placeholder="AIzaSy...">
+
+                <div class="input-group margin-top-1-5rem">
+                    <button type="submit" class="btn btn-primary">Use Keys for Session</button>
+                    <button type="button" id="close-settings-btn" class="btn btn-danger margin-left-auto">Close</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <div class="container">
+        <div class="header-container">
+            <h1>Universal Course Creator</h1>
+            <button type="button" id="help-btn" class="btn btn-secondary">Help</button>
+            <button type="button" id="settings-btn" class="btn btn-secondary">Settings</button>
+        </div>
+        <div id="ai-status" class="ai-status-initial"></div>
+
+
+        <fieldset>
+            <legend>AI Provider</legend>
+            <p>Ollama (Local)</p>
+            <div class="input-group" id="ai-model-selection-group">
+                <label for="ai-model-select" class="label-no-shrink-no-margin">Model:</label>
+                <select id="ai-model-select" class="select-no-margin"></select>
+                <button type="button" id="refresh-models-btn" class="btn btn-secondary">Refresh List</button>
+            </div>
+            <div id="ollama-status" class="ollama-status-style"></div>
+        </fieldset>
+
+        <fieldset>
+            <legend>Master AI Assistant</legend>
+            <label for="master-prompt">Course Prompt</label>
+            <textarea id="master-prompt" placeholder="e.g., 'Create a comprehensive course about the history of ancient Rome, from its founding to the fall of the Western Empire.'"></textarea>
+            <div class="input-group">
+                <label for="num-chapters" class="label-no-shrink-no-margin">Number of Chapters:</label>
+                <select id="num-chapters" class="select-no-margin">
+                    <option value="1">1</option>
+                    <option value="2">2</option>
+                    <option value="3">3</option>
+                    <option value="4">4</option>
+                    <option value="5" selected>5</option>
+                    <option value="6">6</option>
+                    <option value="7">7</option>
+                    <option value="8">8</option>
+                    <option value="9">9</option>
+                    <option value="10">10</option>
+                </select>
+                <button type="button" id="generate-course-btn" class="btn btn-secondary margin-left-1rem">Generate Entire Course</button>
+            </div>
+        </fieldset>
+
+        <hr class="hr-margin">
+
+        <form id="course-form">
+            <h2>Course Details</h2>
+            <label for="course-name">Course Name</label>
+            <input type="text" id="course-name" placeholder="Generated by AI" required>
+
+            <label for="course-desc">Course Description (for main landing page)</label>
+            <textarea id="course-desc" placeholder="Generated by AI" required></textarea>
+
+            <h2>Chapters</h2>
+            <div id="chapters-container">
+                <!-- Chapters will be dynamically added here by the master AI or manually -->
+            </div>
+            <div class="input-group">
+                <button type="button" id="add-chapter" class="btn btn-secondary">Add Chapter Manually</button>
+                <button type="button" id="clear-form-btn" class="btn btn-danger margin-left-auto">Clear Form & Start New</button>
+            </div>
+
+            <fieldset class="margin-top-2rem">
+                <legend>Course Languages</legend>
+                <div class="lang-grid">
+                    <div class="lang-item" title="English">
+                        <input type="checkbox" id="lang-en" value="en" data-name="English" checked>
+                        <img src="./assets/images//us.svg" alt="USA Flag" class="flag-icon">
+                        <label for="lang-en" class="label-flex-grow">⭐ English</label>
+                    </div>
+                    <div class="lang-item" title="German">
+                        <input type="checkbox" id="lang-de" value="de" data-name="German">
+                        <img src="./assets/images//de.svg" alt="German Flag" class="flag-icon">
+                        <label for="lang-de" class="label-flex-grow">German</label>
+                    </div>
+                    <div class="lang-item" title="Mandarin Chinese">
+                        <input type="checkbox" id="lang-zh" value="zh" data-name="Mandarin Chinese">
+                        <img src="./assets/images//cn.svg" alt="Chinese Flag" class="flag-icon">
+                        <label for="lang-zh" class="label-flex-grow">Mandarin Chinese</label>
+                    </div>
+                    <div class="lang-item" title="Spanish">
+                        <input type="checkbox" id="lang-es" value="es" data-name="Spanish">
+                        <img src="./assets/images//es.svg" alt="Spanish Flag" class="flag-icon">
+                        <label for="lang-es" class="label-flex-grow">Spanish</label>
+                    </div>
+                    <div class="lang-item" title="Hindi">
+                        <input type="checkbox" id="lang-hi" value="hi" data-name="Hindi">
+                        <img src="./assets/images//in.svg" alt="Indian Flag" class="flag-icon">
+                        <label for="lang-hi" class="label-flex-grow">Hindi</label>
+                    </div>
+                    <div class="lang-item" title="Portuguese">
+                        <input type="checkbox" id="lang-pt" value="pt" data-name="Portuguese">
+                        <img src="./assets/images//pt.svg" alt="Portuguese Flag" class="flag-icon">
+                        <label for="lang-pt" class="label-flex-grow">Portuguese</label>
+                    </div>
+                    <div class="lang-item" title="Russian">
+                        <input type="checkbox" id="lang-ru" value="ru" data-name="Russian">
+                        <img src="./assets/images//ru.svg" alt="Russian Flag" class="flag-icon">
+                        <label for="lang-ru" class="label-flex-grow">Russian</label>
+                    </div>
+                    <div class="lang-item" title="Japanese">
+                        <input type="checkbox" id="lang-ja" value="ja" data-name="Japanese">
+                        <img src="./assets/images//jp.svg" alt="Japanese Flag" class="flag-icon">
+                        <label for="lang-ja" class="label-flex-grow">Japanese</label>
+                    </div>
+                    <div class="lang-item" title="French">
+                        <input type="checkbox" id="lang-fr" value="fr" data-name="French">
+                        <img src="./assets/images//fr.svg" alt="French Flag" class="flag-icon">
+                        <label for="lang-fr" class="label-flex-grow">French</label>
+                    </div>
+                    <div class="lang-item" title="Italian">
+                        <input type="checkbox" id="lang-it" value="it" data-name="Italian">
+                        <img src="./assets/images//it.svg" alt="Italian Flag" class="flag-icon">
+                        <label for="lang-it" class="label-flex-grow">Italian</label>
+                    </div>
+                    <div class="lang-item" title="Romanian">
+                        <input type="checkbox" id="lang-ro" value="ro" data-name="Romanian">
+                        <img src="./assets/images//ro.svg" alt="Romanian Flag" class="flag-icon">
+                        <label for="lang-ro" class="label-flex-grow">Romanian</label>
+                    </div>
+                </div>
+            </fieldset>
+
+            <hr class="hr-margin">
+
+            <button type="submit" class="btn btn-primary">Generate Course Files</button>
+        </form>
+
+        <div id="download-section">
+            <h3>Downloads</h3>
+            <p>Your files have been generated. Download them below.</p>
+            <a id="download-zip" class="btn btn-primary">Download Course Files (.zip)</a>
+        </div>
+    </div>
+
+    <!--
+    THIRD-PARTY LIBRARIES
+    ---------------------
+    This application uses the following open-source libraries.
+
+    1. JSZip
+       - Version: 3.10.1
+       - Path: ./assets/jszip/3.10.1/jszip.min.js
+       - License: MIT / GPLv3
+       - Website: https://stuk.github.io/jszip/
+
+    2. js-yaml
+       - Version: 4.1.0
+       - Path: ./assets/js-yaml/4.1.0/js-yaml.min.js
+       - License: MIT
+       - Website: https://github.com/nodeca/js-yaml
+
+    3. Toast UI Editor
+       - Version: Not specified in file path.
+       - Path: ./assets/toastui-editor-all.min.js
+       - License: MIT
+       - Website: https://ui.toast.com/tui-editor
+
+    4. WebLLM
+       - Version: 0.2.27
+       - Path: ./assets/js/webllm.js
+       - License: Apache 2.0
+       - Website: https://webllm.mlc.ai/
+    -->
+    <!-- JS Libraries -->
+    <script src="./assets/js/jszip/3.10.1/jszip.min.js"></script>
+    <script src="./assets/js/js-yaml/4.1.0/js-yaml.min.js"></script>
+    <script src="./assets/js/toastui-editor-all.min.js"></script>
+
+    <!-- Main Application Logic -->
+    <iframe id="webllm-iframe" src="webllm_iframe.html" style="display: none;"></iframe>
+    <script type="module" src="./assets/js/ollama_main.js"></script>
+
+</body>
+</html>
