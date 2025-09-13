@@ -1,6 +1,14 @@
 document.addEventListener('DOMContentLoaded', () => {
     const tabLinks = document.querySelectorAll('.tab-link');
     const contentFrame = document.getElementById('content-frame');
+    const ollamaTab = document.getElementById('ollama-tab');
+
+    // Hide Ollama tab if not on localhost
+    if (window.location.hostname !== 'localhost' && window.location.hostname !== '127.0.0.1') {
+        if (ollamaTab) {
+            ollamaTab.style.display = 'none';
+        }
+    }
 
     tabLinks.forEach(link => {
         link.addEventListener('click', () => {
