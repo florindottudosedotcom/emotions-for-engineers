@@ -170,7 +170,16 @@ function saveApiKeys(e) {
 }
 
 async function generateAIText(systemPrompt) {
-    const provider = dom.aiProviderSelect ? dom.aiProviderSelect.value : 'openai'; // Default to openai if no selector
+    let provider = state.AI_PROVIDER;
+
+    if (provider === 'cloud') {
+        // Auto-detect which cloud provider to use based on available keys
+        if (state.SESSION_API_KEYS.openai) provider = 'openai';
+        else if (state.SESSION_API_KEYS.anthropic) provider = 'anthropic';
+        else if (state.SESSION_API_KEYS.google) provider = 'google';
+        else throw new Error("No Cloud API key has been provided. Please add one in Settings.");
+    }
+
     let endpoint = '';
     let headers = { 'Content-Type': 'application/json' };
     let body = {};
