@@ -106,20 +106,17 @@ async function updateAvailableProviders() {
         dom.ollamaStatus.textContent = 'Detecting available AI providers...';
     }
 
-    // This function is not relevant for cloud-only context, so exit if provider select doesn't exist.
-    if (!dom.aiProviderSelect) return;
-
-    const selectedProviderBeforeUpdate = dom.aiProviderSelect.value;
-    dom.aiProviderSelect.innerHTML = '';
+    const selectedProviderBeforeUpdate = dom.aiProviderSelect ? dom.aiProviderSelect.value : null;
+    if (dom.aiProviderSelect) dom.aiProviderSelect.innerHTML = '';
 
     if (state.SESSION_API_KEYS.openai) {
-        dom.aiProviderSelect.add(new Option("OpenAI (Cloud)", "openai"));
+        if (dom.aiProviderSelect) dom.aiProviderSelect.add(new Option("OpenAI (Cloud)", "openai"));
     }
     if (state.SESSION_API_KEYS.anthropic) {
-        dom.aiProviderSelect.add(new Option("Anthropic (Cloud)", "anthropic"));
+        if (dom.aiProviderSelect) dom.aiProviderSelect.add(new Option("Anthropic (Cloud)", "anthropic"));
     }
     if (state.SESSION_API_KEYS.google) {
-        dom.aiProviderSelect.add(new Option("Google Gemini (Cloud)", "google"));
+        if (dom.aiProviderSelect) dom.aiProviderSelect.add(new Option("Google Gemini (Cloud)", "google"));
     }
 
     try {
@@ -127,15 +124,17 @@ async function updateAvailableProviders() {
         if (response.ok) {
             const data = await response.json();
             if (data.models && data.models.length > 0) {
-                dom.aiProviderSelect.add(new Option("Ollama (Local)", "ollama"));
+                if (dom.aiProviderSelect) dom.aiProviderSelect.add(new Option("Ollama (Local)", "ollama"));
             }
         }
     } catch (err) {
         // Ollama is not available
     }
 
-    dom.aiProviderSelect.add(new Option("WebLLM (In-Browser)", "webllm"));
-    dom.aiProviderSelect.selectedIndex = 0;
+    if (dom.aiProviderSelect) {
+        dom.aiProviderSelect.add(new Option("WebLLM (In-Browser)", "webllm"));
+        dom.aiProviderSelect.selectedIndex = 0;
+    }
     handleProviderChange();
 }
 
@@ -153,7 +152,21 @@ function saveApiKeys(e) {
     // For now, we'll assume a UI module exists.
     // hideSettingsModal();
     updateAvailableProviders();
-    alert("API Keys will be used for this session only.");
+
+    const enabledProviders = Object.entries(state.SESSION_API_KEYS)
+        .filter(([_, value]) => value)
+        .map(([key]) => key.charAt(0).toUpperCase() + key.slice(1));
+
+    if (dom.aiStatus) {
+        if (enabledProviders.length > 0) {
+            dom.aiStatus.textContent = `✅ API keys for ${enabledProviders.join(', ')} enabled for this session.`;
+        } else {
+            dom.aiStatus.textContent = "No API keys provided.";
+        }
+        dom.aiStatus.style.display = 'block';
+    } else {
+        alert("API Keys will be used for this session only.");
+    }
 }
 
 async function generateAIText(systemPrompt) {
