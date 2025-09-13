@@ -13,7 +13,8 @@ const dom = {};
 document.addEventListener('DOMContentLoaded', () => {
     // DOM Elements
     dom.courseForm = document.getElementById('course-form');
-    dom.chaptersContainer = document.getElementById('chapters-container');
+    dom.chapterTabsContainer = document.getElementById('chapter-tabs-container');
+    dom.chapterContentContainer = document.getElementById('chapter-content-container');
     dom.addChapterBtn = document.getElementById('add-chapter');
     dom.downloadSection = document.getElementById('download-section');
     dom.downloadZipLink = document.getElementById('download-zip');
@@ -30,9 +31,6 @@ document.addEventListener('DOMContentLoaded', () => {
     dom.masterPromptTextarea = document.getElementById('master-prompt');
     dom.numChaptersSelect = document.getElementById('num-chapters');
     dom.generateCourseBtn = document.getElementById('generate-course-btn');
-    dom.helpBtn = document.getElementById('help-btn');
-    dom.helpModal = document.getElementById('help-modal');
-    dom.closeHelpBtn = document.getElementById('close-help-btn');
     dom.clearFormBtn = document.getElementById('clear-form-btn');
 
     // Init Modules
@@ -44,8 +42,6 @@ document.addEventListener('DOMContentLoaded', () => {
     // Event Listeners
     dom.settingsBtn.addEventListener('click', UI.showSettingsModal);
     dom.closeSettingsBtn.addEventListener('click', UI.hideSettingsModal);
-    dom.helpBtn.addEventListener('click', UI.showHelpModal);
-    dom.closeHelpBtn.addEventListener('click', UI.hideHelpModal);
     dom.apiKeysForm.addEventListener('submit', (e) => {
         API.saveApiKeys(e);
         UI.hideSettingsModal();
@@ -56,5 +52,5 @@ document.addEventListener('DOMContentLoaded', () => {
     dom.clearFormBtn.addEventListener('click', State.clearState);
 
     // Initial Load
-    UI.addChapter();
+    setTimeout(UI.addChapter, 0);
 });
