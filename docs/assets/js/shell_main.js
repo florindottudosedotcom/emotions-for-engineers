@@ -2,6 +2,9 @@ document.addEventListener('DOMContentLoaded', () => {
     const tabLinks = document.querySelectorAll('.tab-link');
     const contentFrame = document.getElementById('content-frame');
     const ollamaTab = document.getElementById('ollama-tab');
+    const helpBtn = document.getElementById('help-btn');
+    const helpModal = document.getElementById('help-modal');
+    const closeHelpBtn = document.getElementById('close-help-btn');
 
     // Hide Ollama tab if not on localhost
     if (window.location.hostname !== 'localhost' && window.location.hostname !== '127.0.0.1') {
@@ -27,4 +30,15 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         });
     });
+
+    function showHelpModal() {
+        if (helpModal) helpModal.classList.add('visible');
+    }
+
+    function hideHelpModal() {
+        if (helpModal) helpModal.classList.remove('visible');
+    }
+
+    if (helpBtn) helpBtn.addEventListener('click', showHelpModal);
+    if (closeHelpBtn) closeHelpBtn.addEventListener('click', hideHelpModal);
 });

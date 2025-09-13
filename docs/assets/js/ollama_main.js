@@ -12,7 +12,8 @@ const dom = {};
 document.addEventListener('DOMContentLoaded', () => {
     // DOM Elements
     dom.courseForm = document.getElementById('course-form');
-    dom.chaptersContainer = document.getElementById('chapters-container');
+    dom.chapterTabsContainer = document.getElementById('chapter-tabs-container');
+    dom.chapterContentContainer = document.getElementById('chapter-content-container');
     dom.addChapterBtn = document.getElementById('add-chapter');
     dom.downloadSection = document.getElementById('download-section');
     dom.downloadZipLink = document.getElementById('download-zip');
@@ -34,9 +35,6 @@ document.addEventListener('DOMContentLoaded', () => {
     dom.numChaptersSelect = document.getElementById('num-chapters');
     dom.generateCourseBtn = document.getElementById('generate-course-btn');
     dom.webllmIframe = document.getElementById('webllm-iframe');
-    dom.helpBtn = document.getElementById('help-btn');
-    dom.helpModal = document.getElementById('help-modal');
-    dom.closeHelpBtn = document.getElementById('close-help-btn');
     dom.clearFormBtn = document.getElementById('clear-form-btn');
 
 
@@ -47,8 +45,6 @@ document.addEventListener('DOMContentLoaded', () => {
     State.initState(dom, appState, UI);
 
     // Event Listeners
-    dom.helpBtn.addEventListener('click', UI.showHelpModal);
-    dom.closeHelpBtn.addEventListener('click', UI.hideHelpModal);
     dom.refreshModelsBtn.addEventListener('click', API.loadOllamaModels);
     dom.aiModelSelect.addEventListener('change', State.saveState);
     dom.generateCourseBtn.addEventListener('click', Course.generateCourse);
@@ -58,5 +54,5 @@ document.addEventListener('DOMContentLoaded', () => {
     // Initial Load
     API.loadOllamaModels();
     State.loadState();
-    UI.addChapter();
+    setTimeout(UI.addChapter, 0);
 });

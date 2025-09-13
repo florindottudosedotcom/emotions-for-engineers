@@ -23,8 +23,8 @@
         .shell-container {
             display: flex;
             flex-direction: column;
-            height: 90vh; /* Adjust height as needed */
-            border: 1px solid #ccc;
+            /* height: 90vh; */ /* Let content determine height */
+            /* border: 1px solid #ccc; */ /* Border removed */
             border-radius: 4px;
         }
         .tab-nav {
@@ -32,6 +32,7 @@
             display: flex;
             background-color: #f1f1f1;
             border-bottom: 1px solid #ccc;
+            width: 100%; /* Ensure tab nav takes full width */
         }
         .tab-nav button {
             background-color: inherit;

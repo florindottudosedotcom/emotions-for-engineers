@@ -59,8 +59,13 @@ function addChapter() {
         chapterDiv.style.display = 'block';
     });
 
-    // Activate the new tab by default
-    tabButton.click();
+    // Deactivate all other tabs and hide content
+    dom.chapterTabsContainer.querySelectorAll('.tab-link').forEach(btn => btn.classList.remove('active'));
+    dom.chapterContentContainer.querySelectorAll('.chapter-content').forEach(content => content.style.display = 'none');
+
+    // Activate the new tab and show its content
+    tabButton.classList.add('active');
+    chapterDiv.style.display = 'block';
 
     // Iframe and editor instance setup
     const iframe = document.getElementById(`editor-iframe-${chapterId}`);
