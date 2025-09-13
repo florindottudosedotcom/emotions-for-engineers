@@ -20,7 +20,9 @@ Title: [The course title]
 Description: [The course description]`;
 
     try {
+        ui.logDebug("Generating course details. Calling AI...");
         const content = await api.generateAIText(systemPrompt);
+        ui.logDebug("AI call for course details complete.");
         if (!content || content.trim() === '') {
             throw new Error("The AI model returned an empty response.");
         }
@@ -78,7 +80,9 @@ Title: [The chapter title]
 Content:
 [The full chapter content in Markdown]`;
 
+    ui.logDebug(`Generating content for chapter ${chapterIndex}. Calling AI...`);
     const textResponse = await api.generateAIText(systemPrompt);
+    ui.logDebug(`AI call for chapter ${chapterIndex} complete.`);
     if (!textResponse) {
         throw new Error(`AI returned an empty response for chapter ${chapterIndex}.`);
     }

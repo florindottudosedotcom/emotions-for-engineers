@@ -9,25 +9,30 @@ document.addEventListener('DOMContentLoaded', () => {
 let webllmEngine;
 let currentModelId;
 
+function logToParent(message) {
+    console.log(`[iframe] ${message}`);
+    parent.postMessage({ type: 'debug-log', message: message }, '*');
+}
+
 async function initializeWebLLM(modelId) {
-    console.log('[iframe] initializeWebLLM called with modelId:', modelId);
+    logToParent(`initializeWebLLM called with modelId: ${modelId}`);
     // If an engine for the same model already exists, do nothing.
     if (webllmEngine && currentModelId === modelId) {
-        console.log('[iframe] Engine for this model already exists.');
+        logToParent('Engine for this model already exists.');
         parent.postMessage({ type: 'webllm-ready', model: currentModelId }, '*');
         return;
     }
 
     // If a different engine exists, unload it first.
     if (webllmEngine) {
-        console.log('[iframe] Unloading previous engine.');
+        logToParent('Unloading previous engine.');
         await webllmEngine.unload();
         webllmEngine = null;
         currentModelId = null;
     }
 
     try {
-        console.log('[iframe] Creating new MLC Engine for:', modelId);
+        logToParent(`Creating new MLC Engine for: ${modelId}`);
         currentModelId = modelId;
 
         // Add a timeout for engine creation
@@ -39,27 +44,27 @@ async function initializeWebLLM(modelId) {
         const engine = await Promise.race([enginePromise, timeoutPromise]);
 
         webllmEngine = engine;
-        console.log('[iframe] Engine created successfully.');
+        logToParent('Engine created successfully.');
         parent.postMessage({ type: 'webllm-ready', model: modelId }, '*');
     } catch (err) {
-        console.error("[iframe] WebLLM Initialization Error:", err);
+        logToParent(`WebLLM Initialization Error: ${err.message}`);
         parent.postMessage({ type: 'webllm-error', error: err.message }, '*');
         currentModelId = null; // Reset on error
     }
 }
 
 async function generateText(prompt) {
-    console.log('[iframe] generateText called with prompt:', prompt);
+    logToParent('generateText called.');
     if (!webllmEngine) {
-        console.error('[iframe] WebLLM engine is not initialized.');
+        logToParent('Error: WebLLM engine is not initialized.');
         throw new Error("WebLLM engine is not initialized.");
     }
-    console.log('[iframe] Calling webllmEngine.chat.completions.create...');
+    logToParent('Calling webllmEngine.chat.completions.create...');
     const reply = await webllmEngine.chat.completions.create({
         messages: [{ role: 'user', content: prompt }],
         stream: false
     });
-    console.log('[iframe] Received reply from webllmEngine:', reply);
+    logToParent('Received reply from webllmEngine.');
     return reply.choices[0].message.content;
 }
 
@@ -67,7 +72,7 @@ window.addEventListener('message', async (event) => {
     if (!event.data || !event.data.type) return;
 
     const { type, id, prompt, modelId } = event.data;
-    console.log('[iframe] Received message:', event.data);
+    logToParent(`Received message of type: ${type}`);
 
     if (type === 'initialize-webllm') {
         if (modelId) {

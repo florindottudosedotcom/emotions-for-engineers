@@ -109,6 +109,35 @@ function updateOllamaStatus(message, type = 'info') {
 
 export function initUI(domElements) {
     dom = domElements;
+    // The new debug buttons might not exist on all pages
+    if (dom.toggleDebugBtn) {
+        dom.toggleDebugBtn.addEventListener('click', () => {
+            dom.toggleDebugBtn.textContent = "Clicked!";
+            const fieldset = document.getElementById('debug-fieldset');
+            if (fieldset) {
+                fieldset.style.display = fieldset.style.display === 'none' ? 'block' : 'none';
+            }
+        });
+    }
+    if (dom.clearLogBtn) {
+        dom.clearLogBtn.addEventListener('click', () => {
+            const logArea = document.getElementById('debug-log');
+            if (logArea) {
+                logArea.innerHTML = '';
+            }
+        });
+    }
+}
+
+function logDebug(message) {
+    const logArea = document.getElementById('debug-log');
+    if (logArea) {
+        const timestamp = new Date().toLocaleTimeString();
+        const logEntry = document.createElement('div');
+        logEntry.textContent = `[${timestamp}] ${message}`;
+        logArea.appendChild(logEntry);
+        logArea.scrollTop = logArea.scrollHeight; // Auto-scroll to bottom
+    }
 }
 
 function resetChapterCount() {
@@ -123,6 +152,7 @@ export {
     addChapter,
     updateAiStatus,
     updateOllamaStatus,
+    logDebug,
     editorInstances,
     resetChapterCount
 };

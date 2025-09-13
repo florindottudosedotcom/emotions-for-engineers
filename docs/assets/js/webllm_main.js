@@ -45,16 +45,20 @@ document.addEventListener('DOMContentLoaded', () => {
     dom.generateCourseBtn = document.getElementById('generate-course-btn');
     dom.webllmIframe = document.getElementById('webllm-iframe');
     dom.clearFormBtn = document.getElementById('clear-form-btn');
+    dom.toggleDebugBtn = document.getElementById('toggle-debug-btn');
+    dom.clearLogBtn = document.getElementById('clear-log-btn');
 
 
     // Init Modules
     UI.initUI(dom);
+    UI.logDebug("Application initialized. DOM elements loaded.");
     API.initApi(dom, appState);
     Course.initCourse(dom, UI, API, State);
     State.initState(dom, appState, UI);
 
     // Event Listeners
     dom.aiModelSelect.addEventListener('change', () => {
+        UI.logDebug(`AI model changed. Initializing ${dom.aiModelSelect.value}...`);
         API.initializeWebLLM(dom.aiModelSelect.value);
         State.saveState();
     });
@@ -108,10 +112,16 @@ function debounce(func, wait) {
 }
 
 window.addEventListener('message', (event) => {
-    const { type, id, result, error, content } = event.data;
+    const { type, id, result, error, content, message } = event.data;
 
     // Handle messages from WebLLM iframe
     if (event.source === dom.webllmIframe.contentWindow) {
+        if (type === 'debug-log') {
+            UI.logDebug(`[iframe] ${message}`);
+            return;
+        }
+
+        UI.logDebug(`Received message from WebLLM iframe: ${type}`);
         if (type === 'webllm-iframe-ready') {
             appState.isWebllmIframeReady = true;
             API.loadWebLLMModels();
