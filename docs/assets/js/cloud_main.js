@@ -44,6 +44,8 @@ document.addEventListener('DOMContentLoaded', () => {
     // Event Listeners
     dom.settingsBtn.addEventListener('click', UI.showSettingsModal);
     dom.closeSettingsBtn.addEventListener('click', UI.hideSettingsModal);
+    dom.helpBtn.addEventListener('click', UI.showHelpModal);
+    dom.closeHelpBtn.addEventListener('click', UI.hideHelpModal);
     dom.apiKeysForm.addEventListener('submit', (e) => {
         API.saveApiKeys(e);
         UI.hideSettingsModal();

@@ -56,6 +56,8 @@ document.addEventListener('DOMContentLoaded', () => {
     State.initState(dom, appState, UI);
 
     // Event Listeners
+    dom.helpBtn.addEventListener('click', UI.showHelpModal);
+    dom.closeHelpBtn.addEventListener('click', UI.hideHelpModal);
     dom.aiModelSelect.addEventListener('change', () => {
         API.initializeWebLLM(dom.aiModelSelect.value);
         State.saveState();

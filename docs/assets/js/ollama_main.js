@@ -47,6 +47,8 @@ document.addEventListener('DOMContentLoaded', () => {
     State.initState(dom, appState, UI);
 
     // Event Listeners
+    dom.helpBtn.addEventListener('click', UI.showHelpModal);
+    dom.closeHelpBtn.addEventListener('click', UI.hideHelpModal);
     dom.refreshModelsBtn.addEventListener('click', API.loadOllamaModels);
     dom.aiModelSelect.addEventListener('change', State.saveState);
     dom.generateCourseBtn.addEventListener('click', Course.generateCourse);
