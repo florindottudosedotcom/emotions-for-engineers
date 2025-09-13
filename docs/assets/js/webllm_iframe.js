@@ -1,7 +1,9 @@
 import * as webllm from "./webllm.js";
 
-// Signal to the parent window that the iframe's script is loaded and ready to receive messages.
-parent.postMessage({ type: 'webllm-iframe-ready' }, '*');
+document.addEventListener('DOMContentLoaded', () => {
+    // Signal to the parent window that the iframe is fully loaded and ready.
+    parent.postMessage({ type: 'webllm-iframe-ready' }, '*');
+});
 
 let webllmEngine;
 let currentModelId;
