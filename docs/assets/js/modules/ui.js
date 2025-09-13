@@ -108,6 +108,10 @@ export function initUI(domElements) {
     dom = domElements;
 }
 
+function resetChapterCount() {
+    chapterCount = 0;
+}
+
 export {
     showSettingsModal,
     hideSettingsModal,
@@ -116,5 +120,6 @@ export {
     addChapter,
     updateAiStatus,
     updateOllamaStatus,
-    editorInstances
+    editorInstances,
+    resetChapterCount
 };
