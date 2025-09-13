@@ -63,9 +63,8 @@ document.addEventListener('DOMContentLoaded', () => {
     dom.clearFormBtn.addEventListener('click', State.clearState);
 
     // Initial Load
-    API.loadWebLLMModels();
     State.loadState();
-    setTimeout(UI.addChapter, 0);
+    API.loadWebLLMModels();
 });
 
 window.addEventListener('message', (event) => {
