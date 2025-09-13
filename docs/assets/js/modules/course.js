@@ -57,8 +57,7 @@ function parseAndPopulateCourseDetails(textResponse) {
         if (dom.chapterContentContainer) dom.chapterContentContainer.innerHTML = '';
 
         Object.keys(ui.editorInstances).forEach(key => delete ui.editorInstances[key]);
-        // chapterCount needs to be managed by the UI module
-        // For now, this is a dependency issue.
+        ui.resetChapterCount();
 
         ui.updateAiStatus("✅ Course details populated. Generating chapters...");
         generateChaptersInLoop();
