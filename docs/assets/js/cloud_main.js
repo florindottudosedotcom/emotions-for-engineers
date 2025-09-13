@@ -53,5 +53,4 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Initial Load
     setTimeout(UI.addChapter, 0);
-    UI.initResizeObserver();
 });

@@ -41,16 +41,4 @@ document.addEventListener('DOMContentLoaded', () => {
 
     if (helpBtn) helpBtn.addEventListener('click', showHelpModal);
     if (closeHelpBtn) closeHelpBtn.addEventListener('click', hideHelpModal);
-
-    window.addEventListener('message', (event) => {
-        // We only accept messages from our own origin
-        if (event.origin !== window.location.origin) {
-            return;
-        }
-
-        const { type, height } = event.data;
-        if (type === 'resize-iframe' && contentFrame) {
-            contentFrame.style.height = `${height}px`;
-        }
-    });
 });
