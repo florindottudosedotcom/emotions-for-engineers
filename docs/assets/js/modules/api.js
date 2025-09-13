@@ -22,6 +22,7 @@ function initializeWebLLM(modelId) {
 }
 
 function loadWebLLMModels() {
+    if (!dom.aiModelSelect) return;
     const selectedModelBeforeUpdate = dom.aiModelSelect.value;
     dom.aiModelSelect.innerHTML = '';
     state.WEBLLM_MODELS.forEach(model => {
@@ -42,7 +43,11 @@ async function loadOllamaModels() {
         dom.ollamaStatus.textContent = 'Loading Ollama models...';
         dom.ollamaStatus.className = 'ollama-status-style';
     }
-    dom.aiModelSelect.innerHTML = '';
+    if (dom.aiModelSelect) {
+        dom.aiModelSelect.innerHTML = '';
+    } else {
+        return; // Cannot proceed without aiModelSelect
+    }
     try {
         const response = await fetch('http://localhost:11434/api/tags');
         const data = await response.json();
@@ -69,6 +74,7 @@ async function loadOllamaModels() {
 }
 
 function handleProviderChange() {
+    if (!dom.aiProviderSelect) return;
     const selectedProvider = dom.aiProviderSelect.value;
     state.AI_PROVIDER = selectedProvider;
 
@@ -99,6 +105,10 @@ async function updateAvailableProviders() {
     if (dom.ollamaStatus) {
         dom.ollamaStatus.textContent = 'Detecting available AI providers...';
     }
+
+    // This function is not relevant for cloud-only context, so exit if provider select doesn't exist.
+    if (!dom.aiProviderSelect) return;
+
     const selectedProviderBeforeUpdate = dom.aiProviderSelect.value;
     dom.aiProviderSelect.innerHTML = '';
 
@@ -135,9 +145,9 @@ function saveApiKeys(e) {
     state.SESSION_API_KEYS.anthropic = dom.anthropicApiKeyInput.value || null;
     state.SESSION_API_KEYS.google = dom.googleApiKeyInput.value || null;
 
-    dom.openAiApiKeyInput.value = '';
-    dom.anthropicApiKeyInput.value = '';
-    dom.googleApiKeyInput.value = '';
+    if(dom.openAiApiKeyInput) dom.openAiApiKeyInput.value = '';
+    if(dom.anthropicApiKeyInput) dom.anthropicApiKeyInput.value = '';
+    if(dom.googleApiKeyInput) dom.googleApiKeyInput.value = '';
 
     // This needs to call a UI function, which is a dependency issue.
     // For now, we'll assume a UI module exists.
@@ -147,7 +157,7 @@ function saveApiKeys(e) {
 }
 
 async function generateAIText(systemPrompt) {
-    const provider = dom.aiProviderSelect.value;
+    const provider = dom.aiProviderSelect ? dom.aiProviderSelect.value : 'openai'; // Default to openai if no selector
     let endpoint = '';
     let headers = { 'Content-Type': 'application/json' };
     let body = {};
