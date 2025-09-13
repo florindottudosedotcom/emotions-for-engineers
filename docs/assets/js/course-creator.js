@@ -2,6 +2,8 @@
 let AI_PROVIDER = 'ollama'; // 'ollama' or 'webllm'
 let isWebllmReady = false;
 let currentWebllmModel = '';
+let isWebllmIframeReady = false;
+let pendingWebllmModelId = null;
 const WEBLLM_MODELS = [
     { id: "Llama-3-8B-Instruct-q4f16_1-MLC", name: "Llama 3 8B Instruct" },
     { id: "Phi-3-mini-4k-instruct-q4f16_1-MLC", name: "Phi 3 Mini" }
@@ -26,7 +28,14 @@ window.addEventListener('message', (event) => {
     if (event.source === webllmIframe.contentWindow) {
         const { type, id, result, error } = event.data;
 
-        if (type === 'webllm-ready') {
+        if (type === 'webllm-iframe-ready') {
+            isWebllmIframeReady = true;
+            // If there's a model waiting to be initialized, do it now.
+            if (pendingWebllmModelId) {
+                initializeWebLLM(pendingWebllmModelId);
+                pendingWebllmModelId = null;
+            }
+        } else if (type === 'webllm-ready') {
             isWebllmReady = true;
             currentWebllmModel = event.data.model;
             // Find the model name from the constant using the ID
@@ -73,6 +82,14 @@ window.addEventListener('message', (event) => {
 
 function initializeWebLLM(modelId) {
     if (!modelId) return;
+
+    // If the iframe isn't ready yet, store the model ID and wait.
+    if (!isWebllmIframeReady) {
+        pendingWebllmModelId = modelId;
+        console.log("WebLLM iframe not ready, pending initialization for:", modelId);
+        return;
+    }
+
     isWebllmReady = false;
     currentWebllmModel = '';
     const selectedModelName = WEBLLM_MODELS.find(m => m.id === modelId)?.name || modelId;
