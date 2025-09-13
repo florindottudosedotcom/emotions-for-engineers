@@ -52,7 +52,10 @@ function parseAndPopulateCourseDetails(textResponse) {
         dom.courseNameInput.value = courseTitle;
         dom.courseDescTextarea.value = courseDescription;
 
-        dom.chaptersContainer.innerHTML = '';
+        // Clear existing chapter tabs and content
+        if (dom.chapterTabsContainer) dom.chapterTabsContainer.innerHTML = '';
+        if (dom.chapterContentContainer) dom.chapterContentContainer.innerHTML = '';
+
         Object.keys(ui.editorInstances).forEach(key => delete ui.editorInstances[key]);
         // chapterCount needs to be managed by the UI module
         // For now, this is a dependency issue.
