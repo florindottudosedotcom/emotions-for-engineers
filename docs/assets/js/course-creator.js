@@ -1,6 +1,11 @@
 // --- AI Provider State ---
 let AI_PROVIDER = 'ollama'; // 'ollama' or 'webllm'
 let isWebllmReady = false;
+let currentWebllmModel = '';
+const WEBLLM_MODELS = [
+    { id: "Llama-3-8B-Instruct-q4f16_1-MLC", name: "Llama 3 8B Instruct" },
+    { id: "Phi-3-mini-4k-instruct-q4f16_1-MLC", name: "Phi 3 Mini" }
+];
 const SESSION_API_KEYS = {
     openai: null,
     anthropic: null,
@@ -23,7 +28,10 @@ window.addEventListener('message', (event) => {
 
         if (type === 'webllm-ready') {
             isWebllmReady = true;
-            ollamaStatus.textContent = '✅ WebLLM is ready.';
+            currentWebllmModel = event.data.model;
+            // Find the model name from the constant using the ID
+            const modelName = WEBLLM_MODELS.find(m => m.id === currentWebllmModel)?.name || currentWebllmModel;
+            ollamaStatus.textContent = `✅ WebLLM is ready. Loaded: ${modelName}`;
             ollamaStatus.className = 'ollama-status-style ollama-status-ok';
         } else if (type === 'webllm-error') {
             isWebllmReady = false;
@@ -62,6 +70,34 @@ window.addEventListener('message', (event) => {
 
 
 // --- AI Provider Functions ---
+
+function initializeWebLLM(modelId) {
+    if (!modelId) return;
+    isWebllmReady = false;
+    currentWebllmModel = '';
+    const selectedModelName = WEBLLM_MODELS.find(m => m.id === modelId)?.name || modelId;
+    ollamaStatus.textContent = `🔵 Initializing ${selectedModelName}... This may take a moment.`;
+    ollamaStatus.className = 'ollama-status-style ollama-status-info';
+    webllmIframe.contentWindow.postMessage({ type: 'initialize-webllm', modelId: modelId }, '*');
+}
+
+function loadWebLLMModels() {
+    const selectedModelBeforeUpdate = aiModelSelect.value;
+    aiModelSelect.innerHTML = '';
+    WEBLLM_MODELS.forEach(model => {
+        aiModelSelect.add(new Option(model.name, model.id));
+    });
+
+    // Restore previous selection if possible, otherwise default to the first model
+    if (WEBLLM_MODELS.some(m => m.id === selectedModelBeforeUpdate)) {
+        aiModelSelect.value = selectedModelBeforeUpdate;
+    } else {
+       aiModelSelect.selectedIndex = 0;
+    }
+
+    // Trigger initialization of the currently selected model
+    initializeWebLLM(aiModelSelect.value);
+}
 
 async function updateAvailableProviders() {
     ollamaStatus.textContent = 'Detecting available AI providers...';
@@ -114,13 +150,9 @@ function handleProviderChange() {
         refreshModelsBtn.style.display = 'block';
         loadOllamaModels();
     } else if (selectedProvider === 'webllm') {
-        if (!isWebllmReady) {
-            ollamaStatus.textContent = `🔵 Initializing WebLLM...`;
-            ollamaStatus.className = 'ollama-status-style ollama-status-info';
-        } else {
-            ollamaStatus.textContent = `✅ WebLLM is ready.`;
-            ollamaStatus.className = 'ollama-status-style ollama-status-ok';
-        }
+        aiModelSelectionGroup.style.display = 'flex';
+        refreshModelsBtn.style.display = 'none'; // No refresh for webllm
+        loadWebLLMModels();
     } else { // Cloud providers
          ollamaStatus.textContent = `✅ Ready to use ${selectedProvider}.`;
          ollamaStatus.className = 'ollama-status-style ollama-status-ok';
@@ -573,7 +605,12 @@ document.addEventListener('DOMContentLoaded', () => {
     courseNameInput.addEventListener('input', saveState);
     courseDescTextarea.addEventListener('input', saveState);
     masterPromptTextarea.addEventListener('input', saveState);
-    aiModelSelect.addEventListener('change', saveState);
+    aiModelSelect.addEventListener('change', () => {
+        if (aiProviderSelect.value === 'webllm') {
+            initializeWebLLM(aiModelSelect.value);
+        }
+        saveState(); // Keep saving state
+    });
     numChaptersSelect.addEventListener('change', saveState);
     addChapterBtn.addEventListener('click', addChapter);
 

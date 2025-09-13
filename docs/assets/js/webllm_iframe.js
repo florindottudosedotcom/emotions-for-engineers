@@ -1,16 +1,31 @@
 import * as webllm from "./webllm.js";
 
 let webllmEngine;
-const WEBLLM_MODEL_ID = "Phi-3-mini-4k-instruct-q4f16_1-MLC";
+let currentModelId;
 
-async function initializeWebLLM() {
+async function initializeWebLLM(modelId) {
+    // If an engine for the same model already exists, do nothing.
+    if (webllmEngine && currentModelId === modelId) {
+        parent.postMessage({ type: 'webllm-ready', model: currentModelId }, '*');
+        return;
+    }
+
+    // If a different engine exists, unload it first.
+    if (webllmEngine) {
+        await webllmEngine.unload();
+        webllmEngine = null;
+        currentModelId = null;
+    }
+
     try {
-        const engine = await webllm.CreateMLCEngine(WEBLLM_MODEL_ID, {});
+        currentModelId = modelId;
+        const engine = await webllm.CreateMLCEngine(modelId, {});
         webllmEngine = engine;
-        parent.postMessage({ type: 'webllm-ready' }, '*');
+        parent.postMessage({ type: 'webllm-ready', model: modelId }, '*');
     } catch (err) {
         console.error("WebLLM Initialization Error in iframe:", err);
         parent.postMessage({ type: 'webllm-error', error: err.message }, '*');
+        currentModelId = null; // Reset on error
     }
 }
 
@@ -26,15 +41,22 @@ async function generateText(prompt) {
 }
 
 window.addEventListener('message', async (event) => {
-    if (event.data && event.data.type === 'generate-text') {
+    if (!event.data || !event.data.type) return;
+
+    const { type, id, prompt, modelId } = event.data;
+
+    if (type === 'initialize-webllm') {
+        if (modelId) {
+            await initializeWebLLM(modelId);
+        } else {
+            parent.postMessage({ type: 'webllm-error', error: 'No model ID provided for initialization.' }, '*');
+        }
+    } else if (type === 'generate-text') {
         try {
-            const prompt = event.data.prompt;
             const result = await generateText(prompt);
-            parent.postMessage({ type: 'generation-result', result: result, id: event.data.id }, '*');
+            parent.postMessage({ type: 'generation-result', result: result, id: id }, '*');
         } catch (err) {
-            parent.postMessage({ type: 'generation-error', error: err.message, id: event.data.id }, '*');
+            parent.postMessage({ type: 'generation-error', error: err.message, id: id }, '*');
         }
     }
 });
-
-initializeWebLLM();
