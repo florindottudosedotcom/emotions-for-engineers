@@ -1,6 +1,5 @@
 let dom = {};
 let state = {};
-let webllmPromiseResolvers = {};
 
 function initializeWebLLM(modelId) {
     if (!modelId) return;
@@ -217,7 +216,7 @@ async function generateAIText(systemPrompt) {
             if (!state.isWebllmReady) throw new Error("WebLLM engine is not ready.");
             return new Promise((resolve, reject) => {
                 const requestId = Date.now() + Math.random();
-                webllmPromiseResolvers[requestId] = { resolve, reject };
+                state.webllmPromiseResolvers[requestId] = { resolve, reject };
                 dom.webllmIframe.contentWindow.postMessage({ type: 'generate-text', prompt: systemPrompt, id: requestId }, '*');
             });
         default:
@@ -252,6 +251,5 @@ export {
     handleProviderChange,
     loadOllamaModels,
     generateAIText,
-    saveApiKeys,
-    webllmPromiseResolvers
+    saveApiKeys
 };

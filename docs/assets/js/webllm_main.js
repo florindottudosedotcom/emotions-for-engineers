@@ -62,17 +62,59 @@ document.addEventListener('DOMContentLoaded', () => {
     dom.addChapterBtn.addEventListener('click', UI.addChapter);
     dom.clearFormBtn.addEventListener('click', State.clearState);
 
+    // --- State Persistence Event Listeners ---
+    const debouncedSave = debounce(State.saveState, 300);
+
+    dom.courseNameInput.addEventListener('input', State.saveState);
+    dom.courseDescTextarea.addEventListener('input', State.saveState);
+    dom.masterPromptTextarea.addEventListener('input', debouncedSave);
+    dom.numChaptersSelect.addEventListener('change', State.saveState);
+
+    dom.chapterContentContainer.addEventListener('input', (e) => {
+        if (e.target.classList.contains('chapter-title')) {
+            State.saveState();
+        }
+    });
+
+    dom.chapterContentContainer.addEventListener('click', (e) => {
+        if (e.target.classList.contains('generate-chapter-btn')) {
+            const chapterId = e.target.dataset.chapterId;
+            if (chapterId) {
+                Course.generateSingleChapter(parseInt(chapterId, 10));
+            }
+        }
+    });
+    // --- End State Persistence ---
+
     // Initial Load
     State.loadState();
+
+    // Ensure there's at least one chapter to start with
+    if (dom.chapterContentContainer.children.length === 0) {
+        UI.addChapter();
+    }
 });
 
-window.addEventListener('message', (event) => {
-    if (event.source === dom.webllmIframe.contentWindow) {
-        const { type, id, result, error } = event.data;
+function debounce(func, wait) {
+    let timeout;
+    return function executedFunction(...args) {
+        const later = () => {
+            clearTimeout(timeout);
+            func(...args);
+        };
+        clearTimeout(timeout);
+        timeout = setTimeout(later, wait);
+    };
+}
 
+window.addEventListener('message', (event) => {
+    const { type, id, result, error, content } = event.data;
+
+    // Handle messages from WebLLM iframe
+    if (event.source === dom.webllmIframe.contentWindow) {
         if (type === 'webllm-iframe-ready') {
             appState.isWebllmIframeReady = true;
-            API.loadWebLLMModels(); // Moved from DOMContentLoaded
+            API.loadWebLLMModels();
             if (appState.pendingWebllmModelId) {
                 API.initializeWebLLM(appState.pendingWebllmModelId);
                 appState.pendingWebllmModelId = null;
@@ -92,6 +134,21 @@ window.addEventListener('message', (event) => {
                 appState.webllmPromiseResolvers[id].reject(new Error(error));
             }
             delete appState.webllmPromiseResolvers[id];
+        }
+        return; // End of WebLLM message handling
+    }
+
+    // Handle messages from Editor iframes
+    if (UI.editorInstances && UI.editorInstances[id]) {
+        if (type === 'editor-ready') {
+            UI.editorInstances[id].isReady = true;
+            if (UI.editorInstances[id].pendingContent) {
+                UI.editorInstances[id].iframe.contentWindow.postMessage({ type: 'set-content', content: UI.editorInstances[id].pendingContent }, '*');
+                delete UI.editorInstances[id].pendingContent;
+            }
+        } else if (type === 'content-changed') {
+            UI.editorInstances[id].content = content;
+            State.saveState();
         }
     }
 });
