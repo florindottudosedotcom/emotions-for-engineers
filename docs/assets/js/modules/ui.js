@@ -38,7 +38,10 @@ function addChapter() {
         <div class="chapter">
             <div class="chapter-header">
                 <h3>Chapter ${chapterId}</h3>
-                <button type="button" class="btn btn-danger remove-chapter-btn" data-chapter-id="${chapterId}">Remove Chapter</button>
+                <div class="chapter-buttons">
+                    <button type="button" class="btn btn-secondary generate-chapter-btn" data-chapter-id="${chapterId}">Generate Chapter</button>
+                    <button type="button" class="btn btn-danger remove-chapter-btn" data-chapter-id="${chapterId}">Remove Chapter</button>
+                </div>
             </div>
             <label for="chapter-title-${chapterId}">Chapter Title</label>
             <input type="text" id="chapter-title-${chapterId}" class="chapter-title" placeholder="e.g., Getting Started" required>
