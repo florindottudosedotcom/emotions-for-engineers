@@ -6,18 +6,23 @@ const LOCAL_STORAGE_KEY = "courseCreatorState";
 
 function saveState() {
     const chapters = [];
-    document.querySelectorAll('.chapter').forEach(chapterDiv => {
-        const chapterId = chapterDiv.id.split('-')[1];
-        const title = document.getElementById(`chapter-title-${chapterId}`).value;
-        const content = ui.editorInstances[chapterId] ? ui.editorInstances[chapterId].content : '';
-        chapters.push({ title, content });
+    // The chapter content divs are now the source of truth for order and ID
+    dom.chapterContentContainer.querySelectorAll('.chapter-content').forEach(contentDiv => {
+        const chapterId = contentDiv.id.replace('chapter-content-', '');
+        const chapterContainer = contentDiv.querySelector('.chapter');
+        if (chapterContainer) {
+            const title = chapterContainer.querySelector(`#chapter-title-${chapterId}`).value;
+            const content = ui.editorInstances[chapterId] ? ui.editorInstances[chapterId].content : '';
+            chapters.push({ title, content });
+        }
     });
 
     const appState = {
         courseName: dom.courseNameInput.value,
         courseDesc: dom.courseDescTextarea.value,
         chapters: chapters,
-        ollamaModel: dom.aiModelSelect.value,
+        // Only save model if the select element exists
+        ollamaModel: dom.aiModelSelect ? dom.aiModelSelect.value : null,
         masterPrompt: dom.masterPromptTextarea.value,
         numChapters: dom.numChaptersSelect.value
     };
@@ -35,20 +40,29 @@ function loadState() {
 
     dom.courseNameInput.value = loadedState.courseName || '';
     dom.courseDescTextarea.value = loadedState.courseDesc || '';
-    dom.aiModelSelect.value = loadedState.ollamaModel || 'llama3';
+    if (dom.aiModelSelect && loadedState.ollamaModel) {
+        dom.aiModelSelect.value = loadedState.ollamaModel;
+    }
     dom.masterPromptTextarea.value = loadedState.masterPrompt || '';
     dom.numChaptersSelect.value = loadedState.numChapters || '5';
 
-    dom.chaptersContainer.innerHTML = '';
+    // Clear existing chapter UI
+    dom.chapterTabsContainer.innerHTML = '';
+    dom.chapterContentContainer.innerHTML = '';
     Object.keys(ui.editorInstances).forEach(key => delete ui.editorInstances[key]);
-    // chapterCount needs to be managed by the UI module
 
     if (loadedState.chapters && loadedState.chapters.length > 0) {
+        let chapterIndex = 0;
         loadedState.chapters.forEach(chapterData => {
-            ui.addChapter();
-            const newChapterId = Object.keys(ui.editorInstances).length;
+            chapterIndex++;
+            ui.addChapter(); // This creates the tab and content pane for the new chapter
+
+            // The new chapter is always the last one added
+            const newChapterId = chapterIndex;
             const titleInput = document.getElementById(`chapter-title-${newChapterId}`);
-            if (titleInput) titleInput.value = chapterData.title;
+            if (titleInput) {
+                titleInput.value = chapterData.title;
+            }
 
             const editorInstance = ui.editorInstances[newChapterId];
             if (editorInstance) {

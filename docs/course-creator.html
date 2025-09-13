@@ -6,17 +6,26 @@
     <title>Universal Course Creator</title>
     <link rel="stylesheet" href="./assets/css/course-creator.css" />
     <style>
-        body, html {
-            margin: 0;
-            padding: 0;
-            height: 100%;
-            overflow: hidden;
-            font-family: sans-serif;
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            background-color: #f9f9f9;
+        }
+        .main-container {
+            max-width: 1200px;
+            margin: 2rem auto;
+            background-color: #fff;
+            padding: 2rem;
+            border-radius: 8px;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
         }
         .shell-container {
             display: flex;
             flex-direction: column;
-            height: 100%;
+            height: 90vh; /* Adjust height as needed */
+            border: 1px solid #ccc;
+            border-radius: 4px;
         }
         .tab-nav {
             flex-shrink: 0;
@@ -31,7 +40,7 @@
             cursor: pointer;
             padding: 14px 16px;
             transition: 0.3s;
-            font-size: 17px;
+            font-size: 16px;
         }
         .tab-nav button:hover {
             background-color: #ddd;
@@ -43,17 +52,42 @@
             flex-grow: 1;
             border: none;
         }
+        .header-container {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1rem;
+        }
     </style>
 </head>
 <body>
-
-    <div class="shell-container">
-        <div class="tab-nav">
-            <button class="tab-link active" data-src="cloud_creator.html">Cloud AI</button>
-            <button class="tab-link" data-src="webllm_creator.html">WebLLM (In-Browser)</button>
-            <button class="tab-link" data-src="ollama_creator.html">Ollama (Local)</button>
+    <div class="main-container">
+        <div class="header-container">
+            <h1>Universal Course Creator</h1>
+            <button type="button" id="help-btn" class="btn btn-secondary">Help</button>
         </div>
-        <iframe id="content-frame" class="content-frame" src="cloud_creator.html"></iframe>
+
+        <div class="shell-container">
+            <div class="tab-nav">
+                <button class="tab-link active" data-src="cloud_creator.html">☁️ Cloud AI</button>
+                <button class="tab-link" data-src="webllm_creator.html">🧠 WebLLM (In-Browser)</button>
+                <button class="tab-link" id="ollama-tab" data-src="ollama_creator.html">🖥️ Ollama (Local)</button>
+            </div>
+            <iframe id="content-frame" class="content-frame" src="cloud_creator.html"></iframe>
+        </div>
+    </div>
+
+    <!-- Help Modal -->
+    <div id="help-modal" class="modal-overlay">
+        <div class="modal-content">
+            <h2>How to Use This Tool</h2>
+            <div id="help-content">
+                <!-- This content can be loaded from one of the child pages or defined here -->
+            </div>
+            <div class="input-group margin-top-1-5rem">
+                <button type="button" id="close-help-btn" class="btn btn-danger margin-left-auto">Close</button>
+            </div>
+        </div>
     </div>
 
     <script src="./assets/js/shell_main.js"></script>
