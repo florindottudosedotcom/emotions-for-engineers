@@ -66,7 +66,6 @@ document.addEventListener('DOMContentLoaded', () => {
     API.loadWebLLMModels();
     State.loadState();
     setTimeout(UI.addChapter, 0);
-    UI.initResizeObserver();
 });
 
 window.addEventListener('message', (event) => {

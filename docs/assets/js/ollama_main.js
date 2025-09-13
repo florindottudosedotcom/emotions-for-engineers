@@ -55,5 +55,4 @@ document.addEventListener('DOMContentLoaded', () => {
     API.loadOllamaModels();
     State.loadState();
     setTimeout(UI.addChapter, 0);
-    UI.initResizeObserver();
 });
