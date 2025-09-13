@@ -64,7 +64,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Initial Load
     State.loadState();
-    API.loadWebLLMModels();
 });
 
 window.addEventListener('message', (event) => {
@@ -73,6 +72,7 @@ window.addEventListener('message', (event) => {
 
         if (type === 'webllm-iframe-ready') {
             appState.isWebllmIframeReady = true;
+            API.loadWebLLMModels(); // Moved from DOMContentLoaded
             if (appState.pendingWebllmModelId) {
                 API.initializeWebLLM(appState.pendingWebllmModelId);
                 appState.pendingWebllmModelId = null;
