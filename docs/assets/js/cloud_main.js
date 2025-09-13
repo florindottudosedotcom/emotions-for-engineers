@@ -36,7 +36,7 @@ document.addEventListener('DOMContentLoaded', () => {
     // Init Modules
     UI.initUI(dom);
     API.initApi(dom, appState);
-    Course.initCourse(dom, appState, UI, API);
+    Course.initCourse(dom, UI, API, State);
     State.initState(dom, appState, UI);
 
     // Event Listeners

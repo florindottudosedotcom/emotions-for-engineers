@@ -83,7 +83,22 @@
         <div class="modal-content">
             <h2>How to Use This Tool</h2>
             <div id="help-content">
-                <!-- This content can be loaded from one of the child pages or defined here -->
+                <h4>Welcome to the Universal Course Creator!</h4>
+                <p>This tool helps you generate entire courses using various AI models.</p>
+                <h5><strong>How to Use:</strong></h5>
+                <ol>
+                    <li><strong>Select an AI Provider Tab:</strong>
+                        <ul>
+                            <li>☁️ <strong>Cloud AI:</strong> Use powerful models from OpenAI, Anthropic, and Google. You'll need to provide your own API keys in the 'Settings' menu.</li>
+                            <li>🧠 <strong>WebLLM:</strong> Run a language model directly in your browser. No server or keys needed, but it may be slower.</li>
+                            <li>🖥️ <strong>Ollama (Local):</strong> Connect to a running Ollama instance on your local machine to use your own models.</li>
+                        </ul>
+                    </li>
+                    <li><strong>Enter a Course Prompt:</strong> In the 'Master AI Assistant' section, describe the course you want to create. Be as specific as possible!</li>
+                    <li><strong>Generate Course:</strong> Click "Generate Entire Course". The AI will first generate a title and description, then proceed to generate content for each chapter.</li>
+                    <li><strong>Review and Edit:</strong> Once generated, you can review and edit the content of each chapter in the editor.</li>
+                    <li><strong>Download:</strong> When you're happy with the course, click "Generate Course Files" at the bottom to download a .zip file containing all the course materials.</li>
+                </ol>
             </div>
             <div class="input-group margin-top-1-5rem">
                 <button type="button" id="close-help-btn" class="btn btn-danger margin-left-auto">Close</button>

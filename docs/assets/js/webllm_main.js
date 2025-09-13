@@ -50,7 +50,7 @@ document.addEventListener('DOMContentLoaded', () => {
     // Init Modules
     UI.initUI(dom);
     API.initApi(dom, appState);
-    Course.initCourse(dom, appState, UI, API);
+    Course.initCourse(dom, UI, API, State);
     State.initState(dom, appState, UI);
 
     // Event Listeners
@@ -63,9 +63,8 @@ document.addEventListener('DOMContentLoaded', () => {
     dom.clearFormBtn.addEventListener('click', State.clearState);
 
     // Initial Load
-    API.loadWebLLMModels();
     State.loadState();
-    setTimeout(UI.addChapter, 0);
+    API.loadWebLLMModels();
 });
 
 window.addEventListener('message', (event) => {

@@ -1,7 +1,7 @@
 let dom = {};
-let state = {};
 let ui = {};
 let api = {};
+let stateModule = {};
 
 async function generateCourse() {
     const userPrompt = dom.masterPromptTextarea.value;
@@ -134,7 +134,7 @@ async function generateChaptersInLoop() {
         }
     }
     ui.updateAiStatus("✅ All chapters have been successfully generated!");
-    // saveState(); // This is a dependency on the state module
+    stateModule.saveState();
     setTimeout(() => { ui.updateAiStatus(null); }, 5000);
 }
 
@@ -149,11 +149,11 @@ async function translate(textToTranslate, targetLangName) {
     }
 }
 
-export function initCourse(domElements, appState, uiModule, apiModule) {
+export function initCourse(domElements, uiModule, apiModule, stateMod) {
     dom = domElements;
-    state = appState;
     ui = uiModule;
     api = apiModule;
+    stateModule = stateMod;
 }
 
 export {
