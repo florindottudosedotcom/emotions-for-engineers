@@ -48,6 +48,20 @@ You can run the course creator tool in two ways:
     -   These scripts will start a local server and provide you with a URL (usually `http://localhost:8000/docs/course-creator.html`).
     -   **Important for Ollama Users:** You may need to configure Ollama to allow requests from the web browser. Please see the official Ollama documentation for instructions on how to manage `OLLAMA_ORIGINS`.
 
+### How to Publish Your Generated Course
+
+After you have downloaded the `.zip` file from the Course Creator, follow these steps to publish it:
+
+1.  **Unzip the File:** Extract the contents of the downloaded `.zip` file. This will give you a new folder named after your course.
+2.  **Move the Folder:** Move this new course folder into the `docs/` directory of this repository.
+3.  **Commit and Push:** Use Git to add, commit, and push the new files to the `main` branch of your repository.
+    ```bash
+    git add .
+    git commit -m "feat: add new course on My Awesome Topic"
+    git push origin main
+    ```
+4.  **Verify Deployment:** The GitHub Actions workflow will automatically start. After a few minutes, your new course will be live on your GitHub Pages website.
+
 ---
 
 ## Part 2: The Course Publishing Platform
