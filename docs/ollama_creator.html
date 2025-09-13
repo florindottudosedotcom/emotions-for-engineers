@@ -66,6 +66,7 @@
             </div>
             <div class="input-group">
                 <button type="button" id="add-chapter" class="btn btn-secondary">Add Chapter Manually</button>
+                <button type="button" id="toggle-debug-btn" class="btn btn-secondary margin-left-1rem">Toggle Debug</button>
                 <button type="button" id="clear-form-btn" class="btn btn-danger margin-left-auto">Clear Form & Start New</button>
             </div>
 
@@ -135,6 +136,12 @@
             <button type="submit" class="btn btn-primary">Generate Course Files</button>
         </form>
 
+        <fieldset id="debug-fieldset" class="debug-container" style="display: none;">
+            <legend>Debug Log</legend>
+            <button type="button" id="clear-log-btn" class="btn btn-secondary btn-sm">Clear Log</button>
+            <div id="debug-log" class="debug-log-area"></div>
+        </fieldset>
+
         <div id="download-section">
             <h3>Downloads</h3>
             <p>Your files have been generated. Download them below.</p>
@@ -177,7 +184,6 @@
     <script src="./assets/js/toastui-editor-all.min.js"></script>
 
     <!-- Main Application Logic -->
-    <iframe id="webllm-iframe" src="webllm_iframe.html" style="display: none;"></iframe>
     <script type="module" src="./assets/js/ollama_main.js"></script>
 
 </body>

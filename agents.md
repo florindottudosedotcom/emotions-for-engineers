@@ -1,0 +1,1 @@
+When performing verifications, such as with Playwright scripts, only attempt the verification a maximum of three times. If the verification is still unsuccessful after three attempts, skip it. Then, ask and instruct the user to perform the verification manually.
