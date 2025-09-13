@@ -108,6 +108,20 @@ export function initUI(domElements) {
     dom = domElements;
 }
 
+function initResizeObserver() {
+    if (!window.ResizeObserver) {
+        console.warn("ResizeObserver not supported, iframe resizing will not work.");
+        return;
+    }
+
+    const observer = new ResizeObserver(entries => {
+        const height = document.body.scrollHeight;
+        window.parent.postMessage({ type: 'resize-iframe', height: height }, window.location.origin);
+    });
+
+    observer.observe(document.body);
+}
+
 export {
     showSettingsModal,
     hideSettingsModal,
@@ -116,5 +130,6 @@ export {
     addChapter,
     updateAiStatus,
     updateOllamaStatus,
-    editorInstances
+    editorInstances,
+    initResizeObserver
 };
