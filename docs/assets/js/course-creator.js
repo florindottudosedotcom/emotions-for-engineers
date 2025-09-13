@@ -13,7 +13,7 @@ const SESSION_API_KEYS = {
 };
 
 // --- DOM Element variables ---
-let courseForm, chaptersContainer, addChapterBtn, downloadSection, downloadZipLink, aiStatus, courseNameInput, courseDescTextarea, settingsBtn, settingsModal, closeSettingsBtn, apiKeysForm, openAiApiKeyInput, anthropicApiKeyInput, googleApiKeyInput, aiProviderSelect, aiModelSelect, aiModelSelectionGroup, refreshModelsBtn, ollamaStatus, providerConfigFieldset, masterPromptTextarea, numChaptersSelect, generateCourseBtn, webllmIframe;
+let courseForm, chaptersContainer, addChapterBtn, downloadSection, downloadZipLink, aiStatus, courseNameInput, courseDescTextarea, settingsBtn, settingsModal, closeSettingsBtn, apiKeysForm, openAiApiKeyInput, anthropicApiKeyInput, googleApiKeyInput, aiProviderSelect, aiModelSelect, aiModelSelectionGroup, refreshModelsBtn, ollamaStatus, providerConfigFieldset, masterPromptTextarea, numChaptersSelect, generateCourseBtn, webllmIframe, helpBtn, helpModal, closeHelpBtn;
 
 let chapterCount = 0;
 const editorInstances = {}; // Will now store { content, isReady, iframe }
@@ -589,6 +589,17 @@ document.addEventListener('DOMContentLoaded', () => {
     numChaptersSelect = document.getElementById('num-chapters');
     generateCourseBtn = document.getElementById('generate-course-btn');
     webllmIframe = document.getElementById('webllm-iframe');
+    helpBtn = document.getElementById('help-btn');
+    helpModal = document.getElementById('help-modal');
+    closeHelpBtn = document.getElementById('close-help-btn');
+
+    helpBtn.addEventListener('click', () => helpModal.classList.add('visible'));
+    closeHelpBtn.addEventListener('click', () => helpModal.classList.remove('visible'));
+    helpModal.addEventListener('click', (e) => {
+        if (e.target === helpModal) {
+            helpModal.classList.remove('visible');
+        }
+    });
 
     refreshModelsBtn.addEventListener('click', loadOllamaModels);
     generateCourseBtn.addEventListener('click', generateCourse);

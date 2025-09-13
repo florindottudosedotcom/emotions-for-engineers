@@ -1,97 +1,81 @@
-# Universal Course Content Repository
+# Universal Course Platform
 
-This repository is designed to be the "absolute source" for your course content. It uses Markdown for content and MkDocs for generating a beautiful, searchable, and multi-language website that is automatically deployed to GitHub Pages.
+This repository serves a dual purpose:
+
+1.  **A Content Publishing Platform:** It uses MkDocs to build and deploy beautiful, searchable, multi-language course websites from Markdown files.
+2.  **An AI-Powered Creation Tool:** It includes the "Universal Course Creator," a powerful, browser-based tool that uses AI to help you generate entire courses from a single prompt.
+
+This allows you to manage the entire lifecycle of your course content—from creation to publication—in one place.
 
 [![License: CC BY-SA 4.0](https://licensebuttons.net/l/by-sa/4.0/88x31.png)](https://creativecommons.org/licenses/by-sa/4.0/)
 
 This project is licensed under the [Creative Commons Attribution-ShareAlike 4.0 International License](./LICENSE).
 
-## Features
-- **Multi-Language Support:** Fully configured for English and German, with a language switcher. Easily extensible to other languages.
-- **Automated Deployment:** Every push to the `main` branch automatically builds and deploys the latest version of the site to GitHub Pages.
-- **Clean Navigation:** A contextual sidebar shows only the chapters for the course you are currently viewing.
-- **Markdown-Based:** All content is written in simple Markdown files.
+---
 
-## Folder Structure
+## Part 1: The Universal Course Creator Tool
 
-The repository is organized to support multiple courses and multiple languages using a file-suffix convention.
+The Universal Course Creator is a standalone HTML file (`docs/course-creator.html`) that allows you to generate complete, multi-chapter courses using a variety of AI providers.
 
-```
-.
-├── docs/
-│   ├── index.en.md          # Homepage for English
-│   ├── index.de.md          # Homepage for German
-│   └── course-example/
-│       ├── 01-introduction.en.md
-│       ├── 01-introduction.de.md
-│       └── ...
-├── .gitignore
-├── mkdocs.yml
-└── requirements.txt
-```
+### Features
 
-- **`docs/`**: Contains all source content for all languages.
-- **`*.en.md`**: English language files are identified by the `.en.md` suffix.
-- **`*.de.md`**: German language files are identified by the `.de.md` suffix.
+-   **AI-Powered Content:** Generate a course title, description, and full chapter content from a single topic prompt.
+-   **Multiple AI Providers:** Supports a wide range of AI models to suit your needs:
+    -   **Offline (Local Network):** Use models running on your own machine with **Ollama**.
+    -   **Online (In-Browser):** Use **WebLLM** to run models directly in your browser tab—no server or setup required.
+    -   **Online (Cloud APIs):** Use powerful cloud models from **OpenAI**, **Anthropic**, and **Google** (requires API keys).
+-   **Multi-Language Translation:** Automatically translate your generated course into over 10 languages.
+-   **Downloadable Format:** Packages the entire course into a `.zip` file with all necessary Markdown files and a folder structure compatible with the publishing platform.
+-   **Manual Editing:** Full control to add, remove, and edit chapters and content after generation.
 
-## Getting Started
+### How to Run the Course Creator
 
-To work with this repository on your local machine, you'll need Python installed.
+You can run the course creator tool in two ways:
 
-1.  **Clone the repository:**
-    ```bash
-    git clone https://github.com/florindottudosedotcom/emotions-for-engineers.git
-    cd emotions-for-engineers
-    ```
+1.  **Online (Recommended for WebLLM & Cloud APIs):**
+    -   Access the tool directly from the published GitHub Pages site for this repository. This is the easiest way to get started, especially if you plan to use WebLLM or Cloud API providers.
 
-2.  **Create a virtual environment (recommended):**
-    ```bash
-    python -m venv venv
-    source venv/bin/activate  # On Windows, use `venv\Scripts\activate`
-    ```
+2.  **Locally (Required for Ollama):**
+    -   To use Ollama, you must run the tool from a local web server. We have included convenient scripts to do this for you.
+    -   **On macOS/Linux:**
+        ```bash
+        ./start_course_creator.sh
+        ```
+    -   **On Windows:**
+        ```batch
+        ./start_course_creator.bat
+        ```
+    -   These scripts will start a local server and provide you with a URL (usually `http://localhost:8000/docs/course-creator.html`).
+    -   **Important for Ollama Users:** You may need to configure Ollama to allow requests from the web browser. Please see the official Ollama documentation for instructions on how to manage `OLLAMA_ORIGINS`.
 
-3.  **Install dependencies:**
-    ```bash
-    pip install -r requirements.txt
-    ```
+---
 
-## Local Development
+## Part 2: The Course Publishing Platform
 
-To preview your website as you make changes, start the live-reloading server:
+This repository is also a fully configured MkDocs project for publishing the content you create.
+
+### Features
+
+-   **Markdown-Based:** All content is written in simple Markdown files.
+-   **Multi-Language Support:** Fully configured for multiple languages using a file-suffix convention (e.g., `index.en.md`, `index.de.md`).
+-   **Automated Deployment:** Every push to the `main` branch automatically builds and deploys the latest version of your course website to GitHub Pages.
+-   **Clean Navigation:** A contextual sidebar shows only the chapters for the course you are currently viewing.
+
+### Local Development (Publishing Platform)
+
+To preview your **published course website** as you make changes to the Markdown files, start the MkDocs live-reloading server:
 
 ```bash
+# Make sure you have installed dependencies first: pip install -r requirements.txt
 mkdocs serve
 ```
 
-This will start a local web server, typically at `http://127.0.0.1:8000`. The server will automatically rebuild the site when you save a file.
+This will start a local web server, typically at `http://127.0.0.1:8000`, for previewing your final website. **Note:** This is for viewing the *output*, not for running the creator tool.
 
-## Managing Content
+### Deployment to GitHub Pages
 
-### Adding a New Course
+Deployment is automated via GitHub Actions. For the initial setup in your own fork:
 
-1.  Decide on a short, descriptive name for your course folder (e.g., `new-awesome-course`).
-2.  Create a new directory for the course inside the `docs/` folder (e.g., `docs/new-awesome-course`).
-3.  Add your chapter Markdown (`.md`) files to the course directory, making sure to use the correct language suffix (e.g., `chapter-1.en.md`).
-4.  Add the new course to the navigation in the `mkdocs.yml` file. You will need to add an entry for each language you are supporting.
-
-### Translation Workflow
-
-The system uses file suffixes to manage translations.
-
-1.  To add a translation for a page, create a new file with the same name but the target language's suffix. For example, to translate `course-example/intro.en.md`, you would create `course-example/intro.de.md`.
-2.  The language switcher on the website will automatically link between the translated pages if they share the same base filename.
-
-## Deployment to GitHub Pages
-
-Deployment is fully automated. Simply push your changes to the `main` branch, and the GitHub Actions workflow will build and deploy your site automatically.
-
-### One-Time Setup
-To get your site live, you need to enable GitHub Pages in your repository settings:
-
-1.  Go to your repository on GitHub and click on the **Settings** tab.
-2.  In the left sidebar, under "Code and automation", click on **Pages**.
-3.  Under "Build and deployment", for the **Source**, select **Deploy from a branch**.
-4.  Under "Branch", select `gh-pages` as the source branch and `/ (root)` as the folder.
-5.  Click **Save**.
-
-After a few minutes, your website will be live at: **https://florindottudosedotcom.github.io/emotions-for-engineers/**
+1.  Go to your repository's **Settings** > **Pages**.
+2.  Under "Build and deployment," for the **Source**, select **GitHub Actions**.
+3.  Your website will be live at `https://<your-username>.github.io/<your-repo-name>/`.

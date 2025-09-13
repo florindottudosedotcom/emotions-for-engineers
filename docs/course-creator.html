@@ -10,6 +10,26 @@
 </head>
 <body>
 
+    <div id="help-modal" class="modal-overlay">
+        <div class="modal-content">
+            <h2>How to Use This Tool</h2>
+            <div id="help-content">
+                <ol>
+                    <li><strong>Select AI Provider:</strong> Choose your preferred AI provider. For Ollama, you must be running this tool on a local server. For WebLLM and Cloud providers, the hosted version is fine.</li>
+                    <li><strong>Enter Course Topic:</strong> In the "Master AI Assistant" section, write a prompt for the course you want to create (e.g., "A beginner's guide to Python programming").</li>
+                    <li><strong>Generate Course Outline:</strong> Click "Generate Entire Course". The AI will create a title, description, and a full set of chapter titles and content.</li>
+                    <li><strong>Review and Edit:</strong> Manually edit the course and chapter titles or content as needed. You can also add or remove chapters.</li>
+                    <li><strong>Choose Languages:</strong> Select one or more languages for your course. The content will be translated automatically.</li>
+                    <li><strong>Generate Files:</strong> Click "Generate Course Files" to package everything into a downloadable `.zip` file.</li>
+                </ol>
+                <p>For more detailed instructions, including how to set up local providers, please see the project's <a href="../README.md" target="_blank">README.md</a> file.</p>
+            </div>
+            <div class="input-group margin-top-1-5rem">
+                <button type="button" id="close-help-btn" class="btn btn-danger margin-left-auto">Close</button>
+            </div>
+        </div>
+    </div>
+
     <div id="settings-modal" class="modal-overlay">
         <div class="modal-content">
             <h2>Cloud API Settings</h2>
@@ -35,23 +55,11 @@
     <div class="container">
         <div class="header-container">
             <h1>Universal Course Creator</h1>
+            <button type="button" id="help-btn" class="btn btn-secondary">Help</button>
             <button type="button" id="settings-btn" class="btn btn-secondary">Settings</button>
         </div>
         <div id="ai-status" class="ai-status-initial"></div>
 
-        <div class="instructions">
-            <h3>How to Use This Tool</h3>
-            <ol>
-                <li>Make sure Ollama is running on your computer and you have downloaded a model (e.g., `ollama pull llama3`).</li>
-                <li><b>Ollama Users:</b> If you are running this page from a local file (`file:///...`), you might need to configure Ollama to allow requests from this origin. See the project's `README.md` file for detailed instructions on how to do this.</li>
-                <li>Enter a topic for your course below and select the number of chapters.</li>
-                <li>Click "Generate Course". The AI will populate the course details and chapters for you.</li>
-                <li>Review and edit the generated content as needed.</li>
-                <li>Select the languages you want to translate the course into.</li>
-                <li>Click "Generate Course Files". This will create a .zip file with all the markdown files.</li>
-                <li><strong>Security Note:</strong> When downloading new versions of this tool from the releases page, always verify the checksums of the downloaded assets to ensure they have not been tampered with.</li>
-            </ol>
-        </div>
 
         <fieldset>
             <legend>AI Provider</legend>
