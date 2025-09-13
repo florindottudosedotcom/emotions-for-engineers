@@ -5,6 +5,12 @@ let ui = {};
 const LOCAL_STORAGE_KEY = "courseCreatorState";
 
 function saveState() {
+    // Do not save if the course name is empty, as this is a proxy for an uninitialized or invalid state.
+    if (!dom.courseNameInput || !dom.courseNameInput.value) {
+        console.log("Save state aborted: Course name is empty.");
+        return;
+    }
+
     const chapters = [];
     // The chapter content divs are now the source of truth for order and ID
     dom.chapterContentContainer.querySelectorAll('.chapter-content').forEach(contentDiv => {
