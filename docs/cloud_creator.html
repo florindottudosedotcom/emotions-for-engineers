@@ -22,21 +22,10 @@
 
     <div class="container">
         <h1>Cloud AI Course Creator</h1>
+        <div id="ai-status" class="ai-status-initial"></div>
 
-        <fieldset>
-            <legend>AI Provider</legend>
-            <div class="input-group">
-                <label for="ai-provider-select" class="label-no-shrink-no-margin">Provider:</label>
-                <select id="ai-provider-select" name="ai-provider" class="select-no-margin">
-                    <option value="openai">OpenAI</option>
-                    <option value="anthropic">Anthropic</option>
-                    <option value="google">Google</option>
-                </select>
-                <label for="api-key-input" class="label-no-shrink-no-margin margin-left-1rem">API Key:</label>
-                <input type="password" id="api-key-input" name="api-key" placeholder="Enter your API key" class="flex-grow">
-            </div>
-            <div id="connection-status" class="status-display"></div>
-        </fieldset>
+        <!-- Provider-specific section will be injected here -->
+        <div id="provider-section"></div>
 
         <fieldset>
             <legend>Master AI Assistant</legend>
@@ -119,6 +108,10 @@
     <script src="./assets/js/toastui-editor-all.min.js"></script>
 
     <!-- Main Application Logic -->
-    <script type="module" src="./assets/js/cloud_main.js"></script>
+    <script>
+        // Configure provider type
+        window.COURSE_CREATOR_PROVIDER = 'cloud';
+    </script>
+    <script type="module" src="./assets/js/unified_main.js"></script>
 </body>
 </html>

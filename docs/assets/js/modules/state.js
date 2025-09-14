@@ -21,16 +21,19 @@ function saveState() {
     const activeTab = dom.chapterTabsContainer.querySelector('.tab-link.active');
     const activeTabIndex = activeTab ? Array.from(dom.chapterTabsContainer.querySelectorAll('.tab-link')).indexOf(activeTab) : 0;
 
-    const appState = {
+    let appState = {
         courseName: dom.courseNameInput.value,
         courseDesc: dom.courseDescTextarea.value,
         chapters: chapters,
-        // Only save model if the select element exists
-        ollamaModel: dom.aiModelSelect ? dom.aiModelSelect.value : null,
         masterPrompt: dom.masterPromptTextarea.value,
         numChapters: dom.numChaptersSelect.value,
         activeTabIndex: activeTabIndex
     };
+
+    // Add provider-specific state extensions
+    if (window.currentProvider && window.currentProvider.saveStateExtensions) {
+        appState = window.currentProvider.saveStateExtensions(appState);
+    }
 
     localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(appState));
     console.log("State saved.");
@@ -45,11 +48,13 @@ function loadState() {
 
     dom.courseNameInput.value = loadedState.courseName || '';
     dom.courseDescTextarea.value = loadedState.courseDesc || '';
-    if (dom.aiModelSelect && loadedState.ollamaModel) {
-        dom.aiModelSelect.value = loadedState.ollamaModel;
-    }
     dom.masterPromptTextarea.value = loadedState.masterPrompt || '';
     dom.numChaptersSelect.value = loadedState.numChapters || '5';
+
+    // Load provider-specific state extensions
+    if (window.currentProvider && window.currentProvider.loadStateExtensions) {
+        window.currentProvider.loadStateExtensions(loadedState);
+    }
 
     // Clear existing chapter UI
     dom.chapterTabsContainer.innerHTML = '';

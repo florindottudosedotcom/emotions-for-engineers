@@ -24,22 +24,18 @@
         <h1>Ollama Course Creator</h1>
         <div id="ai-status" class="ai-status-initial"></div>
 
-        <fieldset>
-            <legend>AI Provider</legend>
-            <p>Ollama (Local)</p>
-            <div class="input-group" id="ai-model-selection-group">
-                <label for="ai-model-select" class="label-no-shrink-no-margin">Model:</label>
-                <select id="ai-model-select" class="select-no-margin"></select>
-                <button type="button" id="refresh-models-btn" class="btn btn-secondary">Refresh List</button>
-            </div>
-            <div id="ollama-status" class="ollama-status-style"></div>
-        </fieldset>
+        <!-- Provider-specific section will be injected here -->
+        <div id="provider-section"></div>
 
         <fieldset>
             <legend>Master AI Assistant</legend>
-            <label for="master-prompt">Course Prompt</label>
-            <textarea id="master-prompt" placeholder="e.g., 'Create a comprehensive course about the history of ancient Rome, from its founding to the fall of the Western Empire.'"></textarea>
-            <div class="input-group">
+            <div class="prompt-header">
+                <label for="master-prompt">Course Prompt</label>
+                <button type="button" id="enhance-prompt-btn" class="btn btn-ai" title="Enhance and expand your prompt with AI assistance">🚀 Enhance Prompt</button>
+            </div>
+            <textarea id="master-prompt" placeholder="e.g., 'Create a comprehensive course about the history of ancient Rome, from its founding to the fall of the Western Empire.'" class="prompt-textarea-large"></textarea>
+
+            <div class="input-group course-generation-section">
                 <label for="num-chapters" class="label-no-shrink-no-margin">Number of Chapters:</label>
                 <select id="num-chapters" class="select-no-margin">
                     <option value="1">1</option>
@@ -110,6 +106,10 @@
     <script src="./assets/js/toastui-editor-all.min.js"></script>
 
     <!-- Main Application Logic -->
-    <script type="module" src="./assets/js/ollama_main.js"></script>
+    <script>
+        // Configure provider type
+        window.COURSE_CREATOR_PROVIDER = 'ollama';
+    </script>
+    <script type="module" src="./assets/js/unified_main.js"></script>
 </body>
 </html>

@@ -3,23 +3,61 @@ import * as API from './modules/api.js';
 import * as Course from './modules/course.js';
 import * as State from './modules/state.js';
 
-const appState = {
-    AI_PROVIDER: 'webllm',
-    isWebllmReady: false,
-    currentWebllmModel: '',
-    isWebllmIframeReady: false,
-    pendingWebllmModelId: null,
-    WEBLLM_MODELS: [
-        { id: "Llama-3-8B-Instruct-q4f16_1-MLC", name: "Llama 3 8B Instruct" },
-        { id: "Phi-3-mini-4k-instruct-q4f16_1-MLC", name: "Phi 3 Mini" }
-    ],
-    webllmPromiseResolvers: {}
-};
-
+const appState = {};
 const dom = {};
+let currentProvider = null;
 
-document.addEventListener('DOMContentLoaded', () => {
-    // DOM Elements
+// Get provider type from window configuration
+const PROVIDER_TYPE = window.COURSE_CREATOR_PROVIDER || 'cloud';
+
+async function initializeProvider() {
+    let providerModule;
+
+    try {
+        switch (PROVIDER_TYPE) {
+            case 'cloud':
+                providerModule = await import('./providers/cloud.js');
+                currentProvider = providerModule.CloudProvider;
+                break;
+            case 'webllm':
+                providerModule = await import('./providers/webllm.js');
+                currentProvider = providerModule.WebLLMProvider;
+                break;
+            case 'ollama':
+                providerModule = await import('./providers/ollama.js');
+                currentProvider = providerModule.OllamaProvider;
+                break;
+            default:
+                throw new Error(`Unknown provider type: ${PROVIDER_TYPE}`);
+        }
+    } catch (error) {
+        console.error('Failed to load provider:', error);
+        // Fallback to cloud provider
+        const cloudModule = await import('./providers/cloud.js');
+        currentProvider = cloudModule.CloudProvider;
+    }
+
+    return currentProvider;
+}
+
+document.addEventListener('DOMContentLoaded', async () => {
+    // Initialize provider first
+    await initializeProvider();
+
+    // Update page title
+    document.title = `${currentProvider.name} Course Creator`;
+    const titleElement = document.querySelector('h1');
+    if (titleElement) {
+        titleElement.textContent = `${currentProvider.name} Course Creator`;
+    }
+
+    // Inject provider-specific template
+    const providerSection = document.getElementById('provider-section');
+    if (providerSection) {
+        providerSection.innerHTML = currentProvider.getTemplate();
+    }
+
+    // Common DOM Elements
     dom.courseForm = document.getElementById('course-form');
     dom.chapterTabsContainer = document.getElementById('chapter-tabs-container');
     dom.chapterContentContainer = document.getElementById('chapter-content-container');
@@ -29,13 +67,18 @@ document.addEventListener('DOMContentLoaded', () => {
     dom.aiStatus = document.getElementById('ai-status');
     dom.courseNameInput = document.getElementById('course-name');
     dom.courseDescTextarea = document.getElementById('course-desc');
-    dom.aiModelSelect = document.getElementById('ai-model-select');
-    dom.aiModelSelectionGroup = document.getElementById('ai-model-selection-group');
     dom.masterPromptTextarea = document.getElementById('master-prompt');
+    dom.enhancePromptBtn = document.getElementById('enhance-prompt-btn');
     dom.numChaptersSelect = document.getElementById('num-chapters');
     dom.generateCourseBtn = document.getElementById('generate-course-btn');
-    dom.webllmIframe = document.getElementById('webllm-iframe');
     dom.clearFormBtn = document.getElementById('clear-form-btn');
+
+    // Initialize provider with DOM elements
+    currentProvider.init(dom, appState);
+
+    // Make provider globally available
+    window.currentProvider = currentProvider;
+    window.stateModule = State;
 
     // Init Modules
     UI.initUI(dom);
@@ -43,12 +86,9 @@ document.addEventListener('DOMContentLoaded', () => {
     Course.initCourse(dom, UI, API, State);
     State.initState(dom, appState, UI);
 
-    // Event Listeners
-    dom.aiModelSelect.addEventListener('change', () => {
-        API.initializeWebLLM(dom.aiModelSelect.value);
-        State.saveState();
-    });
+    // Common Event Listeners
     dom.generateCourseBtn.addEventListener('click', Course.generateCourse);
+    dom.enhancePromptBtn.addEventListener('click', Course.enhancePrompt);
     dom.addChapterBtn.addEventListener('click', UI.addChapter);
     dom.clearFormBtn.addEventListener('click', State.clearState);
     dom.courseForm.addEventListener('submit', (e) => {
@@ -87,43 +127,18 @@ function debounce(func, wait) {
     };
 }
 
+// Handle editor iframe messages (no WebLLM iframe needed anymore)
 window.addEventListener('message', (event) => {
-    // Handle messages from WebLLM iframe
-    if (event.source === dom.webllmIframe.contentWindow) {
-        const { type, id, result, error } = event.data;
-        if (type === 'webllm-iframe-ready') {
-            appState.isWebllmIframeReady = true;
-            API.loadWebLLMModels();
-            if (appState.pendingWebllmModelId) {
-                API.initializeWebLLM(appState.pendingWebllmModelId);
-                appState.pendingWebllmModelId = null;
-            }
-        } else if (type === 'webllm-ready') {
-            appState.isWebllmReady = true;
-            appState.currentWebllmModel = event.data.model;
-            const modelName = appState.WEBLLM_MODELS.find(m => m.id === appState.currentWebllmModel)?.name || appState.currentWebllmModel;
-            UI.updateOllamaStatus(`✅ WebLLM is ready. Loaded: ${modelName}`, 'ok');
-        } else if (type === 'webllm-error') {
-            appState.isWebllmReady = false;
-            UI.updateOllamaStatus(`❌ Error initializing WebLLM: ${error}`, 'error');
-        } else if (id && appState.webllmPromiseResolvers[id]) {
-            if (type === 'generation-result') {
-                appState.webllmPromiseResolvers[id].resolve(result);
-            } else if (type === 'generation-error') {
-                appState.webllmPromiseResolvers[id].reject(new Error(error));
-            }
-            delete appState.webllmPromiseResolvers[id];
-        }
-        return;
-    }
-
-    // Handle messages from Editor iframes
+    // Handle messages from Editor iframes only
     if (UI.editorInstances && UI.editorInstances[event.data.id]) {
         const { type, id, content } = event.data;
         if (type === 'editor-ready') {
             UI.editorInstances[id].isReady = true;
             if (UI.editorInstances[id].pendingContent) {
-                UI.editorInstances[id].iframe.contentWindow.postMessage({ type: 'set-content', content: UI.editorInstances[id].pendingContent }, '*');
+                UI.editorInstances[id].iframe.contentWindow.postMessage({
+                    type: 'set-content',
+                    content: UI.editorInstances[id].pendingContent
+                }, '*');
                 delete UI.editorInstances[id].pendingContent;
             }
         } else if (type === 'content-changed') {
@@ -132,3 +147,10 @@ window.addEventListener('message', (event) => {
         }
     }
 });
+
+// Export for debugging
+window.courseCreatorDebug = {
+    dom,
+    appState,
+    currentProvider
+};
