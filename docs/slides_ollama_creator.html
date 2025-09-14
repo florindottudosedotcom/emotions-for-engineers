@@ -46,14 +46,6 @@
             color: #666;
         }
 
-        .slide-controls {
-            text-align: center;
-            margin: 30px 0;
-        }
-
-        .slide-controls .btn {
-            margin: 0 10px;
-        }
 
         .export-options {
             background: #f8f9fa;
@@ -163,11 +155,6 @@
             transform: translateY(-2px);
         }
 
-        .slide-controls-inline {
-            background: rgba(0,0,0,0.1);
-            border-radius: 6px;
-            padding: 8px;
-        }
 
         [contenteditable="true"]:focus {
             outline: 2px solid var(--accent-color, #60a5fa);
@@ -220,25 +207,17 @@
                 <p class="slide-counter"><span id="total-slides">0</span> slides generated</p>
             </div>
 
-            <div class="slide-controls">
-                <button type="button" id="add-slide-btn" class="btn btn-primary">➕ Add Slide</button>
-                <button type="button" id="preview-presentation-btn" class="btn btn-secondary">📊 Preview Presentation</button>
-                <button type="button" id="regenerate-slides-btn" class="btn btn-outline">🔄 Regenerate</button>
-            </div>
 
             <!-- Slides Preview -->
             <div id="slides-preview" class="slides-container">
                 <!-- Slides will be inserted here -->
             </div>
 
-            <!-- Export Options -->
+            <!-- Export Section -->
             <div class="export-options">
                 <h3>Export Presentation</h3>
-                <div class="export-buttons">
-                    <button type="button" id="export-pdf-btn" class="btn btn-primary">📄 Export PDF</button>
-                    <button type="button" id="export-pptx-btn" class="btn btn-primary">📊 Export PowerPoint</button>
-                    <button type="button" id="export-html-btn" class="btn btn-secondary">🌐 Export HTML</button>
-                    <button type="button" id="export-json-btn" class="btn btn-outline">📋 Export Data (JSON)</button>
+                <div style="text-align: center;">
+                    <button type="button" id="open-export-modal-btn" class="btn btn-primary" style="font-size: 1.1em; padding: 12px 24px;">📤 Export Presentation</button>
                 </div>
                 <div id="export-status" class="status-display"></div>
             </div>
@@ -253,6 +232,34 @@
                 <div class="slides">
                     <!-- Reveal.js slides will be inserted here -->
                 </div>
+            </div>
+        </div>
+
+        <!-- Export Modal -->
+        <div id="export-modal" class="modal-overlay" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-color: rgba(0,0,0,0.5); z-index: 1000; justify-content: center; align-items: center;">
+            <div class="modal-content" style="background: white; padding: 30px; border-radius: 8px; box-shadow: 0 4px 20px rgba(0,0,0,0.3); width: 90%; max-width: 500px;">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+                    <h3 style="margin: 0;">Export Presentation</h3>
+                    <button type="button" id="close-export-modal-btn" style="background: none; border: none; font-size: 1.5em; cursor: pointer; padding: 5px;">✕</button>
+                </div>
+
+                <!-- Export Options -->
+                <div style="margin-bottom: 20px;">
+                    <label style="display: flex; align-items: center; margin-bottom: 10px;">
+                        <input type="checkbox" id="include-speaker-notes" style="margin-right: 8px;">
+                        Include speaker notes in export
+                    </label>
+                </div>
+
+                <!-- Export Buttons -->
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
+                    <button type="button" id="export-pdf-btn" class="btn btn-primary">📄 PDF</button>
+                    <button type="button" id="export-pptx-btn" class="btn btn-primary">📊 PowerPoint</button>
+                    <button type="button" id="export-html-btn" class="btn btn-secondary">🌐 HTML</button>
+                    <button type="button" id="export-json-btn" class="btn btn-outline">📋 JSON Data</button>
+                </div>
+
+                <div id="export-modal-status" class="status-display" style="margin-top: 15px;"></div>
             </div>
         </div>
     </div>

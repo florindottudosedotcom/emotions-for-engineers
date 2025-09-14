@@ -77,9 +77,6 @@ document.addEventListener('DOMContentLoaded', async () => {
     slidesDom.presentationTitle = document.getElementById('presentation-title');
     slidesDom.totalSlides = document.getElementById('total-slides');
     slidesDom.slidesPreview = document.getElementById('slides-preview');
-    slidesDom.addSlideBtn = document.getElementById('add-slide-btn');
-    slidesDom.previewPresentationBtn = document.getElementById('preview-presentation-btn');
-    slidesDom.regenerateSlidesBtn = document.getElementById('regenerate-slides-btn');
     slidesDom.presentationViewer = document.getElementById('presentation-viewer');
     slidesDom.closePresentationBtn = document.getElementById('close-presentation-btn');
     slidesDom.revealPresentation = document.getElementById('reveal-presentation');
@@ -99,43 +96,45 @@ document.addEventListener('DOMContentLoaded', async () => {
         console.log('Generate slides button event listener added');
     }
 
-    if (slidesDom.regenerateSlidesBtn) {
-        slidesDom.regenerateSlidesBtn.addEventListener('click', generatePresentation);
-        console.log('Regenerate slides button event listener added');
-    }
-
-    if (slidesDom.addSlideBtn) {
-        slidesDom.addSlideBtn.addEventListener('click', addNewSlide);
-        console.log('Add slide button event listener added');
-    }
-
-    if (slidesDom.previewPresentationBtn) {
-        slidesDom.previewPresentationBtn.addEventListener('click', showPresentationViewer);
-    }
+    // Removed regenerate and preview buttons - no longer needed
 
     if (slidesDom.closePresentationBtn) {
         slidesDom.closePresentationBtn.addEventListener('click', closePresentationViewer);
     }
 
-    // Clear slides button
-    const clearSlidesBtn = document.createElement('button');
-    clearSlidesBtn.type = 'button';
-    clearSlidesBtn.className = 'btn btn-outline';
-    clearSlidesBtn.textContent = '🗑️ Clear All Slides';
-    clearSlidesBtn.addEventListener('click', clearAllSlides);
+    // Clear slides button will be added to the bottom later
 
-    // Add clear button to slide controls
-    const slideControls = document.querySelector('.slide-controls');
-    if (slideControls && !slideControls.querySelector('.clear-slides-btn')) {
-        clearSlidesBtn.classList.add('clear-slides-btn');
-        slideControls.appendChild(clearSlidesBtn);
+    // Export modal event listeners
+    const openExportModalBtn = document.getElementById('open-export-modal-btn');
+    const closeExportModalBtn = document.getElementById('close-export-modal-btn');
+    const exportModal = document.getElementById('export-modal');
+
+    if (openExportModalBtn) {
+        openExportModalBtn.addEventListener('click', showExportModal);
     }
 
-    // Export event listeners
-    if (slidesDom.exportPdfBtn) slidesDom.exportPdfBtn.addEventListener('click', () => exportPresentation('pdf'));
-    if (slidesDom.exportPptxBtn) slidesDom.exportPptxBtn.addEventListener('click', () => exportPresentation('pptx'));
-    if (slidesDom.exportHtmlBtn) slidesDom.exportHtmlBtn.addEventListener('click', () => exportPresentation('html'));
-    if (slidesDom.exportJsonBtn) slidesDom.exportJsonBtn.addEventListener('click', () => exportPresentation('json'));
+    if (closeExportModalBtn) {
+        closeExportModalBtn.addEventListener('click', hideExportModal);
+    }
+
+    if (exportModal) {
+        exportModal.addEventListener('click', (e) => {
+            if (e.target === exportModal) {
+                hideExportModal();
+            }
+        });
+    }
+
+    // Export buttons in modal
+    const exportPdfBtn = document.getElementById('export-pdf-btn');
+    const exportPptxBtn = document.getElementById('export-pptx-btn');
+    const exportHtmlBtn = document.getElementById('export-html-btn');
+    const exportJsonBtn = document.getElementById('export-json-btn');
+
+    if (exportPdfBtn) exportPdfBtn.addEventListener('click', () => exportPresentation('pdf'));
+    if (exportPptxBtn) exportPptxBtn.addEventListener('click', () => exportPresentation('pptx'));
+    if (exportHtmlBtn) exportHtmlBtn.addEventListener('click', () => exportPresentation('html'));
+    if (exportJsonBtn) exportJsonBtn.addEventListener('click', () => exportPresentation('json'));
 
     // Initialize theme selector and load saved data
     createThemeSelector();
@@ -149,6 +148,18 @@ document.addEventListener('DOMContentLoaded', async () => {
     // Always show presentation section
     showPresentationSection();
 
+    // Add clear button to bottom
+    addClearButtonToBottom();
+
+    // Add form auto-save listeners and select-all behavior
+    if (slidesDom.presentationTopicTextarea) {
+        slidesDom.presentationTopicTextarea.addEventListener('input', debounce(saveFormState, 500));
+        selectAllOnFocusTextarea(slidesDom.presentationTopicTextarea);
+    }
+    if (slidesDom.numSlidesSelect) {
+        slidesDom.numSlidesSelect.addEventListener('change', saveFormState);
+    }
+
     console.log('Slides functionality initialized successfully');
 
     console.log('Slides Creator functionality initialized successfully');
@@ -159,12 +170,24 @@ function saveSlides() {
     if (slidesAppState.currentSlideData) {
         localStorage.setItem(SLIDES_STORAGE_KEY, JSON.stringify(slidesAppState.currentSlideData));
     }
+
+    // Also save form state
+    saveFormState();
+}
+
+function saveFormState() {
+    const formState = {
+        presentationTopic: slidesDom.presentationTopicTextarea ? slidesDom.presentationTopicTextarea.value : '',
+        numSlides: slidesDom.numSlidesSelect ? slidesDom.numSlidesSelect.value : '8'
+    };
+    localStorage.setItem(SLIDES_STORAGE_KEY + '_form', JSON.stringify(formState));
 }
 
 function loadSavedSlides() {
     try {
         const saved = localStorage.getItem(SLIDES_STORAGE_KEY);
         const savedTheme = localStorage.getItem(THEME_STORAGE_KEY);
+        const savedForm = localStorage.getItem(SLIDES_STORAGE_KEY + '_form');
 
         if (savedTheme) {
             slidesAppState.currentTheme = JSON.parse(savedTheme);
@@ -175,36 +198,95 @@ function loadSavedSlides() {
             displaySlides(slidesAppState.currentSlideData);
             console.log('Loaded saved slides from session storage');
         }
+
+        // Restore form state
+        if (savedForm) {
+            const formState = JSON.parse(savedForm);
+            if (slidesDom.presentationTopicTextarea) {
+                slidesDom.presentationTopicTextarea.value = formState.presentationTopic || '';
+            }
+            if (slidesDom.numSlidesSelect) {
+                slidesDom.numSlidesSelect.value = formState.numSlides || '8';
+            }
+            console.log('Loaded saved form state');
+        }
     } catch (error) {
         console.warn('Error loading saved slides:', error);
     }
 }
 
 function clearAllSlides() {
-    if (confirm('Are you sure you want to clear all slides? This action cannot be undone.')) {
-        slidesAppState.currentSlideData = null;
-        slidesAppState.currentTheme = null;
-        localStorage.removeItem(SLIDES_STORAGE_KEY);
-        localStorage.removeItem(THEME_STORAGE_KEY);
+    if (confirm('Are you sure you want to clear all slides? This will reset to a single empty slide.')) {
+        // Reset to a single empty slide instead of clearing everything
+        slidesAppState.currentSlideData = {
+            title: 'My Presentation',
+            slides: [{
+                slideNumber: 1,
+                title: 'New Slide',
+                content: ['Click to edit this content'],
+                visualDesign: {
+                    backgroundColor: '#1e40af',
+                    textColor: '#ffffff',
+                    accentColor: '#60a5fa',
+                    layout: 'left-text',
+                    shapes: []
+                },
+                speakerNotes: 'Click to add speaker notes'
+            }]
+        };
 
-        // Hide presentation section
-        if (slidesDom.presentationSection) {
-            slidesDom.presentationSection.style.display = 'none';
+        // Keep the current theme if one is selected
+        if (slidesAppState.currentTheme) {
+            applyThemeToSlides();
         }
 
-        // Clear slides preview
-        if (slidesDom.slidesPreview) {
-            slidesDom.slidesPreview.innerHTML = '';
-        }
+        // Display the reset presentation
+        displaySlides(slidesAppState.currentSlideData);
+        saveSlides();
 
-        // Reset theme selector
-        const themeSelector = document.querySelector('.theme-selector');
-        if (themeSelector) {
-            const tiles = themeSelector.querySelectorAll('.theme-tile');
-            tiles.forEach(tile => tile.classList.remove('selected'));
-        }
+        updateGenerationStatus('Slides reset to single empty slide', 'success');
+    }
+}
 
-        updateGenerationStatus('All slides cleared', 'success');
+function addClearButtonToBottom() {
+    // Check if buttons already exist
+    if (document.querySelector('.slides-bottom-controls')) {
+        return;
+    }
+
+    const slidesPreview = slidesDom.slidesPreview;
+    if (!slidesPreview) return;
+
+    // Create bottom controls container
+    const bottomControls = document.createElement('div');
+    bottomControls.className = 'slides-bottom-controls';
+    bottomControls.style.cssText = 'display: flex; justify-content: space-between; align-items: center; margin: 30px 0; padding: 20px; border-top: 1px solid #ddd;';
+
+    // Create Add Slide button (bottom left)
+    const addSlideBtn = document.createElement('button');
+    addSlideBtn.type = 'button';
+    addSlideBtn.className = 'btn btn-primary add-slide-bottom-btn';
+    addSlideBtn.textContent = '➕ Add Slide';
+    addSlideBtn.addEventListener('click', addNewSlide);
+
+    // Create clear button (bottom right)
+    const clearSlidesBtn = document.createElement('button');
+    clearSlidesBtn.type = 'button';
+    clearSlidesBtn.className = 'btn btn-outline clear-slides-bottom-btn';
+    clearSlidesBtn.textContent = '🗑️ Clear All Slides';
+    clearSlidesBtn.style.cssText = 'background-color: #dc3545; color: white; border-color: #dc3545;';
+    clearSlidesBtn.addEventListener('click', clearAllSlides);
+
+    // Add buttons to container
+    bottomControls.appendChild(addSlideBtn);
+    bottomControls.appendChild(clearSlidesBtn);
+
+    // Insert after slides preview but before export options
+    const exportOptions = document.querySelector('.export-options');
+    if (exportOptions) {
+        exportOptions.parentNode.insertBefore(bottomControls, exportOptions);
+    } else {
+        slidesDom.presentationSection.appendChild(bottomControls);
     }
 }
 
@@ -280,19 +362,13 @@ function applyThemeToSlides() {
 
     const theme = slidesAppState.currentTheme;
 
-    // Apply theme to all slides
+    // Apply theme to all slides uniformly (no variations)
     slidesAppState.currentSlideData.slides.forEach((slide, index) => {
-        // Create harmonious variations of the theme
-        const colorIndex = index % theme.colors.length;
-        const bgColor = theme.colors[colorIndex];
-        const lighterBg = adjustColor(bgColor, 10);
-        const darkerBg = adjustColor(bgColor, -10);
-
         slide.visualDesign = {
-            backgroundColor: bgColor,
+            backgroundColor: theme.background,
             textColor: theme.text,
             accentColor: theme.accent,
-            gradient: `linear-gradient(135deg, ${bgColor} 0%, ${darkerBg} 100%)`,
+            layout: slide.visualDesign?.layout || 'left-text',
             shapes: slide.visualDesign?.shapes || []
         };
     });
@@ -465,7 +541,7 @@ async function generatePresentation() {
 function displaySlides(slideData) {
     // Update title and slide count (starting from 1, not 0)
     if (slidesDom.presentationTitle) {
-        slidesDom.presentationTitle.textContent = slideData.title || 'My Presentation';
+        makePresentationTitleEditable(slideData.title || 'My Presentation');
     }
     if (slidesDom.totalSlides) {
         slidesDom.totalSlides.textContent = slideData.slides.length;
@@ -482,10 +558,21 @@ function displaySlides(slideData) {
         });
     }
 
+    // Add clear button at the bottom if it doesn't exist
+    addClearButtonToBottom();
+
     // Presentation section is always visible now
 }
 
 function createSlidePreviewElement(slide, slideNumber) {
+    // Create container for controls header + slide
+    const slideContainer = document.createElement('div');
+    slideContainer.className = 'slide-with-controls-container';
+
+    // Create controls header first
+    const controlsHeader = createSlideControlsHeader(slideNumber, slideNumber - 1);
+    slideContainer.appendChild(controlsHeader);
+
     const slideDiv = document.createElement('div');
     slideDiv.className = 'slide-preview editable-slide';
     slideDiv.dataset.slideIndex = slideNumber - 1; // Store 0-based index for easy access
@@ -517,6 +604,9 @@ function createSlidePreviewElement(slide, slideNumber) {
     titleElement.addEventListener('focus', (e) => e.target.style.border = '2px solid var(--accent-color, #60a5fa)');
     titleElement.addEventListener('blur', (e) => e.target.style.border = '2px solid transparent');
 
+    // Select all text when clicking/focusing
+    selectAllOnFocus(titleElement);
+
     // Editable content list
     const contentContainer = document.createElement('div');
     contentContainer.className = 'slide-content-container';
@@ -541,6 +631,9 @@ function createSlidePreviewElement(slide, slideNumber) {
             listItem.addEventListener('blur', (e) => updateSlideContentItem(slideNumber - 1, index, e.target.textContent));
             listItem.addEventListener('focus', (e) => e.target.style.border = '2px solid var(--accent-color, #60a5fa)');
             listItem.addEventListener('blur', (e) => e.target.style.border = '2px solid transparent');
+
+            // Select all text when clicking/focusing
+            selectAllOnFocus(listItem);
 
             // Add remove button for content item
             const removeBtn = document.createElement('button');
@@ -574,76 +667,9 @@ function createSlidePreviewElement(slide, slideNumber) {
         contentContainer.appendChild(noContent);
     }
 
-    // Add slide controls
-    const controlsDiv = document.createElement('div');
-    controlsDiv.className = 'slide-controls-inline';
-    controlsDiv.style.cssText = `
-        margin-top: 15px;
-        display: flex;
-        gap: 10px;
-        flex-wrap: wrap;
-        align-items: center;
-    `;
-
-    // Color picker for background
-    const bgColorPicker = document.createElement('input');
-    bgColorPicker.type = 'color';
-    bgColorPicker.value = slide.visualDesign?.backgroundColor || '#1e40af';
-    bgColorPicker.title = 'Change background color';
-    bgColorPicker.style.cssText = 'width: 30px; height: 30px; border: none; border-radius: 4px; cursor: pointer;';
-    bgColorPicker.addEventListener('change', (e) => updateSlideColor(slideNumber - 1, 'backgroundColor', e.target.value));
-
-    // Color picker for shapes/accent
-    const accentColorPicker = document.createElement('input');
-    accentColorPicker.type = 'color';
-    accentColorPicker.value = slide.visualDesign?.accentColor || '#60a5fa';
-    accentColorPicker.title = 'Change accent color';
-    accentColorPicker.style.cssText = 'width: 30px; height: 30px; border: none; border-radius: 4px; cursor: pointer;';
-    accentColorPicker.addEventListener('change', (e) => updateSlideColor(slideNumber - 1, 'accentColor', e.target.value));
-
-    // Delete slide button
-    const deleteBtn = document.createElement('button');
-    deleteBtn.type = 'button';
-    deleteBtn.className = 'btn-small btn-danger';
-    deleteBtn.textContent = '🗑️';
-    deleteBtn.title = 'Delete this slide';
-    deleteBtn.style.cssText = 'margin-left: 10px; padding: 5px 8px; font-size: 12px; background: #dc3545; color: white; border: none; border-radius: 4px; cursor: pointer;';
-    deleteBtn.addEventListener('click', () => deleteSlide(slideNumber - 1));
-
-    // Move up button
-    const moveUpBtn = document.createElement('button');
-    moveUpBtn.type = 'button';
-    moveUpBtn.className = 'btn-small';
-    moveUpBtn.textContent = '⬆️';
-    moveUpBtn.title = 'Move slide up';
-    moveUpBtn.style.cssText = 'margin-left: 5px; padding: 5px 8px; font-size: 12px; background: #6c757d; color: white; border: none; border-radius: 4px; cursor: pointer;';
-    moveUpBtn.addEventListener('click', () => moveSlide(slideNumber - 1, 'up'));
-
-    // Move down button
-    const moveDownBtn = document.createElement('button');
-    moveDownBtn.type = 'button';
-    moveDownBtn.className = 'btn-small';
-    moveDownBtn.textContent = '⬇️';
-    moveDownBtn.title = 'Move slide down';
-    moveDownBtn.style.cssText = 'margin-left: 5px; padding: 5px 8px; font-size: 12px; background: #6c757d; color: white; border: none; border-radius: 4px; cursor: pointer;';
-    moveDownBtn.addEventListener('click', () => moveSlide(slideNumber - 1, 'down'));
-
-    controlsDiv.innerHTML = `
-        <small style="color: var(--text-color, #ffffff); opacity: 0.8;">
-            Slide ${slideNumber} - 🎨 Background:
-        </small>
-    `;
-    controlsDiv.appendChild(bgColorPicker);
-    controlsDiv.innerHTML += `<small style="color: var(--text-color, #ffffff); opacity: 0.8;"> Accent: </small>`;
-    controlsDiv.appendChild(accentColorPicker);
-    controlsDiv.appendChild(moveUpBtn);
-    controlsDiv.appendChild(moveDownBtn);
-    controlsDiv.appendChild(deleteBtn);
-
-    // Assemble the slide
+    // Assemble the slide (controls are now above the slide)
     slideContent.appendChild(titleElement);
     slideContent.appendChild(contentContainer);
-    slideContent.appendChild(controlsDiv);
 
     // Add visual shapes if available
     if (slide.visualDesign && slide.visualDesign.shapes) {
@@ -661,15 +687,16 @@ function createSlidePreviewElement(slide, slideNumber) {
         slideContent.appendChild(imageInfo);
     }
 
-    if (slide.speakerNotes) {
-        const notesDiv = document.createElement('div');
-        notesDiv.style.cssText = 'margin-top: 15px; padding: 10px; background: rgba(0,0,0,0.2); border-radius: 4px; font-size: 0.9em; font-style: italic;';
-        notesDiv.innerHTML = `<strong>🎤 Speaker Notes:</strong> ${slide.speakerNotes}`;
-        slideContent.appendChild(notesDiv);
-    }
+    // Remove speaker notes from inside the slide - they'll be added separately below
 
     slideDiv.appendChild(slideContent);
-    return slideDiv;
+    slideContainer.appendChild(slideDiv);
+
+    // Create editable speaker notes section
+    const notesSection = createEditableSpeakerNotes(slide, slideNumber - 1);
+    slideContainer.appendChild(notesSection);
+
+    return slideContainer;
 }
 
 // Helper functions for slide editing
@@ -729,27 +756,7 @@ function updateSlideContentItem(slideIndex, itemIndex, value) {
     console.log(`Updated slide ${slideIndex + 1} content item ${itemIndex + 1}:`, value);
 }
 
-function updateSlideColor(slideIndex, colorType, value) {
-    if (!slidesAppState.currentSlideData || !slidesAppState.currentSlideData.slides[slideIndex]) {
-        return;
-    }
-
-    const slide = slidesAppState.currentSlideData.slides[slideIndex];
-    if (!slide.visualDesign) {
-        slide.visualDesign = {};
-    }
-
-    slide.visualDesign[colorType] = value;
-
-    // Re-render the slide with new colors
-    const slideElement = document.querySelector(`.slide-preview[data-slide-index="${slideIndex}"]`);
-    if (slideElement) {
-        applySlideDesign(slideElement, slide, slideIndex + 1);
-    }
-
-    saveSlides();
-    console.log(`Updated slide ${slideIndex + 1} ${colorType}:`, value);
-}
+// updateSlideColor function removed - theme is now applied globally
 
 // Create visual shape elements
 function createVisualShape(shape) {
@@ -927,38 +934,54 @@ function getPositionCSS(position) {
 
 async function exportPresentation(format) {
     if (!slidesAppState.currentSlideData) {
-        updateExportStatus('No presentation data to export', 'error');
+        updateExportModalStatus('No presentation data to export', 'error');
         return;
     }
 
+    const includeSpeakerNotes = shouldIncludeSpeakerNotes();
+
     try {
-        updateExportStatus(`Exporting to ${format.toUpperCase()}...`, 'loading');
+        updateExportModalStatus(`Exporting to ${format.toUpperCase()}...`, 'loading');
 
         switch (format) {
             case 'json':
-                exportJSON();
+                exportJSON(includeSpeakerNotes);
                 break;
             case 'html':
-                exportHTML();
+                exportHTML(includeSpeakerNotes);
                 break;
             case 'pdf':
-                await exportPDF();
+                await exportPDF(includeSpeakerNotes);
                 break;
             case 'pptx':
-                await exportPowerPoint();
+                await exportPowerPoint(includeSpeakerNotes);
                 break;
             default:
                 throw new Error(`Unsupported export format: ${format}`);
         }
 
+        // Close modal after successful export
+        setTimeout(() => {
+            hideExportModal();
+        }, 2000);
+
     } catch (error) {
         console.error('Export error:', error);
-        updateExportStatus(`Export failed: ${error.message}`, 'error');
+        updateExportModalStatus(`Export failed: ${error.message}`, 'error');
     }
 }
 
-function exportJSON() {
-    const dataStr = JSON.stringify(slidesAppState.currentSlideData, null, 2);
+function exportJSON(includeSpeakerNotes = false) {
+    let dataToExport = { ...slidesAppState.currentSlideData };
+
+    if (!includeSpeakerNotes) {
+        dataToExport.slides = dataToExport.slides.map(slide => {
+            const { speakerNotes, ...slideWithoutNotes } = slide;
+            return slideWithoutNotes;
+        });
+    }
+
+    const dataStr = JSON.stringify(dataToExport, null, 2);
     const dataBlob = new Blob([dataStr], {type: 'application/json'});
 
     const link = document.createElement('a');
@@ -968,11 +991,11 @@ function exportJSON() {
     link.click();
     document.body.removeChild(link);
 
-    updateExportStatus('✅ JSON exported successfully!', 'success');
+    updateExportModalStatus('✅ JSON exported successfully!', 'success');
 }
 
-function exportHTML() {
-    const htmlContent = generateStandaloneHTML(slidesAppState.currentSlideData);
+function exportHTML(includeSpeakerNotes = false) {
+    const htmlContent = generateStandaloneHTML(slidesAppState.currentSlideData, includeSpeakerNotes);
     const dataBlob = new Blob([htmlContent], {type: 'text/html'});
 
     const link = document.createElement('a');
@@ -982,7 +1005,7 @@ function exportHTML() {
     link.click();
     document.body.removeChild(link);
 
-    updateExportStatus('✅ HTML exported successfully!', 'success');
+    updateExportModalStatus('✅ HTML exported successfully!', 'success');
 }
 
 function generateStandaloneHTML(slideData) {
@@ -1276,13 +1299,25 @@ function updateExportStatus(message, type) {
 function initializeEmptyPresentation() {
     slidesAppState.currentSlideData = {
         title: 'My Presentation',
-        slides: []
+        slides: [{
+            slideNumber: 1,
+            title: 'New Slide',
+            content: ['Click to edit this content'],
+            visualDesign: {
+                backgroundColor: '#1e40af',
+                textColor: '#ffffff',
+                accentColor: '#60a5fa',
+                layout: 'left-text',
+                shapes: []
+            },
+            speakerNotes: 'Click to add speaker notes'
+        }]
     };
 
-    // Display empty state
+    // Display initial slide
     displaySlides(slidesAppState.currentSlideData);
 
-    console.log('Initialized empty presentation');
+    console.log('Initialized presentation with one empty slide');
 }
 
 function addNewSlide() {
@@ -1375,6 +1410,41 @@ function moveSlide(slideIndex, direction) {
     console.log(`Moved slide ${slideIndex + 1} ${direction}`);
 }
 
+function insertSlideAfter(slideIndex) {
+    if (!slidesAppState.currentSlideData) {
+        return;
+    }
+
+    const newSlideNumber = slideIndex + 2; // Insert after the current slide
+    const newSlide = {
+        slideNumber: newSlideNumber,
+        title: `New Slide`,
+        content: ['Click to edit this content'],
+        visualDesign: {
+            backgroundColor: '#1e40af',
+            textColor: '#ffffff',
+            accentColor: '#60a5fa',
+            layout: 'left-text',
+            shapes: []
+        },
+        speakerNotes: 'Click to add speaker notes'
+    };
+
+    // Insert the new slide after the current one
+    slidesAppState.currentSlideData.slides.splice(slideIndex + 1, 0, newSlide);
+
+    // Renumber all slides after insertion
+    slidesAppState.currentSlideData.slides.forEach((slide, index) => {
+        slide.slideNumber = index + 1;
+    });
+
+    displaySlides(slidesAppState.currentSlideData);
+    saveSlides();
+
+    updateGenerationStatus(`Slide inserted after slide ${slideIndex + 1}`, 'success');
+    console.log(`Inserted new slide after slide ${slideIndex + 1}`);
+}
+
 function addContentPoint(slideIndex) {
     if (!slidesAppState.currentSlideData || !slidesAppState.currentSlideData.slides[slideIndex]) {
         return;
@@ -1412,6 +1482,248 @@ function removeContentItem(slideIndex, itemIndex) {
     saveSlides();
 
     console.log(`Removed content item ${itemIndex + 1} from slide ${slideIndex + 1}`);
+}
+
+function createEditableSpeakerNotes(slide, slideIndex) {
+    const notesContainer = document.createElement('div');
+    notesContainer.className = 'speaker-notes-container';
+    notesContainer.style.cssText = 'margin: 10px 0 20px 0; padding: 15px; background: #f8f9fa; border: 1px solid #e9ecef; border-radius: 6px; border-left: 4px solid #6c757d;';
+
+    // Create notes label
+    const notesLabel = document.createElement('div');
+    notesLabel.style.cssText = 'font-weight: bold; margin-bottom: 8px; color: #495057; font-size: 0.9em; display: flex; align-items: center;';
+    notesLabel.innerHTML = '🎤 Speaker Notes (not exported by default)';
+
+    // Create editable notes area
+    const notesTextarea = document.createElement('textarea');
+    notesTextarea.className = 'speaker-notes-textarea';
+    notesTextarea.value = slide.speakerNotes || '';
+    notesTextarea.placeholder = 'Add your speaker notes here...';
+    notesTextarea.style.cssText = 'width: 100%; min-height: 80px; padding: 10px; border: 1px solid #ced4da; border-radius: 4px; font-size: 0.9em; font-family: inherit; resize: vertical; background: white;';
+
+    // Add event listeners for auto-save
+    notesTextarea.addEventListener('blur', () => {
+        updateSpeakerNotes(slideIndex, notesTextarea.value);
+    });
+
+    notesTextarea.addEventListener('input', debounce(() => {
+        updateSpeakerNotes(slideIndex, notesTextarea.value);
+    }, 500));
+
+    // Select all text when clicking/focusing
+    selectAllOnFocusTextarea(notesTextarea);
+
+    notesContainer.appendChild(notesLabel);
+    notesContainer.appendChild(notesTextarea);
+
+    return notesContainer;
+}
+
+function updateSpeakerNotes(slideIndex, notes) {
+    if (!slidesAppState.currentSlideData || !slidesAppState.currentSlideData.slides[slideIndex]) {
+        return;
+    }
+
+    slidesAppState.currentSlideData.slides[slideIndex].speakerNotes = notes;
+    saveSlides();
+    console.log(`Updated speaker notes for slide ${slideIndex + 1}`);
+}
+
+function createSlideControlsHeader(slideNumber, slideIndex) {
+    const controlsHeader = document.createElement('div');
+    controlsHeader.className = 'slide-controls-header';
+    controlsHeader.style.cssText = `
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 10px;
+        padding: 0 10px;
+    `;
+
+    // Left side - slide number
+    const slideLabel = document.createElement('div');
+    slideLabel.style.cssText = 'font-weight: bold; color: #666; font-size: 0.9em;';
+    slideLabel.textContent = `Slide ${slideNumber}`;
+
+    // Right side - controls
+    const controlsDiv = document.createElement('div');
+    controlsDiv.className = 'slide-controls-buttons';
+    controlsDiv.style.cssText = 'display: flex; gap: 5px; align-items: center;';
+
+    // Insert slide button
+    const insertBtn = document.createElement('button');
+    insertBtn.type = 'button';
+    insertBtn.className = 'btn-small';
+    insertBtn.textContent = '➕';
+    insertBtn.title = 'Insert slide after this one';
+    insertBtn.style.cssText = 'padding: 4px 6px; font-size: 12px; background: #28a745; color: white; border: none; border-radius: 3px; cursor: pointer;';
+    insertBtn.addEventListener('click', () => insertSlideAfter(slideIndex));
+
+    // Move up button
+    const moveUpBtn = document.createElement('button');
+    moveUpBtn.type = 'button';
+    moveUpBtn.className = 'btn-small';
+    moveUpBtn.textContent = '⬆️';
+    moveUpBtn.title = 'Move slide up';
+    moveUpBtn.style.cssText = 'padding: 4px 6px; font-size: 12px; background: #6c757d; color: white; border: none; border-radius: 3px; cursor: pointer;';
+    moveUpBtn.addEventListener('click', () => moveSlide(slideIndex, 'up'));
+
+    // Move down button
+    const moveDownBtn = document.createElement('button');
+    moveDownBtn.type = 'button';
+    moveDownBtn.className = 'btn-small';
+    moveDownBtn.textContent = '⬇️';
+    moveDownBtn.title = 'Move slide down';
+    moveDownBtn.style.cssText = 'padding: 4px 6px; font-size: 12px; background: #6c757d; color: white; border: none; border-radius: 3px; cursor: pointer;';
+    moveDownBtn.addEventListener('click', () => moveSlide(slideIndex, 'down'));
+
+    // Delete slide button
+    const deleteBtn = document.createElement('button');
+    deleteBtn.type = 'button';
+    deleteBtn.className = 'btn-small btn-danger';
+    deleteBtn.textContent = '🗑️';
+    deleteBtn.title = 'Delete this slide';
+    deleteBtn.style.cssText = 'padding: 4px 6px; font-size: 12px; background: #dc3545; color: white; border: none; border-radius: 3px; cursor: pointer;';
+    deleteBtn.addEventListener('click', () => deleteSlide(slideIndex));
+
+    controlsDiv.appendChild(insertBtn);
+    controlsDiv.appendChild(moveUpBtn);
+    controlsDiv.appendChild(moveDownBtn);
+    controlsDiv.appendChild(deleteBtn);
+
+    controlsHeader.appendChild(slideLabel);
+    controlsHeader.appendChild(controlsDiv);
+
+    return controlsHeader;
+}
+
+// Simple debounce function for auto-save
+function debounce(func, wait) {
+    let timeout;
+    return function executedFunction(...args) {
+        const later = () => {
+            clearTimeout(timeout);
+            func(...args);
+        };
+        clearTimeout(timeout);
+        timeout = setTimeout(later, wait);
+    };
+}
+
+// Helper function to select all text when clicking on contentEditable elements
+function selectAllOnFocus(element) {
+    element.addEventListener('focus', () => {
+        // Select all text when the element gets focus
+        setTimeout(() => {
+            const range = document.createRange();
+            const selection = window.getSelection();
+            range.selectNodeContents(element);
+            selection.removeAllRanges();
+            selection.addRange(range);
+        }, 0);
+    });
+
+    element.addEventListener('click', (e) => {
+        // If element is not focused, focus it (which will trigger selection)
+        if (document.activeElement !== element) {
+            element.focus();
+        }
+    });
+}
+
+// Helper function to select all text in textarea/input elements
+function selectAllOnFocusTextarea(element) {
+    element.addEventListener('focus', () => {
+        // Select all text when the element gets focus
+        setTimeout(() => {
+            element.select();
+        }, 0);
+    });
+
+    element.addEventListener('click', (e) => {
+        // If element is not focused, focus it (which will trigger selection)
+        if (document.activeElement !== element) {
+            element.focus();
+        }
+    });
+}
+
+function makePresentationTitleEditable(title) {
+    if (!slidesDom.presentationTitle) return;
+
+    // Set the title text
+    slidesDom.presentationTitle.textContent = title;
+
+    // Make it editable if it's not already
+    if (!slidesDom.presentationTitle.hasAttribute('contenteditable')) {
+        slidesDom.presentationTitle.contentEditable = true;
+        slidesDom.presentationTitle.style.cursor = 'text';
+        slidesDom.presentationTitle.title = 'Click to edit presentation title';
+
+        // Add visual styling for editable state
+        slidesDom.presentationTitle.style.border = '2px solid transparent';
+        slidesDom.presentationTitle.style.borderRadius = '4px';
+        slidesDom.presentationTitle.style.padding = '5px 10px';
+        slidesDom.presentationTitle.style.transition = 'border-color 0.2s ease';
+
+        // Add event listeners
+        slidesDom.presentationTitle.addEventListener('focus', () => {
+            slidesDom.presentationTitle.style.borderColor = '#60a5fa';
+            slidesDom.presentationTitle.style.backgroundColor = 'rgba(255,255,255,0.1)';
+        });
+
+        // Select all text when clicking/focusing
+        selectAllOnFocus(slidesDom.presentationTitle);
+
+        slidesDom.presentationTitle.addEventListener('blur', () => {
+            slidesDom.presentationTitle.style.borderColor = 'transparent';
+            slidesDom.presentationTitle.style.backgroundColor = 'transparent';
+
+            // Update the presentation title in the data
+            if (slidesAppState.currentSlideData) {
+                slidesAppState.currentSlideData.title = slidesDom.presentationTitle.textContent.trim() || 'My Presentation';
+                saveSlides();
+                console.log('Updated presentation title:', slidesAppState.currentSlideData.title);
+            }
+        });
+
+        // Handle Enter key to blur (finish editing)
+        slidesDom.presentationTitle.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter') {
+                e.preventDefault();
+                slidesDom.presentationTitle.blur();
+            }
+        });
+
+        console.log('Made presentation title editable');
+    }
+}
+
+function showExportModal() {
+    const exportModal = document.getElementById('export-modal');
+    if (exportModal) {
+        exportModal.style.display = 'flex';
+    }
+}
+
+function hideExportModal() {
+    const exportModal = document.getElementById('export-modal');
+    if (exportModal) {
+        exportModal.style.display = 'none';
+    }
+}
+
+function shouldIncludeSpeakerNotes() {
+    const includeNotesCheckbox = document.getElementById('include-speaker-notes');
+    return includeNotesCheckbox ? includeNotesCheckbox.checked : false;
+}
+
+function updateExportModalStatus(message, type) {
+    const exportModalStatus = document.getElementById('export-modal-status');
+    if (exportModalStatus) {
+        exportModalStatus.textContent = message;
+        exportModalStatus.className = `status-display status-${type} show`;
+    }
 }
 
 // Make slides functionality globally available for debugging
