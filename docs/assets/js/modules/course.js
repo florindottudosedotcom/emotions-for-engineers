@@ -174,39 +174,24 @@ function generateCourseFiles() {
     const safeCourseName = courseName.toLowerCase().replace(/[^a-z0-9\s-]/g, '').replace(/\s+/g, '-');
     const zip = new JSZip();
     const courseFolder = zip.folder(safeCourseName);
-    const docsFolder = courseFolder.folder('docs');
-    const assetsFolder = docsFolder.folder('assets');
-    assetsFolder.folder('images'); // Create empty images folder
+    // No longer creating a nested 'docs' folder, the content goes straight into the course folder.
+    const assetsFolder = courseFolder.folder('assets');
+    assetsFolder.folder('images'); // Create empty images folder for convention
 
-    // --- Create mkdocs.yml ---
-    const mkdocsContent = {
-        site_name: courseName,
-        theme: 'material',
-        nav: [
-            { 'Home': 'index.md' }
-        ]
-    };
-
-    const chapters = [];
+    // --- Create Chapter Files ---
     dom.chapterContentContainer.querySelectorAll('.chapter-content').forEach((contentDiv, index) => {
         const chapterId = contentDiv.id.replace('chapter-content-', '');
         const title = dom.courseForm.querySelector(`#chapter-title-${chapterId}`).value;
         const content = ui.editorInstances[chapterId] ? ui.editorInstances[chapterId].content : '';
         const chapterFilename = `${String(index + 1).padStart(2, '0')}-${title.toLowerCase().replace(/[^a-z0-9\s-]/g, '').replace(/\s+/g, '-')}.md`;
 
-        chapters.push({ title, content, filename: chapterFilename });
-
-        // Add chapter to nav and create markdown file
-        mkdocsContent.nav.push({ [title]: chapterFilename });
-        docsFolder.file(chapterFilename, content);
+        courseFolder.file(chapterFilename, content);
     });
-
-    courseFolder.file('mkdocs.yml', jsyaml.dump(mkdocsContent));
 
     // --- Create index.md ---
     const courseDescription = dom.courseDescTextarea.value;
     const indexContent = `# ${courseName}\n\n${courseDescription}`;
-    docsFolder.file('index.md', indexContent);
+    courseFolder.file('index.md', indexContent);
 
     // --- Generate and download zip ---
     ui.logDebug("Generating zip file...");
