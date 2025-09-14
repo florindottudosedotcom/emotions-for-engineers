@@ -58,14 +58,6 @@ document.addEventListener('DOMContentLoaded', () => {
             State.saveState();
         }
     });
-    dom.chapterContentContainer.addEventListener('click', (e) => {
-        if (e.target.classList.contains('generate-chapter-btn')) {
-            const chapterId = e.target.dataset.chapterId;
-            if (chapterId) {
-                Course.generateSingleChapter(parseInt(chapterId, 10));
-            }
-        }
-    });
     // --- End State Persistence ---
 
     // Initial Load

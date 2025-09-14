@@ -9,8 +9,19 @@
     <link rel="stylesheet" href="./assets/css/course-creator.css" />
 </head>
 <body>
+    <div id="overwrite-modal" class="modal-overlay">
+        <div class="modal-content">
+            <h2>Overwrite Existing Content?</h2>
+            <p>There are chapters with content present. Do you want to remove them before generating new content?</p>
+            <div class="input-group margin-top-1-5rem">
+                <button type="button" id="overwrite-yes-btn" class="btn btn-primary">Yes, Overwrite</button>
+                <button type="button" id="overwrite-cancel-btn" class="btn btn-danger margin-left-auto">Cancel</button>
+            </div>
+        </div>
+    </div>
 
     <div class="container">
+        <h1>Ollama Course Creator</h1>
         <div id="ai-status" class="ai-status-initial"></div>
 
 

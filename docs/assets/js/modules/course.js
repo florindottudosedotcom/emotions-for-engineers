@@ -3,12 +3,39 @@ let ui = {};
 let api = {};
 let stateModule = {};
 
+function isCourseEmpty() {
+    // Check if any chapter titles have content
+    const titleInputs = document.querySelectorAll('.chapter-title');
+    for (const input of titleInputs) {
+        if (input.value.trim() !== '') return false;
+    }
+
+    // Check if any editor instances have content
+    for (const key in ui.editorInstances) {
+        if (ui.editorInstances[key].content && ui.editorInstances[key].content.trim() !== '') {
+            return false;
+        }
+    }
+
+    return true;
+}
+
 async function generateCourse() {
     const userPrompt = dom.masterPromptTextarea.value;
     if (!userPrompt) {
         alert('Please enter a prompt for the course.');
         return;
     }
+
+    if (!isCourseEmpty()) {
+        const shouldOverwrite = await ui.showOverwriteConfirmModal();
+        if (!shouldOverwrite) {
+            ui.logDebug("Course generation cancelled by user.");
+            return; // Stop if user cancels
+        }
+        ui.logDebug("User confirmed to overwrite existing content.");
+    }
+
     ui.updateAiStatus('Generating course details...');
 
     const systemPrompt = `You are an expert course creator. A user wants a course about the following topic: "${userPrompt}".
@@ -160,61 +187,7 @@ export function initCourse(domElements, uiModule, apiModule, stateMod) {
     stateModule = stateMod;
 }
 
-async function generateSingleChapter(chapterId) {
-    const chapterContent = document.getElementById(`chapter-content-${chapterId}`);
-    if (!chapterContent) {
-        console.error(`Could not find chapter content for ID: ${chapterId}`);
-        return;
-    }
-
-    const titleInput = chapterContent.querySelector(`#chapter-title-${chapterId}`);
-    const editorInstance = ui.editorInstances[chapterId];
-    const existingTitle = titleInput ? titleInput.value.trim() : '';
-    const existingContent = editorInstance ? editorInstance.content.trim() : '';
-
-    if (existingTitle || existingContent) {
-        if (!confirm('This chapter already has content. Are you sure you want to overwrite it?')) {
-            return; // Abort if user cancels
-        }
-    }
-
-    const numChapters = parseInt(dom.numChaptersSelect.value, 10);
-    const courseTitle = dom.courseNameInput.value;
-    if (!courseTitle) {
-        alert("Please generate the main course details first.");
-        return;
-    }
-
-    try {
-        ui.updateAiStatus(`Generating chapter ${chapterId}...`);
-        const chapterData = await generateChapter(courseTitle, chapterId, numChapters);
-        if (!chapterData.title || !chapterData.content) {
-             throw new Error("The AI response for the chapter is missing 'title' or 'content'.");
-        }
-
-        if (titleInput) titleInput.value = chapterData.title;
-
-        if (editorInstance) {
-            if (editorInstance.isReady) {
-                editorInstance.iframe.contentWindow.postMessage({ type: 'set-content', content: chapterData.content }, '*');
-            } else {
-                editorInstance.pendingContent = chapterData.content;
-            }
-            // This is important: update the content in the instance so it gets saved correctly.
-            editorInstance.content = chapterData.content;
-        }
-
-        ui.updateAiStatus(`✅ Chapter ${chapterId} has been successfully generated!`);
-        stateModule.saveState(); // Save the new content
-        setTimeout(() => { ui.updateAiStatus(null); }, 5000);
-
-    } catch (err) {
-        ui.updateAiStatus(`Error generating chapter ${chapterId}: ${err.message}`, 'error');
-    }
-}
-
 export {
     generateCourse,
-    generateSingleChapter,
     translate
 };
