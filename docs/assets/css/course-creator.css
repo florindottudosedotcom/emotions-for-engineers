@@ -165,6 +165,7 @@ input[type="checkbox"] { margin-right: 0.5rem; }
 .launcher-btn.cloud { background-color: #3498db; }
 .launcher-btn.webllm { background-color: #2ecc71; }
 .launcher-btn.ollama { background-color: #e67e22; }
+.launcher-btn.slides { background-color: #9b59b6; }
 
 .launcher-btn.disabled {
     background-color: #bdc3c7;

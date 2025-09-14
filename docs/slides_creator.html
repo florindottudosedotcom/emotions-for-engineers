@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self' 'unsafe-inline' 'unsafe-eval' blob:; style-src 'self' 'unsafe-inline'; frame-src 'self'; img-src 'self' data: blob:; connect-src 'self' http://localhost:11434; font-src 'self'; object-src 'none'; base-uri 'self'; form-action 'self'; worker-src 'self' blob:;">
+    <title>Slides Creator</title>
+    <link rel="stylesheet" href="./assets/css/course-creator.css" />
+    <style>
+        .slides-container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .slide-preview {
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            margin: 20px 0;
+            padding: 20px;
+            background: white;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+
+        .slide-preview h3 {
+            margin: 0 0 15px 0;
+            color: #333;
+            font-size: 1.4em;
+        }
+
+        .slide-preview ul {
+            margin: 0;
+            padding-left: 20px;
+        }
+
+        .slide-preview li {
+            margin: 8px 0;
+            line-height: 1.4;
+        }
+
+        .visual-design-info {
+            background: #f8f9fa;
+            border-radius: 4px;
+            padding: 10px;
+            margin-top: 15px;
+            font-size: 0.9em;
+            color: #666;
+        }
+
+        .slide-controls {
+            text-align: center;
+            margin: 30px 0;
+        }
+
+        .slide-controls .btn {
+            margin: 0 10px;
+        }
+
+        .export-options {
+            background: #f8f9fa;
+            border-radius: 8px;
+            padding: 20px;
+            margin: 20px 0;
+            text-align: center;
+        }
+
+        .export-options h3 {
+            margin-top: 0;
+        }
+
+        .export-buttons {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            flex-wrap: wrap;
+        }
+
+        .presentation-preview {
+            border: 2px solid #007bff;
+            border-radius: 8px;
+            padding: 20px;
+            margin: 20px 0;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            text-align: center;
+        }
+
+        .presentation-preview h2 {
+            margin: 0 0 10px 0;
+            font-size: 2em;
+        }
+
+        .slide-counter {
+            opacity: 0.8;
+            font-size: 0.9em;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>AI Slides Creator</h1>
+        <div id="ai-status" class="ai-status-initial"></div>
+
+        <!-- Provider-specific section will be injected here -->
+        <div id="provider-section"></div>
+
+        <fieldset>
+            <legend>Presentation Generator</legend>
+
+            <div class="input-group">
+                <label for="presentation-topic">Presentation Topic</label>
+                <textarea id="presentation-topic" placeholder="e.g., 'The Future of Artificial Intelligence in Healthcare'" class="prompt-textarea-large" required></textarea>
+            </div>
+
+            <div class="input-group">
+                <label for="num-slides" class="label-no-shrink-no-margin">Number of Slides:</label>
+                <select id="num-slides" class="select-no-margin">
+                    <option value="5">5</option>
+                    <option value="6">6</option>
+                    <option value="8" selected>8</option>
+                    <option value="10">10</option>
+                    <option value="12">12</option>
+                    <option value="15">15</option>
+                </select>
+                <button type="button" id="generate-slides-btn" class="btn btn-primary margin-left-1rem">Generate Presentation</button>
+            </div>
+
+            <div id="generation-status" class="status-display"></div>
+        </fieldset>
+
+        <hr class="hr-margin">
+
+        <!-- Presentation Preview Section -->
+        <div id="presentation-section" style="display: none;">
+            <div class="presentation-preview">
+                <h2 id="presentation-title">Presentation Title</h2>
+                <p class="slide-counter"><span id="total-slides">0</span> slides generated</p>
+            </div>
+
+            <div class="slide-controls">
+                <button type="button" id="preview-presentation-btn" class="btn btn-secondary">📊 Preview Presentation</button>
+                <button type="button" id="regenerate-slides-btn" class="btn btn-outline">🔄 Regenerate</button>
+            </div>
+
+            <!-- Slides Preview -->
+            <div id="slides-preview" class="slides-container">
+                <!-- Slides will be inserted here -->
+            </div>
+
+            <!-- Export Options -->
+            <div class="export-options">
+                <h3>Export Presentation</h3>
+                <div class="export-buttons">
+                    <button type="button" id="export-pdf-btn" class="btn btn-primary">📄 Export PDF</button>
+                    <button type="button" id="export-pptx-btn" class="btn btn-primary">📊 Export PowerPoint</button>
+                    <button type="button" id="export-html-btn" class="btn btn-secondary">🌐 Export HTML</button>
+                    <button type="button" id="export-json-btn" class="btn btn-outline">📋 Export Data (JSON)</button>
+                </div>
+                <div id="export-status" class="status-display"></div>
+            </div>
+        </div>
+
+        <!-- Hidden presentation viewer -->
+        <div id="presentation-viewer" style="display: none;">
+            <div style="text-align: center; margin: 20px 0;">
+                <button type="button" id="close-presentation-btn" class="btn btn-secondary">✕ Close Presentation</button>
+            </div>
+            <div id="reveal-presentation" class="reveal">
+                <div class="slides">
+                    <!-- Reveal.js slides will be inserted here -->
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- JS Libraries -->
+    <script src="./assets/js/jszip/3.10.1/jszip.min.js"></script>
+
+    <!-- Main Application Logic -->
+    <script>
+        // Configure provider type
+        window.COURSE_CREATOR_PROVIDER = 'slides';
+    </script>
+    <script type="module" src="./assets/js/slides_main.js"></script>
+</body>
+</html>

@@ -24,6 +24,10 @@
                 <span class="icon">🖥️</span>
                 <span>Ollama (Local)</span>
             </a>
+            <a href="slides_creator.html" target="_blank" class="launcher-btn slides" id="slides-launcher">
+                <span class="icon">📊</span>
+                <span>AI Slides Creator</span>
+            </a>
         </div>
 
         <div class="help-section">
@@ -47,6 +51,7 @@
     <script>
         document.addEventListener('DOMContentLoaded', () => {
             const ollamaLauncher = document.getElementById('ollama-launcher');
+            const slidesLauncher = document.getElementById('slides-launcher');
             const isLocal = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1' || window.location.protocol === 'file:';
 
             if (!isLocal) {
@@ -54,6 +59,11 @@
                 ollamaLauncher.href = '#';
                 ollamaLauncher.title = 'Ollama is only available when running this tool locally.';
                 ollamaLauncher.addEventListener('click', (e) => e.preventDefault());
+
+                slidesLauncher.classList.add('disabled');
+                slidesLauncher.href = '#';
+                slidesLauncher.title = 'AI Slides Creator is only available when running this tool locally.';
+                slidesLauncher.addEventListener('click', (e) => e.preventDefault());
             }
         });
     </script>
