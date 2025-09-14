@@ -7,7 +7,7 @@
 .label-no-shrink-no-margin { flex-shrink: 0; margin-bottom: 0; }
 .select-no-margin { margin-bottom: 0; }
 .hidden { display: none; }
-.ollama-status-style { margin-top: 0.5rem; font-weight: bold; }
+.ollama-status-style { margin-top: 0.5rem; font-weight: bold; white-space: pre-line; line-height: 1.4; padding: 0.5rem; border-radius: 4px; }
 .margin-left-1rem { margin-left: 1rem; }
 .hr-margin { margin: 2rem 0; }
 .margin-top-2rem { margin-top: 2rem; }
@@ -112,15 +112,21 @@ input[type="checkbox"] { margin-right: 0.5rem; }
 }
 
 .ollama-status-ok {
-    color: green;
+    color: #1a5f3f;
+    background-color: #f0fff4;
+    border: 1px solid #2ecc71;
 }
 
 .ollama-status-error {
-    color: red;
+    color: #742a2a;
+    background-color: #fef2f2;
+    border: 1px solid #e53e3e;
 }
 
 .ollama-status-info {
-    color: blue;
+    color: #2c5282;
+    background-color: #e7f3ff;
+    border: 1px solid #4a90e2;
 }
 
 /* New Launcher Page Styles */
