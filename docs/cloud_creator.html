@@ -22,7 +22,6 @@
 
     <div class="container">
         <h1>Cloud AI Course Creator</h1>
-        <div id="ai-status" class="ai-status-initial"></div>
 
         <fieldset>
             <legend>AI Provider</legend>
@@ -36,6 +35,7 @@
                 <label for="api-key-input" class="label-no-shrink-no-margin margin-left-1rem">API Key:</label>
                 <input type="password" id="api-key-input" name="api-key" placeholder="Enter your API key" class="flex-grow">
             </div>
+            <div id="connection-status" class="status-display"></div>
         </fieldset>
 
         <fieldset>
@@ -58,6 +58,7 @@
                 </select>
                 <button type="button" id="generate-course-btn" class="btn btn-secondary margin-left-1rem">Generate Entire Course</button>
             </div>
+            <div id="generation-status" class="status-display"></div>
         </fieldset>
 
         <hr class="hr-margin">
@@ -98,6 +99,7 @@
 
             <hr class="hr-margin">
             <button type="submit" class="btn btn-primary">Generate Course Files</button>
+            <div id="file-generation-status" class="status-display"></div>
         </form>
 
         <div id="download-section">

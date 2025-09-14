@@ -61,7 +61,7 @@ document.addEventListener('DOMContentLoaded', () => {
         Object.keys(appState.SESSION_API_KEYS).forEach(key => {
             appState.SESSION_API_KEYS[key] = null;
         });
-        UI.updateAiStatus(`Provider changed to ${appState.AI_PROVIDER}. Please enter an API key.`);
+        UI.updateConnectionStatus(`Provider changed to ${appState.AI_PROVIDER}. Please enter an API key.`, 'warning');
 
     });
 
@@ -71,9 +71,9 @@ document.addEventListener('DOMContentLoaded', () => {
         appState.SESSION_API_KEYS[provider] = key;
         saveApiKeysToSession(appState.SESSION_API_KEYS); // Save to session storage
         if (key) {
-            UI.updateAiStatus(`✅ ${provider.charAt(0).toUpperCase() + provider.slice(1)} is ready.`);
+            UI.updateConnectionStatus(`✅ ${provider.charAt(0).toUpperCase() + provider.slice(1)} is ready.`, 'success');
         } else {
-            UI.updateAiStatus(`Provider for ${provider} is not configured.`);
+            UI.updateConnectionStatus(`Provider for ${provider} is not configured.`, 'warning');
         }
     });
 
@@ -115,9 +115,9 @@ document.addEventListener('DOMContentLoaded', () => {
 
     if (apiKey) {
         dom.apiKeyInput.value = apiKey;
-        UI.updateAiStatus(`✅ ${currentProvider.charAt(0).toUpperCase() + currentProvider.slice(1)} is ready.`);
+        UI.updateConnectionStatus(`✅ ${currentProvider.charAt(0).toUpperCase() + currentProvider.slice(1)} is ready.`, 'success');
     } else {
-        UI.updateAiStatus(`Provider set to ${currentProvider}. Please enter an API key.`);
+        UI.updateConnectionStatus(`Provider set to ${currentProvider}. Please enter an API key.`, 'warning');
     }
 
     State.loadState();

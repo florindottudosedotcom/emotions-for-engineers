@@ -37,7 +37,7 @@ async function generateCourse() {
         }
     }
 
-    ui.updateAiStatus('Generating course details...');
+    ui.updateGenerationStatus('Generating course details...');
     console.log('Starting AI generation...');
 
     const systemPrompt = `You are an expert course creator. A user wants a course about the following topic: "${userPrompt}".
@@ -56,10 +56,10 @@ Description: [The course description]`;
         if (!content || content.trim() === '') {
             throw new Error("The AI model returned an empty response.");
         }
-        ui.updateAiStatus("AI generation complete. Parsing response...");
+        ui.updateGenerationStatus("AI generation complete. Parsing response...");
         parseAndPopulateCourseDetails(content);
     } catch (err) {
-        ui.updateAiStatus(`Error generating course: ${err.message}`, 'error');
+        ui.updateGenerationStatus(`Error generating course: ${err.message}`, 'error');
         console.error('Course generation error:', err);
     }
 }
@@ -91,11 +91,11 @@ function parseAndPopulateCourseDetails(textResponse) {
         Object.keys(ui.editorInstances).forEach(key => delete ui.editorInstances[key]);
         ui.resetChapterCount();
 
-        ui.updateAiStatus("✅ Course details populated. Generating chapters...");
+        ui.updateGenerationStatus("✅ Course details populated. Generating chapters...");
         generateChaptersInLoop();
 
     } catch (err) {
-        ui.updateAiStatus(`Error parsing course details: ${err.message}`, 'error');
+        ui.updateGenerationStatus(`Error parsing course details: ${err.message}`, 'error');
     }
 }
 
@@ -139,7 +139,7 @@ async function generateChaptersInLoop() {
 
     for (let i = 1; i <= numChapters; i++) {
         try {
-            ui.updateAiStatus(`Generating chapter ${i} of ${numChapters}...`);
+            ui.updateGenerationStatus(`Generating chapter ${i} of ${numChapters}...`);
             ui.addChapter();
 
             const chapterData = await generateChapter(courseTitle, i, numChapters);
@@ -161,11 +161,11 @@ async function generateChaptersInLoop() {
                 editorInstance.content = chapterData.content;
             }
         } catch (err) {
-            ui.updateAiStatus(`Error generating chapter ${i}: ${err.message}`, 'error');
+            ui.updateGenerationStatus(`Error generating chapter ${i}: ${err.message}`, 'error');
             return;
         }
     }
-    ui.updateAiStatus("✅ All chapters have been successfully generated!");
+    ui.updateGenerationStatus("✅ All chapters have been successfully generated!");
 
     // After generating all chapters, activate the first tab for a consistent UX
     const firstTab = dom.chapterTabsContainer.querySelector('.tab-link');
@@ -175,7 +175,7 @@ async function generateChaptersInLoop() {
 
     stateModule.saveState();
 
-    setTimeout(() => { ui.updateAiStatus(null); }, 5000);
+    setTimeout(() => { ui.updateGenerationStatus(null); }, 5000);
 }
 
 async function translate(textToTranslate, targetLangName) {
@@ -218,7 +218,7 @@ async function generateCourseFiles() {
         return;
     }
 
-    ui.updateAiStatus("🌐 Generating course files for multiple languages...");
+    ui.updateFileGenerationStatus("🌐 Generating course files for multiple languages...");
 
     const safeCourseName = courseName.toLowerCase().replace(/[^a-z0-9\s-]/g, '').replace(/\s+/g, '-');
     const zip = new JSZip();
@@ -229,7 +229,7 @@ async function generateCourseFiles() {
     try {
         // Process each language
         for (const [langIndex, language] of selectedLanguages.entries()) {
-            ui.updateAiStatus(`🌐 Processing ${language.name} (${langIndex + 1}/${selectedLanguages.length})...`);
+            ui.updateFileGenerationStatus(`🌐 Processing ${language.name} (${langIndex + 1}/${selectedLanguages.length})...`);
 
             // Translate course name and description (skip for English)
             let translatedCourseName = courseName;
@@ -247,7 +247,7 @@ async function generateCourseFiles() {
             // Create chapter files for this language
             const chapters = dom.chapterContentContainer.querySelectorAll('.chapter-content');
             for (const [chapterIndex, contentDiv] of chapters.entries()) {
-                ui.updateAiStatus(`🌐 Translating ${language.name} - Chapter ${chapterIndex + 1}/${chapters.length}...`);
+                ui.updateFileGenerationStatus(`🌐 Translating ${language.name} - Chapter ${chapterIndex + 1}/${chapters.length}...`);
 
                 const chapterId = contentDiv.id.replace('chapter-content-', '');
                 const title = dom.courseForm.querySelector(`#chapter-title-${chapterId}`).value;
@@ -267,7 +267,7 @@ async function generateCourseFiles() {
             }
         }
 
-        ui.updateAiStatus("📦 Creating download package...");
+        ui.updateFileGenerationStatus("📦 Creating download package...");
 
         // Generate and download zip
         ui.logDebug("Generating zip file...");
@@ -285,11 +285,11 @@ async function generateCourseFiles() {
         dom.downloadZipLink.href = link.href;
         dom.downloadZipLink.download = `${safeCourseName}.zip`;
 
-        ui.updateAiStatus("✅ Multi-language course files generated successfully!");
-        setTimeout(() => { ui.updateAiStatus(null); }, 5000);
+        ui.updateFileGenerationStatus("✅ Multi-language course files generated successfully!");
+        setTimeout(() => { ui.updateFileGenerationStatus(null); }, 5000);
 
     } catch (error) {
-        ui.updateAiStatus(`❌ Error generating files: ${error.message}`, 'error');
+        ui.updateFileGenerationStatus(`❌ Error generating files: ${error.message}`, 'error');
         console.error('Course file generation error:', error);
     }
 }

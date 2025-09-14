@@ -174,6 +174,40 @@ function updateAiStatus(message, type = 'info') {
     // Here you could add classes based on type for different colors (e.g., 'status-error', 'status-success')
 }
 
+// New status display functions for the three separate status fields
+function updateConnectionStatus(message, type = 'info') {
+    const statusEl = document.getElementById('connection-status');
+    if (statusEl) {
+        updateStatusDisplay(statusEl, message, type);
+    }
+}
+
+function updateGenerationStatus(message, type = 'info') {
+    const statusEl = document.getElementById('generation-status');
+    if (statusEl) {
+        updateStatusDisplay(statusEl, message, type);
+    }
+}
+
+function updateFileGenerationStatus(message, type = 'info') {
+    const statusEl = document.getElementById('file-generation-status');
+    if (statusEl) {
+        updateStatusDisplay(statusEl, message, type);
+    }
+}
+
+function updateStatusDisplay(element, message, type = 'info') {
+    if (!message) {
+        element.classList.remove('show', 'status-info', 'status-success', 'status-warning', 'status-error');
+        element.textContent = '';
+        return;
+    }
+
+    element.textContent = message;
+    element.classList.remove('status-info', 'status-success', 'status-warning', 'status-error');
+    element.classList.add('show', `status-${type}`);
+}
+
 function updateOllamaStatus(message, type = 'info') {
     dom.ollamaStatus.textContent = message;
     const typeToClassMap = {
@@ -198,6 +232,9 @@ export {
     showOverwriteConfirmModal,
     addChapter,
     updateAiStatus,
+    updateConnectionStatus,
+    updateGenerationStatus,
+    updateFileGenerationStatus,
     updateOllamaStatus,
     logDebug,
     initUI,
