@@ -40,9 +40,13 @@
 
         <fieldset>
             <legend>Master AI Assistant</legend>
-            <label for="master-prompt">Course Prompt</label>
-            <textarea id="master-prompt" name="master-prompt" placeholder="e.g., 'Create a comprehensive course about the history of ancient Rome, from its founding to the fall of the Western Empire.'"></textarea>
-            <div class="input-group">
+            <div class="prompt-header">
+                <label for="master-prompt">Course Prompt</label>
+                <button type="button" id="enhance-prompt-btn" class="btn btn-ai" title="Enhance and expand your prompt with AI assistance">🚀 Enhance Prompt</button>
+            </div>
+            <textarea id="master-prompt" name="master-prompt" placeholder="e.g., 'Create a comprehensive course about the history of ancient Rome, from its founding to the fall of the Western Empire.'" class="prompt-textarea-large"></textarea>
+
+            <div class="input-group course-generation-section">
                 <label for="num-chapters" class="label-no-shrink-no-margin">Number of Chapters:</label>
                 <select id="num-chapters" name="num-chapters" class="select-no-margin">
                     <option value="1">1</option>

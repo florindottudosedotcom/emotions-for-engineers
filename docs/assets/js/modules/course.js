@@ -20,6 +20,55 @@ function isCourseEmpty() {
     return true;
 }
 
+async function enhancePrompt() {
+    const currentPrompt = dom.masterPromptTextarea.value.trim();
+
+    if (!currentPrompt) {
+        alert('Please enter a course idea or prompt first.');
+        return;
+    }
+
+    ui.updateGenerationStatus('🚀 Enhancing your prompt with AI assistance...');
+
+    const enhancementPrompt = `Transform this course idea into a clear, actionable prompt for AI course generation:
+
+"${currentPrompt}"
+
+Make it concise but specific. Include:
+- Target audience and skill level
+- Key learning objectives (2-3 main goals)
+- Essential topics to cover
+- Add 2-3 brief "Consider:" questions
+
+Keep the enhanced prompt under 150 words and direct.`;
+
+    try {
+        const enhancedContent = await api.generateAIText(enhancementPrompt);
+
+        if (!enhancedContent || enhancedContent.trim() === '') {
+            throw new Error("The AI model returned an empty response.");
+        }
+
+        // Update the textarea with enhanced prompt
+        dom.masterPromptTextarea.value = enhancedContent.trim();
+
+        ui.updateGenerationStatus('✅ Prompt enhanced successfully! Review and modify as needed.', 'success');
+
+        // Clear status after 4 seconds
+        setTimeout(() => { ui.updateGenerationStatus(null); }, 4000);
+
+        // Save state to persist the enhanced prompt
+        if (stateModule && stateModule.saveState) {
+            stateModule.saveState();
+        }
+
+    } catch (err) {
+        ui.updateGenerationStatus(`❌ Error enhancing prompt: ${err.message}`, 'error');
+        console.error('Prompt enhancement error:', err);
+        setTimeout(() => { ui.updateGenerationStatus(null); }, 5000);
+    }
+}
+
 async function generateCourse() {
     const userPrompt = dom.masterPromptTextarea.value;
     console.log('Generate course clicked, prompt:', userPrompt);
@@ -295,6 +344,7 @@ async function generateCourseFiles() {
 }
 
 export {
+    enhancePrompt,
     generateCourse,
     generateCourseFiles,
     translate

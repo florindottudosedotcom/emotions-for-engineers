@@ -40,6 +40,7 @@ document.addEventListener('DOMContentLoaded', () => {
     dom.aiProviderSelect = document.getElementById('ai-provider-select');
     dom.apiKeyInput = document.getElementById('api-key-input');
     dom.masterPromptTextarea = document.getElementById('master-prompt');
+    dom.enhancePromptBtn = document.getElementById('enhance-prompt-btn');
     dom.numChaptersSelect = document.getElementById('num-chapters');
     dom.generateCourseBtn = document.getElementById('generate-course-btn');
     dom.clearFormBtn = document.getElementById('clear-form-btn');
@@ -78,6 +79,7 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 
     dom.generateCourseBtn.addEventListener('click', Course.generateCourse);
+    dom.enhancePromptBtn.addEventListener('click', Course.enhancePrompt);
     dom.addChapterBtn.addEventListener('click', UI.addChapter);
     dom.clearFormBtn.addEventListener('click', State.clearState);
     dom.courseForm.addEventListener('submit', (e) => {
