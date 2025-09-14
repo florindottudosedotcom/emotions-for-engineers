@@ -1,5 +1,6 @@
 let dom = {};
 let chapterCount = 0;
+let stateModule = null;
 const editorInstances = {};
 
 function showSettingsModal() {
@@ -61,8 +62,9 @@ function logDebug(message) {
     }
 }
 
-function initUI(domElements) {
+function initUI(domElements, stateModuleRef = null) {
     dom = domElements;
+    stateModule = stateModuleRef;
     // The new debug buttons might not exist on all pages
     if (dom.toggleDebugBtn) {
         dom.toggleDebugBtn.addEventListener('click', () => {
@@ -92,6 +94,7 @@ function addChapter() {
     tabButton.className = 'tab-link';
     tabButton.textContent = `Chapter ${chapterId}`;
     tabButton.dataset.chapterId = chapterId;
+    tabButton.title = `Switch to Chapter ${chapterId}`; // Add tooltip
     dom.chapterTabsContainer.appendChild(tabButton);
 
     // Create Content Pane
@@ -106,15 +109,18 @@ function addChapter() {
                 <button type="button" class="btn btn-danger remove-chapter-btn" data-chapter-id="${chapterId}">Remove</button>
             </div>
             <label for="chapter-title-${chapterId}">Chapter Title</label>
-            <input type="text" id="chapter-title-${chapterId}" class="chapter-title" placeholder="e.g., Getting Started" required>
-            <label for="editor-iframe-${chapterId}">Chapter Content</label>
-            <iframe id="editor-iframe-${chapterId}" class="editor-iframe" src="editor_iframe.html?id=${chapterId}"></iframe>
+            <input type="text" id="chapter-title-${chapterId}" name="chapter-title-${chapterId}" class="chapter-title" placeholder="e.g., Getting Started" required>
+            <div class="editor-label">Chapter Content</div>
+            <iframe id="editor-iframe-${chapterId}" class="editor-iframe" src="editor_iframe.html?id=${chapterId}" title="Chapter ${chapterId} Content Editor"></iframe>
         </div>
     `;
     dom.chapterContentContainer.appendChild(chapterDiv);
 
     // Event Listener for the new tab
-    tabButton.addEventListener('click', () => {
+    tabButton.addEventListener('click', (e) => {
+        e.preventDefault(); // Prevent any form submission
+        e.stopPropagation(); // Stop event bubbling
+
         // Deactivate all tabs and hide all content
         dom.chapterTabsContainer.querySelectorAll('.tab-link').forEach(btn => btn.classList.remove('active'));
         dom.chapterContentContainer.querySelectorAll('.chapter-content').forEach(content => content.style.display = 'none');
@@ -122,6 +128,11 @@ function addChapter() {
         // Activate the clicked tab and show its content
         tabButton.classList.add('active');
         chapterDiv.style.display = 'block';
+
+        // Save state to preserve active tab
+        if (stateModule && stateModule.saveState) {
+            stateModule.saveState();
+        }
     });
 
     // Deactivate all other tabs and hide content
@@ -131,6 +142,12 @@ function addChapter() {
     // Activate the new tab and show its content
     tabButton.classList.add('active');
     chapterDiv.style.display = 'block';
+    console.log(`Chapter ${chapterId} created and activated`, {
+        tabButton: tabButton,
+        chapterDiv: chapterDiv,
+        isActive: tabButton.classList.contains('active'),
+        isVisible: chapterDiv.style.display
+    });
 
     // Iframe and editor instance setup
     const iframe = document.getElementById(`editor-iframe-${chapterId}`);

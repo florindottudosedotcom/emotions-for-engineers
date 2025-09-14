@@ -48,7 +48,7 @@ document.addEventListener('DOMContentLoaded', () => {
     appState.SESSION_API_KEYS = getApiKeysFromSession();
 
     // Init Modules
-    UI.initUI(dom);
+    UI.initUI(dom, State);
     API.initApi(dom, appState);
     Course.initCourse(dom, UI, API, State);
     State.initState(dom, appState, UI);
@@ -94,6 +94,16 @@ document.addEventListener('DOMContentLoaded', () => {
     dom.numChaptersSelect.addEventListener('change', State.saveState);
     dom.chapterContentContainer.addEventListener('input', (e) => {
         if (e.target.classList.contains('chapter-title')) {
+            // Update tab tooltip when title changes, but keep tab text as "Chapter X"
+            const chapterId = e.target.id.replace('chapter-title-', '');
+            const tabButton = dom.chapterTabsContainer.querySelector(`[data-chapter-id="${chapterId}"]`);
+            if (tabButton) {
+                const title = e.target.value.trim();
+                // Keep tab text simple: just "Chapter X"
+                tabButton.textContent = `Chapter ${chapterId}`;
+                // Put the full title in the tooltip
+                tabButton.title = title ? `Chapter ${chapterId}: ${title}` : `Chapter ${chapterId}`;
+            }
             debouncedSave();
         }
     });
@@ -113,6 +123,13 @@ document.addEventListener('DOMContentLoaded', () => {
     State.loadState();
     if (dom.chapterContentContainer.children.length === 0) {
         UI.addChapter();
+        // Ensure the first chapter tab is active and visible
+        setTimeout(() => {
+            const firstTab = dom.chapterTabsContainer.querySelector('.tab-link');
+            if (firstTab) {
+                firstTab.click();
+            }
+        }, 100);
     }
 });
 

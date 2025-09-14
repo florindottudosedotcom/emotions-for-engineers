@@ -170,6 +170,9 @@ function saveApiKeys(e) {
 }
 
 async function generateAIText(systemPrompt) {
+    console.log('generateAIText called with provider:', state.AI_PROVIDER);
+    console.log('Available API keys:', Object.keys(state.SESSION_API_KEYS).filter(key => state.SESSION_API_KEYS[key]));
+
     let provider = state.AI_PROVIDER;
 
     if (provider === 'cloud') {

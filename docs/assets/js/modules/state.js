@@ -17,6 +17,10 @@ function saveState() {
         }
     });
 
+    // Find active tab
+    const activeTab = dom.chapterTabsContainer.querySelector('.tab-link.active');
+    const activeTabIndex = activeTab ? Array.from(dom.chapterTabsContainer.querySelectorAll('.tab-link')).indexOf(activeTab) : 0;
+
     const appState = {
         courseName: dom.courseNameInput.value,
         courseDesc: dom.courseDescTextarea.value,
@@ -24,7 +28,8 @@ function saveState() {
         // Only save model if the select element exists
         ollamaModel: dom.aiModelSelect ? dom.aiModelSelect.value : null,
         masterPrompt: dom.masterPromptTextarea.value,
-        numChapters: dom.numChaptersSelect.value
+        numChapters: dom.numChaptersSelect.value,
+        activeTabIndex: activeTabIndex
     };
 
     localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(appState));
@@ -62,6 +67,12 @@ function loadState() {
             const titleInput = document.getElementById(`chapter-title-${newChapterId}`);
             if (titleInput) {
                 titleInput.value = chapterData.title;
+                // Update tab tooltip but keep text as "Chapter X"
+                const tabButton = dom.chapterTabsContainer.querySelector(`[data-chapter-id="${newChapterId}"]`);
+                if (tabButton) {
+                    tabButton.textContent = `Chapter ${newChapterId}`;
+                    tabButton.title = chapterData.title.trim() ? `Chapter ${newChapterId}: ${chapterData.title.trim()}` : `Chapter ${newChapterId}`;
+                }
             }
 
             const editorInstance = ui.editorInstances[newChapterId];
@@ -72,10 +83,12 @@ function loadState() {
             }
         });
 
-        // After loading all chapters, activate the first one
-        const firstTab = dom.chapterTabsContainer.querySelector('.tab-link');
-        if (firstTab) {
-            firstTab.click();
+        // After loading all chapters, activate the previously active tab or first one
+        const tabs = dom.chapterTabsContainer.querySelectorAll('.tab-link');
+        const activeTabIndex = loadedState.activeTabIndex || 0;
+        const tabToActivate = tabs[activeTabIndex] || tabs[0];
+        if (tabToActivate) {
+            tabToActivate.click();
         }
 
     } else {

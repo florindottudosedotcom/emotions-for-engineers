@@ -22,6 +22,8 @@ function isCourseEmpty() {
 
 async function generateCourse() {
     const userPrompt = dom.masterPromptTextarea.value;
+    console.log('Generate course clicked, prompt:', userPrompt);
+
     if (!userPrompt) {
         alert('Please enter a prompt for the course.');
         return;
@@ -36,6 +38,7 @@ async function generateCourse() {
     }
 
     ui.updateAiStatus('Generating course details...');
+    console.log('Starting AI generation...');
 
     const systemPrompt = `You are an expert course creator. A user wants a course about the following topic: "${userPrompt}".
 
@@ -46,7 +49,10 @@ Title: [The course title]
 Description: [The course description]`;
 
     try {
+        console.log('Calling API.generateAIText with prompt...');
         const content = await api.generateAIText(systemPrompt);
+        console.log('AI response received:', content);
+
         if (!content || content.trim() === '') {
             throw new Error("The AI model returned an empty response.");
         }
@@ -54,7 +60,7 @@ Description: [The course description]`;
         parseAndPopulateCourseDetails(content);
     } catch (err) {
         ui.updateAiStatus(`Error generating course: ${err.message}`, 'error');
-        console.error(err);
+        console.error('Course generation error:', err);
     }
 }
 
@@ -169,12 +175,6 @@ async function generateChaptersInLoop() {
 
     stateModule.saveState();
 
-    // Activate the first chapter's tab
-    const firstTab = dom.chapterTabsContainer.querySelector('.tab-link');
-    if (firstTab) {
-        firstTab.click();
-    }
-
     setTimeout(() => { ui.updateAiStatus(null); }, 5000);
 }
 
@@ -196,7 +196,7 @@ export function initCourse(domElements, uiModule, apiModule, stateMod) {
     stateModule = stateMod;
 }
 
-function generateCourseFiles() {
+async function generateCourseFiles() {
     ui.logDebug("Starting course file generation...");
     const courseName = dom.courseNameInput.value;
     if (!courseName) {
@@ -204,43 +204,94 @@ function generateCourseFiles() {
         return;
     }
 
+    // Get selected languages
+    const selectedLanguages = [];
+    document.querySelectorAll('input[type="checkbox"][id^="lang-"]:checked').forEach(checkbox => {
+        selectedLanguages.push({
+            code: checkbox.value,
+            name: checkbox.dataset.name
+        });
+    });
+
+    if (selectedLanguages.length === 0) {
+        alert("Please select at least one language.");
+        return;
+    }
+
+    ui.updateAiStatus("🌐 Generating course files for multiple languages...");
+
     const safeCourseName = courseName.toLowerCase().replace(/[^a-z0-9\s-]/g, '').replace(/\s+/g, '-');
     const zip = new JSZip();
     const courseFolder = zip.folder(safeCourseName);
-    // No longer creating a nested 'docs' folder, the content goes straight into the course folder.
     const assetsFolder = courseFolder.folder('assets');
     assetsFolder.folder('images'); // Create empty images folder for convention
 
-    // --- Create Chapter Files ---
-    dom.chapterContentContainer.querySelectorAll('.chapter-content').forEach((contentDiv, index) => {
-        const chapterId = contentDiv.id.replace('chapter-content-', '');
-        const title = dom.courseForm.querySelector(`#chapter-title-${chapterId}`).value;
-        const content = ui.editorInstances[chapterId] ? ui.editorInstances[chapterId].content : '';
-        const chapterFilename = `${String(index + 1).padStart(2, '0')}-${title.toLowerCase().replace(/[^a-z0-9\s-]/g, '').replace(/\s+/g, '-')}.md`;
+    try {
+        // Process each language
+        for (const [langIndex, language] of selectedLanguages.entries()) {
+            ui.updateAiStatus(`🌐 Processing ${language.name} (${langIndex + 1}/${selectedLanguages.length})...`);
 
-        courseFolder.file(chapterFilename, content);
-    });
+            // Translate course name and description (skip for English)
+            let translatedCourseName = courseName;
+            let translatedCourseDescription = dom.courseDescTextarea.value;
 
-    // --- Create index.md ---
-    const courseDescription = dom.courseDescTextarea.value;
-    const indexContent = `# ${courseName}\n\n${courseDescription}`;
-    courseFolder.file('index.md', indexContent);
+            if (language.code !== 'en') {
+                translatedCourseName = await translate(courseName, language.name);
+                translatedCourseDescription = await translate(dom.courseDescTextarea.value, language.name);
+            }
 
-    // --- Generate and download zip ---
-    ui.logDebug("Generating zip file...");
-    zip.generateAsync({ type: "blob" })
-        .then(function(content) {
-            const link = document.createElement('a');
-            link.href = URL.createObjectURL(content);
-            link.download = `${safeCourseName}.zip`;
-            document.body.appendChild(link);
-            link.click();
-            document.body.removeChild(link);
-            ui.logDebug("Zip file download triggered.");
-            dom.downloadSection.style.display = 'block';
-            dom.downloadZipLink.href = link.href;
-            dom.downloadZipLink.download = `${safeCourseName}.zip`;
-        });
+            // Create index file for this language
+            const indexContent = `---\ntitle: "${translatedCourseName}"\ndescription: "${translatedCourseDescription}"\n---\n\n# ${translatedCourseName}\n\n${translatedCourseDescription}`;
+            courseFolder.file(`index.${language.code}.md`, indexContent);
+
+            // Create chapter files for this language
+            const chapters = dom.chapterContentContainer.querySelectorAll('.chapter-content');
+            for (const [chapterIndex, contentDiv] of chapters.entries()) {
+                ui.updateAiStatus(`🌐 Translating ${language.name} - Chapter ${chapterIndex + 1}/${chapters.length}...`);
+
+                const chapterId = contentDiv.id.replace('chapter-content-', '');
+                const title = dom.courseForm.querySelector(`#chapter-title-${chapterId}`).value;
+                const content = ui.editorInstances[chapterId] ? ui.editorInstances[chapterId].content : '';
+
+                let translatedTitle = title;
+                let translatedContent = content;
+
+                // Translate chapter content (skip for English)
+                if (language.code !== 'en') {
+                    translatedTitle = await translate(title, language.name);
+                    translatedContent = await translate(content, language.name);
+                }
+
+                const chapterFilename = `${String(chapterIndex + 1).padStart(2, '0')}-${title.toLowerCase().replace(/[^a-z0-9\s-]/g, '').replace(/\s+/g, '-')}.${language.code}.md`;
+                courseFolder.file(chapterFilename, translatedContent);
+            }
+        }
+
+        ui.updateAiStatus("📦 Creating download package...");
+
+        // Generate and download zip
+        ui.logDebug("Generating zip file...");
+        const zipContent = await zip.generateAsync({ type: "blob" });
+
+        const link = document.createElement('a');
+        link.href = URL.createObjectURL(zipContent);
+        link.download = `${safeCourseName}.zip`;
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+
+        ui.logDebug("Zip file download triggered.");
+        dom.downloadSection.style.display = 'block';
+        dom.downloadZipLink.href = link.href;
+        dom.downloadZipLink.download = `${safeCourseName}.zip`;
+
+        ui.updateAiStatus("✅ Multi-language course files generated successfully!");
+        setTimeout(() => { ui.updateAiStatus(null); }, 5000);
+
+    } catch (error) {
+        ui.updateAiStatus(`❌ Error generating files: ${error.message}`, 'error');
+        console.error('Course file generation error:', error);
+    }
 }
 
 export {
