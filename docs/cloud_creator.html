@@ -3,39 +3,48 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self' blob:; style-src 'self' 'unsafe-inline'; frame-src 'self'; img-src 'self' data:; connect-src 'self' https://api.openai.com https://api.anthropic.com https://generativelanguage.googleapis.com; font-src 'self'; object-src 'none'; base-uri 'self'; form-action 'self'; worker-src 'self' blob:;">
-    <title>Universal Course Creator</title>
+    <meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self' 'unsafe-eval' 'unsafe-inline' blob:; style-src 'self' 'unsafe-inline'; frame-src 'self'; img-src 'self' data:; connect-src 'self' https://huggingface.co https://raw.githubusercontent.com https://cdn-lfs-us-1.hf.co; font-src 'self'; object-src 'none'; base-uri 'self'; form-action 'self'; worker-src 'self' blob:;">
+    <title>Cloud Course Creator</title>
     <link rel="stylesheet" href="./assets/css/toastui-editor.min.css" />
     <link rel="stylesheet" href="./assets/css/course-creator.css" />
 </head>
 <body>
-    <div id="overwrite-modal" class="modal-overlay">
+
+    <div id="settings-modal" class="modal-overlay">
         <div class="modal-content">
-            <h2>Overwrite Existing Content?</h2>
-            <p>There are chapters with content present. Do you want to remove them before generating new content?</p>
-            <div class="input-group margin-top-1-5rem">
-                <button type="button" id="overwrite-yes-btn" class="btn btn-primary">Yes, Overwrite</button>
-                <button type="button" id="overwrite-cancel-btn" class="btn btn-danger margin-left-auto">Cancel</button>
-            </div>
+            <h2>Cloud API Settings</h2>
+            <p>Enter your API keys to use cloud providers. <strong>Keys are only used for this session and are not stored permanently.</strong></p>
+            <form id="api-keys-form">
+                <label for="openai-api-key">OpenAI API Key</label>
+                <input type="password" id="openai-api-key" placeholder="sk-...">
+
+                <label for="anthropic-api-key">Anthropic API Key</label>
+                <input type="password" id="anthropic-api-key" placeholder="sk-ant-...">
+
+                <label for="google-api-key">Google Gemini API Key</label>
+                <input type="password" id="google-api-key" placeholder="AIzaSy...">
+
+                <div class="input-group margin-top-1-5rem">
+                    <button type="submit" class="btn btn-primary">Use Keys for Session</button>
+                    <button type="button" id="close-settings-btn" class="btn btn-danger margin-left-auto">Close</button>
+                </div>
+            </form>
         </div>
     </div>
 
     <div class="container">
-        <h1>Cloud AI Course Creator</h1>
+        <div class="header-container">
+            <button type="button" id="settings-btn" class="btn btn-secondary">Settings</button>
+        </div>
         <div id="ai-status" class="ai-status-initial"></div>
 
 
         <fieldset>
             <legend>AI Provider</legend>
-            <div class="input-group">
-                <label for="ai-provider-select" class="label-no-shrink-no-margin">Provider:</label>
-                <select id="ai-provider-select" class="select-no-margin">
-                    <option value="openai">OpenAI</option>
-                    <option value="anthropic">Anthropic</option>
-                    <option value="google">Google</option>
-                </select>
-                <label for="api-key-input" class="label-no-shrink-no-margin margin-left-1rem">API Key:</label>
-                <input type="password" id="api-key-input" placeholder="Enter your API key" class="flex-grow">
+            <p>Cloud AI Providers</p>
+            <div class="input-group" id="ai-model-selection-group">
+                <label for="ai-model-select" class="label-no-shrink-no-margin">Model:</label>
+                <select id="ai-model-select" class="select-no-margin"></select>
             </div>
             <div id="ollama-status" class="ollama-status-style"></div>
         </fieldset>

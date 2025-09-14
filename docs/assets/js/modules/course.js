@@ -3,39 +3,12 @@ let ui = {};
 let api = {};
 let stateModule = {};
 
-function isCourseEmpty() {
-    // Check if any chapter titles have content
-    const titleInputs = document.querySelectorAll('.chapter-title');
-    for (const input of titleInputs) {
-        if (input.value.trim() !== '') return false;
-    }
-
-    // Check if any editor instances have content
-    for (const key in ui.editorInstances) {
-        if (ui.editorInstances[key].content && ui.editorInstances[key].content.trim() !== '') {
-            return false;
-        }
-    }
-
-    return true;
-}
-
 async function generateCourse() {
     const userPrompt = dom.masterPromptTextarea.value;
     if (!userPrompt) {
         alert('Please enter a prompt for the course.');
         return;
     }
-
-    if (!isCourseEmpty()) {
-        const shouldOverwrite = await ui.showOverwriteConfirmModal();
-        if (!shouldOverwrite) {
-            ui.logDebug("Course generation cancelled by user.");
-            return; // Stop if user cancels
-        }
-        ui.logDebug("User confirmed to overwrite existing content.");
-    }
-
     ui.updateAiStatus('Generating course details...');
 
     const systemPrompt = `You are an expert course creator. A user wants a course about the following topic: "${userPrompt}".
@@ -47,9 +20,7 @@ Title: [The course title]
 Description: [The course description]`;
 
     try {
-        ui.logDebug("Generating course details. Calling AI...");
         const content = await api.generateAIText(systemPrompt);
-        ui.logDebug("AI call for course details complete.");
         if (!content || content.trim() === '') {
             throw new Error("The AI model returned an empty response.");
         }
@@ -107,9 +78,7 @@ Title: [The chapter title]
 Content:
 [The full chapter content in Markdown]`;
 
-    ui.logDebug(`Generating content for chapter ${chapterIndex}. Calling AI...`);
     const textResponse = await api.generateAIText(systemPrompt);
-    ui.logDebug(`AI call for chapter ${chapterIndex} complete.`);
     if (!textResponse) {
         throw new Error(`AI returned an empty response for chapter ${chapterIndex}.`);
     }
@@ -166,6 +135,13 @@ async function generateChaptersInLoop() {
     }
     ui.updateAiStatus("✅ All chapters have been successfully generated!");
     stateModule.saveState();
+
+    // Activate the first chapter's tab
+    const firstTab = dom.chapterTabsContainer.querySelector('.tab-link');
+    if (firstTab) {
+        firstTab.click();
+    }
+
     setTimeout(() => { ui.updateAiStatus(null); }, 5000);
 }
 
@@ -187,7 +163,70 @@ export function initCourse(domElements, uiModule, apiModule, stateMod) {
     stateModule = stateMod;
 }
 
+function generateCourseFiles() {
+    ui.logDebug("Starting course file generation...");
+    const courseName = dom.courseNameInput.value;
+    if (!courseName) {
+        alert("Please enter a course name.");
+        return;
+    }
+
+    const safeCourseName = courseName.toLowerCase().replace(/[^a-z0-9\s-]/g, '').replace(/\s+/g, '-');
+    const zip = new JSZip();
+    const courseFolder = zip.folder(safeCourseName);
+    const docsFolder = courseFolder.folder('docs');
+    const assetsFolder = docsFolder.folder('assets');
+    assetsFolder.folder('images'); // Create empty images folder
+
+    // --- Create mkdocs.yml ---
+    const mkdocsContent = {
+        site_name: courseName,
+        theme: 'material',
+        nav: [
+            { 'Home': 'index.md' }
+        ]
+    };
+
+    const chapters = [];
+    dom.chapterContentContainer.querySelectorAll('.chapter-content').forEach((contentDiv, index) => {
+        const chapterId = contentDiv.id.replace('chapter-content-', '');
+        const title = dom.courseForm.querySelector(`#chapter-title-${chapterId}`).value;
+        const content = ui.editorInstances[chapterId] ? ui.editorInstances[chapterId].content : '';
+        const chapterFilename = `${String(index + 1).padStart(2, '0')}-${title.toLowerCase().replace(/[^a-z0-9\s-]/g, '').replace(/\s+/g, '-')}.md`;
+
+        chapters.push({ title, content, filename: chapterFilename });
+
+        // Add chapter to nav and create markdown file
+        mkdocsContent.nav.push({ [title]: chapterFilename });
+        docsFolder.file(chapterFilename, content);
+    });
+
+    courseFolder.file('mkdocs.yml', jsyaml.dump(mkdocsContent));
+
+    // --- Create index.md ---
+    const courseDescription = dom.courseDescTextarea.value;
+    const indexContent = `# ${courseName}\n\n${courseDescription}`;
+    docsFolder.file('index.md', indexContent);
+
+    // --- Generate and download zip ---
+    ui.logDebug("Generating zip file...");
+    zip.generateAsync({ type: "blob" })
+        .then(function(content) {
+            const link = document.createElement('a');
+            link.href = URL.createObjectURL(content);
+            link.download = `${safeCourseName}.zip`;
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+            ui.logDebug("Zip file download triggered.");
+            dom.downloadSection.style.display = 'block';
+            dom.downloadZipLink.href = link.href;
+            dom.downloadZipLink.download = `${safeCourseName}.zip`;
+        });
+}
+
 export {
     generateCourse,
+    generateCourseFiles,
     translate
 };
