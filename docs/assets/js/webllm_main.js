@@ -29,25 +29,13 @@ document.addEventListener('DOMContentLoaded', () => {
     dom.aiStatus = document.getElementById('ai-status');
     dom.courseNameInput = document.getElementById('course-name');
     dom.courseDescTextarea = document.getElementById('course-desc');
-    dom.settingsBtn = document.getElementById('settings-btn');
-    dom.settingsModal = document.getElementById('settings-modal');
-    dom.closeSettingsBtn = document.getElementById('close-settings-btn');
-    dom.apiKeysForm = document.getElementById('api-keys-form');
-    dom.openAiApiKeyInput = document.getElementById('openai-api-key');
-    dom.anthropicApiKeyInput = document.getElementById('anthropic-api-key');
-    dom.googleApiKeyInput = document.getElementById('google-api-key');
     dom.aiModelSelect = document.getElementById('ai-model-select');
     dom.aiModelSelectionGroup = document.getElementById('ai-model-selection-group');
-    dom.refreshModelsBtn = document.getElementById('refresh-models-btn');
-    dom.ollamaStatus = document.getElementById('ollama-status');
     dom.masterPromptTextarea = document.getElementById('master-prompt');
     dom.numChaptersSelect = document.getElementById('num-chapters');
     dom.generateCourseBtn = document.getElementById('generate-course-btn');
     dom.webllmIframe = document.getElementById('webllm-iframe');
     dom.clearFormBtn = document.getElementById('clear-form-btn');
-    dom.toggleDebugBtn = document.getElementById('toggle-debug-btn');
-    dom.clearLogBtn = document.getElementById('clear-log-btn');
-
 
     // Init Modules
     UI.initUI(dom);
@@ -68,17 +56,44 @@ document.addEventListener('DOMContentLoaded', () => {
         Course.generateCourseFiles();
     });
 
+    // --- State Persistence ---
+    const debouncedSave = debounce(State.saveState, 300);
+    dom.courseNameInput.addEventListener('input', debouncedSave);
+    dom.courseDescTextarea.addEventListener('input', debouncedSave);
+    dom.masterPromptTextarea.addEventListener('input', debouncedSave);
+    dom.numChaptersSelect.addEventListener('change', State.saveState);
+    dom.chapterContentContainer.addEventListener('input', (e) => {
+        if (e.target.classList.contains('chapter-title')) {
+            debouncedSave();
+        }
+    });
+
     // Initial Load
     State.loadState();
+    if (dom.chapterContentContainer.children.length === 0) {
+        UI.addChapter();
+    }
 });
 
+function debounce(func, wait) {
+    let timeout;
+    return function executedFunction(...args) {
+        const later = () => {
+            clearTimeout(timeout);
+            func(...args);
+        };
+        clearTimeout(timeout);
+        timeout = setTimeout(later, wait);
+    };
+}
+
 window.addEventListener('message', (event) => {
+    // Handle messages from WebLLM iframe
     if (event.source === dom.webllmIframe.contentWindow) {
         const { type, id, result, error } = event.data;
-
         if (type === 'webllm-iframe-ready') {
             appState.isWebllmIframeReady = true;
-            API.loadWebLLMModels(); // Moved from DOMContentLoaded
+            API.loadWebLLMModels();
             if (appState.pendingWebllmModelId) {
                 API.initializeWebLLM(appState.pendingWebllmModelId);
                 appState.pendingWebllmModelId = null;
@@ -98,6 +113,22 @@ window.addEventListener('message', (event) => {
                 appState.webllmPromiseResolvers[id].reject(new Error(error));
             }
             delete appState.webllmPromiseResolvers[id];
+        }
+        return;
+    }
+
+    // Handle messages from Editor iframes
+    if (UI.editorInstances && UI.editorInstances[event.data.id]) {
+        const { type, id, content } = event.data;
+        if (type === 'editor-ready') {
+            UI.editorInstances[id].isReady = true;
+            if (UI.editorInstances[id].pendingContent) {
+                UI.editorInstances[id].iframe.contentWindow.postMessage({ type: 'set-content', content: UI.editorInstances[id].pendingContent }, '*');
+                delete UI.editorInstances[id].pendingContent;
+            }
+        } else if (type === 'content-changed') {
+            UI.editorInstances[id].content = content;
+            State.saveState();
         }
     }
 });
