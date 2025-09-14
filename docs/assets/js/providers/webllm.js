@@ -5,6 +5,9 @@ export const WebLLMProvider = {
     name: 'WebLLM',
     engine: null,
     currentModelId: null,
+    isLoading: false,
+    loadingModelId: null,
+    currentProgressInterval: null,
     models: [
         {
             id: "Llama-3-8B-Instruct-q4f16_1-MLC",
@@ -49,15 +52,20 @@ export const WebLLMProvider = {
 
         // Event listeners
         dom.aiModelSelect.addEventListener('change', async () => {
-            await this.initializeModel(dom.aiModelSelect.value, appState, dom);
+            const selectedModel = dom.aiModelSelect.value;
+            console.log('Model selection changed to:', selectedModel);
+            await this.initializeModel(selectedModel, appState, dom);
             if (window.stateModule && window.stateModule.saveState) {
                 window.stateModule.saveState();
             }
         });
 
-        // Auto-initialize first model
-        if (dom.aiModelSelect.options.length > 0) {
-            this.initializeModel(dom.aiModelSelect.value, appState, dom);
+        // Auto-initialize first model only if no model is currently selected
+        if (dom.aiModelSelect.options.length > 0 && !this.currentModelId) {
+            // Small delay to ensure UI is ready
+            setTimeout(() => {
+                this.initializeModel(dom.aiModelSelect.value, appState, dom);
+            }, 100);
         }
     },
 
@@ -81,29 +89,51 @@ export const WebLLMProvider = {
     async initializeModel(modelId, appState, dom) {
         if (!modelId) return;
 
+        console.log(`Initializing model: ${modelId}, currently loading: ${this.isLoading}, current model: ${this.currentModelId}`);
+
         // If same model already loaded, do nothing
-        if (this.engine && this.currentModelId === modelId) {
+        if (this.engine && this.currentModelId === modelId && !this.isLoading) {
             appState.isWebllmReady = true;
             const modelName = this.models.find(m => m.id === modelId)?.name || modelId;
             if (dom.ollamaStatus) {
-                dom.ollamaStatus.textContent = `✅ WebLLM is ready. Loaded: ${modelName}`;
+                dom.ollamaStatus.textContent = `✅ ${modelName} ready!`;
                 dom.ollamaStatus.className = 'ollama-status-style ollama-status-ok';
             }
             return;
         }
 
+        // If already loading the same model, ignore duplicate request
+        if (this.isLoading && this.loadingModelId === modelId) {
+            console.log('Already loading this model, ignoring duplicate request');
+            return;
+        }
+
+        // Cancel any existing loading process
+        if (this.isLoading) {
+            console.log('Cancelling previous model loading:', this.loadingModelId);
+            if (this.currentProgressInterval) {
+                clearInterval(this.currentProgressInterval);
+                this.currentProgressInterval = null;
+            }
+        }
+
         // Unload existing model if different
         if (this.engine && this.currentModelId !== modelId) {
+            console.log('Unloading previous model:', this.currentModelId);
             await this.engine.unload();
             this.engine = null;
             this.currentModelId = null;
         }
 
+        // Set loading state
+        this.isLoading = true;
+        this.loadingModelId = modelId;
+        appState.isWebllmReady = false;
+
         // Variables accessible in both try and catch blocks
         const startTime = Date.now();
         const modelInfo = this.models.find(m => m.id === modelId);
         const selectedModelName = modelInfo?.name || modelId;
-        let progressInterval;
 
         try {
             appState.isWebllmReady = false;
@@ -116,9 +146,16 @@ export const WebLLMProvider = {
             }
 
             // Start a timer to update progress every 10 seconds
-            progressInterval = setInterval(() => {
+            this.currentProgressInterval = setInterval(() => {
+                // Check if we're still loading the same model
+                if (!this.isLoading || this.loadingModelId !== modelId) {
+                    clearInterval(this.currentProgressInterval);
+                    this.currentProgressInterval = null;
+                    return;
+                }
                 if (appState.isWebllmReady) {
-                    clearInterval(progressInterval);
+                    clearInterval(this.currentProgressInterval);
+                    this.currentProgressInterval = null;
                     return;
                 }
                 const elapsed = Math.floor((Date.now() - startTime) / 1000);
@@ -134,7 +171,8 @@ export const WebLLMProvider = {
             this.currentModelId = modelId;
             this.engine = await webllm.CreateMLCEngine(modelId, {
                 initProgressCallback: (progress) => {
-                    if (dom.ollamaStatus && progress.text) {
+                    // Only show progress if we're still loading the same model
+                    if (this.isLoading && this.loadingModelId === modelId && dom.ollamaStatus && progress.text) {
                         const elapsed = Math.floor((Date.now() - startTime) / 1000);
                         const minutes = Math.floor(elapsed / 60);
                         const seconds = elapsed % 60;
@@ -144,24 +182,48 @@ export const WebLLMProvider = {
                 }
             });
 
-            clearInterval(progressInterval);
-            appState.isWebllmReady = true;
-            appState.currentWebllmModel = modelId;
+            // Clear progress interval
+            if (this.currentProgressInterval) {
+                clearInterval(this.currentProgressInterval);
+                this.currentProgressInterval = null;
+            }
 
-            const totalTime = Math.floor((Date.now() - startTime) / 1000);
-            const finalMinutes = Math.floor(totalTime / 60);
-            const finalSeconds = totalTime % 60;
-            const finalTimeStr = finalMinutes > 0 ? `${finalMinutes}m ${finalSeconds}s` : `${finalSeconds}s`;
+            // Only update state if we're still loading the same model (not cancelled)
+            if (this.isLoading && this.loadingModelId === modelId) {
+                this.isLoading = false;
+                this.loadingModelId = null;
+                appState.isWebllmReady = true;
+                appState.currentWebllmModel = modelId;
 
-            if (dom.ollamaStatus) {
-                dom.ollamaStatus.textContent = `✅ ${selectedModelName} ready! (loaded in ${finalTimeStr})`;
-                dom.ollamaStatus.className = 'ollama-status-style ollama-status-ok';
+                const totalTime = Math.floor((Date.now() - startTime) / 1000);
+                const finalMinutes = Math.floor(totalTime / 60);
+                const finalSeconds = totalTime % 60;
+                const finalTimeStr = finalMinutes > 0 ? `${finalMinutes}m ${finalSeconds}s` : `${finalSeconds}s`;
+
+                if (dom.ollamaStatus) {
+                    dom.ollamaStatus.textContent = `✅ ${selectedModelName} ready! (loaded in ${finalTimeStr})`;
+                    dom.ollamaStatus.className = 'ollama-status-style ollama-status-ok';
+                }
+                console.log(`Successfully loaded model: ${selectedModelName}`);
+            } else {
+                console.log(`Model loading was cancelled: ${selectedModelName}`);
+                // If loading was cancelled, clean up the engine
+                if (this.engine) {
+                    await this.engine.unload();
+                    this.engine = null;
+                }
+                this.currentModelId = null;
             }
         } catch (err) {
             // Clear the progress interval on error
-            if (progressInterval) {
-                clearInterval(progressInterval);
+            if (this.currentProgressInterval) {
+                clearInterval(this.currentProgressInterval);
+                this.currentProgressInterval = null;
             }
+
+            // Reset loading state
+            this.isLoading = false;
+            this.loadingModelId = null;
 
             console.error("WebLLM Initialization Error:", err);
             appState.isWebllmReady = false;
@@ -174,6 +236,7 @@ export const WebLLMProvider = {
                 dom.ollamaStatus.textContent = `❌ Error loading ${selectedModelName}: ${err.message}`;
                 dom.ollamaStatus.className = 'ollama-status-style ollama-status-error';
             }
+            console.error(`Failed to load model ${selectedModelName}:`, err);
             throw err;
         }
     },

@@ -72,6 +72,8 @@ document.addEventListener('DOMContentLoaded', async () => {
     dom.numChaptersSelect = document.getElementById('num-chapters');
     dom.generateCourseBtn = document.getElementById('generate-course-btn');
     dom.clearFormBtn = document.getElementById('clear-form-btn');
+    dom.generationStatus = document.getElementById('generation-status');
+    dom.fileGenerationStatus = document.getElementById('file-generation-status');
 
     // Initialize provider with DOM elements
     currentProvider.init(dom, appState);
