@@ -14,6 +14,18 @@ const appState = {
 
 const dom = {};
 
+function getApiKeysFromSession() {
+    const storedKeys = sessionStorage.getItem('SESSION_API_KEYS');
+    if (storedKeys) {
+        return JSON.parse(storedKeys);
+    }
+    return { openai: null, anthropic: null, google: null };
+}
+
+function saveApiKeysToSession(keys) {
+    sessionStorage.setItem('SESSION_API_KEYS', JSON.stringify(keys));
+}
+
 document.addEventListener('DOMContentLoaded', () => {
     // DOM Elements
     dom.courseForm = document.getElementById('course-form');
@@ -32,6 +44,9 @@ document.addEventListener('DOMContentLoaded', () => {
     dom.generateCourseBtn = document.getElementById('generate-course-btn');
     dom.clearFormBtn = document.getElementById('clear-form-btn');
 
+    // Load API keys from session storage first
+    appState.SESSION_API_KEYS = getApiKeysFromSession();
+
     // Init Modules
     UI.initUI(dom);
     API.initApi(dom, appState);
@@ -40,18 +55,21 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Event Listeners
     dom.aiProviderSelect.addEventListener('change', () => {
+
         dom.apiKeyInput.value = '';
         appState.AI_PROVIDER = dom.aiProviderSelect.value;
         Object.keys(appState.SESSION_API_KEYS).forEach(key => {
             appState.SESSION_API_KEYS[key] = null;
         });
         UI.updateAiStatus(`Provider changed to ${appState.AI_PROVIDER}. Please enter an API key.`);
+
     });
 
     dom.apiKeyInput.addEventListener('input', () => {
         const provider = dom.aiProviderSelect.value;
         const key = dom.apiKeyInput.value;
         appState.SESSION_API_KEYS[provider] = key;
+        saveApiKeysToSession(appState.SESSION_API_KEYS); // Save to session storage
         if (key) {
             UI.updateAiStatus(`✅ ${provider.charAt(0).toUpperCase() + provider.slice(1)} is ready.`);
         } else {
@@ -68,6 +86,7 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 
     // --- State Persistence ---
+
     const debouncedSave = debounce(State.saveState, 300);
     dom.courseNameInput.addEventListener('input', debouncedSave);
     dom.courseDescTextarea.addEventListener('input', debouncedSave);
@@ -81,7 +100,16 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Initial Load
     appState.AI_PROVIDER = dom.aiProviderSelect.value;
-    UI.updateAiStatus(`Provider set to ${appState.AI_PROVIDER}. Please enter an API key.`);
+    const currentProvider = appState.AI_PROVIDER;
+    const apiKey = appState.SESSION_API_KEYS[currentProvider];
+
+    if (apiKey) {
+        dom.apiKeyInput.value = apiKey;
+        UI.updateAiStatus(`✅ ${currentProvider.charAt(0).toUpperCase() + currentProvider.slice(1)} is ready.`);
+    } else {
+        UI.updateAiStatus(`Provider set to ${currentProvider}. Please enter an API key.`);
+    }
+
     State.loadState();
     if (dom.chapterContentContainer.children.length === 0) {
         UI.addChapter();
