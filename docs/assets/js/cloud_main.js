@@ -25,14 +25,8 @@ document.addEventListener('DOMContentLoaded', () => {
     dom.aiStatus = document.getElementById('ai-status');
     dom.courseNameInput = document.getElementById('course-name');
     dom.courseDescTextarea = document.getElementById('course-desc');
-    dom.settingsBtn = document.getElementById('settings-btn');
-    dom.settingsModal = document.getElementById('settings-modal');
-    dom.closeSettingsBtn = document.getElementById('close-settings-btn');
-    dom.apiKeysForm = document.getElementById('api-keys-form');
-    dom.openAiApiKeyInput = document.getElementById('openai-api-key');
-    dom.anthropicApiKeyInput = document.getElementById('anthropic-api-key');
-    dom.googleApiKeyInput = document.getElementById('google-api-key');
     dom.aiProviderSelect = document.getElementById('ai-provider-select');
+    dom.apiKeyInput = document.getElementById('api-key-input');
     dom.masterPromptTextarea = document.getElementById('master-prompt');
     dom.numChaptersSelect = document.getElementById('num-chapters');
     dom.generateCourseBtn = document.getElementById('generate-course-btn');
@@ -48,20 +42,30 @@ document.addEventListener('DOMContentLoaded', () => {
     State.initState(dom, appState, UI);
 
     // Event Listeners
-    dom.settingsBtn.addEventListener('click', UI.showSettingsModal);
-    dom.closeSettingsBtn.addEventListener('click', UI.hideSettingsModal);
-    dom.apiKeysForm.addEventListener('submit', (e) => {
-        e.preventDefault();
-        API.saveApiKeys();
-        UI.hideSettingsModal();
+    dom.aiProviderSelect.addEventListener('change', () => {
+        dom.apiKeyInput.value = '';
+        appState.AI_PROVIDER = dom.aiProviderSelect.value;
+        // Clear all keys when provider changes
+        Object.keys(appState.SESSION_API_KEYS).forEach(key => {
+            appState.SESSION_API_KEYS[key] = null;
+        });
+        UI.updateAiStatus(`Provider changed to ${appState.AI_PROVIDER}. Please enter an API key.`);
+    });
+
+    dom.apiKeyInput.addEventListener('input', () => {
+        const provider = dom.aiProviderSelect.value;
+        const key = dom.apiKeyInput.value;
+        appState.SESSION_API_KEYS[provider] = key;
+        if (key) {
+            UI.updateAiStatus(`✅ ${provider.charAt(0).toUpperCase() + provider.slice(1)} is ready.`);
+        } else {
+            UI.updateAiStatus(`Provider for ${provider} is not configured.`);
+        }
     });
 
     dom.generateCourseBtn.addEventListener('click', Course.generateCourse);
     dom.addChapterBtn.addEventListener('click', UI.addChapter);
     dom.clearFormBtn.addEventListener('click', State.clearState);
-    if (dom.aiProviderSelect) {
-        dom.aiProviderSelect.addEventListener('change', API.handleProviderChange);
-    }
 
 
     // --- State Persistence Event Listeners ---
@@ -78,7 +82,8 @@ document.addEventListener('DOMContentLoaded', () => {
     // --- End State Persistence ---
 
     // Initial Load
-    API.updateAvailableProviders();
+    appState.AI_PROVIDER = dom.aiProviderSelect.value;
+    UI.updateAiStatus(`Provider set to ${appState.AI_PROVIDER}. Please enter an API key.`);
     State.loadState();
     if (dom.chapterContentContainer.children.length === 0) {
         UI.addChapter();

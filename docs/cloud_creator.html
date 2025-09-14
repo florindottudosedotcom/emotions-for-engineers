@@ -9,29 +9,6 @@
     <link rel="stylesheet" href="./assets/css/course-creator.css" />
 </head>
 <body>
-
-    <div id="settings-modal" class="modal-overlay">
-        <div class="modal-content">
-            <h2>Cloud API Settings</h2>
-            <p>Enter your API keys to use cloud providers. <strong>Keys are only used for this session and are not stored permanently.</strong></p>
-            <form id="api-keys-form">
-                <label for="openai-api-key">OpenAI API Key</label>
-                <input type="password" id="openai-api-key" placeholder="sk-...">
-
-                <label for="anthropic-api-key">Anthropic API Key</label>
-                <input type="password" id="anthropic-api-key" placeholder="sk-ant-...">
-
-                <label for="google-api-key">Google Gemini API Key</label>
-                <input type="password" id="google-api-key" placeholder="AIzaSy...">
-
-                <div class="input-group margin-top-1-5rem">
-                    <button type="submit" class="btn btn-primary">Use Keys for Session</button>
-                    <button type="button" id="close-settings-btn" class="btn btn-danger margin-left-auto">Close</button>
-                </div>
-            </form>
-        </div>
-    </div>
-
     <div id="overwrite-modal" class="modal-overlay">
         <div class="modal-content">
             <h2>Overwrite Existing Content?</h2>
@@ -45,9 +22,6 @@
 
     <div class="container">
         <h1>Cloud AI Course Creator</h1>
-        <div class="header-container">
-            <button type="button" id="settings-btn" class="btn btn-secondary">Settings</button>
-        </div>
         <div id="ai-status" class="ai-status-initial"></div>
 
 
@@ -56,8 +30,12 @@
             <div class="input-group">
                 <label for="ai-provider-select" class="label-no-shrink-no-margin">Provider:</label>
                 <select id="ai-provider-select" class="select-no-margin">
-                    <!-- Options will be populated by JS -->
+                    <option value="openai">OpenAI</option>
+                    <option value="anthropic">Anthropic</option>
+                    <option value="google">Google</option>
                 </select>
+                <label for="api-key-input" class="label-no-shrink-no-margin margin-left-1rem">API Key:</label>
+                <input type="password" id="api-key-input" placeholder="Enter your API key" class="flex-grow">
             </div>
             <div id="ollama-status" class="ollama-status-style"></div>
         </fieldset>
