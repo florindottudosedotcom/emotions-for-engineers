@@ -50,15 +50,15 @@ function loadState() {
     dom.chapterTabsContainer.innerHTML = '';
     dom.chapterContentContainer.innerHTML = '';
     Object.keys(ui.editorInstances).forEach(key => delete ui.editorInstances[key]);
+    ui.resetChapterCount(); // Reset the counter in UI module
 
     if (loadedState.chapters && loadedState.chapters.length > 0) {
-        let chapterIndex = 0;
         loadedState.chapters.forEach(chapterData => {
-            chapterIndex++;
-            ui.addChapter(); // This creates the tab and content pane for the new chapter
+            ui.addChapter(); // This creates the tab and content pane with correct event listeners
 
-            // The new chapter is always the last one added
-            const newChapterId = chapterIndex;
+            // The new chapter is always the last one added, with an ID managed by ui.js
+            const newChapterId = Object.keys(ui.editorInstances).pop();
+
             const titleInput = document.getElementById(`chapter-title-${newChapterId}`);
             if (titleInput) {
                 titleInput.value = chapterData.title;
@@ -66,15 +66,20 @@ function loadState() {
 
             const editorInstance = ui.editorInstances[newChapterId];
             if (editorInstance) {
-                if (editorInstance.isReady) {
-                    editorInstance.iframe.contentWindow.postMessage({ type: 'set-content', content: chapterData.content }, '*');
-                } else {
-                    editorInstance.pendingContent = chapterData.content;
-                }
+                // Set content directly; iframe readiness will be handled by message queue
+                editorInstance.pendingContent = chapterData.content;
                 editorInstance.content = chapterData.content;
             }
         });
+
+        // After loading all chapters, activate the first one
+        const firstTab = dom.chapterTabsContainer.querySelector('.tab-link');
+        if (firstTab) {
+            firstTab.click();
+        }
+
     } else {
+        // If no chapters in state, add one default chapter
         ui.addChapter();
     }
 }

@@ -35,8 +35,13 @@ input[type="checkbox"] { margin-right: 0.5rem; }
 .btn-primary:hover { background-color: #2980b9; }
 .btn-secondary { background-color: #2ecc71; }
 .btn-secondary:hover { background-color: #27ae60; }
-.btn-danger { background-color: #e74c3c; padding: 0.25rem 0.75rem; }
+.btn-danger { background-color: #e74c3c; padding: 0.5rem 1rem; /* Increased padding */ }
 .btn-danger:hover { background-color: #c0392b; }
+
+.remove-chapter-btn {
+    font-size: 0.875rem; /* Slightly smaller font */
+    padding: 0.4rem 0.8rem; /* Custom padding */
+}
 #download-section { margin-top: 2rem; padding: 1rem; background-color: #f0fff4; border: 1px solid #2ecc71; border-radius: 4px; display: none; }
 .input-group { display: flex; align-items: center; gap: 0.5rem; margin-bottom: 1rem; }
 .input-group input, .input-group textarea { flex-grow: 1; margin-bottom: 0 !important; }
@@ -160,4 +165,33 @@ input[type="checkbox"] { margin-right: 0.5rem; }
 .chapter-buttons {
     display: flex;
     gap: 0.5rem;
+}
+
+/* Tab Navigation Styles */
+.tab-nav {
+    display: flex;
+    border-bottom: 2px solid #ccc;
+    margin-bottom: 1rem;
+}
+
+.tab-link {
+    padding: 0.75rem 1.5rem;
+    cursor: pointer;
+    border: none;
+    background-color: transparent;
+    font-size: 1rem;
+    border-bottom: 2px solid transparent;
+    margin-bottom: -2px; /* Align with the container's border */
+    transition: all 0.2s ease-in-out;
+}
+
+.tab-link:hover {
+    background-color: #f0f0f0;
+    border-bottom-color: #aaa;
+}
+
+.tab-link.active {
+    font-weight: bold;
+    color: #3498db;
+    border-bottom-color: #3498db;
 }
