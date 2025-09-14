@@ -1,97 +1,191 @@
-import { SlidesProvider } from './providers/slides.js';
-
-const appState = {
+// Slides functionality - works with any provider (cloud, webllm, ollama)
+const slidesAppState = {
     currentSlideData: null,
     isGenerating: false
 };
 
-const dom = {};
-let currentProvider = null;
+const slidesDom = {};
 
+// Wait for the main provider to be initialized, then add slides functionality
 document.addEventListener('DOMContentLoaded', async () => {
-    console.log('Initializing Slides Creator...');
+    // Wait a bit for unified_main.js to load the provider
+    await new Promise(resolve => setTimeout(resolve, 100));
 
-    // Set current provider
-    currentProvider = SlidesProvider;
-
-    // Update page title
-    document.title = `${currentProvider.name} Creator`;
-
-    // Inject provider-specific template
-    const providerSection = document.getElementById('provider-section');
-    if (providerSection) {
-        providerSection.innerHTML = currentProvider.getTemplate();
+    if (!window.currentProvider) {
+        console.error('No provider found - unified_main.js should have loaded it');
+        return;
     }
 
-    // Get DOM elements
-    dom.presentationTopicTextarea = document.getElementById('presentation-topic');
-    dom.numSlidesSelect = document.getElementById('num-slides');
-    dom.generateSlidesBtn = document.getElementById('generate-slides-btn');
-    dom.generationStatus = document.getElementById('generation-status');
-    dom.presentationSection = document.getElementById('presentation-section');
-    dom.presentationTitle = document.getElementById('presentation-title');
-    dom.totalSlides = document.getElementById('total-slides');
-    dom.slidesPreview = document.getElementById('slides-preview');
-    dom.previewPresentationBtn = document.getElementById('preview-presentation-btn');
-    dom.regenerateSlidesBtn = document.getElementById('regenerate-slides-btn');
-    dom.presentationViewer = document.getElementById('presentation-viewer');
-    dom.closePresentationBtn = document.getElementById('close-presentation-btn');
-    dom.revealPresentation = document.getElementById('reveal-presentation');
+    console.log('Initializing Slides functionality with provider:', window.currentProvider.name);
+
+    // Get slides-specific DOM elements
+    slidesDom.presentationTopicTextarea = document.getElementById('presentation-topic');
+    slidesDom.numSlidesSelect = document.getElementById('num-slides');
+    slidesDom.generateSlidesBtn = document.getElementById('generate-slides-btn');
+    slidesDom.generationStatus = document.getElementById('generation-status');
+    slidesDom.presentationSection = document.getElementById('presentation-section');
+    slidesDom.presentationTitle = document.getElementById('presentation-title');
+    slidesDom.totalSlides = document.getElementById('total-slides');
+    slidesDom.slidesPreview = document.getElementById('slides-preview');
+    slidesDom.previewPresentationBtn = document.getElementById('preview-presentation-btn');
+    slidesDom.regenerateSlidesBtn = document.getElementById('regenerate-slides-btn');
+    slidesDom.presentationViewer = document.getElementById('presentation-viewer');
+    slidesDom.closePresentationBtn = document.getElementById('close-presentation-btn');
+    slidesDom.revealPresentation = document.getElementById('reveal-presentation');
 
     // Export buttons
-    dom.exportPdfBtn = document.getElementById('export-pdf-btn');
-    dom.exportPptxBtn = document.getElementById('export-pptx-btn');
-    dom.exportHtmlBtn = document.getElementById('export-html-btn');
-    dom.exportJsonBtn = document.getElementById('export-json-btn');
-    dom.exportStatus = document.getElementById('export-status');
+    slidesDom.exportPdfBtn = document.getElementById('export-pdf-btn');
+    slidesDom.exportPptxBtn = document.getElementById('export-pptx-btn');
+    slidesDom.exportHtmlBtn = document.getElementById('export-html-btn');
+    slidesDom.exportJsonBtn = document.getElementById('export-json-btn');
+    slidesDom.exportStatus = document.getElementById('export-status');
 
-    // Initialize provider
-    currentProvider.init(dom, appState);
+    // Add slides-specific event listeners
+    console.log('Adding slides event listeners...');
 
-    // Event listeners
-    dom.generateSlidesBtn.addEventListener('click', generatePresentation);
-    dom.regenerateSlidesBtn.addEventListener('click', generatePresentation);
-    dom.previewPresentationBtn.addEventListener('click', showPresentationViewer);
-    dom.closePresentationBtn.addEventListener('click', closePresentationViewer);
+    if (slidesDom.generateSlidesBtn) {
+        slidesDom.generateSlidesBtn.addEventListener('click', generatePresentation);
+        console.log('Generate slides button event listener added');
+    }
+
+    if (slidesDom.regenerateSlidesBtn) {
+        slidesDom.regenerateSlidesBtn.addEventListener('click', generatePresentation);
+        console.log('Regenerate slides button event listener added');
+    }
+
+    if (slidesDom.previewPresentationBtn) {
+        slidesDom.previewPresentationBtn.addEventListener('click', showPresentationViewer);
+    }
+
+    if (slidesDom.closePresentationBtn) {
+        slidesDom.closePresentationBtn.addEventListener('click', closePresentationViewer);
+    }
 
     // Export event listeners
-    dom.exportPdfBtn.addEventListener('click', () => exportPresentation('pdf'));
-    dom.exportPptxBtn.addEventListener('click', () => exportPresentation('pptx'));
-    dom.exportHtmlBtn.addEventListener('click', () => exportPresentation('html'));
-    dom.exportJsonBtn.addEventListener('click', () => exportPresentation('json'));
+    if (slidesDom.exportPdfBtn) slidesDom.exportPdfBtn.addEventListener('click', () => exportPresentation('pdf'));
+    if (slidesDom.exportPptxBtn) slidesDom.exportPptxBtn.addEventListener('click', () => exportPresentation('pptx'));
+    if (slidesDom.exportHtmlBtn) slidesDom.exportHtmlBtn.addEventListener('click', () => exportPresentation('html'));
+    if (slidesDom.exportJsonBtn) slidesDom.exportJsonBtn.addEventListener('click', () => exportPresentation('json'));
 
-    console.log('Slides Creator initialized successfully');
+    console.log('Slides Creator functionality initialized successfully');
 });
 
+// Create a universal slides prompt that works with any provider
+function createSlidesPrompt(topic, slideCount) {
+    return `Create a professional presentation about "${topic}" with exactly ${slideCount} slides.
+
+For each slide, provide structured data in this exact JSON format:
+
+{
+  "title": "Presentation Title",
+  "slides": [
+    {
+      "slideNumber": 1,
+      "title": "Slide Title",
+      "content": ["Bullet point 1", "Bullet point 2", "Bullet point 3"],
+      "visualDesign": {
+        "backgroundColor": "#1a365d",
+        "textColor": "#ffffff",
+        "accentColor": "#3182ce",
+        "layout": "left-text",
+        "shapes": [
+          {
+            "type": "circle",
+            "color": "#3182ce",
+            "position": "top-right",
+            "size": "medium"
+          }
+        ],
+        "imageDescription": "Professional business meeting illustration"
+      },
+      "speakerNotes": "Additional context for this slide"
+    }
+  ]
+}
+
+Guidelines:
+- First slide: Title slide with topic name
+- Last slide: Conclusion/Thank you slide
+- Content slides: Maximum 4 bullet points each
+- Use professional color schemes (dark/light themes)
+- Suggest relevant shapes: circle, rectangle, triangle, arrow
+- Position options: top-left, top-right, bottom-left, bottom-right, center
+- Layout options: left-text, center-text, right-text, full-width
+- Size options: small, medium, large
+- Provide specific image descriptions that match the content
+
+Return ONLY the JSON, no additional text.`;
+}
+
+// Parse AI response into slide data
+function parseSlideResponse(aiResponse) {
+    try {
+        // Try to parse JSON response directly
+        console.log('Attempting to parse JSON...');
+        const slideData = JSON.parse(aiResponse.trim());
+        console.log('Successfully parsed slide data');
+        return slideData;
+    } catch (parseError) {
+        // If JSON parsing fails, try to extract JSON from the response
+        console.log('Direct JSON parse failed, trying to extract JSON...');
+        const jsonMatch = aiResponse.match(/\{[\s\S]*\}/);
+        if (jsonMatch) {
+            try {
+                const slideData = JSON.parse(jsonMatch[0]);
+                console.log('Successfully extracted and parsed JSON');
+                return slideData;
+            } catch (secondParseError) {
+                console.error('Failed to parse extracted JSON:', secondParseError);
+                throw new Error('AI response was not in valid JSON format');
+            }
+        } else {
+            console.error('No JSON found in AI response');
+            throw new Error('AI response did not contain valid JSON');
+        }
+    }
+}
+
 async function generatePresentation() {
-    const topic = dom.presentationTopicTextarea.value.trim();
-    const slideCount = parseInt(dom.numSlidesSelect.value);
+    console.log('generatePresentation function called');
+    const topic = slidesDom.presentationTopicTextarea.value.trim();
+    const slideCount = parseInt(slidesDom.numSlidesSelect.value);
+
+    console.log('Topic:', topic, 'Slide count:', slideCount);
 
     if (!topic) {
         updateGenerationStatus('Please enter a presentation topic.', 'error');
         return;
     }
 
-    if (appState.isGenerating) {
+    if (slidesAppState.isGenerating) {
         updateGenerationStatus('Generation already in progress...', 'warning');
         return;
     }
 
     try {
-        appState.isGenerating = true;
-        dom.generateSlidesBtn.disabled = true;
-        dom.regenerateSlidesBtn.disabled = true;
+        console.log('Starting generation process...');
+        slidesAppState.isGenerating = true;
+        slidesDom.generateSlidesBtn.disabled = true;
+        slidesDom.regenerateSlidesBtn.disabled = true;
 
         updateGenerationStatus('🎨 Generating AI-powered presentation...', 'loading');
+        console.log('Status updated, calling provider...');
 
-        // Generate slide content using the provider
-        const slideData = await currentProvider.generateSlideContent(topic, slideCount);
+        // Generate slide content using any provider's generateText method
+        const slidesPrompt = createSlidesPrompt(topic, slideCount);
+        console.log('Calling provider.generateText with slides prompt');
+        const aiResponse = await window.currentProvider.generateText(slidesPrompt);
+        console.log('Provider returned raw response:', aiResponse.substring(0, 200) + '...');
+
+        // Parse the JSON response
+        const slideData = parseSlideResponse(aiResponse);
+        console.log('Parsed slide data:', slideData);
 
         if (!slideData || !slideData.slides || slideData.slides.length === 0) {
             throw new Error('No slide data generated');
         }
 
-        appState.currentSlideData = slideData;
+        slidesAppState.currentSlideData = slideData;
 
         // Update UI with generated slides
         updatePresentationPreview(slideData);
@@ -101,26 +195,27 @@ async function generatePresentation() {
 
     } catch (error) {
         console.error('Error generating presentation:', error);
+        console.error('Error stack:', error.stack);
         updateGenerationStatus(`❌ Error: ${error.message}`, 'error');
     } finally {
-        appState.isGenerating = false;
-        dom.generateSlidesBtn.disabled = false;
-        dom.regenerateSlidesBtn.disabled = false;
+        slidesAppState.isGenerating = false;
+        slidesDom.generateSlidesBtn.disabled = false;
+        slidesDom.regenerateSlidesBtn.disabled = false;
     }
 }
 
 function updatePresentationPreview(slideData) {
     // Update title and slide count
-    dom.presentationTitle.textContent = slideData.title || 'Generated Presentation';
-    dom.totalSlides.textContent = slideData.slides.length;
+    slidesDom.presentationTitle.textContent = slideData.title || 'Generated Presentation';
+    slidesDom.totalSlides.textContent = slideData.slides.length;
 
     // Clear existing slides
-    dom.slidesPreview.innerHTML = '';
+    slidesDom.slidesPreview.innerHTML = '';
 
     // Generate slide previews
     slideData.slides.forEach((slide, index) => {
         const slideElement = createSlidePreviewElement(slide, index + 1);
-        dom.slidesPreview.appendChild(slideElement);
+        slidesDom.slidesPreview.appendChild(slideElement);
     });
 }
 
@@ -165,34 +260,34 @@ function createSlidePreviewElement(slide, slideNumber) {
 }
 
 function showPresentationSection() {
-    dom.presentationSection.style.display = 'block';
-    dom.presentationSection.scrollIntoView({ behavior: 'smooth' });
+    slidesDom.presentationSection.style.display = 'block';
+    slidesDom.presentationSection.scrollIntoView({ behavior: 'smooth' });
 }
 
 function showPresentationViewer() {
-    if (!appState.currentSlideData) {
+    if (!slidesAppState.currentSlideData) {
         updateGenerationStatus('No presentation data available', 'error');
         return;
     }
 
     // Create Reveal.js presentation
-    createRevealPresentation(appState.currentSlideData);
+    createRevealPresentation(slidesAppState.currentSlideData);
 
     // Show the viewer
-    dom.presentationViewer.style.display = 'block';
-    dom.presentationViewer.scrollIntoView({ behavior: 'smooth' });
+    slidesDom.presentationViewer.style.display = 'block';
+    slidesDom.presentationViewer.scrollIntoView({ behavior: 'smooth' });
 
     // Initialize Reveal.js (will be implemented with Reveal.js integration)
     console.log('Reveal.js presentation ready');
 }
 
 function closePresentationViewer() {
-    dom.presentationViewer.style.display = 'none';
-    dom.presentationSection.scrollIntoView({ behavior: 'smooth' });
+    slidesDom.presentationViewer.style.display = 'none';
+    slidesDom.presentationSection.scrollIntoView({ behavior: 'smooth' });
 }
 
 function createRevealPresentation(slideData) {
-    const slidesContainer = dom.revealPresentation.querySelector('.slides');
+    const slidesContainer = slidesDom.revealPresentation.querySelector('.slides');
     slidesContainer.innerHTML = '';
 
     slideData.slides.forEach((slide, index) => {
@@ -251,7 +346,7 @@ function getPositionCSS(position) {
 }
 
 async function exportPresentation(format) {
-    if (!appState.currentSlideData) {
+    if (!slidesAppState.currentSlideData) {
         updateExportStatus('No presentation data to export', 'error');
         return;
     }
@@ -283,12 +378,12 @@ async function exportPresentation(format) {
 }
 
 function exportJSON() {
-    const dataStr = JSON.stringify(appState.currentSlideData, null, 2);
+    const dataStr = JSON.stringify(slidesAppState.currentSlideData, null, 2);
     const dataBlob = new Blob([dataStr], {type: 'application/json'});
 
     const link = document.createElement('a');
     link.href = URL.createObjectURL(dataBlob);
-    link.download = `${appState.currentSlideData.title || 'presentation'}.json`;
+    link.download = `${slidesAppState.currentSlideData.title || 'presentation'}.json`;
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
@@ -297,12 +392,12 @@ function exportJSON() {
 }
 
 function exportHTML() {
-    const htmlContent = generateStandaloneHTML(appState.currentSlideData);
+    const htmlContent = generateStandaloneHTML(slidesAppState.currentSlideData);
     const dataBlob = new Blob([htmlContent], {type: 'text/html'});
 
     const link = document.createElement('a');
     link.href = URL.createObjectURL(dataBlob);
-    link.download = `${appState.currentSlideData.title || 'presentation'}.html`;
+    link.download = `${slidesAppState.currentSlideData.title || 'presentation'}.html`;
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
@@ -344,19 +439,18 @@ function generateStandaloneHTML(slideData) {
 }
 
 function updateGenerationStatus(message, type) {
-    if (!dom.generationStatus) return;
+    if (!slidesDom.generationStatus) return;
 
-    dom.generationStatus.textContent = message;
-    dom.generationStatus.className = `status-display status-${type}`;
+    slidesDom.generationStatus.textContent = message;
+    slidesDom.generationStatus.className = `status-display status-${type}`;
 }
 
 function updateExportStatus(message, type) {
-    if (!dom.exportStatus) return;
+    if (!slidesDom.exportStatus) return;
 
-    dom.exportStatus.textContent = message;
-    dom.exportStatus.className = `status-display status-${type}`;
+    slidesDom.exportStatus.textContent = message;
+    slidesDom.exportStatus.className = `status-display status-${type}`;
 }
 
-// Make provider globally available for debugging
-window.currentProvider = currentProvider;
-window.appState = appState;
+// Make slides functionality globally available for debugging
+window.slidesAppState = slidesAppState;

@@ -99,9 +99,12 @@ export const SlidesProvider = {
     },
 
     async generateSlideContent(topic, slideCount = 8) {
+        console.log('SlidesProvider.generateSlideContent called with:', topic, slideCount);
         const modelName = document.getElementById('ai-model-select').value;
+        console.log('Selected model:', modelName);
 
         if (!modelName) {
+            console.error('No model selected');
             throw new Error('No model selected');
         }
 
@@ -149,6 +152,9 @@ Guidelines:
 
 Return ONLY the JSON, no additional text.`;
 
+        console.log('Making API request to Ollama...');
+        console.log('Request payload:', { model: modelName, prompt: prompt.substring(0, 100) + '...' });
+
         const response = await fetch('http://localhost:11434/api/generate', {
             method: 'POST',
             headers: {
@@ -161,15 +167,23 @@ Return ONLY the JSON, no additional text.`;
             }),
         });
 
+        console.log('Ollama API response status:', response.status, response.statusText);
+
         if (!response.ok) {
+            console.error('API request failed:', response.status, response.statusText);
             throw new Error(`API error: ${response.status} ${response.statusText}`);
         }
 
+        console.log('Getting response data...');
         const data = await response.json();
+        console.log('Raw API response length:', data.response?.length || 'N/A');
+        console.log('Raw API response preview:', data.response?.substring(0, 200) + '...');
 
         try {
             // Try to parse JSON response
+            console.log('Attempting to parse JSON...');
             const slideData = JSON.parse(data.response.trim());
+            console.log('Successfully parsed slide data:', slideData);
             return slideData;
         } catch (parseError) {
             // If JSON parsing fails, try to extract JSON from the response

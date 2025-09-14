@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Slides Creator - Choose Your Provider</title>
+    <link rel="stylesheet" href="./assets/css/course-creator.css" />
+</head>
+<body>
+    <div class="main-container">
+        <h1>AI Slides Creator</h1>
+        <p>Create beautiful, AI-powered presentations with visual elements. Choose your preferred AI provider below to get started.</p>
+
+        <div class="launcher-container">
+            <a href="slides_cloud_creator.html" target="_blank" class="launcher-btn cloud">
+                <span class="icon">☁️</span>
+                <span>Cloud AI Slides</span>
+            </a>
+            <a href="slides_webllm_creator.html" target="_blank" class="launcher-btn webllm">
+                <span class="icon">🧠</span>
+                <span>WebLLM Slides</span>
+            </a>
+            <a href="slides_ollama_creator.html" target="_blank" class="launcher-btn ollama" id="ollama-launcher">
+                <span class="icon">🖥️</span>
+                <span>Ollama Slides</span>
+            </a>
+        </div>
+
+        <div class="help-section">
+            <h2>How It Works</h2>
+            <ol>
+                <li><strong>Select an AI Provider:</strong>
+                    <ul>
+                        <li>☁️ <strong>Cloud AI:</strong> Use powerful models from OpenAI, Anthropic, and Google. Requires API keys.</li>
+                        <li>🧠 <strong>WebLLM:</strong> Run AI models directly in your browser. No server or keys needed.</li>
+                        <li>🖥️ <strong>Ollama:</strong> Connect to your local Ollama instance. Only available when running locally.</li>
+                    </ul>
+                </li>
+                <li><strong>Enter Presentation Topic:</strong> Describe what you want to present about.</li>
+                <li><strong>AI Generates Visual Slides:</strong> The AI creates slides with:
+                    <ul>
+                        <li>📝 Content with bullet points</li>
+                        <li>🎨 Color schemes and layouts</li>
+                        <li>⚪ Visual shapes and elements</li>
+                        <li>🖼️ Image suggestions</li>
+                        <li>📋 Speaker notes</li>
+                    </ul>
+                </li>
+                <li><strong>Preview & Export:</strong> Review your presentation and export to PDF, PowerPoint, or HTML.</li>
+            </ol>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const ollamaLauncher = document.getElementById('ollama-launcher');
+            const isLocal = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1' || window.location.protocol === 'file:';
+
+            if (!isLocal) {
+                ollamaLauncher.classList.add('disabled');
+                ollamaLauncher.href = '#';
+                ollamaLauncher.title = 'Ollama slides creator is only available when running this tool locally.';
+                ollamaLauncher.addEventListener('click', (e) => e.preventDefault());
+            }
+        });
+    </script>
+</body>
+</html>
