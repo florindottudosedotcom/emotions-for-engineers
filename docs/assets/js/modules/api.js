@@ -72,113 +72,22 @@ async function loadOllamaModels() {
     }
 }
 
-function handleProviderChange() {
-    if (!dom.aiProviderSelect) return;
-    const selectedProvider = dom.aiProviderSelect.value;
-    state.AI_PROVIDER = selectedProvider;
-
-    if (dom.aiModelSelectionGroup) dom.aiModelSelectionGroup.style.display = 'none';
-    if (dom.refreshModelsBtn) dom.refreshModelsBtn.style.display = 'none';
-    if (dom.ollamaStatus) {
-        dom.ollamaStatus.textContent = '';
-        dom.ollamaStatus.className = 'ollama-status-style';
-    }
-
-    if (selectedProvider === 'ollama') {
-        if (dom.aiModelSelectionGroup) dom.aiModelSelectionGroup.style.display = 'flex';
-        if (dom.refreshModelsBtn) dom.refreshModelsBtn.style.display = 'block';
-        loadOllamaModels();
-    } else if (selectedProvider === 'webllm') {
-        if (dom.aiModelSelectionGroup) dom.aiModelSelectionGroup.style.display = 'flex';
-        if (dom.refreshModelsBtn) dom.refreshModelsBtn.style.display = 'none';
-        loadWebLLMModels();
-    } else {
-        if (dom.ollamaStatus) {
-            dom.ollamaStatus.textContent = `✅ Ready to use ${selectedProvider}.`;
-            dom.ollamaStatus.className = 'ollama-status-style ollama-status-ok';
-        }
-    }
-}
-
-async function updateAvailableProviders() {
-    if (dom.ollamaStatus) {
-        dom.ollamaStatus.textContent = 'Detecting available AI providers...';
-    }
-
-    const selectedProviderBeforeUpdate = dom.aiProviderSelect ? dom.aiProviderSelect.value : null;
-    if (dom.aiProviderSelect) dom.aiProviderSelect.innerHTML = '';
-
-    if (state.SESSION_API_KEYS.openai) {
-        if (dom.aiProviderSelect) dom.aiProviderSelect.add(new Option("OpenAI (Cloud)", "openai"));
-    }
-    if (state.SESSION_API_KEYS.anthropic) {
-        if (dom.aiProviderSelect) dom.aiProviderSelect.add(new Option("Anthropic (Cloud)", "anthropic"));
-    }
-    if (state.SESSION_API_KEYS.google) {
-        if (dom.aiProviderSelect) dom.aiProviderSelect.add(new Option("Google Gemini (Cloud)", "google"));
-    }
-
-    try {
-        const response = await fetch('http://localhost:11434/api/tags');
-        if (response.ok) {
-            const data = await response.json();
-            if (data.models && data.models.length > 0) {
-                if (dom.aiProviderSelect) dom.aiProviderSelect.add(new Option("Ollama (Local)", "ollama"));
-            }
-        }
-    } catch (err) {
-        // Ollama is not available
-    }
-
-    if (dom.aiProviderSelect) {
-        dom.aiProviderSelect.add(new Option("WebLLM (In-Browser)", "webllm"));
-        dom.aiProviderSelect.selectedIndex = 0;
-    }
-    handleProviderChange();
-}
-
-function saveApiKeys(e) {
-    e.preventDefault();
-    state.SESSION_API_KEYS.openai = dom.openAiApiKeyInput.value || null;
-    state.SESSION_API_KEYS.anthropic = dom.anthropicApiKeyInput.value || null;
-    state.SESSION_API_KEYS.google = dom.googleApiKeyInput.value || null;
-
-    if(dom.openAiApiKeyInput) dom.openAiApiKeyInput.value = '';
-    if(dom.anthropicApiKeyInput) dom.anthropicApiKeyInput.value = '';
-    if(dom.googleApiKeyInput) dom.googleApiKeyInput.value = '';
-
-    // This needs to call a UI function, which is a dependency issue.
-    // For now, we'll assume a UI module exists.
-    // hideSettingsModal();
-    updateAvailableProviders();
-
-    const enabledProviders = Object.entries(state.SESSION_API_KEYS)
-        .filter(([_, value]) => value)
-        .map(([key]) => key.charAt(0).toUpperCase() + key.slice(1));
-
-    if (dom.aiStatus) {
-        if (enabledProviders.length > 0) {
-            dom.aiStatus.textContent = `✅ API keys for ${enabledProviders.join(', ')} enabled for this session.`;
-        } else {
-            dom.aiStatus.textContent = "No API keys provided.";
-        }
-        dom.aiStatus.style.display = 'block';
-    } else {
-        alert("API Keys will be used for this session only.");
-    }
-}
-
 async function generateAIText(systemPrompt) {
     let provider = state.AI_PROVIDER;
 
-    if (provider === 'cloud') {
+    // This logic is now handled in cloud_main.js
+    // if (provider === 'cloud') {
+    //     // Auto-detect which cloud provider to use based on available keys
+    //     if (state.SESSION_API_KEYS.openai) provider = 'openai';
+    //     else if (state.SESSION_API_KEYS.anthropic) provider = 'anthropic';
+    //     else if (state.SESSION_API_KEYS.google) provider = 'google';
+    //     else throw new Error("No Cloud API key has been provided. Please add one in Settings.");
+    // }
         // Auto-detect which cloud provider to use based on available keys
         if (state.SESSION_API_KEYS.openai) provider = 'openai';
         else if (state.SESSION_API_KEYS.anthropic) provider = 'anthropic';
         else if (state.SESSION_API_KEYS.google) provider = 'google';
         else throw new Error("No Cloud API key has been provided. Please add one in Settings.");
-    }
-
     let endpoint = '';
     let headers = { 'Content-Type': 'application/json' };
     let body = {};
@@ -247,9 +156,6 @@ export function initApi(domElements, appState) {
 export {
     initializeWebLLM,
     loadWebLLMModels,
-    updateAvailableProviders,
-    handleProviderChange,
     loadOllamaModels,
-    generateAIText,
-    saveApiKeys
+    generateAIText
 };
