@@ -18,6 +18,38 @@ function hideHelpModal() {
     dom.helpModal.classList.remove('visible');
 }
 
+function showOverwriteConfirmModal() {
+    return new Promise((resolve) => {
+        const modal = document.getElementById('overwrite-modal');
+        const yesBtn = document.getElementById('overwrite-yes-btn');
+        const cancelBtn = document.getElementById('overwrite-cancel-btn');
+
+        if (!modal || !yesBtn || !cancelBtn) {
+            resolve(true); // Failsafe: if modal doesn't exist, act as if user confirmed.
+            return;
+        }
+
+        const cleanup = () => {
+            // Re-clone the buttons to remove the event listeners
+            yesBtn.replaceWith(yesBtn.cloneNode(true));
+            cancelBtn.replaceWith(cancelBtn.cloneNode(true));
+            modal.classList.remove('visible');
+        };
+
+        yesBtn.addEventListener('click', () => {
+            cleanup();
+            resolve(true);
+        }, { once: true });
+
+        cancelBtn.addEventListener('click', () => {
+            cleanup();
+            resolve(false);
+        }, { once: true });
+
+        modal.classList.add('visible');
+    });
+}
+
 function logDebug(message) {
     const logArea = document.getElementById('debug-log');
     if (logArea) {
@@ -146,6 +178,7 @@ export {
     hideSettingsModal,
     showHelpModal,
     hideHelpModal,
+    showOverwriteConfirmModal,
     addChapter,
     updateAiStatus,
     updateOllamaStatus,

@@ -3,12 +3,38 @@ let ui = {};
 let api = {};
 let stateModule = {};
 
+function isCourseEmpty() {
+    // Check if any chapter titles have content
+    const titleInputs = document.querySelectorAll('.chapter-title');
+    for (const input of titleInputs) {
+        if (input.value.trim() !== '') return false;
+    }
+
+    // Check if any editor instances have content
+    for (const key in ui.editorInstances) {
+        if (ui.editorInstances[key].content && ui.editorInstances[key].content.trim() !== '') {
+            return false;
+        }
+    }
+
+    return true;
+}
+
 async function generateCourse() {
     const userPrompt = dom.masterPromptTextarea.value;
     if (!userPrompt) {
         alert('Please enter a prompt for the course.');
         return;
     }
+
+    if (!isCourseEmpty()) {
+        const shouldOverwrite = await ui.showOverwriteConfirmModal();
+        if (!shouldOverwrite) {
+            // User cancelled
+            return;
+        }
+    }
+
     ui.updateAiStatus('Generating course details...');
 
     const systemPrompt = `You are an expert course creator. A user wants a course about the following topic: "${userPrompt}".
