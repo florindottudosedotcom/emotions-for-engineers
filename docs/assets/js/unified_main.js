@@ -13,6 +13,8 @@ const PROVIDER_TYPE = window.COURSE_CREATOR_PROVIDER || 'cloud';
 async function initializeProvider() {
     let providerModule;
 
+    console.log(`Initializing provider: ${PROVIDER_TYPE}`);
+
     try {
         switch (PROVIDER_TYPE) {
             case 'cloud':
@@ -30,11 +32,20 @@ async function initializeProvider() {
             default:
                 throw new Error(`Unknown provider type: ${PROVIDER_TYPE}`);
         }
+
+        console.log(`Successfully loaded provider: ${currentProvider.name}`);
     } catch (error) {
-        console.error('Failed to load provider:', error);
-        // Fallback to cloud provider
-        const cloudModule = await import('./providers/cloud.js');
-        currentProvider = cloudModule.CloudProvider;
+        console.error(`Failed to load ${PROVIDER_TYPE} provider:`, error);
+
+        // Only fallback to cloud if it's not already the intended provider
+        if (PROVIDER_TYPE !== 'cloud') {
+            console.log('Falling back to cloud provider');
+            const cloudModule = await import('./providers/cloud.js');
+            currentProvider = cloudModule.CloudProvider;
+        } else {
+            // If cloud provider itself failed, throw the error
+            throw error;
+        }
     }
 
     return currentProvider;
