@@ -29,62 +29,47 @@ document.addEventListener('DOMContentLoaded', () => {
     dom.aiStatus = document.getElementById('ai-status');
     dom.courseNameInput = document.getElementById('course-name');
     dom.courseDescTextarea = document.getElementById('course-desc');
-    dom.settingsBtn = document.getElementById('settings-btn');
-    dom.settingsModal = document.getElementById('settings-modal');
-    dom.closeSettingsBtn = document.getElementById('close-settings-btn');
-    dom.apiKeysForm = document.getElementById('api-keys-form');
-    dom.openAiApiKeyInput = document.getElementById('openai-api-key');
-    dom.anthropicApiKeyInput = document.getElementById('anthropic-api-key');
-    dom.googleApiKeyInput = document.getElementById('google-api-key');
     dom.aiModelSelect = document.getElementById('ai-model-select');
     dom.aiModelSelectionGroup = document.getElementById('ai-model-selection-group');
-    dom.refreshModelsBtn = document.getElementById('refresh-models-btn');
-    dom.ollamaStatus = document.getElementById('ollama-status');
     dom.masterPromptTextarea = document.getElementById('master-prompt');
     dom.numChaptersSelect = document.getElementById('num-chapters');
     dom.generateCourseBtn = document.getElementById('generate-course-btn');
     dom.webllmIframe = document.getElementById('webllm-iframe');
     dom.clearFormBtn = document.getElementById('clear-form-btn');
-    dom.toggleDebugBtn = document.getElementById('toggle-debug-btn');
-    dom.clearLogBtn = document.getElementById('clear-log-btn');
-
 
     // Init Modules
     UI.initUI(dom);
-    UI.logDebug("Application initialized. DOM elements loaded.");
     API.initApi(dom, appState);
     Course.initCourse(dom, UI, API, State);
     State.initState(dom, appState, UI);
 
     // Event Listeners
     dom.aiModelSelect.addEventListener('change', () => {
-        UI.logDebug(`AI model changed. Initializing ${dom.aiModelSelect.value}...`);
         API.initializeWebLLM(dom.aiModelSelect.value);
         State.saveState();
     });
     dom.generateCourseBtn.addEventListener('click', Course.generateCourse);
     dom.addChapterBtn.addEventListener('click', UI.addChapter);
     dom.clearFormBtn.addEventListener('click', State.clearState);
+    dom.courseForm.addEventListener('submit', (e) => {
+        e.preventDefault();
+        Course.generateCourseFiles();
+    });
 
-    // --- State Persistence Event Listeners ---
+    // --- State Persistence ---
     const debouncedSave = debounce(State.saveState, 300);
-
-    dom.courseNameInput.addEventListener('input', State.saveState);
-    dom.courseDescTextarea.addEventListener('input', State.saveState);
+    dom.courseNameInput.addEventListener('input', debouncedSave);
+    dom.courseDescTextarea.addEventListener('input', debouncedSave);
     dom.masterPromptTextarea.addEventListener('input', debouncedSave);
     dom.numChaptersSelect.addEventListener('change', State.saveState);
-
     dom.chapterContentContainer.addEventListener('input', (e) => {
         if (e.target.classList.contains('chapter-title')) {
-            State.saveState();
+            debouncedSave();
         }
     });
-    // --- End State Persistence ---
 
     // Initial Load
     State.loadState();
-
-    // Ensure there's at least one chapter to start with
     if (dom.chapterContentContainer.children.length === 0) {
         UI.addChapter();
     }
@@ -103,16 +88,9 @@ function debounce(func, wait) {
 }
 
 window.addEventListener('message', (event) => {
-    const { type, id, result, error, content, message } = event.data;
-
     // Handle messages from WebLLM iframe
     if (event.source === dom.webllmIframe.contentWindow) {
-        if (type === 'debug-log') {
-            UI.logDebug(`[iframe] ${message}`);
-            return;
-        }
-
-        UI.logDebug(`Received message from WebLLM iframe: ${type}`);
+        const { type, id, result, error } = event.data;
         if (type === 'webllm-iframe-ready') {
             appState.isWebllmIframeReady = true;
             API.loadWebLLMModels();
@@ -136,11 +114,12 @@ window.addEventListener('message', (event) => {
             }
             delete appState.webllmPromiseResolvers[id];
         }
-        return; // End of WebLLM message handling
+        return;
     }
 
     // Handle messages from Editor iframes
-    if (UI.editorInstances && UI.editorInstances[id]) {
+    if (UI.editorInstances && UI.editorInstances[event.data.id]) {
+        const { type, id, content } = event.data;
         if (type === 'editor-ready') {
             UI.editorInstances[id].isReady = true;
             if (UI.editorInstances[id].pendingContent) {

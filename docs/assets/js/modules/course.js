@@ -30,10 +30,9 @@ async function generateCourse() {
     if (!isCourseEmpty()) {
         const shouldOverwrite = await ui.showOverwriteConfirmModal();
         if (!shouldOverwrite) {
-            ui.logDebug("Course generation cancelled by user.");
-            return; // Stop if user cancels
+            // User cancelled
+            return;
         }
-        ui.logDebug("User confirmed to overwrite existing content.");
     }
 
     ui.updateAiStatus('Generating course details...');
@@ -47,9 +46,7 @@ Title: [The course title]
 Description: [The course description]`;
 
     try {
-        ui.logDebug("Generating course details. Calling AI...");
         const content = await api.generateAIText(systemPrompt);
-        ui.logDebug("AI call for course details complete.");
         if (!content || content.trim() === '') {
             throw new Error("The AI model returned an empty response.");
         }
@@ -107,9 +104,7 @@ Title: [The chapter title]
 Content:
 [The full chapter content in Markdown]`;
 
-    ui.logDebug(`Generating content for chapter ${chapterIndex}. Calling AI...`);
     const textResponse = await api.generateAIText(systemPrompt);
-    ui.logDebug(`AI call for chapter ${chapterIndex} complete.`);
     if (!textResponse) {
         throw new Error(`AI returned an empty response for chapter ${chapterIndex}.`);
     }
@@ -173,6 +168,13 @@ async function generateChaptersInLoop() {
     }
 
     stateModule.saveState();
+
+    // Activate the first chapter's tab
+    const firstTab = dom.chapterTabsContainer.querySelector('.tab-link');
+    if (firstTab) {
+        firstTab.click();
+    }
+
     setTimeout(() => { ui.updateAiStatus(null); }, 5000);
 }
 
@@ -194,7 +196,55 @@ export function initCourse(domElements, uiModule, apiModule, stateMod) {
     stateModule = stateMod;
 }
 
+function generateCourseFiles() {
+    ui.logDebug("Starting course file generation...");
+    const courseName = dom.courseNameInput.value;
+    if (!courseName) {
+        alert("Please enter a course name.");
+        return;
+    }
+
+    const safeCourseName = courseName.toLowerCase().replace(/[^a-z0-9\s-]/g, '').replace(/\s+/g, '-');
+    const zip = new JSZip();
+    const courseFolder = zip.folder(safeCourseName);
+    // No longer creating a nested 'docs' folder, the content goes straight into the course folder.
+    const assetsFolder = courseFolder.folder('assets');
+    assetsFolder.folder('images'); // Create empty images folder for convention
+
+    // --- Create Chapter Files ---
+    dom.chapterContentContainer.querySelectorAll('.chapter-content').forEach((contentDiv, index) => {
+        const chapterId = contentDiv.id.replace('chapter-content-', '');
+        const title = dom.courseForm.querySelector(`#chapter-title-${chapterId}`).value;
+        const content = ui.editorInstances[chapterId] ? ui.editorInstances[chapterId].content : '';
+        const chapterFilename = `${String(index + 1).padStart(2, '0')}-${title.toLowerCase().replace(/[^a-z0-9\s-]/g, '').replace(/\s+/g, '-')}.md`;
+
+        courseFolder.file(chapterFilename, content);
+    });
+
+    // --- Create index.md ---
+    const courseDescription = dom.courseDescTextarea.value;
+    const indexContent = `# ${courseName}\n\n${courseDescription}`;
+    courseFolder.file('index.md', indexContent);
+
+    // --- Generate and download zip ---
+    ui.logDebug("Generating zip file...");
+    zip.generateAsync({ type: "blob" })
+        .then(function(content) {
+            const link = document.createElement('a');
+            link.href = URL.createObjectURL(content);
+            link.download = `${safeCourseName}.zip`;
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+            ui.logDebug("Zip file download triggered.");
+            dom.downloadSection.style.display = 'block';
+            dom.downloadZipLink.href = link.href;
+            dom.downloadZipLink.download = `${safeCourseName}.zip`;
+        });
+}
+
 export {
     generateCourse,
+    generateCourseFiles,
     translate
 };

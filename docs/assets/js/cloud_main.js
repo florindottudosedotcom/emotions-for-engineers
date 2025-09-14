@@ -4,7 +4,7 @@ import * as Course from './modules/course.js';
 import * as State from './modules/state.js';
 
 const appState = {
-    AI_PROVIDER: 'cloud', // Set to cloud by default
+    AI_PROVIDER: 'openai', // Default to one of the cloud providers
     SESSION_API_KEYS: {
         openai: null,
         anthropic: null,
@@ -43,29 +43,26 @@ document.addEventListener('DOMContentLoaded', () => {
     dom.numChaptersSelect = document.getElementById('num-chapters');
     dom.generateCourseBtn = document.getElementById('generate-course-btn');
     dom.clearFormBtn = document.getElementById('clear-form-btn');
-    dom.toggleDebugBtn = document.getElementById('toggle-debug-btn');
-    dom.clearLogBtn = document.getElementById('clear-log-btn');
 
     // Load API keys from session storage first
     appState.SESSION_API_KEYS = getApiKeysFromSession();
 
     // Init Modules
     UI.initUI(dom);
-    UI.logDebug("Application initialized for Cloud AI.");
     API.initApi(dom, appState);
     Course.initCourse(dom, UI, API, State);
     State.initState(dom, appState, UI);
 
     // Event Listeners
     dom.aiProviderSelect.addEventListener('change', () => {
-        const provider = dom.aiProviderSelect.value;
-        appState.AI_PROVIDER = provider;
-        dom.apiKeyInput.value = appState.SESSION_API_KEYS[provider] || '';
-        if (appState.SESSION_API_KEYS[provider]) {
-            UI.updateAiStatus(`✅ ${provider.charAt(0).toUpperCase() + provider.slice(1)} is ready.`);
-        } else {
-            UI.updateAiStatus(`Provider changed to ${provider}. Please enter an API key.`);
-        }
+
+        dom.apiKeyInput.value = '';
+        appState.AI_PROVIDER = dom.aiProviderSelect.value;
+        Object.keys(appState.SESSION_API_KEYS).forEach(key => {
+            appState.SESSION_API_KEYS[key] = null;
+        });
+        UI.updateAiStatus(`Provider changed to ${appState.AI_PROVIDER}. Please enter an API key.`);
+
     });
 
     dom.apiKeyInput.addEventListener('input', () => {
@@ -83,27 +80,23 @@ document.addEventListener('DOMContentLoaded', () => {
     dom.generateCourseBtn.addEventListener('click', Course.generateCourse);
     dom.addChapterBtn.addEventListener('click', UI.addChapter);
     dom.clearFormBtn.addEventListener('click', State.clearState);
-
-    dom.courseForm.addEventListener('submit', (event) => {
-        event.preventDefault();
-        UI.logDebug("Course file generation triggered.");
-        alert("File generation is not implemented yet. Preventing page reload.");
-        // TODO: Call the actual file generation function here.
+    dom.courseForm.addEventListener('submit', (e) => {
+        e.preventDefault();
+        Course.generateCourseFiles();
     });
 
+    // --- State Persistence ---
 
-    // --- State Persistence Event Listeners ---
     const debouncedSave = debounce(State.saveState, 300);
-    dom.courseNameInput.addEventListener('input', State.saveState);
-    dom.courseDescTextarea.addEventListener('input', State.saveState);
+    dom.courseNameInput.addEventListener('input', debouncedSave);
+    dom.courseDescTextarea.addEventListener('input', debouncedSave);
     dom.masterPromptTextarea.addEventListener('input', debouncedSave);
     dom.numChaptersSelect.addEventListener('change', State.saveState);
     dom.chapterContentContainer.addEventListener('input', (e) => {
         if (e.target.classList.contains('chapter-title')) {
-            State.saveState();
+            debouncedSave();
         }
     });
-    // --- End State Persistence ---
 
     // Initial Load
     appState.AI_PROVIDER = dom.aiProviderSelect.value;
@@ -136,10 +129,9 @@ function debounce(func, wait) {
 }
 
 window.addEventListener('message', (event) => {
-    const { type, id, content } = event.data;
-
     // Handle messages from Editor iframes
-    if (UI.editorInstances && UI.editorInstances[id]) {
+    if (UI.editorInstances && UI.editorInstances[event.data.id]) {
+        const { type, id, content } = event.data;
         if (type === 'editor-ready') {
             UI.editorInstances[id].isReady = true;
             if (UI.editorInstances[id].pendingContent) {

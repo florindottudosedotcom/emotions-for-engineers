@@ -4,7 +4,7 @@ import * as Course from './modules/course.js';
 import * as State from './modules/state.js';
 
 const appState = {
-    AI_PROVIDER: 'ollama' // Set to ollama by default
+    AI_PROVIDER: 'ollama'
 };
 
 const dom = {};
@@ -28,13 +28,9 @@ document.addEventListener('DOMContentLoaded', () => {
     dom.numChaptersSelect = document.getElementById('num-chapters');
     dom.generateCourseBtn = document.getElementById('generate-course-btn');
     dom.clearFormBtn = document.getElementById('clear-form-btn');
-    dom.toggleDebugBtn = document.getElementById('toggle-debug-btn');
-    dom.clearLogBtn = document.getElementById('clear-log-btn');
-
 
     // Init Modules
     UI.initUI(dom);
-    UI.logDebug("Application initialized for Ollama.");
     API.initApi(dom, appState);
     Course.initCourse(dom, UI, API, State);
     State.initState(dom, appState, UI);
@@ -44,21 +40,23 @@ document.addEventListener('DOMContentLoaded', () => {
     dom.generateCourseBtn.addEventListener('click', Course.generateCourse);
     dom.addChapterBtn.addEventListener('click', UI.addChapter);
     dom.clearFormBtn.addEventListener('click', State.clearState);
+    dom.courseForm.addEventListener('submit', (e) => {
+        e.preventDefault();
+        Course.generateCourseFiles();
+    });
     dom.aiModelSelect.addEventListener('change', State.saveState);
 
-
-    // --- State Persistence Event Listeners ---
+    // --- State Persistence ---
     const debouncedSave = debounce(State.saveState, 300);
-    dom.courseNameInput.addEventListener('input', State.saveState);
-    dom.courseDescTextarea.addEventListener('input', State.saveState);
+    dom.courseNameInput.addEventListener('input', debouncedSave);
+    dom.courseDescTextarea.addEventListener('input', debouncedSave);
     dom.masterPromptTextarea.addEventListener('input', debouncedSave);
     dom.numChaptersSelect.addEventListener('change', State.saveState);
     dom.chapterContentContainer.addEventListener('input', (e) => {
         if (e.target.classList.contains('chapter-title')) {
-            State.saveState();
+            debouncedSave();
         }
     });
-    // --- End State Persistence ---
 
     // Initial Load
     API.loadOllamaModels();
@@ -81,10 +79,9 @@ function debounce(func, wait) {
 }
 
 window.addEventListener('message', (event) => {
-    const { type, id, content } = event.data;
-
     // Handle messages from Editor iframes
-    if (UI.editorInstances && UI.editorInstances[id]) {
+    if (UI.editorInstances && UI.editorInstances[event.data.id]) {
+        const { type, id, content } = event.data;
         if (type === 'editor-ready') {
             UI.editorInstances[id].isReady = true;
             if (UI.editorInstances[id].pendingContent) {

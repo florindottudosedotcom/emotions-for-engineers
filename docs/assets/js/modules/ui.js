@@ -30,23 +30,56 @@ function showOverwriteConfirmModal() {
         }
 
         const cleanup = () => {
+            // Re-clone the buttons to remove the event listeners
             yesBtn.replaceWith(yesBtn.cloneNode(true));
             cancelBtn.replaceWith(cancelBtn.cloneNode(true));
             modal.classList.remove('visible');
         };
 
-        yesBtn.onclick = () => {
+        yesBtn.addEventListener('click', () => {
             cleanup();
             resolve(true);
-        };
+        }, { once: true });
 
-        cancelBtn.onclick = () => {
+        cancelBtn.addEventListener('click', () => {
             cleanup();
             resolve(false);
-        };
+        }, { once: true });
 
         modal.classList.add('visible');
     });
+}
+
+function logDebug(message) {
+    const logArea = document.getElementById('debug-log');
+    if (logArea) {
+        const timestamp = new Date().toLocaleTimeString();
+        const logEntry = document.createElement('div');
+        logEntry.textContent = `[${timestamp}] ${message}`;
+        logArea.appendChild(logEntry);
+        logArea.scrollTop = logArea.scrollHeight; // Auto-scroll to bottom
+    }
+}
+
+function initUI(domElements) {
+    dom = domElements;
+    // The new debug buttons might not exist on all pages
+    if (dom.toggleDebugBtn) {
+        dom.toggleDebugBtn.addEventListener('click', () => {
+            const fieldset = document.getElementById('debug-fieldset');
+            if (fieldset) {
+                fieldset.style.display = fieldset.style.display === 'none' ? 'block' : 'none';
+            }
+        });
+    }
+    if (dom.clearLogBtn) {
+        dom.clearLogBtn.addEventListener('click', () => {
+            const logArea = document.getElementById('debug-log');
+            if (logArea) {
+                logArea.innerHTML = '';
+            }
+        });
+    }
 }
 
 function addChapter() {
@@ -55,6 +88,7 @@ function addChapter() {
 
     // Create Tab Button
     const tabButton = document.createElement('button');
+    tabButton.type = 'button'; // Explicitly set type to prevent form submission
     tabButton.className = 'tab-link';
     tabButton.textContent = `Chapter ${chapterId}`;
     tabButton.dataset.chapterId = chapterId;
@@ -135,39 +169,6 @@ function updateOllamaStatus(message, type = 'info') {
 }
 
 
-export function initUI(domElements) {
-    dom = domElements;
-    // The new debug buttons might not exist on all pages
-    if (dom.toggleDebugBtn) {
-        dom.toggleDebugBtn.addEventListener('click', () => {
-            dom.toggleDebugBtn.textContent = "Clicked!";
-            const fieldset = document.getElementById('debug-fieldset');
-            if (fieldset) {
-                fieldset.style.display = fieldset.style.display === 'none' ? 'block' : 'none';
-            }
-        });
-    }
-    if (dom.clearLogBtn) {
-        dom.clearLogBtn.addEventListener('click', () => {
-            const logArea = document.getElementById('debug-log');
-            if (logArea) {
-                logArea.innerHTML = '';
-            }
-        });
-    }
-}
-
-function logDebug(message) {
-    const logArea = document.getElementById('debug-log');
-    if (logArea) {
-        const timestamp = new Date().toLocaleTimeString();
-        const logEntry = document.createElement('div');
-        logEntry.textContent = `[${timestamp}] ${message}`;
-        logArea.appendChild(logEntry);
-        logArea.scrollTop = logArea.scrollHeight; // Auto-scroll to bottom
-    }
-}
-
 function resetChapterCount() {
     chapterCount = 0;
 }
@@ -182,6 +183,7 @@ export {
     updateAiStatus,
     updateOllamaStatus,
     logDebug,
+    initUI,
     editorInstances,
     resetChapterCount
 };

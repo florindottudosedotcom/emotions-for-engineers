@@ -3,61 +3,60 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Universal Course Creator</title>
+    <title>Universal Course Creator - Launcher</title>
     <link rel="stylesheet" href="./assets/css/course-creator.css" />
 </head>
 <body>
     <div class="main-container">
-        <div class="header-container">
-            <h1>Universal Course Creator</h1>
-        </div>
+        <h1>Universal Course Creator</h1>
+        <p>Welcome! This tool helps you generate entire courses using various AI models. Choose your preferred AI provider below to get started.</p>
 
         <div class="launcher-container">
             <a href="cloud_creator.html" target="_blank" class="launcher-btn cloud">
-                <div class="icon">☁️</div>
-                <div>Cloud AI</div>
+                <span class="icon">☁️</span>
+                <span>Cloud AI</span>
             </a>
             <a href="webllm_creator.html" target="_blank" class="launcher-btn webllm">
-                <div class="icon">🧠</div>
-                <div>WebLLM (In-Browser)</div>
+                <span class="icon">🧠</span>
+                <span>WebLLM (In-Browser)</span>
             </a>
-            <a href="ollama_creator.html" target="_blank" class="launcher-btn ollama" id="ollama-btn">
-                <div class="icon">🖥️</div>
-                <div>Ollama (Local)</div>
+            <a href="ollama_creator.html" target="_blank" class="launcher-btn ollama" id="ollama-launcher">
+                <span class="icon">🖥️</span>
+                <span>Ollama (Local)</span>
             </a>
         </div>
 
-        <div id="help-section" class="help-section">
-            <h2>How to Use This Tool</h2>
-            <h4>Welcome to the Universal Course Creator!</h4>
-            <p>This tool helps you generate entire courses using various AI models.</p>
-            <h5><strong>How to Use:</strong></h5>
+        <div class="help-section">
+            <h2>How It Works</h2>
             <ol>
                 <li><strong>Select an AI Provider:</strong>
                     <ul>
-                        <li>☁️ <strong>Cloud AI:</strong> Use powerful models from OpenAI, Anthropic, and Google. You'll need to provide your own API keys in the 'Settings' menu of the Cloud AI page.</li>
-                        <li>🧠 <strong>WebLLM:</strong> Run a language model directly in your browser. No server or keys needed, but it may be slower.</li>
-                        <li>🖥️ <strong>Ollama (Local):</strong> Connect to a running Ollama instance on your local machine to use your own models.</li>
+                        <li>☁️ <strong>Cloud AI:</strong> Use powerful models from OpenAI, Anthropic, and Google. You'll need to provide your own API keys.</li>
+                        <li>🧠 <strong>WebLLM:</strong> Run a language model directly in your browser. No server or keys needed, but it may be slower and requires a modern browser.</li>
+                        <li>🖥️ <strong>Ollama (Local):</strong> Connect to a running Ollama instance on your local machine to use your own models. This option is only available when running the tool on your local machine.</li>
                     </ul>
                 </li>
-                <li><strong>Enter a Course Prompt:</strong> In the 'Master AI Assistant' section of your chosen creator page, describe the course you want to create. Be as specific as possible!</li>
+                <li><strong>Enter a Course Prompt:</strong> In the 'Master AI Assistant' section of the creator page, describe the course you want to create. Be as specific as possible!</li>
                 <li><strong>Generate Course:</strong> Click "Generate Entire Course". The AI will first generate a title and description, then proceed to generate content for each chapter.</li>
                 <li><strong>Review and Edit:</strong> Once generated, you can review and edit the content of each chapter in the editor.</li>
-                <li><strong>Download:</strong> When you're happy with the course, click "Generate Course Files" at the bottom to download a .zip file containing all the course materials.</li>
+                <li><strong>Download:</strong> When you're happy with the course, click "Generate Course Files" at the bottom to download a .zip file containing all the course materials, ready to be used in a static site generator like MkDocs.</li>
             </ol>
         </div>
     </div>
 
     <script>
         document.addEventListener('DOMContentLoaded', () => {
-            const ollamaBtn = document.getElementById('ollama-btn');
+            const ollamaLauncher = document.getElementById('ollama-launcher');
             const isLocal = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1' || window.location.protocol === 'file:';
 
             if (!isLocal) {
-                ollamaBtn.classList.add('disabled');
-                ollamaBtn.title = "Ollama is only available when running on localhost.";
+                ollamaLauncher.classList.add('disabled');
+                ollamaLauncher.href = '#';
+                ollamaLauncher.title = 'Ollama is only available when running this tool locally.';
+                ollamaLauncher.addEventListener('click', (e) => e.preventDefault());
             }
         });
     </script>
+
 </body>
 </html>
