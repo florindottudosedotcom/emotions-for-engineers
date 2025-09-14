@@ -76,9 +76,10 @@ document.addEventListener('DOMContentLoaded', async () => {
     // Initialize provider with DOM elements
     currentProvider.init(dom, appState);
 
-    // Make provider globally available
+    // Make modules globally available
     window.currentProvider = currentProvider;
     window.stateModule = State;
+    window.UI = UI;
 
     // Init Modules
     UI.initUI(dom);

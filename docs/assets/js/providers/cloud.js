@@ -18,6 +18,7 @@ export const CloudProvider = {
                     <label for="api-key-input" class="label-no-shrink-no-margin">API Key:</label>
                     <input type="password" id="api-key-input" placeholder="Your API key" class="input-flex-grow">
                 </div>
+                <div id="connection-status" class="status-display"></div>
             </fieldset>
         `;
     },
@@ -26,22 +27,86 @@ export const CloudProvider = {
         // Set provider type
         appState.AI_PROVIDER = 'cloud';
 
+        // Initialize session storage for API keys
+        if (!appState.SESSION_API_KEYS) {
+            appState.SESSION_API_KEYS = this.getApiKeysFromSession();
+        }
+
         // Get provider-specific DOM elements
         dom.aiProviderSelect = document.getElementById('ai-provider-select');
         dom.apiKeyInput = document.getElementById('api-key-input');
+        dom.connectionStatus = document.getElementById('connection-status');
 
         // Event listeners
         dom.aiProviderSelect.addEventListener('change', () => {
+            const provider = dom.aiProviderSelect.value;
+            dom.apiKeyInput.value = '';
+            appState.AI_PROVIDER = provider;
+            // Clear all session keys when provider changes
+            Object.keys(appState.SESSION_API_KEYS).forEach(key => {
+                appState.SESSION_API_KEYS[key] = null;
+            });
+            if (window.UI && window.UI.updateConnectionStatus) {
+                window.UI.updateConnectionStatus(`Provider changed to ${provider}. Please enter an API key.`, 'warning');
+            }
             if (window.stateModule && window.stateModule.saveState) {
                 window.stateModule.saveState();
             }
         });
 
         dom.apiKeyInput.addEventListener('input', () => {
+            const provider = dom.aiProviderSelect.value;
+            const key = dom.apiKeyInput.value;
+            appState.SESSION_API_KEYS[provider] = key;
+            this.saveApiKeysToSession(appState.SESSION_API_KEYS);
+
+            if (key && window.UI && window.UI.updateConnectionStatus) {
+                window.UI.updateConnectionStatus(`✅ ${provider.charAt(0).toUpperCase() + provider.slice(1)} is ready.`, 'success');
+            } else if (window.UI && window.UI.updateConnectionStatus) {
+                window.UI.updateConnectionStatus(`Provider for ${provider} is not configured.`, 'warning');
+            }
+
             if (window.stateModule && window.stateModule.saveState) {
                 window.stateModule.saveState();
             }
         });
+
+        // Initialize with current provider status
+        this.initializeProviderStatus(dom, appState);
+    },
+
+    initializeProviderStatus(dom, appState) {
+        const currentProvider = dom.aiProviderSelect.value;
+        appState.AI_PROVIDER = currentProvider;
+        const apiKey = appState.SESSION_API_KEYS[currentProvider];
+
+        if (apiKey) {
+            dom.apiKeyInput.value = apiKey;
+            if (window.UI && window.UI.updateConnectionStatus) {
+                window.UI.updateConnectionStatus(`✅ ${currentProvider.charAt(0).toUpperCase() + currentProvider.slice(1)} is ready.`, 'success');
+            }
+        } else {
+            if (window.UI && window.UI.updateConnectionStatus) {
+                window.UI.updateConnectionStatus(`Provider set to ${currentProvider}. Please enter an API key.`, 'warning');
+            }
+        }
+    },
+
+    getApiKeysFromSession() {
+        try {
+            const keys = sessionStorage.getItem('courseCreatorApiKeys');
+            return keys ? JSON.parse(keys) : { openai: null, anthropic: null, google: null };
+        } catch (e) {
+            return { openai: null, anthropic: null, google: null };
+        }
+    },
+
+    saveApiKeysToSession(keys) {
+        try {
+            sessionStorage.setItem('courseCreatorApiKeys', JSON.stringify(keys));
+        } catch (e) {
+            console.warn('Failed to save API keys to session storage:', e);
+        }
     },
 
     async generateText(prompt) {
@@ -125,8 +190,8 @@ export const CloudProvider = {
     saveStateExtensions(state) {
         return {
             ...state,
-            aiProvider: document.getElementById('ai-provider-select')?.value || 'openai',
-            apiKey: document.getElementById('api-key-input')?.value || ''
+            aiProvider: document.getElementById('ai-provider-select')?.value || 'openai'
+            // Note: API keys are saved to session storage, not local storage for security
         };
     },
 
