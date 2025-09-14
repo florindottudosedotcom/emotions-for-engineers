@@ -100,31 +100,51 @@ document.addEventListener('DOMContentLoaded', async () => {
     Course.initCourse(dom, UI, API, State);
     State.initState(dom, appState, UI);
 
-    // Common Event Listeners
-    dom.generateCourseBtn.addEventListener('click', Course.generateCourse);
-    dom.enhancePromptBtn.addEventListener('click', Course.enhancePrompt);
-    dom.addChapterBtn.addEventListener('click', UI.addChapter);
-    dom.clearFormBtn.addEventListener('click', State.clearState);
-    dom.courseForm.addEventListener('submit', (e) => {
-        e.preventDefault();
-        Course.generateCourseFiles();
-    });
+    // Common Event Listeners (with null checks for slides creator pages)
+    if (dom.generateCourseBtn) {
+        dom.generateCourseBtn.addEventListener('click', Course.generateCourse);
+    }
+    if (dom.enhancePromptBtn) {
+        dom.enhancePromptBtn.addEventListener('click', Course.enhancePrompt);
+    }
+    if (dom.addChapterBtn) {
+        dom.addChapterBtn.addEventListener('click', UI.addChapter);
+    }
+    if (dom.clearFormBtn) {
+        dom.clearFormBtn.addEventListener('click', State.clearState);
+    }
+    if (dom.courseForm) {
+        dom.courseForm.addEventListener('submit', (e) => {
+            e.preventDefault();
+            Course.generateCourseFiles();
+        });
+    }
 
     // --- State Persistence ---
     const debouncedSave = debounce(State.saveState, 300);
-    dom.courseNameInput.addEventListener('input', debouncedSave);
-    dom.courseDescTextarea.addEventListener('input', debouncedSave);
-    dom.masterPromptTextarea.addEventListener('input', debouncedSave);
-    dom.numChaptersSelect.addEventListener('change', State.saveState);
-    dom.chapterContentContainer.addEventListener('input', (e) => {
-        if (e.target.classList.contains('chapter-title')) {
-            debouncedSave();
-        }
-    });
+    if (dom.courseNameInput) {
+        dom.courseNameInput.addEventListener('input', debouncedSave);
+    }
+    if (dom.courseDescTextarea) {
+        dom.courseDescTextarea.addEventListener('input', debouncedSave);
+    }
+    if (dom.masterPromptTextarea) {
+        dom.masterPromptTextarea.addEventListener('input', debouncedSave);
+    }
+    if (dom.numChaptersSelect) {
+        dom.numChaptersSelect.addEventListener('change', State.saveState);
+    }
+    if (dom.chapterContentContainer) {
+        dom.chapterContentContainer.addEventListener('input', (e) => {
+            if (e.target.classList.contains('chapter-title')) {
+                debouncedSave();
+            }
+        });
+    }
 
     // Initial Load
     State.loadState();
-    if (dom.chapterContentContainer.children.length === 0) {
+    if (dom.chapterContentContainer && dom.chapterContentContainer.children.length === 0) {
         UI.addChapter();
     }
 });

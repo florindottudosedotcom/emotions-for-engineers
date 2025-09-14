@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; frame-src 'self'; img-src 'self' data: blob:; connect-src 'self' https://api.openai.com https://api.anthropic.com https://generativelanguage.googleapis.com; font-src 'self'; object-src 'none'; base-uri 'self'; form-action 'self'; worker-src 'self' blob:;">
+    <meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self' 'unsafe-inline' https://cdnjs.cloudflare.com https://unpkg.com; style-src 'self' 'unsafe-inline'; frame-src 'self'; img-src 'self' data: blob:; connect-src 'self' https://api.openai.com https://api.anthropic.com https://generativelanguage.googleapis.com https://cdnjs.cloudflare.com https://unpkg.com; font-src 'self'; object-src 'none'; base-uri 'self'; form-action 'self'; worker-src 'self' blob:;">
     <title>Cloud AI Slides Creator</title>
     <link rel="stylesheet" href="./assets/css/course-creator.css" />
     <style>
@@ -93,6 +93,86 @@
             opacity: 0.8;
             font-size: 0.9em;
         }
+
+        /* Theme selector styles */
+        .theme-selector-container {
+            margin: 20px 0;
+        }
+
+        .theme-selector h3 {
+            margin: 0 0 15px 0;
+            color: #333;
+        }
+
+        .theme-tiles {
+            display: flex;
+            gap: 15px;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+
+        .theme-tile {
+            cursor: pointer;
+            border: 3px solid #ddd;
+            border-radius: 8px;
+            padding: 10px;
+            background: white;
+            transition: all 0.2s ease;
+            text-align: center;
+            min-width: 120px;
+        }
+
+        .theme-tile:hover {
+            border-color: #007bff;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+        }
+
+        .theme-tile.selected {
+            border-color: #007bff;
+            background: #f0f8ff;
+            box-shadow: 0 4px 8px rgba(0,123,255,0.2);
+        }
+
+        .theme-colors {
+            display: flex;
+            gap: 3px;
+            margin-bottom: 8px;
+            justify-content: center;
+        }
+
+        .theme-color {
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            border: 1px solid rgba(255,255,255,0.3);
+        }
+
+        .theme-name {
+            font-size: 0.85em;
+            font-weight: 500;
+            color: #666;
+        }
+
+        /* Editable slide styles */
+        .slide-preview.editable-slide {
+            transition: transform 0.2s ease;
+        }
+
+        .slide-preview.editable-slide:hover {
+            transform: translateY(-2px);
+        }
+
+        .slide-controls-inline {
+            background: rgba(0,0,0,0.1);
+            border-radius: 6px;
+            padding: 8px;
+        }
+
+        [contenteditable="true"]:focus {
+            outline: 2px solid var(--accent-color, #60a5fa);
+            background: rgba(255,255,255,0.1);
+        }
     </style>
 </head>
 <body>
@@ -114,6 +194,10 @@
             <div class="input-group">
                 <label for="num-slides" class="label-no-shrink-no-margin">Number of Slides:</label>
                 <select id="num-slides" class="select-no-margin">
+                    <option value="1">1</option>
+                    <option value="2">2</option>
+                    <option value="3">3</option>
+                    <option value="4">4</option>
                     <option value="5">5</option>
                     <option value="6">6</option>
                     <option value="8" selected>8</option>
@@ -130,13 +214,14 @@
         <hr class="hr-margin">
 
         <!-- Presentation Preview Section -->
-        <div id="presentation-section" style="display: none;">
+        <div id="presentation-section" style="display: block;">
             <div class="presentation-preview">
                 <h2 id="presentation-title">Presentation Title</h2>
                 <p class="slide-counter"><span id="total-slides">0</span> slides generated</p>
             </div>
 
             <div class="slide-controls">
+                <button type="button" id="add-slide-btn" class="btn btn-primary">➕ Add Slide</button>
                 <button type="button" id="preview-presentation-btn" class="btn btn-secondary">📊 Preview Presentation</button>
                 <button type="button" id="regenerate-slides-btn" class="btn btn-outline">🔄 Regenerate</button>
             </div>
@@ -174,6 +259,8 @@
 
     <!-- JS Libraries -->
     <script src="./assets/js/jszip/3.10.1/jszip.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://unpkg.com/pptxgenjs@3.12.0/dist/pptxgen.bundle.js"></script>
 
     <!-- Main Application Logic -->
     <script>

@@ -5,6 +5,12 @@ let ui = {};
 const LOCAL_STORAGE_KEY = "courseCreatorState";
 
 function saveState() {
+    // Skip if we're on slides creator pages (no course elements)
+    if (!dom.chapterContentContainer || !dom.courseNameInput) {
+        console.log('Skipping saveState - not on course creator page');
+        return;
+    }
+
     const chapters = [];
     // The chapter content divs are now the source of truth for order and ID
     dom.chapterContentContainer.querySelectorAll('.chapter-content').forEach(contentDiv => {
@@ -18,15 +24,15 @@ function saveState() {
     });
 
     // Find active tab
-    const activeTab = dom.chapterTabsContainer.querySelector('.tab-link.active');
+    const activeTab = dom.chapterTabsContainer ? dom.chapterTabsContainer.querySelector('.tab-link.active') : null;
     const activeTabIndex = activeTab ? Array.from(dom.chapterTabsContainer.querySelectorAll('.tab-link')).indexOf(activeTab) : 0;
 
     let appState = {
-        courseName: dom.courseNameInput.value,
-        courseDesc: dom.courseDescTextarea.value,
+        courseName: dom.courseNameInput ? dom.courseNameInput.value : '',
+        courseDesc: dom.courseDescTextarea ? dom.courseDescTextarea.value : '',
         chapters: chapters,
-        masterPrompt: dom.masterPromptTextarea.value,
-        numChapters: dom.numChaptersSelect.value,
+        masterPrompt: dom.masterPromptTextarea ? dom.masterPromptTextarea.value : '',
+        numChapters: dom.numChaptersSelect ? dom.numChaptersSelect.value : '5',
         activeTabIndex: activeTabIndex
     };
 
@@ -40,16 +46,22 @@ function saveState() {
 }
 
 function loadState() {
+    // Skip if we're on slides creator pages (no course elements)
+    if (!dom.chapterContentContainer || !dom.courseNameInput) {
+        console.log('Skipping loadState - not on course creator page');
+        return;
+    }
+
     const savedState = localStorage.getItem(LOCAL_STORAGE_KEY);
     if (!savedState) return;
 
     console.log("Found saved state, loading...");
     const loadedState = JSON.parse(savedState);
 
-    dom.courseNameInput.value = loadedState.courseName || '';
-    dom.courseDescTextarea.value = loadedState.courseDesc || '';
-    dom.masterPromptTextarea.value = loadedState.masterPrompt || '';
-    dom.numChaptersSelect.value = loadedState.numChapters || '5';
+    if (dom.courseNameInput) dom.courseNameInput.value = loadedState.courseName || '';
+    if (dom.courseDescTextarea) dom.courseDescTextarea.value = loadedState.courseDesc || '';
+    if (dom.masterPromptTextarea) dom.masterPromptTextarea.value = loadedState.masterPrompt || '';
+    if (dom.numChaptersSelect) dom.numChaptersSelect.value = loadedState.numChapters || '5';
 
     // Load provider-specific state extensions
     if (window.currentProvider && window.currentProvider.loadStateExtensions) {
@@ -57,46 +69,50 @@ function loadState() {
     }
 
     // Clear existing chapter UI
-    dom.chapterTabsContainer.innerHTML = '';
-    dom.chapterContentContainer.innerHTML = '';
-    Object.keys(ui.editorInstances).forEach(key => delete ui.editorInstances[key]);
-    ui.resetChapterCount(); // Reset the counter in UI module
+    if (dom.chapterTabsContainer) dom.chapterTabsContainer.innerHTML = '';
+    if (dom.chapterContentContainer) dom.chapterContentContainer.innerHTML = '';
+    if (ui.editorInstances) {
+        Object.keys(ui.editorInstances).forEach(key => delete ui.editorInstances[key]);
+    }
+    if (ui.resetChapterCount) ui.resetChapterCount(); // Reset the counter in UI module
 
-    if (loadedState.chapters && loadedState.chapters.length > 0) {
+    if (loadedState.chapters && loadedState.chapters.length > 0 && ui.addChapter) {
         loadedState.chapters.forEach(chapterData => {
             ui.addChapter(); // This creates the tab and content pane with correct event listeners
 
             // The new chapter is always the last one added, with an ID managed by ui.js
-            const newChapterId = Object.keys(ui.editorInstances).pop();
+            const newChapterId = ui.editorInstances ? Object.keys(ui.editorInstances).pop() : null;
 
-            const titleInput = document.getElementById(`chapter-title-${newChapterId}`);
-            if (titleInput) {
-                titleInput.value = chapterData.title;
-                // Update tab tooltip but keep text as "Chapter X"
-                const tabButton = dom.chapterTabsContainer.querySelector(`[data-chapter-id="${newChapterId}"]`);
-                if (tabButton) {
-                    tabButton.textContent = `Chapter ${newChapterId}`;
-                    tabButton.title = chapterData.title.trim() ? `Chapter ${newChapterId}: ${chapterData.title.trim()}` : `Chapter ${newChapterId}`;
+            if (newChapterId) {
+                const titleInput = document.getElementById(`chapter-title-${newChapterId}`);
+                if (titleInput) {
+                    titleInput.value = chapterData.title;
+                    // Update tab tooltip but keep text as "Chapter X"
+                    const tabButton = dom.chapterTabsContainer ? dom.chapterTabsContainer.querySelector(`[data-chapter-id="${newChapterId}"]`) : null;
+                    if (tabButton) {
+                        tabButton.textContent = `Chapter ${newChapterId}`;
+                        tabButton.title = chapterData.title.trim() ? `Chapter ${newChapterId}: ${chapterData.title.trim()}` : `Chapter ${newChapterId}`;
+                    }
                 }
-            }
 
-            const editorInstance = ui.editorInstances[newChapterId];
-            if (editorInstance) {
-                // Set content directly; iframe readiness will be handled by message queue
-                editorInstance.pendingContent = chapterData.content;
-                editorInstance.content = chapterData.content;
+                const editorInstance = ui.editorInstances ? ui.editorInstances[newChapterId] : null;
+                if (editorInstance) {
+                    // Set content directly; iframe readiness will be handled by message queue
+                    editorInstance.pendingContent = chapterData.content;
+                    editorInstance.content = chapterData.content;
+                }
             }
         });
 
         // After loading all chapters, activate the previously active tab or first one
-        const tabs = dom.chapterTabsContainer.querySelectorAll('.tab-link');
+        const tabs = dom.chapterTabsContainer ? dom.chapterTabsContainer.querySelectorAll('.tab-link') : [];
         const activeTabIndex = loadedState.activeTabIndex || 0;
         const tabToActivate = tabs[activeTabIndex] || tabs[0];
         if (tabToActivate) {
             tabToActivate.click();
         }
 
-    } else {
+    } else if (ui.addChapter) {
         // If no chapters in state, add one default chapter
         ui.addChapter();
     }
