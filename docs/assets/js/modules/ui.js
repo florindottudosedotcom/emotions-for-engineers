@@ -18,6 +18,37 @@ function hideHelpModal() {
     dom.helpModal.classList.remove('visible');
 }
 
+function showOverwriteConfirmModal() {
+    return new Promise((resolve) => {
+        const modal = document.getElementById('overwrite-modal');
+        const yesBtn = document.getElementById('overwrite-yes-btn');
+        const cancelBtn = document.getElementById('overwrite-cancel-btn');
+
+        if (!modal || !yesBtn || !cancelBtn) {
+            resolve(true); // Failsafe: if modal doesn't exist, act as if user confirmed.
+            return;
+        }
+
+        const cleanup = () => {
+            yesBtn.replaceWith(yesBtn.cloneNode(true));
+            cancelBtn.replaceWith(cancelBtn.cloneNode(true));
+            modal.classList.remove('visible');
+        };
+
+        yesBtn.onclick = () => {
+            cleanup();
+            resolve(true);
+        };
+
+        cancelBtn.onclick = () => {
+            cleanup();
+            resolve(false);
+        };
+
+        modal.classList.add('visible');
+    });
+}
+
 function addChapter() {
     chapterCount++;
     const chapterId = chapterCount;
@@ -38,10 +69,7 @@ function addChapter() {
         <div class="chapter">
             <div class="chapter-header">
                 <h3>Chapter ${chapterId}</h3>
-                <div class="chapter-buttons">
-                    <button type="button" class="btn btn-secondary generate-chapter-btn" data-chapter-id="${chapterId}">Generate Chapter</button>
-                    <button type="button" class="btn btn-danger remove-chapter-btn" data-chapter-id="${chapterId}">Remove Chapter</button>
-                </div>
+                <button type="button" class="btn btn-danger remove-chapter-btn" data-chapter-id="${chapterId}">Remove Chapter</button>
             </div>
             <label for="chapter-title-${chapterId}">Chapter Title</label>
             <input type="text" id="chapter-title-${chapterId}" class="chapter-title" placeholder="e.g., Getting Started" required>
@@ -149,6 +177,7 @@ export {
     hideSettingsModal,
     showHelpModal,
     hideHelpModal,
+    showOverwriteConfirmModal,
     addChapter,
     updateAiStatus,
     updateOllamaStatus,
