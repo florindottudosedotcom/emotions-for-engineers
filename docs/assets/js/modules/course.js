@@ -165,6 +165,13 @@ async function generateChaptersInLoop() {
         }
     }
     ui.updateAiStatus("✅ All chapters have been successfully generated!");
+
+    // After generating all chapters, activate the first tab for a consistent UX
+    const firstTab = dom.chapterTabsContainer.querySelector('.tab-link');
+    if (firstTab) {
+        firstTab.click();
+    }
+
     stateModule.saveState();
     setTimeout(() => { ui.updateAiStatus(null); }, 5000);
 }
