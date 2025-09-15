@@ -300,7 +300,7 @@ function addClearButtonToBottom() {
     clearSlidesBtn.type = 'button';
     clearSlidesBtn.className = 'btn btn-outline clear-slides-bottom-btn';
     clearSlidesBtn.textContent = '× Clear All Slides';
-    clearSlidesBtn.style.cssText = 'background-color: #dc3545; color: white; border-color: #dc3545;';
+    clearSlidesBtn.style.cssText = 'border: 2px solid #dc3545; color: #dc3545; background-color: transparent; display: inline-flex; align-items: center; gap: 0.5rem;';
     clearSlidesBtn.addEventListener('click', clearAllSlides);
 
     // Add buttons to container
@@ -674,7 +674,7 @@ function createSlidePreviewElement(slide, slideNumber) {
         const addPointBtn = document.createElement('button');
         addPointBtn.textContent = '➕ Add Point';
         addPointBtn.className = 'add-content-btn';
-        addPointBtn.style.cssText = 'margin-top: 10px; padding: 5px 10px; font-size: 12px; background: var(--accent-color, #60a5fa); color: white; border: none; border-radius: 4px; cursor: pointer;';
+        addPointBtn.style.cssText = 'margin-top: 10px; padding: 5px 10px; font-size: 12px; border: 2px solid var(--primary-color, #1976d2); color: var(--primary-color, #1976d2); background-color: transparent; border-radius: 4px; cursor: pointer; display: inline-flex; align-items: center; gap: 0.25rem;';
         addPointBtn.addEventListener('click', () => addContentPoint(slideNumber - 1));
 
         contentContainer.appendChild(contentList);

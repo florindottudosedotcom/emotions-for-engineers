@@ -77,38 +77,47 @@ input[type="checkbox"] { margin-right: 0.5rem; }
 .chapter-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem; }
 .btn {
     padding: var(--spacing-sm) var(--spacing-lg);
-    border: none;
+    border: 2px solid;
     border-radius: var(--radius-medium);
-    color: var(--text-on-primary);
     cursor: pointer;
     font-size: var(--font-size-base);
     font-family: var(--font-family);
     font-weight: 500;
     transition: all var(--transition-normal);
-    box-shadow: var(--shadow-light);
+    background-color: transparent;
+    box-shadow: none;
+    display: inline-flex;
+    align-items: center;
+    gap: var(--spacing-sm);
 }
 .btn:hover {
     transform: translateY(-1px);
-    box-shadow: var(--shadow-medium);
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
 }
 .btn-primary {
-    background-color: var(--primary-color);
+    border-color: var(--primary-color);
+    color: var(--primary-color);
+    background-color: var(--background-primary);
 }
 .btn-primary:hover {
-    background-color: var(--primary-dark);
+    background-color: var(--primary-light);
 }
 .btn-secondary {
-    background-color: var(--primary-color);
+    border-color: var(--primary-color);
+    color: var(--primary-color);
+    background-color: var(--background-primary);
 }
 .btn-secondary:hover {
-    background-color: var(--primary-dark);
+    background-color: var(--primary-light);
 }
 .btn-danger {
-    background-color: var(--error-color);
+    border-color: var(--error-color);
+    color: var(--error-color);
+    background-color: var(--background-primary);
     padding: var(--spacing-sm) var(--spacing-md);
 }
 .btn-danger:hover {
-    background-color: #c0392b;
+    background-color: var(--error-light);
 }
 
 .remove-chapter-btn {
@@ -120,8 +129,22 @@ input[type="checkbox"] { margin-right: 0.5rem; }
 .input-group input, .input-group textarea { flex-grow: 1; margin-bottom: 0 !important; }
 .prompt-textarea-large { min-height: 200px; resize: vertical; width: 100%; padding: 0.75rem; border: 1px solid #ccc; border-radius: 4px; box-sizing: border-box; margin-bottom: 0.75rem; }
 .prompt-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem; }
-.btn-ai { padding: 0.5rem 1rem; background-color: #9b59b6; color: #fff; border: none; border-radius: 4px; cursor: pointer; font-size: 0.9rem; }
-.btn-ai:hover { background-color: #8e44ad; transform: translateY(-1px); }
+.btn-ai {
+    padding: 0.5rem 1rem;
+    background-color: transparent;
+    color: #9b59b6;
+    border: 2px solid #9b59b6;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 0.9rem;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.25rem;
+}
+.btn-ai:hover {
+    background-color: rgba(155, 89, 182, 0.1);
+    transform: translateY(-1px);
+}
 .course-generation-section { margin-top: 1rem; }
 .ai-assistant { background-color: #f8f9fa; border: 1px solid #dee2e6; border-radius: 4px; padding: 1rem; margin-top: 1rem; }
 .ai-assistant h4 { margin-top: 0; }
@@ -241,10 +264,12 @@ input[type="checkbox"] { margin-right: 0.5rem; }
     box-shadow: 0 8px 15px rgba(0,0,0,0.2);
 }
 
-/* All launcher buttons now use primary blue color through btn-primary class */
+/* All launcher buttons now use outlined primary blue style through btn-primary class */
 
 .launcher-btn.disabled {
-    background-color: #bdc3c7;
+    border-color: #bdc3c7;
+    color: #bdc3c7;
+    background-color: var(--background-primary);
     cursor: not-allowed;
     pointer-events: none;
     transform: none;
@@ -339,8 +364,14 @@ input[type="checkbox"] { margin-right: 0.5rem; }
     font-size: 0.875rem;
     line-height: 1.5;
     border-radius: 0.2rem;
-    /* Ensure it doesn't conflict with other button styles */
-    background-color: #6c757d;
-    color: white;
+    border: 1px solid #6c757d;
+    background-color: transparent;
+    color: #6c757d;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.25rem;
+}
+.btn-sm:hover {
+    background-color: rgba(108, 117, 125, 0.1);
 }
 

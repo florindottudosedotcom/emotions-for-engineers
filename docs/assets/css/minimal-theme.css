@@ -80,7 +80,7 @@
     box-sizing: border-box;
 }
 
-/* Minimal Icon Definitions using CSS */
+/* Minimal Icon Definitions using CSS - inherit colors from parent */
 .icon-minimal {
     display: inline-flex;
     align-items: center;
@@ -90,35 +90,48 @@
     border-radius: var(--radius-small);
     font-size: var(--font-size-sm);
     font-weight: 600;
-    color: var(--text-on-primary);
-    background-color: var(--primary-color);
+    color: inherit;
+    background-color: transparent;
     margin-right: var(--spacing-sm);
 }
 
-/* Pure glyphicon variants - no emoji-like symbols */
-.icon-cloud::before { content: '◯'; background-color: var(--primary-color); }
-.icon-brain::before { content: '◉'; background-color: var(--primary-color); }
-.icon-desktop::before { content: '▢'; background-color: var(--primary-color); }
-.icon-slides::before { content: '▤'; background-color: var(--primary-color); }
-.icon-export::before { content: '↓'; background-color: var(--success-color); }
-.icon-generate::before { content: '✦'; background-color: var(--info-color); }
-.icon-edit::before { content: '✎'; background-color: var(--secondary-color); }
-.icon-delete::before { content: '×'; background-color: var(--error-color); }
-.icon-settings::before { content: '⚙'; background-color: var(--text-secondary); }
-.icon-help::before { content: '?'; background-color: var(--info-color); }
-.icon-document::before { content: '▢'; background-color: var(--primary-color); }
-.icon-palette::before { content: '◼'; background-color: var(--primary-color); }
-.icon-shape::before { content: '◆'; background-color: var(--primary-color); }
-.icon-image::before { content: '▢'; background-color: var(--primary-color); }
-.icon-notes::before { content: '≡'; background-color: var(--primary-color); }
+.icon-minimal::before {
+    color: inherit;
+}
 
-/* Pure glyphicon variants for main buttons */
+/* Pure glyphicon variants - inherit color from parent */
+.icon-cloud::before { content: '◯'; color: inherit; }
+.icon-brain::before { content: '◉'; color: inherit; }
+.icon-desktop::before { content: '▢'; color: inherit; }
+.icon-slides::before { content: '▤'; color: inherit; }
+.icon-export::before { content: '↓'; color: inherit; }
+.icon-generate::before { content: '✦'; color: inherit; }
+.icon-edit::before { content: '✎'; color: inherit; }
+.icon-delete::before { content: '×'; color: inherit; }
+.icon-settings::before { content: '⚙'; color: inherit; }
+.icon-help::before { content: '?'; color: inherit; }
+.icon-document::before { content: '▢'; color: inherit; }
+.icon-palette::before { content: '◼'; color: inherit; }
+.icon-shape::before { content: '◆'; color: inherit; }
+.icon-image::before { content: '▢'; color: inherit; }
+.icon-notes::before { content: '≡'; color: inherit; }
+
+/* Pure glyphicon variants for main buttons - outlined style */
 .icon-minimal.geometric {
     border-radius: 50%;
     width: 32px;
     height: 32px;
     font-size: var(--font-size-lg);
-    background-color: var(--primary-color);
+    background-color: transparent;
+    border: 2px solid currentColor;
+    color: inherit;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.icon-minimal.geometric::before {
+    color: inherit;
 }
 
 .icon-minimal.geometric.icon-cloud::before { content: '◯'; }
@@ -126,13 +139,13 @@
 .icon-minimal.geometric.icon-desktop::before { content: '▢'; }
 .icon-minimal.geometric.icon-slides::before { content: '▤'; }
 
-/* Base Button Styles */
+/* Base Button Styles - Outlined Design */
 .btn-minimal {
     display: inline-flex;
     align-items: center;
     justify-content: center;
     padding: var(--spacing-sm) var(--spacing-md);
-    border: none;
+    border: 2px solid;
     border-radius: var(--radius-medium);
     font-family: var(--font-family);
     font-size: var(--font-size-base);
@@ -140,64 +153,80 @@
     text-decoration: none;
     cursor: pointer;
     transition: all var(--transition-normal);
-    box-shadow: var(--shadow-light);
+    background-color: transparent;
     gap: var(--spacing-sm);
+    box-shadow: none;
 }
 
 .btn-minimal:hover {
     transform: translateY(-1px);
-    box-shadow: var(--shadow-medium);
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
 }
 
 .btn-minimal:active {
     transform: translateY(0);
-    box-shadow: var(--shadow-light);
-}
-
-/* Button Variants */
-.btn-primary {
-    background-color: var(--primary-color);
-    color: var(--text-on-primary);
-}
-
-.btn-primary:hover {
-    background-color: var(--primary-dark);
-}
-
-.btn-secondary {
-    background-color: var(--secondary-color);
-    color: var(--text-on-primary);
-}
-
-.btn-secondary:hover {
-    background-color: var(--secondary-dark);
-}
-
-.btn-success {
-    background-color: var(--success-color);
-    color: var(--text-on-primary);
-}
-
-.btn-warning {
-    background-color: var(--warning-color);
-    color: var(--text-on-primary);
-}
-
-.btn-error {
-    background-color: var(--error-color);
-    color: var(--text-on-primary);
-}
-
-.btn-outline {
-    background-color: transparent;
-    color: var(--primary-color);
-    border: 1px solid var(--primary-color);
     box-shadow: none;
 }
 
+/* Button Variants - Outlined Style */
+.btn-primary {
+    border-color: var(--primary-color);
+    color: var(--primary-color);
+    background-color: var(--background-primary);
+}
+
+.btn-primary:hover {
+    background-color: var(--primary-light);
+}
+
+.btn-secondary {
+    border-color: var(--secondary-color);
+    color: var(--secondary-color);
+    background-color: var(--background-primary);
+}
+
+.btn-secondary:hover {
+    background-color: var(--secondary-light);
+}
+
+.btn-success {
+    border-color: var(--success-color);
+    color: var(--success-color);
+    background-color: var(--background-primary);
+}
+
+.btn-success:hover {
+    background-color: var(--success-light);
+}
+
+.btn-warning {
+    border-color: var(--warning-color);
+    color: var(--warning-color);
+    background-color: var(--background-primary);
+}
+
+.btn-warning:hover {
+    background-color: var(--warning-light);
+}
+
+.btn-error {
+    border-color: var(--error-color);
+    color: var(--error-color);
+    background-color: var(--background-primary);
+}
+
+.btn-error:hover {
+    background-color: var(--error-light);
+}
+
+.btn-outline {
+    border-color: var(--primary-color);
+    color: var(--primary-color);
+    background-color: transparent;
+}
+
 .btn-outline:hover {
-    background-color: var(--primary-color);
-    color: var(--text-on-primary);
+    background-color: var(--primary-light);
 }
 
 /* Input Styles */
@@ -296,8 +325,9 @@
 }
 
 .launcher-container .launcher-btn {
-    background-color: var(--primary-color, #1976d2) !important;
-    color: white !important;
+    border-color: var(--primary-color, #1976d2) !important;
+    color: var(--primary-color, #1976d2) !important;
+    background-color: transparent !important;
 }
 
 .grid-minimal {
