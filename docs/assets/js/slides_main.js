@@ -610,8 +610,9 @@ function parseSlideResponse(aiResponse) {
 
 function showSlideGenerationConfirmation() {
     return new Promise((resolve) => {
-        // Create modal overlay
+        // Create modal using the same design pattern as course creator
         const modal = document.createElement('div');
+        modal.className = 'modal-overlay visible';
         modal.style.cssText = `
             position: fixed;
             top: 0;
@@ -623,98 +624,46 @@ function showSlideGenerationConfirmation() {
             align-items: center;
             justify-content: center;
             z-index: 1000;
-            backdrop-filter: blur(4px);
+            opacity: 1;
         `;
 
-        // Create modal content
         const modalContent = document.createElement('div');
-        modalContent.style.cssText = `
-            background: white;
-            border-radius: 12px;
-            padding: 30px;
-            width: 400px;
-            max-width: 90vw;
-            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.15);
-            text-align: center;
-        `;
-
+        modalContent.className = 'modal-content';
         modalContent.innerHTML = `
-            <div style="font-size: 48px; margin-bottom: 16px;">⚠️</div>
-            <h3 style="margin: 0 0 12px 0; color: #dc2626; font-size: 20px;">
-                Replace Existing Slides?
-            </h3>
-            <p style="margin: 0 0 24px 0; color: #6b7280; line-height: 1.5;">
-                You already have slides in your presentation. Generating new slides will
-                <strong>replace all existing content</strong>. This action cannot be undone.
-            </p>
-            <div style="display: flex; gap: 12px; justify-content: center;">
-                <button id="cancel-generation" style="
-                    padding: 12px 24px;
-                    border: 2px solid #d1d5db;
-                    background: white;
-                    border-radius: 8px;
-                    cursor: pointer;
-                    font-weight: 500;
-                    color: #374151;
-                    transition: all 0.2s ease;
-                ">
-                    Cancel
-                </button>
-                <button id="confirm-generation" style="
-                    padding: 12px 24px;
-                    border: 2px solid #dc2626;
-                    background: #dc2626;
-                    color: white;
-                    border-radius: 8px;
-                    cursor: pointer;
-                    font-weight: 500;
-                    transition: all 0.2s ease;
-                ">
-                    Replace Slides
-                </button>
+            <h2>Overwrite Existing Slides?</h2>
+            <p>You already have slides in your presentation. Generating new slides will replace all existing content. This action cannot be undone.</p>
+            <div class="input-group margin-top-1-5rem">
+                <button type="button" id="overwrite-slides-yes" class="btn btn-primary">✓ Yes, Replace Slides</button>
+                <button type="button" id="overwrite-slides-cancel" class="btn btn-danger margin-left-auto">× Cancel</button>
             </div>
         `;
 
         modal.appendChild(modalContent);
         document.body.appendChild(modal);
 
-        // Add hover effects
-        const cancelBtn = modal.querySelector('#cancel-generation');
-        const confirmBtn = modal.querySelector('#confirm-generation');
+        const yesBtn = modal.querySelector('#overwrite-slides-yes');
+        const cancelBtn = modal.querySelector('#overwrite-slides-cancel');
 
-        cancelBtn.addEventListener('mouseenter', () => {
-            cancelBtn.style.backgroundColor = '#f9fafb';
-            cancelBtn.style.borderColor = '#9ca3af';
-        });
-        cancelBtn.addEventListener('mouseleave', () => {
-            cancelBtn.style.backgroundColor = 'white';
-            cancelBtn.style.borderColor = '#d1d5db';
-        });
-
-        confirmBtn.addEventListener('mouseenter', () => {
-            confirmBtn.style.backgroundColor = '#b91c1c';
-            confirmBtn.style.borderColor = '#b91c1c';
-        });
-        confirmBtn.addEventListener('mouseleave', () => {
-            confirmBtn.style.backgroundColor = '#dc2626';
-            confirmBtn.style.borderColor = '#dc2626';
-        });
-
-        // Handle button clicks
-        cancelBtn.addEventListener('click', () => {
+        const cleanup = () => {
             modal.remove();
-            resolve(false);
-        });
+        };
 
-        confirmBtn.addEventListener('click', () => {
-            modal.remove();
+        yesBtn.addEventListener('click', () => {
+            cleanup();
+            // Clear existing slides and persistence like clearAllSlides() but without the confirm()
+            clearSlidesForGeneration();
             resolve(true);
-        });
+        }, { once: true });
+
+        cancelBtn.addEventListener('click', () => {
+            cleanup();
+            resolve(false);
+        }, { once: true });
 
         // Close on background click
         modal.addEventListener('click', (e) => {
             if (e.target === modal) {
-                modal.remove();
+                cleanup();
                 resolve(false);
             }
         });
@@ -722,13 +671,29 @@ function showSlideGenerationConfirmation() {
         // Close on Escape key
         const handleEscape = (e) => {
             if (e.key === 'Escape') {
-                modal.remove();
+                cleanup();
                 document.removeEventListener('keydown', handleEscape);
                 resolve(false);
             }
         };
         document.addEventListener('keydown', handleEscape);
     });
+}
+
+function clearSlidesForGeneration() {
+    // Clear slides data (similar to clearAllSlides but without the confirm dialog)
+    slidesAppState.currentSlideData = null;
+
+    // Clear localStorage persistence
+    localStorage.removeItem(SLIDES_STORAGE_KEY);
+    localStorage.removeItem(SLIDES_STORAGE_KEY + '_form');
+
+    // Hide the presentation section until new slides are generated
+    if (slidesDom.presentationSection) {
+        slidesDom.presentationSection.style.display = 'none';
+    }
+
+    console.log('Existing slides cleared for new generation');
 }
 
 async function generatePresentation() {
