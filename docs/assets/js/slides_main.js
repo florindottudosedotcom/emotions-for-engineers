@@ -688,10 +688,19 @@ function clearSlidesForGeneration() {
     localStorage.removeItem(SLIDES_STORAGE_KEY);
     localStorage.removeItem(SLIDES_STORAGE_KEY + '_form');
 
-    // Hide the presentation section until new slides are generated
-    if (slidesDom.presentationSection) {
-        slidesDom.presentationSection.style.display = 'none';
+    // Clear the slides display but keep the section visible
+    const slidesPreview = document.querySelector('.slides-preview');
+    if (slidesPreview) {
+        slidesPreview.innerHTML = '';
     }
+
+    // Ensure presentation section remains visible for the new generation
+    if (slidesDom.presentationSection) {
+        slidesDom.presentationSection.style.display = 'block';
+    }
+
+    // Update status to show clearing is complete
+    updateGenerationStatus('Existing slides cleared, ready for new generation...', 'success');
 
     console.log('Existing slides cleared for new generation');
 }
