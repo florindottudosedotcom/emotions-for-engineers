@@ -1407,16 +1407,16 @@ function generateStandaloneHTML(slideData, includeSpeakerNotes = false) {
             .slide {
                 page-break-after: always;
                 margin-bottom: 0;
-                height: 720px;
-                min-height: 720px;
-                max-height: 720px;
+                height: 540px;
+                min-height: 540px;
+                max-height: 540px;
             }
             .title-slide {
                 page-break-after: always;
                 margin-bottom: 0;
-                height: 720px;
-                min-height: 720px;
-                max-height: 720px;
+                height: 540px;
+                min-height: 540px;
+                max-height: 540px;
             }
             body {
                 background-color: white;
