@@ -1285,7 +1285,7 @@ function exportJSON(includeSpeakerNotes = false) {
     link.click();
     document.body.removeChild(link);
 
-    updateExportModalStatus('✅ JSON exported successfully!', 'success');
+    updateExportModalStatus('JSON exported successfully!', 'success');
 }
 
 function exportHTML(includeSpeakerNotes = false) {
@@ -1299,10 +1299,10 @@ function exportHTML(includeSpeakerNotes = false) {
     link.click();
     document.body.removeChild(link);
 
-    updateExportModalStatus('✅ HTML exported successfully!', 'success');
+    updateExportModalStatus('HTML exported successfully!', 'success');
 }
 
-function generateStandaloneHTML(slideData) {
+function generateStandaloneHTML(slideData, includeSpeakerNotes = false) {
     // Get current theme colors, fallback to default if no theme selected
     const theme = slidesAppState.currentTheme || {
         backgroundColor: '#ffffff',
@@ -1327,22 +1327,34 @@ function generateStandaloneHTML(slideData) {
         .title-slide {
             background-color: ${theme.backgroundColor};
             color: ${theme.textColor};
-            border: 2px solid ${theme.borderColor};
             border-radius: 8px;
             padding: 40px;
             margin-bottom: 30px;
             text-align: center;
             box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            width: 960px;
+            height: 540px;
+            max-width: 90vw;
+            margin: 0 auto 30px auto;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-sizing: border-box;
         }
         .slide {
             background-color: ${theme.backgroundColor};
             color: ${theme.textColor};
-            border: 2px solid ${theme.borderColor};
             border-radius: 8px;
             page-break-after: always;
             margin-bottom: 30px;
             padding: 40px;
             box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            width: 960px;
+            height: 540px;
+            max-width: 90vw;
+            margin: 0 auto 30px auto;
+            box-sizing: border-box;
+            position: relative;
         }
         h1 {
             margin: 0;
@@ -1374,10 +1386,13 @@ function generateStandaloneHTML(slideData) {
             margin-right: 10px;
         }
         .slide-number {
-            opacity: 0.6;
+            position: absolute;
+            bottom: 20px;
+            right: 20px;
+            opacity: 0.7;
             font-size: 0.9em;
-            margin-bottom: 15px;
             color: ${theme.textColor};
+            margin: 0;
         }
         .speaker-notes {
             margin-top: 20px;
@@ -1389,8 +1404,31 @@ function generateStandaloneHTML(slideData) {
             opacity: 0.8;
         }
         @media print {
-            .slide { page-break-after: always; }
-            body { background-color: white; }
+            .slide {
+                page-break-after: always;
+                margin-bottom: 0;
+                height: 720px;
+                min-height: 720px;
+                max-height: 720px;
+            }
+            .title-slide {
+                page-break-after: always;
+                margin-bottom: 0;
+                height: 720px;
+                min-height: 720px;
+                max-height: 720px;
+            }
+            body {
+                background-color: white;
+                margin: 0;
+                padding: 10mm;
+            }
+            /* Ensure rounded corners and colors are preserved in print */
+            * {
+                -webkit-print-color-adjust: exact !important;
+                color-adjust: exact !important;
+                print-color-adjust: exact !important;
+            }
         }
     </style>
 </head>
@@ -1400,153 +1438,250 @@ function generateStandaloneHTML(slideData) {
     </div>
     ${slideData.slides.map((slide, index) => `
         <div class="slide">
-            <div class="slide-number">Slide ${index + 1}</div>
+            <div class="slide-number">${index + 1}</div>
             <h2>${slide.title}</h2>
             ${slide.content && slide.content.length > 0 ?
                 `<ul>${slide.content.map(point => `<li>${point}</li>`).join('')}</ul>` : ''
             }
-            ${slide.speakerNotes ? `<div class="speaker-notes">Notes: ${slide.speakerNotes}</div>` : ''}
+            ${includeSpeakerNotes && slide.speakerNotes ? `<div class="speaker-notes">Notes: ${slide.speakerNotes}</div>` : ''}
         </div>
     `).join('')}
 </body>
 </html>`;
 }
 
-async function exportPDF() {
+async function exportPDF(includeSpeakerNotes = false) {
     try {
-        const { jsPDF } = window.jspdf;
-        const doc = new jsPDF('landscape', 'mm', 'a4');
+        // Debug: log available globals
+        console.log('Available PDF globals:', Object.keys(window).filter(k => k.toLowerCase().includes('pdf')));
+        console.log('Available canvas globals:', Object.keys(window).filter(k => k.toLowerCase().includes('canvas')));
+        console.log('window.jspdf:', typeof window.jspdf, window.jspdf);
+        console.log('window.jsPDF:', typeof window.jsPDF, window.jsPDF);
+        console.log('window.html2canvas:', typeof window.html2canvas);
+
+        // Check if jsPDF and html2canvas are available with better detection
+        let jsPDF, html2canvas;
+
+        // Try different ways jsPDF might be exposed
+        if (window.jspdf && window.jspdf.jsPDF) {
+            jsPDF = window.jspdf.jsPDF;
+            console.log('Using window.jspdf.jsPDF');
+        } else if (window.jsPDF) {
+            jsPDF = window.jsPDF;
+            console.log('Using window.jsPDF');
+        } else {
+            console.error('jsPDF not found in any expected location');
+            throw new Error('jsPDF library not loaded. Please refresh the page and try again.');
+        }
+
+        // Check html2canvas
+        if (typeof window.html2canvas === 'undefined') {
+            console.error('html2canvas not found');
+            throw new Error('html2canvas library not loaded. Please refresh the page and try again.');
+        }
+        html2canvas = window.html2canvas;
+        console.log('html2canvas loaded successfully');
 
         const slideData = slidesAppState.currentSlideData;
-        const pageWidth = doc.internal.pageSize.getWidth();
-        const pageHeight = doc.internal.pageSize.getHeight();
-        const margin = 20;
-        const contentWidth = pageWidth - (margin * 2);
+        updateExportModalStatus('Creating PDF document...', 'loading');
 
-        // Get current theme colors
-        const theme = slidesAppState.currentTheme || {
-            backgroundColor: '#ffffff',
-            textColor: '#000000',
-            borderColor: '#dddddd',
-            fillColor: '#f5f5f5'
-        };
+        // Create temporary container for rendering slides
+        const tempContainer = document.createElement('div');
+        tempContainer.style.cssText = `
+            position: fixed;
+            top: -10000px;
+            left: -10000px;
+            width: 960px;
+            background: white;
+            font-family: Arial, sans-serif;
+            box-sizing: border-box;
+        `;
+        document.body.appendChild(tempContainer);
 
-        const bgColor = hexToRgb(theme.backgroundColor) || { r: 255, g: 255, b: 255 };
-        const textColor = hexToRgb(theme.textColor) || { r: 40, g: 40, b: 40 };
-        const borderColor = hexToRgb(theme.borderColor) || { r: 200, g: 200, b: 200 };
+        const pdf = new jsPDF('landscape', 'mm', 'a4');
+        let isFirstPage = true;
 
-        // Title slide with theme colors (no border)
-        // Apply background color only
-        doc.setFillColor(bgColor.r, bgColor.g, bgColor.b);
-        doc.rect(0, 0, pageWidth, pageHeight, 'F');
+        // Add title page
+        const titleHtml = createTitleSlideHTML(slideData.title);
+        tempContainer.innerHTML = titleHtml;
 
-        // Title text
-        doc.setFontSize(28);
-        doc.setTextColor(textColor.r, textColor.g, textColor.b);
-        const titleText = slideData.title || 'Presentation';
-        const titleWidth = doc.getTextWidth(titleText);
-        doc.text(titleText, (pageWidth - titleWidth) / 2, pageHeight / 2);
-
-        // Page number for title slide
-        doc.setFontSize(10);
-        doc.setTextColor(textColor.r, textColor.g, textColor.b);
-        doc.text('1', pageWidth - margin, pageHeight - margin);
-
-        // Content slides
-        slideData.slides.forEach((slide, index) => {
-            doc.addPage();
-
-            // Apply theme background color only (no border)
-            doc.setFillColor(bgColor.r, bgColor.g, bgColor.b);
-            doc.rect(0, 0, pageWidth, pageHeight, 'F');
-
-            // Set text color from theme
-            doc.setTextColor(textColor.r, textColor.g, textColor.b);
-
-            // Slide title (centered)
-            doc.setFontSize(18);
-            const lines = doc.splitTextToSize(slide.title, contentWidth);
-            const titleWidth = doc.getTextWidth(slide.title);
-            const titleX = titleWidth > contentWidth ? margin : (pageWidth - titleWidth) / 2;
-            doc.text(lines, titleX, margin + 15);
-
-            let yPosition = margin + 30 + (lines.length - 1) * 7;
-
-            // Page number (bottom right)
-            doc.setFontSize(10);
-            doc.text(`${index + 2}`, pageWidth - margin, pageHeight - margin);
-
-            // Slide content with theme colors and rounded bullet points
-            if (slide.content && slide.content.length > 0) {
-                doc.setFontSize(12);
-                doc.setTextColor(textColor.r, textColor.g, textColor.b);
-
-                slide.content.forEach((point, pointIndex) => {
-                    // Add bullet point background with rounded corners like HTML
-                    const fillColor = hexToRgb(theme.fillColor) || { r: 245, g: 245, b: 245 };
-                    doc.setFillColor(fillColor.r, fillColor.g, fillColor.b);
-                    doc.setDrawColor(borderColor.r, borderColor.g, borderColor.b);
-                    doc.setLineWidth(0.3); // Thinner line like HTML (was 0.5)
-
-                    const bulletLines = doc.splitTextToSize(`• ${point}`, contentWidth - 20);
-                    const rectHeight = bulletLines.length * 6 + 6; // Slightly less padding
-                    const rectWidth = contentWidth - 10;
-                    const rectX = margin + 5;
-                    const rectY = yPosition - 3;
-                    const cornerRadius = 1.5; // Slightly smaller corners for better match
-
-                    // Simple rectangle approach for PDF (skip rounded corners for now)
-                    // Fill background
-                    doc.setFillColor(fillColor.r, fillColor.g, fillColor.b);
-                    doc.rect(rectX, rectY, rectWidth, rectHeight, 'F');
-
-                    // Draw border
-                    doc.setDrawColor(borderColor.r, borderColor.g, borderColor.b);
-                    doc.setLineWidth(0.3);
-                    doc.rect(rectX, rectY, rectWidth, rectHeight, 'D');
-
-                    // Add bullet text with consistent font and vertical centering
-                    doc.setFont('helvetica', 'normal');  // Consistent with Arial in HTML
-                    doc.setFontSize(12);  // Consistent with 14px in HTML (PDF scaling)
-                    doc.setTextColor(textColor.r, textColor.g, textColor.b);
-
-                    // Calculate vertical center position for text
-                    const textHeight = bulletLines.length * 4; // Approximate line height in PDF units
-                    const textY = yPosition + (rectHeight / 2) + (textHeight / 4); // Center vertically
-
-                    doc.text(bulletLines, margin + 12, textY);
-                    yPosition += rectHeight + 4; // Less spacing between bullets
-                });
-            }
-
-            // Speaker notes with simple line separator
-            if (slide.speakerNotes) {
-                yPosition += 15;
-
-                // Draw a simple line above the notes using border color
-                doc.setDrawColor(borderColor.r, borderColor.g, borderColor.b);
-                doc.setLineWidth(0.3); // Same weight as bullet point borders
-                doc.line(margin, yPosition - 5, margin + contentWidth, yPosition - 5);
-
-                // Add notes text
-                doc.setFontSize(10);
-                doc.setTextColor(textColor.r, textColor.g, textColor.b);
-                const notesLines = doc.splitTextToSize(`Notes: ${slide.speakerNotes}`, contentWidth);
-                doc.text(notesLines, margin, yPosition + 3);
-            }
+        updateExportModalStatus('Rendering title page...', 'loading');
+        const titleCanvas = await html2canvas(tempContainer, {
+            scale: 2,
+            useCORS: true,
+            allowTaint: true,
+            backgroundColor: null
         });
+
+        if (isFirstPage) {
+            isFirstPage = false;
+        } else {
+            pdf.addPage();
+        }
+
+        const titleImgData = titleCanvas.toDataURL('image/png');
+        pdf.addImage(titleImgData, 'PNG', 0, 0, 297, 210); // A4 landscape size
+
+        // Add content slides
+        for (let i = 0; i < slideData.slides.length; i++) {
+            const slide = slideData.slides[i];
+
+            updateExportModalStatus(`Rendering slide ${i + 1}...`, 'loading');
+
+            const slideHtml = createSlideHTML(slide, i + 1, includeSpeakerNotes);
+            tempContainer.innerHTML = slideHtml;
+
+            // Wait a moment for styles to apply
+            await new Promise(resolve => setTimeout(resolve, 100));
+
+            const canvas = await html2canvas(tempContainer, {
+                scale: 2,
+                useCORS: true,
+                allowTaint: true,
+                backgroundColor: null
+            });
+
+            pdf.addPage();
+            const imgData = canvas.toDataURL('image/png');
+            pdf.addImage(imgData, 'PNG', 0, 0, 297, 210);
+        }
+
+        // Clean up
+        document.body.removeChild(tempContainer);
+
+        updateExportModalStatus('Finalizing PDF...', 'loading');
 
         // Save the PDF
         const fileName = `${slideData.title || 'presentation'}.pdf`;
-        doc.save(fileName);
+        pdf.save(fileName);
 
-        updateExportStatus('✅ PDF exported successfully!', 'success');
+        updateExportModalStatus('PDF exported successfully!', 'success');
 
     } catch (error) {
         console.error('PDF export error:', error);
-        updateExportStatus(`PDF export failed: ${error.message}`, 'error');
+        updateExportModalStatus(`PDF export failed: ${error.message}`, 'error');
     }
 }
+
+function createTitleSlideHTML(title) {
+    const theme = slidesAppState.currentTheme || {
+        backgroundColor: '#ffffff',
+        textColor: '#000000',
+        borderColor: '#dddddd',
+        fillColor: '#f5f5f5'
+    };
+
+    return `
+        <div style="
+            width: 960px;
+            height: 540px;
+            background-color: ${theme.backgroundColor};
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-sizing: border-box;
+        ">
+            <h1 style="
+                color: ${theme.textColor};
+                font-size: 48px;
+                font-weight: 600;
+                text-align: center;
+                margin: 0;
+                padding: 40px;
+                line-height: 1.2;
+                max-width: 1200px;
+            ">${title || 'Presentation'}</h1>
+        </div>
+    `;
+}
+
+function createSlideHTML(slide, slideNumber, includeSpeakerNotes = false) {
+    const theme = slidesAppState.currentTheme || {
+        backgroundColor: '#ffffff',
+        textColor: '#000000',
+        borderColor: '#dddddd',
+        fillColor: '#f5f5f5'
+    };
+
+    const speakerNotesHtml = includeSpeakerNotes && slide.speakerNotes ? `
+        <div style="
+            margin-top: 20px;
+            padding: 15px;
+            background-color: ${theme.fillColor};
+            border-left: 4px solid ${theme.borderColor};
+            border-radius: 4px;
+            font-style: italic;
+            opacity: 0.8;
+            font-size: 14px;
+            color: ${theme.textColor};
+            max-width: 1100px;
+        ">
+            <strong>Speaker Notes:</strong> ${slide.speakerNotes}
+        </div>
+    ` : '';
+
+    return `
+        <div style="
+            width: 960px;
+            height: 540px;
+            background-color: ${theme.backgroundColor};
+            box-sizing: border-box;
+            padding: 40px;
+            position: relative;
+        ">
+            <div style="
+                position: absolute;
+                bottom: 20px;
+                right: 20px;
+                font-size: 12px;
+                color: ${theme.textColor};
+                opacity: 0.7;
+            ">${slideNumber}</div>
+
+            <h2 style="
+                color: ${theme.textColor};
+                font-size: 32px;
+                font-weight: 600;
+                margin: 0 0 30px 0;
+                line-height: 1.2;
+                max-width: 1200px;
+            ">${slide.title}</h2>
+
+            <div style="margin-bottom: 20px; max-width: 1200px;">
+                ${slide.content && slide.content.length > 0 ?
+                    slide.content.map(point => `
+                        <div style="
+                            margin: 12px 0;
+                            padding: 12px 16px;
+                            background-color: ${theme.fillColor};
+                            border: 1px solid ${theme.borderColor};
+                            border-radius: 6px;
+                            font-size: 16px;
+                            line-height: 1.4;
+                            color: ${theme.textColor};
+                            display: flex;
+                            align-items: center;
+                            width: 100%;
+                            box-sizing: border-box;
+                        ">
+                            <span style="
+                                color: ${theme.textColor};
+                                font-weight: bold;
+                                margin-right: 12px;
+                                font-size: 18px;
+                                flex-shrink: 0;
+                            ">•</span>
+                            <span style="flex: 1;">${point}</span>
+                        </div>
+                    `).join('') : ''
+                }
+            </div>
+
+            ${speakerNotesHtml}
+        </div>
+    `;
+}
+
 
 async function exportPowerPoint() {
     try {
@@ -1566,66 +1701,96 @@ async function exportPowerPoint() {
 
         const pptx = new PptxGen();
         const slideData = slidesAppState.currentSlideData;
+        const theme = slidesAppState.currentTheme || {
+            backgroundColor: '#ffffff',
+            textColor: '#000000',
+            borderColor: '#dddddd',
+            fillColor: '#f5f5f5'
+        };
 
-        // Set presentation properties
+        // Set presentation properties with landscape layout
+        pptx.defineLayout({ name: 'LAYOUT_WIDE', width: 13.33, height: 7.5 }); // 16:9 landscape
+        pptx.layout = 'LAYOUT_WIDE';
         pptx.author = 'AI Slides Creator';
         pptx.company = 'Emotions for Engineers';
         pptx.title = slideData.title || 'Presentation';
 
-        // Title slide
+        // Title slide with theme colors and landscape sizing
         const titleSlide = pptx.addSlide();
+
+        // Set title slide background
+        if (theme.backgroundColor && theme.backgroundColor !== '#ffffff') {
+            titleSlide.background = { color: theme.backgroundColor.replace('#', '') };
+        }
+
         titleSlide.addText(slideData.title || 'Presentation', {
-            x: 1, y: 2.5, w: 8, h: 2,
-            fontSize: 36,
+            x: 1, y: 2.5, w: 11.33, h: 2.5,
+            fontSize: 44,
             bold: true,
             align: 'center',
-            color: '363636'
+            color: theme.textColor.replace('#', ''),
+            valign: 'middle'
         });
 
-        // Content slides
+        // Content slides with landscape layout and theme colors
         slideData.slides.forEach((slide, index) => {
             const pptSlide = pptx.addSlide();
 
-            // Set background color if available
-            if (slide.visualDesign && slide.visualDesign.backgroundColor) {
-                pptSlide.background = { color: slide.visualDesign.backgroundColor.replace('#', '') };
+            // Set slide background using theme
+            if (theme.backgroundColor && theme.backgroundColor !== '#ffffff') {
+                pptSlide.background = { color: theme.backgroundColor.replace('#', '') };
             }
 
-            // Slide title
-            const titleColor = slide.visualDesign?.textColor?.replace('#', '') || '363636';
-            pptSlide.addText(slide.title, {
-                x: 0.5, y: 0.5, w: 9, h: 1,
-                fontSize: 28,
-                bold: true,
-                color: titleColor
+            // Slide number (bottom right)
+            pptSlide.addText(`${index + 1}`, {
+                x: 12.5, y: 6.8, w: 0.5, h: 0.5,
+                fontSize: 12,
+                color: theme.textColor.replace('#', ''),
+                align: 'right',
+                transparency: 30
             });
 
-            // Slide content - simpler approach for better compatibility
+            // Slide title with theme colors and landscape positioning
+            pptSlide.addText(slide.title, {
+                x: 0.5, y: 0.5, w: 12.33, h: 1,
+                fontSize: 32,
+                bold: true,
+                color: theme.textColor.replace('#', ''),
+                valign: 'top'
+            });
+
+            // Slide content with better spacing for landscape
             if (slide.content && slide.content.length > 0) {
-                const bulletText = slide.content.map(point => `• ${point}`).join('\n');
-                pptSlide.addText(bulletText, {
-                    x: 0.5, y: 1.8, w: 9, h: 4.5,
-                    fontSize: 16,
-                    color: titleColor,
-                    lineSpacing: 28,
-                    valign: 'top'
+                slide.content.forEach((point, pointIndex) => {
+                    // First add the rounded rectangle shape for the bullet box
+                    pptSlide.addShape(pptx.ShapeType.roundRect, {
+                        x: 0.8,  // Move more to the right
+                        y: 2 + (pointIndex * 0.9), // Spacing between points
+                        w: 11.5,
+                        h: 0.65,
+                        fill: { color: theme.fillColor.replace('#', '') },
+                        line: { color: theme.borderColor.replace('#', ''), width: 1 },
+                        rectRadius: 0.08 // Rounded corners (smaller value for subtle rounding)
+                    });
+
+                    // Then add the bullet point text on top
+                    pptSlide.addText(`• ${point}`, {
+                        x: 0.9,  // Align with the rounded box + small margin
+                        y: 2 + (pointIndex * 0.9), // Match the box position
+                        w: 11.3,
+                        h: 0.65,
+                        fontSize: 16,
+                        color: theme.textColor.replace('#', ''),
+                        valign: 'middle',
+                        align: 'left',
+                        margin: [0.1, 0.1, 0.1, 0.1] // top, right, bottom, left margins
+                    });
                 });
             }
 
-            // Speaker notes
+            // Speaker notes with slide reference
             if (slide.speakerNotes) {
                 pptSlide.addNotes(`Slide ${index + 1} Notes: ${slide.speakerNotes}`);
-            }
-
-            // Add visual shapes if available - simplified
-            if (slide.visualDesign && slide.visualDesign.shapes) {
-                slide.visualDesign.shapes.forEach(shape => {
-                    try {
-                        addShapeToSlide(pptSlide, shape);
-                    } catch (shapeError) {
-                        console.warn('Skipping shape due to error:', shapeError);
-                    }
-                });
             }
         });
 
@@ -1641,11 +1806,11 @@ async function exportPowerPoint() {
             throw new Error('PptxGenJS save method not available');
         }
 
-        updateExportStatus('✅ PowerPoint exported successfully!', 'success');
+        updateExportModalStatus('PowerPoint exported successfully!', 'success');
 
     } catch (error) {
         console.error('PowerPoint export error:', error);
-        updateExportStatus(`PowerPoint export failed: ${error.message}`, 'error');
+        updateExportModalStatus(`PowerPoint export failed: ${error.message}`, 'error');
     }
 }
 
