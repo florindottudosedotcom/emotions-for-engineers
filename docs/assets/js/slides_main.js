@@ -1,6 +1,7 @@
 // Slides functionality - works with any provider (cloud, webllm, ollama)
 const SLIDES_STORAGE_KEY = 'aiSlidesCreator_slides';
 const THEME_STORAGE_KEY = 'aiSlidesCreator_theme';
+const CUSTOM_COLORS_STORAGE_KEY = 'aiSlidesCreator_customColors';
 
 const slidesAppState = {
     currentSlideData: null,
@@ -56,8 +57,34 @@ const COLOR_THEMES = {
     }
 };
 
+// Load custom colors from localStorage
+function loadCustomColors() {
+    try {
+        const savedColors = localStorage.getItem(CUSTOM_COLORS_STORAGE_KEY);
+        if (savedColors) {
+            const customColors = JSON.parse(savedColors);
+            // Merge custom colors with default themes
+            Object.assign(COLOR_THEMES, customColors);
+        }
+    } catch (error) {
+        console.warn('Failed to load custom colors:', error);
+    }
+}
+
+// Save custom colors to localStorage
+function saveCustomColors() {
+    try {
+        localStorage.setItem(CUSTOM_COLORS_STORAGE_KEY, JSON.stringify(COLOR_THEMES));
+    } catch (error) {
+        console.warn('Failed to save custom colors:', error);
+    }
+}
+
 // Wait for the main provider to be initialized, then add slides functionality
 document.addEventListener('DOMContentLoaded', async () => {
+    // Load custom colors first
+    loadCustomColors();
+
     // Wait a bit for unified_main.js to load the provider
     await new Promise(resolve => setTimeout(resolve, 100));
 
@@ -951,10 +978,11 @@ function createColorSchemeSelector() {
 
         // Create 3-color layout showing dark, border, and light colors
         tile.innerHTML = `
-            <div style="display: flex; height: 100%; border-radius: 3px; overflow: hidden;">
+            <div style="display: flex; height: 100%; border-radius: 3px; overflow: hidden; position: relative;">
                 <div style="flex: 1; background-color: ${theme.textColor};" title="Text Color"></div>
                 <div style="flex: 1; background-color: ${theme.borderColor};" title="Border Color"></div>
                 <div style="flex: 1; background-color: ${theme.fillColor};" title="Fill Color"></div>
+                <div class="edit-theme-btn" style="position: absolute; top: 4px; right: 4px; width: 20px; height: 20px; background: rgba(255,255,255,0.9); border-radius: 50%; display: none; align-items: center; justify-content: center; cursor: pointer; font-size: 12px; color: #666; border: 1px solid #ddd;" title="Edit Colors">✎</div>
             </div>
         `;
 
@@ -992,8 +1020,16 @@ function createColorSchemeSelector() {
             applyColorScheme(key, theme);
         });
 
+        // Add edit button functionality
+        const editBtn = tile.querySelector('.edit-theme-btn');
+        editBtn.addEventListener('click', (e) => {
+            e.stopPropagation(); // Prevent tile selection
+            openColorEditor(key, theme);
+        });
+
         // Add hover effect
         tile.addEventListener('mouseenter', () => {
+            editBtn.style.display = 'flex';
             if (!tile.style.border.includes(theme.borderColor)) {
                 tile.style.transform = 'scale(1.05)';
                 tile.style.boxShadow = '0 4px 8px rgba(0, 0, 0, 0.15)';
@@ -1001,6 +1037,7 @@ function createColorSchemeSelector() {
         });
 
         tile.addEventListener('mouseleave', () => {
+            editBtn.style.display = 'none';
             if (!tile.style.border.includes(theme.borderColor)) {
                 tile.style.transform = 'scale(1)';
                 tile.style.boxShadow = '0 2px 4px rgba(0, 0, 0, 0.1)';
@@ -1072,6 +1109,237 @@ function restoreColorSchemeSelection() {
             }
         }
     }, 100);
+}
+
+function openColorEditor(themeKey, theme) {
+    // Create modal overlay
+    const modal = document.createElement('div');
+    modal.id = 'color-editor-modal';
+    modal.style.cssText = `
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0, 0, 0, 0.5);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        z-index: 1000;
+    `;
+
+    // Create modal content
+    const modalContent = document.createElement('div');
+    modalContent.style.cssText = `
+        background: white;
+        border-radius: 12px;
+        padding: 24px;
+        width: 400px;
+        max-width: 90vw;
+        box-shadow: 0 20px 25px rgba(0, 0, 0, 0.15);
+    `;
+
+    // Create header
+    const header = document.createElement('div');
+    header.style.cssText = `
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 20px;
+        border-bottom: 1px solid #e5e7eb;
+        padding-bottom: 12px;
+    `;
+
+    const title = document.createElement('h3');
+    title.textContent = `Edit ${theme.name}`;
+    title.style.cssText = `
+        margin: 0;
+        font-size: 18px;
+        color: #374151;
+    `;
+
+    const closeBtn = document.createElement('button');
+    closeBtn.textContent = '×';
+    closeBtn.style.cssText = `
+        background: none;
+        border: none;
+        font-size: 24px;
+        cursor: pointer;
+        color: #6b7280;
+        padding: 0;
+        width: 32px;
+        height: 32px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    `;
+    closeBtn.onclick = () => modal.remove();
+
+    header.appendChild(title);
+    header.appendChild(closeBtn);
+
+    // Create color inputs
+    const colorInputs = document.createElement('div');
+    colorInputs.style.cssText = 'display: flex; flex-direction: column; gap: 16px;';
+
+    const colors = [
+        { key: 'textColor', label: 'Text Color', value: theme.textColor },
+        { key: 'borderColor', label: 'Border Color', value: theme.borderColor },
+        { key: 'fillColor', label: 'Fill Color', value: theme.fillColor },
+        { key: 'backgroundColor', label: 'Background Color', value: theme.backgroundColor }
+    ];
+
+    const inputs = {};
+    colors.forEach(({ key, label, value }) => {
+        const inputGroup = document.createElement('div');
+        inputGroup.style.cssText = 'display: flex; align-items: center; gap: 12px;';
+
+        const labelEl = document.createElement('label');
+        labelEl.textContent = label;
+        labelEl.style.cssText = `
+            flex: 1;
+            font-weight: 500;
+            color: #374151;
+        `;
+
+        const colorInput = document.createElement('input');
+        colorInput.type = 'color';
+        colorInput.value = value;
+        colorInput.style.cssText = `
+            width: 50px;
+            height: 40px;
+            border: 1px solid #d1d5db;
+            border-radius: 6px;
+            cursor: pointer;
+            padding: 0;
+        `;
+
+        const textInput = document.createElement('input');
+        textInput.type = 'text';
+        textInput.value = value;
+        textInput.style.cssText = `
+            width: 90px;
+            padding: 8px;
+            border: 1px solid #d1d5db;
+            border-radius: 6px;
+            font-family: monospace;
+            font-size: 12px;
+        `;
+
+        // Sync color picker and text input
+        colorInput.addEventListener('input', () => {
+            textInput.value = colorInput.value;
+        });
+
+        textInput.addEventListener('input', () => {
+            if (/^#[0-9A-Fa-f]{6}$/.test(textInput.value)) {
+                colorInput.value = textInput.value;
+            }
+        });
+
+        inputs[key] = { colorInput, textInput };
+
+        inputGroup.appendChild(labelEl);
+        inputGroup.appendChild(colorInput);
+        inputGroup.appendChild(textInput);
+        colorInputs.appendChild(inputGroup);
+    });
+
+    // Create buttons
+    const buttonContainer = document.createElement('div');
+    buttonContainer.style.cssText = `
+        display: flex;
+        gap: 12px;
+        justify-content: flex-end;
+        margin-top: 24px;
+        padding-top: 16px;
+        border-top: 1px solid #e5e7eb;
+    `;
+
+    const cancelBtn = document.createElement('button');
+    cancelBtn.textContent = 'Cancel';
+    cancelBtn.style.cssText = `
+        padding: 8px 16px;
+        border: 1px solid #d1d5db;
+        background: white;
+        border-radius: 6px;
+        cursor: pointer;
+        color: #374151;
+    `;
+    cancelBtn.onclick = () => modal.remove();
+
+    const saveBtn = document.createElement('button');
+    saveBtn.textContent = 'Save Changes';
+    saveBtn.style.cssText = `
+        padding: 8px 16px;
+        border: none;
+        background: #2563eb;
+        color: white;
+        border-radius: 6px;
+        cursor: pointer;
+        font-weight: 500;
+    `;
+    saveBtn.onclick = () => {
+        // Update the theme with new colors
+        const updatedTheme = { ...theme };
+        Object.entries(inputs).forEach(([key, { textInput }]) => {
+            updatedTheme[key] = textInput.value;
+        });
+
+        // Update the COLOR_THEMES object
+        COLOR_THEMES[themeKey] = updatedTheme;
+
+        // Save custom colors to localStorage
+        saveCustomColors();
+
+        // Apply the updated theme if it's currently active
+        if (slidesAppState.currentTheme && slidesAppState.currentTheme.key === themeKey) {
+            applyColorScheme(themeKey, updatedTheme);
+        }
+
+        // Refresh the color scheme selector to show updated colors
+        refreshColorSchemeSelector();
+
+        modal.remove();
+    };
+
+    buttonContainer.appendChild(cancelBtn);
+    buttonContainer.appendChild(saveBtn);
+
+    // Assemble modal
+    modalContent.appendChild(header);
+    modalContent.appendChild(colorInputs);
+    modalContent.appendChild(buttonContainer);
+    modal.appendChild(modalContent);
+
+    // Add to document
+    document.body.appendChild(modal);
+
+    // Close on background click
+    modal.addEventListener('click', (e) => {
+        if (e.target === modal) {
+            modal.remove();
+        }
+    });
+}
+
+function refreshColorSchemeSelector() {
+    const existingSelector = document.getElementById('color-scheme-selector');
+    if (existingSelector) {
+        existingSelector.remove();
+    }
+
+    // Recreate the selector
+    const newSelector = createColorSchemeSelector();
+    if (slidesDom.presentationSection) {
+        slidesDom.presentationSection.insertBefore(newSelector, slidesDom.presentationSection.firstChild);
+
+        // Restore selection if there's a saved theme
+        if (slidesAppState.currentTheme) {
+            restoreColorSchemeSelection();
+        }
+    }
 }
 
 function applyThemeToSlides() {
