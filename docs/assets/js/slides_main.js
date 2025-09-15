@@ -283,19 +283,36 @@ function addClearButtonToBottom() {
     const slidesPreview = slidesDom.slidesPreview;
     if (!slidesPreview) return;
 
-    // Create bottom controls container
-    const bottomControls = document.createElement('div');
-    bottomControls.className = 'slides-bottom-controls';
-    bottomControls.style.cssText = 'display: flex; justify-content: space-between; align-items: center; margin: 30px 0; padding: 20px; border-top: 1px solid #ddd;';
+    // Create Add Slide section (above separator, right-aligned)
+    const addSlideSection = document.createElement('div');
+    addSlideSection.className = 'add-slide-section';
+    addSlideSection.style.cssText = 'display: flex; justify-content: flex-end; margin: 30px 0 10px 0;';
 
-    // Create Add Slide button (bottom left)
+    // Create Add Slide button (top right, matching insert button style)
     const addSlideBtn = document.createElement('button');
     addSlideBtn.type = 'button';
-    addSlideBtn.className = 'btn btn-primary add-slide-bottom-btn';
-    addSlideBtn.textContent = '➕ Add Slide';
+    addSlideBtn.className = 'btn-small add-slide-bottom-btn';
+    addSlideBtn.textContent = '+';
+    addSlideBtn.title = 'Add new slide';
+    addSlideBtn.style.cssText = 'padding: 0; font-size: 12px; border: 2px solid #28a745; color: #28a745; background-color: transparent; border-radius: 3px; cursor: pointer; display: inline-flex; align-items: center; justify-content: center; width: 32px; height: 32px; box-sizing: border-box;';
     addSlideBtn.addEventListener('click', addNewSlide);
+    addSlideSection.appendChild(addSlideBtn);
 
-    // Create clear button (bottom right)
+    // Create bottom controls container (below separator)
+    const bottomControls = document.createElement('div');
+    bottomControls.className = 'slides-bottom-controls';
+    bottomControls.style.cssText = 'display: flex; justify-content: space-between; align-items: center; margin: 10px 0 30px 0; padding: 20px 0; border-top: 1px solid #ddd;';
+
+    // Create Export button (bottom left)
+    const exportBtn = document.createElement('button');
+    exportBtn.type = 'button';
+    exportBtn.id = 'open-export-modal-btn';
+    exportBtn.className = 'btn btn-primary';
+    exportBtn.textContent = '↓ Export';
+    exportBtn.style.cssText = 'border: 2px solid var(--primary-color, #1976d2); color: var(--primary-color, #1976d2); background-color: transparent; display: inline-flex; align-items: center; gap: 0.5rem; font-size: 1.1em; padding: 12px 24px;';
+    exportBtn.addEventListener('click', showExportModal);
+
+    // Create Clear All Slides button (bottom right)
     const clearSlidesBtn = document.createElement('button');
     clearSlidesBtn.type = 'button';
     clearSlidesBtn.className = 'btn btn-outline clear-slides-bottom-btn';
@@ -303,15 +320,17 @@ function addClearButtonToBottom() {
     clearSlidesBtn.style.cssText = 'border: 2px solid #dc3545; color: #dc3545; background-color: transparent; display: inline-flex; align-items: center; gap: 0.5rem;';
     clearSlidesBtn.addEventListener('click', clearAllSlides);
 
-    // Add buttons to container
-    bottomControls.appendChild(addSlideBtn);
+    // Add buttons to bottom container
+    bottomControls.appendChild(exportBtn);
     bottomControls.appendChild(clearSlidesBtn);
 
-    // Insert after slides preview but before export options
+    // Insert sections after slides preview but before export options
     const exportOptions = document.querySelector('.export-options');
     if (exportOptions) {
+        exportOptions.parentNode.insertBefore(addSlideSection, exportOptions);
         exportOptions.parentNode.insertBefore(bottomControls, exportOptions);
     } else {
+        slidesDom.presentationSection.appendChild(addSlideSection);
         slidesDom.presentationSection.appendChild(bottomControls);
     }
 }
@@ -672,9 +691,9 @@ function createSlidePreviewElement(slide, slideNumber) {
 
         // Add "Add Content Point" button
         const addPointBtn = document.createElement('button');
-        addPointBtn.textContent = '➕ Add Point';
+        addPointBtn.textContent = '+ Add Point';
         addPointBtn.className = 'add-content-btn';
-        addPointBtn.style.cssText = 'margin-top: 10px; padding: 5px 10px; font-size: 12px; border: 2px solid var(--primary-color, #1976d2); color: var(--primary-color, #1976d2); background-color: transparent; border-radius: 4px; cursor: pointer; display: inline-flex; align-items: center; gap: 0.25rem;';
+        addPointBtn.style.cssText = 'margin-top: 10px; padding: 5px 10px; font-size: 12px; border: 2px solid var(--primary-color, #1976d2); color: var(--primary-color, #1976d2); background-color: transparent; border-radius: 4px; cursor: pointer; display: block; width: fit-content; margin-left: 0 !important; margin-right: auto !important; text-align: left !important; float: none !important; position: relative !important;';
         addPointBtn.addEventListener('click', () => addContentPoint(slideNumber - 1));
 
         contentContainer.appendChild(contentList);
@@ -689,6 +708,14 @@ function createSlidePreviewElement(slide, slideNumber) {
             }
         });
         contentContainer.appendChild(noContent);
+
+        // Add "Add Content Point" button for empty slides too
+        const addPointBtn = document.createElement('button');
+        addPointBtn.textContent = '+ Add Point';
+        addPointBtn.className = 'add-content-btn';
+        addPointBtn.style.cssText = 'margin-top: 10px; padding: 5px 10px; font-size: 12px; border: 2px solid var(--primary-color, #1976d2); color: var(--primary-color, #1976d2); background-color: transparent; border-radius: 4px; cursor: pointer; display: block; width: fit-content; margin-left: 0 !important; margin-right: auto !important; text-align: left !important; float: none !important; position: relative !important;';
+        addPointBtn.addEventListener('click', () => addContentPoint(slideNumber - 1));
+        contentContainer.appendChild(addPointBtn);
     }
 
     // Assemble the slide (controls are now above the slide)
@@ -1091,9 +1118,9 @@ function applyThemeToSlides() {
                 button.style.color = 'white';
                 button.style.border = 'none';
             } else if (button.classList.contains('add-content-btn')) {
-                button.style.backgroundColor = theme.borderColor;
-                button.style.color = 'white';
-                button.style.border = 'none';
+                button.style.backgroundColor = 'transparent';
+                button.style.color = theme.borderColor;
+                button.style.border = `2px solid ${theme.borderColor}`;
             }
         });
 
@@ -1485,13 +1512,16 @@ async function exportPDF(includeSpeakerNotes = false) {
         const slideData = slidesAppState.currentSlideData;
         updateExportModalStatus('Creating PDF document...', 'loading');
 
-        // Create temporary container for rendering slides
+        // Create temporary container for rendering slides (exact A4 landscape ratio)
         const tempContainer = document.createElement('div');
+        // A4 landscape: 297mm × 210mm = 1.414:1 ratio
+        // Using 1188×841px for better precision (297/210 * 841 = 1188)
         tempContainer.style.cssText = `
             position: fixed;
             top: -10000px;
             left: -10000px;
-            width: 960px;
+            width: 1188px;
+            height: 841px;
             background: white;
             font-family: Arial, sans-serif;
             box-sizing: border-box;
@@ -1507,7 +1537,9 @@ async function exportPDF(includeSpeakerNotes = false) {
 
         updateExportModalStatus('Rendering title page...', 'loading');
         const titleCanvas = await html2canvas(tempContainer, {
-            scale: 2,
+            width: 1188,
+            height: 841,
+            scale: 1,
             useCORS: true,
             allowTaint: true,
             backgroundColor: null
@@ -1520,7 +1552,8 @@ async function exportPDF(includeSpeakerNotes = false) {
         }
 
         const titleImgData = titleCanvas.toDataURL('image/png');
-        pdf.addImage(titleImgData, 'PNG', 0, 0, 297, 210); // A4 landscape size
+        // Fill entire A4 landscape page with generous oversizing to eliminate borders
+        pdf.addImage(titleImgData, 'PNG', -0.5, -0.5, 298, 211);
 
         // Add content slides
         for (let i = 0; i < slideData.slides.length; i++) {
@@ -1535,7 +1568,9 @@ async function exportPDF(includeSpeakerNotes = false) {
             await new Promise(resolve => setTimeout(resolve, 100));
 
             const canvas = await html2canvas(tempContainer, {
-                scale: 2,
+                width: 1188,
+                height: 841,
+                scale: 1,
                 useCORS: true,
                 allowTaint: true,
                 backgroundColor: null
@@ -1543,7 +1578,7 @@ async function exportPDF(includeSpeakerNotes = false) {
 
             pdf.addPage();
             const imgData = canvas.toDataURL('image/png');
-            pdf.addImage(imgData, 'PNG', 0, 0, 297, 210);
+            pdf.addImage(imgData, 'PNG', -0.5, -0.5, 298, 211);
         }
 
         // Clean up
@@ -2143,9 +2178,9 @@ function createSlideControlsHeader(slideNumber, slideIndex) {
     const insertBtn = document.createElement('button');
     insertBtn.type = 'button';
     insertBtn.className = 'btn-small';
-    insertBtn.textContent = '➕';
+    insertBtn.textContent = '+';
     insertBtn.title = 'Insert slide after this one';
-    insertBtn.style.cssText = 'padding: 4px 6px; font-size: 12px; background: #28a745; color: white; border: none; border-radius: 3px; cursor: pointer;';
+    insertBtn.style.cssText = 'padding: 0; font-size: 12px; border: 2px solid #28a745; color: #28a745; background-color: transparent; border-radius: 3px; cursor: pointer; display: inline-flex; align-items: center; justify-content: center; width: 32px; height: 32px; box-sizing: border-box;';
     insertBtn.addEventListener('click', () => insertSlideAfter(slideIndex));
 
     // Move up button
@@ -2154,7 +2189,7 @@ function createSlideControlsHeader(slideNumber, slideIndex) {
     moveUpBtn.className = 'btn-small';
     moveUpBtn.textContent = '↑';
     moveUpBtn.title = 'Move slide up';
-    moveUpBtn.style.cssText = 'padding: 4px 6px; font-size: 12px; background: #6c757d; color: white; border: none; border-radius: 3px; cursor: pointer;';
+    moveUpBtn.style.cssText = 'padding: 0; font-size: 12px; border: 2px solid #6c757d; color: #6c757d; background-color: transparent; border-radius: 3px; cursor: pointer; display: inline-flex; align-items: center; justify-content: center; width: 32px; height: 32px; box-sizing: border-box;';
     moveUpBtn.addEventListener('click', () => moveSlide(slideIndex, 'up'));
 
     // Move down button
@@ -2163,7 +2198,7 @@ function createSlideControlsHeader(slideNumber, slideIndex) {
     moveDownBtn.className = 'btn-small';
     moveDownBtn.textContent = '↓';
     moveDownBtn.title = 'Move slide down';
-    moveDownBtn.style.cssText = 'padding: 4px 6px; font-size: 12px; background: #6c757d; color: white; border: none; border-radius: 3px; cursor: pointer;';
+    moveDownBtn.style.cssText = 'padding: 0; font-size: 12px; border: 2px solid #6c757d; color: #6c757d; background-color: transparent; border-radius: 3px; cursor: pointer; display: inline-flex; align-items: center; justify-content: center; width: 32px; height: 32px; box-sizing: border-box;';
     moveDownBtn.addEventListener('click', () => moveSlide(slideIndex, 'down'));
 
     // Delete slide button
@@ -2172,7 +2207,7 @@ function createSlideControlsHeader(slideNumber, slideIndex) {
     deleteBtn.className = 'btn-small btn-danger';
     deleteBtn.textContent = '×';
     deleteBtn.title = 'Delete this slide';
-    deleteBtn.style.cssText = 'padding: 4px 6px; font-size: 12px; background: #dc3545; color: white; border: none; border-radius: 3px; cursor: pointer;';
+    deleteBtn.style.cssText = 'padding: 0; font-size: 12px; border: 2px solid #dc3545; color: #dc3545; background-color: transparent; border-radius: 3px; cursor: pointer; display: inline-flex; align-items: center; justify-content: center; width: 32px; height: 32px; box-sizing: border-box;';
     deleteBtn.addEventListener('click', () => deleteSlide(slideIndex));
 
     controlsDiv.appendChild(insertBtn);
