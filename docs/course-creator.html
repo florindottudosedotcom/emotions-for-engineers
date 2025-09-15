@@ -4,40 +4,41 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Universal Course Creator - Launcher</title>
+    <link rel="stylesheet" href="./assets/css/minimal-theme.css" />
     <link rel="stylesheet" href="./assets/css/course-creator.css" />
 </head>
-<body>
-    <div class="main-container">
+<body class="text-minimal">
+    <div class="main-container container-minimal">
         <h1>Universal Course Creator</h1>
         <p>Welcome! This tool helps you generate entire courses using various AI models. Choose your preferred AI provider below to get started.</p>
 
-        <div class="launcher-container">
-            <a href="cloud_creator.html" target="_blank" class="launcher-btn cloud">
-                <span class="icon">☁️</span>
+        <div class="launcher-container grid-minimal grid-2">
+            <a href="cloud_creator.html" target="_blank" class="launcher-btn btn-minimal btn-primary card-minimal">
+                <span class="icon-minimal geometric icon-cloud"></span>
                 <span>Cloud AI</span>
             </a>
-            <a href="webllm_creator.html" target="_blank" class="launcher-btn webllm">
-                <span class="icon">🧠</span>
+            <a href="webllm_creator.html" target="_blank" class="launcher-btn btn-minimal btn-primary card-minimal">
+                <span class="icon-minimal geometric icon-brain"></span>
                 <span>WebLLM (In-Browser)</span>
             </a>
-            <a href="ollama_creator.html" target="_blank" class="launcher-btn ollama" id="ollama-launcher">
-                <span class="icon">🖥️</span>
+            <a href="ollama_creator.html" target="_blank" class="launcher-btn btn-minimal btn-primary card-minimal" id="ollama-launcher">
+                <span class="icon-minimal geometric icon-desktop"></span>
                 <span>Ollama (Local)</span>
             </a>
-            <a href="slides_creator_launcher.html" target="_blank" class="launcher-btn slides" id="slides-launcher">
-                <span class="icon">📊</span>
+            <a href="slides_creator_launcher.html" target="_blank" class="launcher-btn btn-minimal btn-primary card-minimal" id="slides-launcher">
+                <span class="icon-minimal geometric icon-slides"></span>
                 <span>AI Slides Creator</span>
             </a>
         </div>
 
-        <div class="help-section">
+        <div class="help-section card-minimal">
             <h2>How It Works</h2>
             <ol>
                 <li><strong>Select an AI Provider:</strong>
                     <ul>
-                        <li>☁️ <strong>Cloud AI:</strong> Use powerful models from OpenAI, Anthropic, and Google. You'll need to provide your own API keys.</li>
-                        <li>🧠 <strong>WebLLM:</strong> Run a language model directly in your browser. No server or keys needed, but it may be slower and requires a modern browser.</li>
-                        <li>🖥️ <strong>Ollama (Local):</strong> Connect to a running Ollama instance on your local machine to use your own models. This option is only available when running the tool on your local machine.</li>
+                        <li><span class="icon-minimal icon-cloud"></span> <strong>Cloud AI:</strong> Use powerful models from OpenAI, Anthropic, and Google. You'll need to provide your own API keys.</li>
+                        <li><span class="icon-minimal icon-brain"></span> <strong>WebLLM:</strong> Run a language model directly in your browser. No server or keys needed, but it may be slower and requires a modern browser.</li>
+                        <li><span class="icon-minimal icon-desktop"></span> <strong>Ollama (Local):</strong> Connect to a running Ollama instance on your local machine to use your own models. This option is only available when running the tool on your local machine.</li>
                     </ul>
                 </li>
                 <li><strong>Enter a Course Prompt:</strong> In the 'Master AI Assistant' section of the creator page, describe the course you want to create. Be as specific as possible!</li>

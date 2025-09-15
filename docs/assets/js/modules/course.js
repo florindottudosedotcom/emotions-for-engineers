@@ -28,7 +28,7 @@ async function enhancePrompt() {
         return;
     }
 
-    ui.updateGenerationStatus('🚀 Enhancing your prompt with AI assistance...');
+    ui.updateGenerationStatus('✦ Enhancing your prompt with AI assistance...');
 
     const enhancementPrompt = `Transform this course idea into a clear, actionable prompt for AI course generation:
 
@@ -267,7 +267,7 @@ async function generateCourseFiles() {
         return;
     }
 
-    ui.updateFileGenerationStatus("🌐 Generating course files for multiple languages...");
+    ui.updateFileGenerationStatus("⚬ Generating course files for multiple languages...");
 
     const safeCourseName = courseName.toLowerCase().replace(/[^a-z0-9\s-]/g, '').replace(/\s+/g, '-');
     const zip = new JSZip();
@@ -278,7 +278,7 @@ async function generateCourseFiles() {
     try {
         // Process each language
         for (const [langIndex, language] of selectedLanguages.entries()) {
-            ui.updateFileGenerationStatus(`🌐 Processing ${language.name} (${langIndex + 1}/${selectedLanguages.length})...`);
+            ui.updateFileGenerationStatus(`⚬ Processing ${language.name} (${langIndex + 1}/${selectedLanguages.length})...`);
 
             // Translate course name and description (skip for English)
             let translatedCourseName = courseName;
@@ -296,7 +296,7 @@ async function generateCourseFiles() {
             // Create chapter files for this language
             const chapters = dom.chapterContentContainer.querySelectorAll('.chapter-content');
             for (const [chapterIndex, contentDiv] of chapters.entries()) {
-                ui.updateFileGenerationStatus(`🌐 Translating ${language.name} - Chapter ${chapterIndex + 1}/${chapters.length}...`);
+                ui.updateFileGenerationStatus(`⚬ Translating ${language.name} - Chapter ${chapterIndex + 1}/${chapters.length}...`);
 
                 const chapterId = contentDiv.id.replace('chapter-content-', '');
                 const title = dom.courseForm.querySelector(`#chapter-title-${chapterId}`).value;
@@ -316,7 +316,7 @@ async function generateCourseFiles() {
             }
         }
 
-        ui.updateFileGenerationStatus("📦 Creating download package...");
+        ui.updateFileGenerationStatus("⚬ Creating download package...");
 
         // Generate and download zip
         ui.logDebug("Generating zip file...");

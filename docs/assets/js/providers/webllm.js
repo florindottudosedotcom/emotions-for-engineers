@@ -141,7 +141,7 @@ export const WebLLMProvider = {
             const timeEstimate = modelInfo?.estimatedLoadTime || '2-5 minutes';
 
             if (dom.ollamaStatus) {
-                dom.ollamaStatus.textContent = `🔄 Loading ${selectedModelName} ${sizeInfo}...\nEstimated time: ${timeEstimate}\nFirst-time downloads may take longer depending on your internet speed.`;
+                dom.ollamaStatus.textContent = `⚬ Loading ${selectedModelName} ${sizeInfo}...\nEstimated time: ${timeEstimate}\nFirst-time downloads may take longer depending on your internet speed.`;
                 dom.ollamaStatus.className = 'ollama-status-style ollama-status-info';
             }
 
@@ -164,7 +164,7 @@ export const WebLLMProvider = {
                 const timeStr = minutes > 0 ? `${minutes}m ${seconds}s` : `${seconds}s`;
 
                 if (dom.ollamaStatus) {
-                    dom.ollamaStatus.textContent = `🔄 Loading ${selectedModelName} ${sizeInfo}...\nElapsed: ${timeStr} | Estimated: ${timeEstimate}\nDownloading and initializing model...`;
+                    dom.ollamaStatus.textContent = `⚬ Loading ${selectedModelName} ${sizeInfo}...\nElapsed: ${timeStr} | Estimated: ${timeEstimate}\nDownloading and initializing model...`;
                 }
             }, 10000);
 
@@ -177,7 +177,7 @@ export const WebLLMProvider = {
                         const minutes = Math.floor(elapsed / 60);
                         const seconds = elapsed % 60;
                         const timeStr = minutes > 0 ? `${minutes}m ${seconds}s` : `${seconds}s`;
-                        dom.ollamaStatus.textContent = `🔄 ${progress.text}\nElapsed: ${timeStr} | Estimated: ${timeEstimate}`;
+                        dom.ollamaStatus.textContent = `⚬ ${progress.text}\nElapsed: ${timeStr} | Estimated: ${timeEstimate}`;
                     }
                 }
             });

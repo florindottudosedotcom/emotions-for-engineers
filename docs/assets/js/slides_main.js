@@ -299,7 +299,7 @@ function addClearButtonToBottom() {
     const clearSlidesBtn = document.createElement('button');
     clearSlidesBtn.type = 'button';
     clearSlidesBtn.className = 'btn btn-outline clear-slides-bottom-btn';
-    clearSlidesBtn.textContent = '🗑️ Clear All Slides';
+    clearSlidesBtn.textContent = '× Clear All Slides';
     clearSlidesBtn.style.cssText = 'background-color: #dc3545; color: white; border-color: #dc3545;';
     clearSlidesBtn.addEventListener('click', clearAllSlides);
 
@@ -501,7 +501,7 @@ async function generatePresentation() {
         slidesAppState.isGenerating = true;
         slidesDom.generateSlidesBtn.disabled = true;
 
-        updateGenerationStatus('🎨 Generating AI-powered presentation...', 'loading');
+        updateGenerationStatus('⚡ Generating AI-powered presentation...', 'loading');
         console.log('Status updated, calling provider...');
 
         // Generate slide content using any provider's generateText method
@@ -707,7 +707,7 @@ function createSlidePreviewElement(slide, slideNumber) {
     if (slide.visualDesign && slide.visualDesign.imageDescription) {
         const imageInfo = document.createElement('div');
         imageInfo.style.cssText = 'margin-top: 15px; padding: 10px; background: rgba(255,255,255,0.1); border-radius: 4px; font-size: 0.9em;';
-        imageInfo.innerHTML = `<strong>📷 Image:</strong> ${slide.visualDesign.imageDescription}`;
+        imageInfo.innerHTML = `<strong>⬜ Image:</strong> ${slide.visualDesign.imageDescription}`;
         slideContent.appendChild(imageInfo);
     }
 
@@ -2081,7 +2081,7 @@ function createEditableSpeakerNotes(slide, slideIndex) {
     // Create notes label
     const notesLabel = document.createElement('div');
     notesLabel.style.cssText = 'font-weight: bold; margin-bottom: 8px; color: #495057; font-size: 0.9em; display: flex; align-items: center;';
-    notesLabel.innerHTML = '🎤 Speaker Notes (not exported by default)';
+    notesLabel.innerHTML = '≡ Speaker Notes (not exported by default)';
 
     // Create editable notes area
     const notesTextarea = document.createElement('textarea');
@@ -2152,7 +2152,7 @@ function createSlideControlsHeader(slideNumber, slideIndex) {
     const moveUpBtn = document.createElement('button');
     moveUpBtn.type = 'button';
     moveUpBtn.className = 'btn-small';
-    moveUpBtn.textContent = '⬆️';
+    moveUpBtn.textContent = '↑';
     moveUpBtn.title = 'Move slide up';
     moveUpBtn.style.cssText = 'padding: 4px 6px; font-size: 12px; background: #6c757d; color: white; border: none; border-radius: 3px; cursor: pointer;';
     moveUpBtn.addEventListener('click', () => moveSlide(slideIndex, 'up'));
@@ -2161,7 +2161,7 @@ function createSlideControlsHeader(slideNumber, slideIndex) {
     const moveDownBtn = document.createElement('button');
     moveDownBtn.type = 'button';
     moveDownBtn.className = 'btn-small';
-    moveDownBtn.textContent = '⬇️';
+    moveDownBtn.textContent = '↓';
     moveDownBtn.title = 'Move slide down';
     moveDownBtn.style.cssText = 'padding: 4px 6px; font-size: 12px; background: #6c757d; color: white; border: none; border-radius: 3px; cursor: pointer;';
     moveDownBtn.addEventListener('click', () => moveSlide(slideIndex, 'down'));
@@ -2170,7 +2170,7 @@ function createSlideControlsHeader(slideNumber, slideIndex) {
     const deleteBtn = document.createElement('button');
     deleteBtn.type = 'button';
     deleteBtn.className = 'btn-small btn-danger';
-    deleteBtn.textContent = '🗑️';
+    deleteBtn.textContent = '×';
     deleteBtn.title = 'Delete this slide';
     deleteBtn.style.cssText = 'padding: 4px 6px; font-size: 12px; background: #dc3545; color: white; border: none; border-radius: 3px; cursor: pointer;';
     deleteBtn.addEventListener('click', () => deleteSlide(slideIndex));

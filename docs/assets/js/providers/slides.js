@@ -63,7 +63,7 @@ export const SlidesProvider = {
             if (!data.models || data.models.length === 0) {
                 dom.aiModelSelect.add(new Option('No models found', ''));
                 if (dom.slidesStatus) {
-                    dom.slidesStatus.textContent = '⚠️ No models found. Please install some models first.';
+                    dom.slidesStatus.textContent = '⚠ No models found. Please install some models first.';
                     dom.slidesStatus.className = 'ollama-status-style ollama-status-warning';
                 }
                 return;

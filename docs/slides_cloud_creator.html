@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self' 'unsafe-inline' https://cdnjs.cloudflare.com https://unpkg.com; style-src 'self' 'unsafe-inline'; frame-src 'self'; img-src 'self' data: blob:; connect-src 'self' https://api.openai.com https://api.anthropic.com https://generativelanguage.googleapis.com https://cdnjs.cloudflare.com https://unpkg.com; font-src 'self'; object-src 'none'; base-uri 'self'; form-action 'self'; worker-src 'self' blob:;">
     <title>Cloud AI Slides Creator</title>
+    <link rel="stylesheet" href="./assets/css/minimal-theme.css" />
     <link rel="stylesheet" href="./assets/css/course-creator.css" />
     <style>
         .slides-container {
@@ -217,7 +218,7 @@
             <div class="export-options">
                 <h3>Export Presentation</h3>
                 <div style="text-align: center;">
-                    <button type="button" id="open-export-modal-btn" class="btn btn-primary" style="font-size: 1.1em; padding: 12px 24px;">📤 Export Presentation</button>
+                    <button type="button" id="open-export-modal-btn" class="btn btn-primary" style="font-size: 1.1em; padding: 12px 24px;">↓ Export Presentation</button>
                 </div>
                 <div id="export-status" class="status-display"></div>
             </div>
@@ -253,10 +254,10 @@
 
                 <!-- Export Buttons -->
                 <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
-                    <button type="button" id="export-pdf-btn" class="btn btn-primary">📄 PDF</button>
-                    <button type="button" id="export-pptx-btn" class="btn btn-primary">📊 PowerPoint</button>
-                    <button type="button" id="export-html-btn" class="btn btn-secondary">🌐 HTML</button>
-                    <button type="button" id="export-json-btn" class="btn btn-outline">📋 JSON Data</button>
+                    <button type="button" id="export-pdf-btn" class="btn btn-primary">⬜ PDF</button>
+                    <button type="button" id="export-pptx-btn" class="btn btn-primary">⬜ PowerPoint</button>
+                    <button type="button" id="export-html-btn" class="btn btn-secondary">⌂ HTML</button>
+                    <button type="button" id="export-json-btn" class="btn btn-outline">⚹ JSON Data</button>
                 </div>
 
                 <div id="export-modal-status" class="status-display" style="margin-top: 15px;"></div>

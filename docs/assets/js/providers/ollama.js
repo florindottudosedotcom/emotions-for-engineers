@@ -63,7 +63,7 @@ export const OllamaProvider = {
             if (!data.models || data.models.length === 0) {
                 dom.aiModelSelect.add(new Option('No models found', ''));
                 if (dom.ollamaStatus) {
-                    dom.ollamaStatus.textContent = '⚠️ No Ollama models found. Please install some models first.';
+                    dom.ollamaStatus.textContent = '⚠ No Ollama models found. Please install some models first.';
                     dom.ollamaStatus.className = 'ollama-status-style ollama-status-warning';
                 }
                 return;
