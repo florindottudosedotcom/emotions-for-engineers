@@ -939,9 +939,11 @@ function createSlidePreviewElement(slide, slideNumber) {
     slideContent.appendChild(titleElement);
     slideContent.appendChild(contentContainer);
 
+    // Create layout manager for all visual elements
+    const layoutManager = createLayoutManager(slideContent);
+
     // Add advanced design elements with smart layout positioning
     if (slide.visualDesign && slide.visualDesign.designElements) {
-        const layoutManager = createLayoutManager(slideContent);
         slide.visualDesign.designElements.forEach((element, index) => {
             const designElement = createAdvancedDesignElement(element, layoutManager, index);
             if (designElement) {
@@ -961,19 +963,19 @@ function createSlidePreviewElement(slide, slideNumber) {
         slideContent.style.backgroundRepeat = 'repeat';
     }
 
-    // Add chart if specified
+    // Add chart if specified with smart layout positioning
     if (slide.visualDesign && slide.visualDesign.chartData) {
-        const chartElement = createChartElement(slide.visualDesign.chartData, slideNumber);
+        const chartElement = createChartElement(slide.visualDesign.chartData, slideNumber, layoutManager);
         // Add data attributes to track the chart for persistence
         chartElement.dataset.slideIndex = slideNumber - 1;
         chartElement.dataset.elementType = 'chartData';
         slideContent.appendChild(chartElement);
     }
 
-    // Keep legacy shapes support for backward compatibility
+    // Keep legacy shapes support for backward compatibility with smart layout
     if (slide.visualDesign && slide.visualDesign.shapes) {
         slide.visualDesign.shapes.forEach((shape, index) => {
-            const shapeElement = createVisualShape(shape);
+            const shapeElement = createVisualShape(shape, layoutManager);
             // Add data attributes to track the shape for persistence
             shapeElement.dataset.slideIndex = slideNumber - 1;
             shapeElement.dataset.elementIndex = index;
@@ -1066,30 +1068,29 @@ function updateSlideContentItem(slideIndex, itemIndex, value) {
 // updateSlideColor function removed - theme is now applied globally
 
 // Create visual shape elements
-function createVisualShape(shape) {
+function createVisualShape(shape, layoutManager) {
     const shapeElement = document.createElement('div');
     shapeElement.style.position = 'absolute';
-    shapeElement.style.zIndex = '10';
 
     // Set size
     const sizeMap = {
-        'small': '30px',
-        'medium': '50px',
-        'large': '80px'
+        'small': 30,
+        'medium': 50,
+        'large': 80
     };
-    const size = sizeMap[shape.size] || sizeMap['medium'];
+    const sizeValue = sizeMap[shape.size] || sizeMap['medium'];
+    const elementSize = { width: sizeValue, height: sizeValue };
 
-    // Set position
-    const positionMap = {
-        'top-left': { top: '10px', left: '10px' },
-        'top-right': { top: '10px', right: '10px' },
-        'bottom-left': { bottom: '10px', left: '10px' },
-        'bottom-right': { bottom: '10px', right: '10px' },
-        'center': { top: '50%', left: '50%', transform: 'translate(-50%, -50%)' }
-    };
-    const position = positionMap[shape.position] || positionMap['top-right'];
+    // Use layout manager for smart positioning
+    const positionInfo = layoutManager ?
+        layoutManager.getAvailablePosition(shape, shape.position || 'top-right', elementSize) :
+        { position: 'top: 10px; right: 10px;', zIndex: 10 };
 
-    Object.assign(shapeElement.style, position);
+    // Apply positioning styles
+    shapeElement.style.zIndex = positionInfo.zIndex;
+    shapeElement.style.cssText += `; ${positionInfo.position}`;
+
+    const size = `${sizeValue}px`;
 
     // Create shape based on type
     switch (shape.type) {
@@ -1445,22 +1446,26 @@ function createStatCounter(element, layoutManager) {
     return makeElementEditable(container);
 }
 
-function createChartElement(chartData, slideId) {
+function createChartElement(chartData, slideId, layoutManager) {
     const container = document.createElement('div');
     const canvasId = `chart-${slideId}-${Date.now()}`;
 
+    // Use layout manager for smart positioning
+    const elementSize = { width: 400, height: 250 };
+    const positionInfo = layoutManager ?
+        layoutManager.getAvailablePosition({ position: 'center-right' }, 'center-right', elementSize) :
+        { position: 'top: 50%; right: 20px; transform: translateY(-50%);', zIndex: 10 };
+
     container.style.cssText = `
-        width: 400px;
-        height: 250px;
+        width: ${elementSize.width}px;
+        height: ${elementSize.height}px;
         position: absolute;
         background: rgba(255, 255, 255, 0.9);
         border-radius: 12px;
         padding: 20px;
         box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
-        top: 50%;
-        right: 20px;
-        transform: translateY(-50%);
-        z-index: 10;
+        z-index: ${positionInfo.zIndex};
+        ${positionInfo.position}
     `;
 
     const canvas = document.createElement('canvas');
