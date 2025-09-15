@@ -448,14 +448,35 @@ For each slide, provide structured data in this exact JSON format:
         "textColor": "#ffffff",
         "accentColor": "#3182ce",
         "layout": "left-text",
-        "shapes": [
+        "designElements": [
           {
-            "type": "circle",
+            "type": "gradient-card",
+            "colors": ["#3182ce", "#1a365d"],
+            "position": "center-right",
+            "size": "large",
+            "content": "Key concept or statistic"
+          },
+          {
+            "type": "progress-bar",
+            "value": 75,
             "color": "#3182ce",
-            "position": "top-right",
-            "size": "medium"
+            "position": "bottom-center",
+            "label": "Progress indicator"
+          },
+          {
+            "type": "icon-set",
+            "icons": ["lightbulb", "target", "growth"],
+            "layout": "horizontal",
+            "position": "top-center"
           }
         ],
+        "chartData": {
+          "type": "bar",
+          "data": [65, 45, 80, 55],
+          "labels": ["Q1", "Q2", "Q3", "Q4"],
+          "colors": ["#3182ce", "#60a5fa", "#93c5fd", "#dbeafe"]
+        },
+        "backgroundPattern": "subtle-dots",
         "imageDescription": "Professional business meeting illustration"
       },
       "speakerNotes": "Additional context for this slide"
@@ -475,12 +496,34 @@ Guidelines:
   * Professional Green: background "#064e3b", text "#ffffff", accent "#34d399"
   * Warm Orange: background "#ea580c", text "#ffffff", accent "#fb923c"
   * Classic Navy: background "#1e3a8a", text "#ffffff", accent "#3b82f6"
-- Accent colors should be 40-60% lighter than background for visibility
-- Suggest relevant shapes: circle, rectangle, triangle, arrow, diamond
-- Position options: top-left, top-right, bottom-left, bottom-right, center
-- Layout options: left-text, center-text, right-text, full-width
-- Size options: small, medium, large
-- Provide specific image descriptions that match the content
+
+ADVANCED VISUAL DESIGN INSTRUCTIONS:
+- Create sophisticated, beautiful slide designs using modern UI patterns
+- Use designElements array for rich visual components:
+  * gradient-card: Cards with gradient backgrounds for highlighting key concepts
+  * progress-bar: Animated progress indicators with labels and values (0-100)
+  * icon-set: Groups of related icons (lightbulb, target, growth, shield, rocket, etc.)
+  * stat-counter: Large number displays with labels for statistics
+  * timeline-point: Timeline elements for process/history slides
+  * geometric-accent: Modern geometric shapes for visual interest
+  * quote-block: Stylized quote containers with attribution
+  * feature-grid: Grid layouts for feature/benefit comparisons
+
+- Add relevant charts/data visualizations using chartData:
+  * Types: bar, line, pie, doughnut, radar, scatter
+  * Include realistic data that matches slide content
+  * Use color schemes that complement the slide theme
+  * Add clear labels and legends
+
+- Background patterns for visual texture:
+  * subtle-dots, diagonal-lines, geometric-pattern, gradient-mesh, circuit-board
+  * Keep patterns subtle to maintain text readability
+
+- Layout options: left-text, center-text, right-text, split-content, full-width, card-grid
+- Position options: top-left, top-right, top-center, center-left, center-right, center, bottom-left, bottom-right, bottom-center
+- Size options: small, medium, large, full-width
+- Make each slide visually distinct while maintaining consistency
+- Focus on creating engaging, professional designs that enhance content comprehension
 
 Return ONLY the JSON, no additional text.`;
 }
@@ -749,7 +792,30 @@ function createSlidePreviewElement(slide, slideNumber) {
     slideContent.appendChild(titleElement);
     slideContent.appendChild(contentContainer);
 
-    // Add visual shapes if available
+    // Add advanced design elements if available
+    if (slide.visualDesign && slide.visualDesign.designElements) {
+        slide.visualDesign.designElements.forEach(element => {
+            const designElement = createAdvancedDesignElement(element);
+            if (designElement) {
+                slideContent.appendChild(designElement);
+            }
+        });
+    }
+
+    // Add background pattern if specified
+    if (slide.visualDesign && slide.visualDesign.backgroundPattern) {
+        slideContent.style.backgroundImage = createBackgroundPattern(slide.visualDesign.backgroundPattern);
+        slideContent.style.backgroundSize = 'cover';
+        slideContent.style.backgroundRepeat = 'repeat';
+    }
+
+    // Add chart if specified
+    if (slide.visualDesign && slide.visualDesign.chartData) {
+        const chartElement = createChartElement(slide.visualDesign.chartData, slideNumber);
+        slideContent.appendChild(chartElement);
+    }
+
+    // Keep legacy shapes support for backward compatibility
     if (slide.visualDesign && slide.visualDesign.shapes) {
         slide.visualDesign.shapes.forEach(shape => {
             const shapeElement = createVisualShape(shape);
@@ -923,6 +989,256 @@ function createVisualShape(shape) {
     }
 
     return shapeElement;
+}
+
+// Advanced visual design element creation functions
+function createAdvancedDesignElement(element) {
+    switch (element.type) {
+        case 'gradient-card':
+            return createGradientCard(element);
+        case 'progress-bar':
+            return createProgressBar(element);
+        case 'icon-set':
+            return createIconSet(element);
+        case 'stat-counter':
+            return createStatCounter(element);
+        case 'timeline-point':
+            return createTimelinePoint(element);
+        case 'geometric-accent':
+            return createGeometricAccent(element);
+        case 'quote-block':
+            return createQuoteBlock(element);
+        case 'feature-grid':
+            return createFeatureGrid(element);
+        default:
+            console.warn(`Unknown design element type: ${element.type}`);
+            return null;
+    }
+}
+
+function createGradientCard(element) {
+    const card = document.createElement('div');
+    card.className = 'gradient-card';
+
+    const gradient = element.colors.length >= 2 ?
+        `linear-gradient(135deg, ${element.colors[0]}, ${element.colors[1]})` :
+        element.colors[0];
+
+    const sizeClasses = {
+        small: { width: '200px', height: '100px', padding: '15px' },
+        medium: { width: '250px', height: '120px', padding: '20px' },
+        large: { width: '300px', height: '150px', padding: '25px' },
+        'full-width': { width: '100%', height: '120px', padding: '20px' }
+    };
+
+    const size = sizeClasses[element.size] || sizeClasses.medium;
+
+    card.style.cssText = `
+        background: ${gradient};
+        color: white;
+        border-radius: 12px;
+        padding: ${size.padding};
+        width: ${size.width};
+        height: ${size.height};
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        text-align: center;
+        font-weight: 600;
+        font-size: 16px;
+        line-height: 1.4;
+        position: absolute;
+        z-index: 10;
+        backdrop-filter: blur(10px);
+        ${getPositionStyles(element.position)}
+    `;
+
+    card.textContent = element.content || 'Key Concept';
+    return card;
+}
+
+function createProgressBar(element) {
+    const container = document.createElement('div');
+    container.className = 'progress-bar-container';
+
+    const value = Math.max(0, Math.min(100, element.value || 50));
+
+    container.style.cssText = `
+        width: 250px;
+        position: absolute;
+        z-index: 10;
+        ${getPositionStyles(element.position)}
+    `;
+
+    container.innerHTML = `
+        <div style="margin-bottom: 8px; font-size: 14px; font-weight: 500; color: inherit;">
+            ${element.label || 'Progress'}: ${value}%
+        </div>
+        <div style="width: 100%; height: 20px; background: rgba(255, 255, 255, 0.2); border-radius: 10px; overflow: hidden;">
+            <div style="width: ${value}%; height: 100%; background: ${element.color || '#3b82f6'}; border-radius: 10px; transition: width 0.8s ease;"></div>
+        </div>
+    `;
+
+    return container;
+}
+
+function createIconSet(element) {
+    const container = document.createElement('div');
+    container.className = 'icon-set';
+
+    const layout = element.layout === 'vertical' ? 'flex-direction: column;' : 'flex-direction: row;';
+
+    container.style.cssText = `
+        display: flex;
+        gap: 15px;
+        align-items: center;
+        justify-content: center;
+        position: absolute;
+        z-index: 10;
+        ${layout}
+        ${getPositionStyles(element.position)}
+    `;
+
+    // Create simple icon representations
+    const iconMap = {
+        lightbulb: '💡',
+        target: '🎯',
+        growth: '📈',
+        shield: '🛡️',
+        rocket: '🚀',
+        gear: '⚙️',
+        star: '⭐',
+        check: '✓',
+        heart: '❤️',
+        trophy: '🏆'
+    };
+
+    (element.icons || ['lightbulb', 'target', 'growth']).forEach(iconName => {
+        const icon = document.createElement('div');
+        icon.style.cssText = `
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.1);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 20px;
+            backdrop-filter: blur(5px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        `;
+        icon.textContent = iconMap[iconName] || '🔵';
+        container.appendChild(icon);
+    });
+
+    return container;
+}
+
+function createStatCounter(element) {
+    const container = document.createElement('div');
+    container.className = 'stat-counter';
+
+    container.style.cssText = `
+        text-align: center;
+        position: absolute;
+        z-index: 10;
+        background: rgba(255, 255, 255, 0.1);
+        backdrop-filter: blur(10px);
+        border-radius: 12px;
+        padding: 20px;
+        border: 1px solid rgba(255, 255, 255, 0.2);
+        ${getPositionStyles(element.position)}
+    `;
+
+    container.innerHTML = `
+        <div style="font-size: 36px; font-weight: bold; color: inherit; margin-bottom: 8px;">
+            ${element.value || '0'}
+        </div>
+        <div style="font-size: 14px; opacity: 0.8; color: inherit;">
+            ${element.label || 'Statistic'}
+        </div>
+    `;
+
+    return container;
+}
+
+function createChartElement(chartData, slideId) {
+    const container = document.createElement('div');
+    const canvasId = `chart-${slideId}-${Date.now()}`;
+
+    container.style.cssText = `
+        width: 400px;
+        height: 250px;
+        position: absolute;
+        background: rgba(255, 255, 255, 0.9);
+        border-radius: 12px;
+        padding: 20px;
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+        top: 50%;
+        right: 20px;
+        transform: translateY(-50%);
+        z-index: 10;
+    `;
+
+    const canvas = document.createElement('canvas');
+    canvas.id = canvasId;
+    container.appendChild(canvas);
+
+    // Initialize chart after a delay to ensure canvas is in DOM
+    setTimeout(() => {
+        if (window.Chart && document.getElementById(canvasId)) {
+            new Chart(canvas, {
+                type: chartData.type || 'bar',
+                data: {
+                    labels: chartData.labels || ['A', 'B', 'C', 'D'],
+                    datasets: [{
+                        data: chartData.data || [10, 20, 30, 40],
+                        backgroundColor: chartData.colors || ['#3b82f6', '#10b981', '#f59e0b', '#ef4444'],
+                        borderRadius: 6,
+                        borderWidth: 0
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    plugins: { legend: { display: false } },
+                    scales: {
+                        y: { display: chartData.type !== 'pie' && chartData.type !== 'doughnut' }
+                    }
+                }
+            });
+        }
+    }, 100);
+
+    return container;
+}
+
+function createBackgroundPattern(patternType) {
+    const patterns = {
+        'subtle-dots': 'radial-gradient(circle, rgba(255,255,255,0.1) 1px, transparent 1px)',
+        'diagonal-lines': 'repeating-linear-gradient(45deg, transparent, transparent 10px, rgba(255,255,255,0.05) 10px, rgba(255,255,255,0.05) 20px)',
+        'geometric-pattern': 'conic-gradient(from 45deg, transparent, rgba(255,255,255,0.05), transparent)',
+        'gradient-mesh': 'radial-gradient(ellipse at top left, rgba(255,255,255,0.1), transparent), radial-gradient(ellipse at bottom right, rgba(255,255,255,0.05), transparent)',
+        'circuit-board': 'linear-gradient(90deg, rgba(255,255,255,0.03) 50%, transparent 50%), linear-gradient(rgba(255,255,255,0.03) 50%, transparent 50%)'
+    };
+
+    return patterns[patternType] || patterns['subtle-dots'];
+}
+
+function getPositionStyles(position) {
+    const positions = {
+        'top-left': 'top: 20px; left: 20px;',
+        'top-right': 'top: 20px; right: 20px;',
+        'top-center': 'top: 20px; left: 50%; transform: translateX(-50%);',
+        'center-left': 'top: 50%; left: 20px; transform: translateY(-50%);',
+        'center-right': 'top: 50%; right: 20px; transform: translateY(-50%);',
+        'center': 'top: 50%; left: 50%; transform: translate(-50%, -50%);',
+        'bottom-left': 'bottom: 20px; left: 20px;',
+        'bottom-right': 'bottom: 20px; right: 20px;',
+        'bottom-center': 'bottom: 20px; left: 50%; transform: translateX(-50%);'
+    };
+
+    return positions[position] || positions['top-right'];
 }
 
 function createColorSchemeSelector() {
@@ -1399,6 +1715,9 @@ function applyThemeToSlides() {
             shape.style.stroke = theme.borderColor;
             shape.style.strokeWidth = '2px';
         });
+
+        // Style advanced design elements
+        applyThemeToAdvancedElements(slide, theme);
     });
 
     // Update presentation title container and title element styling
@@ -1438,6 +1757,69 @@ function applyThemeToSlides() {
         slidesDom.presentationSection.style.padding = '20px';
         slidesDom.presentationSection.style.border = '1px solid #e9ecef';
     }
+}
+
+function applyThemeToAdvancedElements(slide, theme) {
+    // Apply theme to gradient cards
+    const gradientCards = slide.querySelectorAll('.gradient-card');
+    gradientCards.forEach(card => {
+        // Update gradient to use theme colors
+        const gradient = `linear-gradient(135deg, ${theme.borderColor}, ${theme.fillColor})`;
+        card.style.background = gradient;
+        card.style.color = theme.textColor;
+    });
+
+    // Apply theme to progress bars
+    const progressBars = slide.querySelectorAll('.progress-bar-container');
+    progressBars.forEach(container => {
+        const progressFill = container.querySelector('div[style*="width:"][style*="%"]');
+        if (progressFill) {
+            progressFill.style.background = theme.borderColor;
+        }
+        container.style.color = theme.textColor;
+    });
+
+    // Apply theme to icon sets
+    const iconSets = slide.querySelectorAll('.icon-set');
+    iconSets.forEach(iconSet => {
+        const icons = iconSet.querySelectorAll('div');
+        icons.forEach(icon => {
+            icon.style.background = `rgba(${hexToRgb(theme.borderColor)?.r || 59}, ${hexToRgb(theme.borderColor)?.g || 130}, ${hexToRgb(theme.borderColor)?.b || 246}, 0.2)`;
+            icon.style.border = `1px solid ${theme.borderColor}`;
+        });
+    });
+
+    // Apply theme to stat counters
+    const statCounters = slide.querySelectorAll('.stat-counter');
+    statCounters.forEach(counter => {
+        counter.style.background = `rgba(${hexToRgb(theme.fillColor)?.r || 255}, ${hexToRgb(theme.fillColor)?.g || 255}, ${hexToRgb(theme.fillColor)?.b || 255}, 0.1)`;
+        counter.style.border = `1px solid ${theme.borderColor}`;
+        counter.style.color = theme.textColor;
+    });
+
+    // Apply theme to chart containers (Chart.js charts will inherit text colors)
+    const chartContainers = slide.querySelectorAll('div[id*="chart-"]');
+    chartContainers.forEach(container => {
+        container.style.background = `rgba(${hexToRgb(theme.backgroundColor)?.r || 255}, ${hexToRgb(theme.backgroundColor)?.g || 255}, ${hexToRgb(theme.backgroundColor)?.b || 255}, 0.95)`;
+        container.style.border = `1px solid ${theme.borderColor}`;
+    });
+
+    // Update background patterns to blend with theme
+    const elementsWithPatterns = slide.querySelectorAll('[style*="background-image"]');
+    elementsWithPatterns.forEach(element => {
+        const currentBg = element.style.backgroundImage;
+        if (currentBg.includes('rgba(255,255,255,')) {
+            // Replace white pattern with theme-appropriate colors
+            const themeRgb = hexToRgb(theme.textColor);
+            if (themeRgb) {
+                const newPattern = currentBg.replace(
+                    /rgba\(255,255,255,([0-9.]+)\)/g,
+                    `rgba(${themeRgb.r}, ${themeRgb.g}, ${themeRgb.b}, $1)`
+                );
+                element.style.backgroundImage = newPattern;
+            }
+        }
+    });
 }
 
 function showPresentationViewer() {

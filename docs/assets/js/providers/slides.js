@@ -124,14 +124,35 @@ For each slide, provide structured data in this exact JSON format:
         "textColor": "#ffffff",
         "accentColor": "#3182ce",
         "layout": "left-text",
-        "shapes": [
+        "designElements": [
           {
-            "type": "circle",
+            "type": "gradient-card",
+            "colors": ["#3182ce", "#1a365d"],
+            "position": "center-right",
+            "size": "large",
+            "content": "Key concept or statistic"
+          },
+          {
+            "type": "progress-bar",
+            "value": 75,
             "color": "#3182ce",
-            "position": "top-right",
-            "size": "medium"
+            "position": "bottom-center",
+            "label": "Progress indicator"
+          },
+          {
+            "type": "icon-set",
+            "icons": ["lightbulb", "target", "growth"],
+            "layout": "horizontal",
+            "position": "top-center"
           }
         ],
+        "chartData": {
+          "type": "bar",
+          "data": [65, 45, 80, 55],
+          "labels": ["Q1", "Q2", "Q3", "Q4"],
+          "colors": ["#3182ce", "#60a5fa", "#93c5fd", "#dbeafe"]
+        },
+        "backgroundPattern": "subtle-dots",
         "imageDescription": "Professional business meeting illustration"
       },
       "speakerNotes": "Additional context for this slide"
@@ -144,11 +165,34 @@ Guidelines:
 - Last slide: Conclusion/Thank you slide
 - Content slides: Maximum 4 bullet points each
 - Use professional color schemes (dark/light themes)
-- Suggest relevant shapes: circle, rectangle, triangle, arrow
-- Position options: top-left, top-right, bottom-left, bottom-right, center
-- Layout options: left-text, center-text, right-text, full-width
-- Size options: small, medium, large
-- Provide specific image descriptions that match the content
+
+ADVANCED VISUAL DESIGN INSTRUCTIONS:
+- Create sophisticated, beautiful slide designs using modern UI patterns
+- Use designElements array for rich visual components:
+  * gradient-card: Cards with gradient backgrounds for highlighting key concepts
+  * progress-bar: Animated progress indicators with labels and values (0-100)
+  * icon-set: Groups of related icons (lightbulb, target, growth, shield, rocket, etc.)
+  * stat-counter: Large number displays with labels for statistics
+  * timeline-point: Timeline elements for process/history slides
+  * geometric-accent: Modern geometric shapes for visual interest
+  * quote-block: Stylized quote containers with attribution
+  * feature-grid: Grid layouts for feature/benefit comparisons
+
+- Add relevant charts/data visualizations using chartData:
+  * Types: bar, line, pie, doughnut, radar, scatter
+  * Include realistic data that matches slide content
+  * Use color schemes that complement the slide theme
+  * Add clear labels and legends
+
+- Background patterns for visual texture:
+  * subtle-dots, diagonal-lines, geometric-pattern, gradient-mesh, circuit-board
+  * Keep patterns subtle to maintain text readability
+
+- Layout options: left-text, center-text, right-text, split-content, full-width, card-grid
+- Position options: top-left, top-right, top-center, center-left, center-right, center, bottom-left, bottom-right, bottom-center
+- Size options: small, medium, large, full-width
+- Make each slide visually distinct while maintaining consistency
+- Focus on creating engaging, professional designs that enhance content comprehension
 
 Return ONLY the JSON, no additional text.`;
 
