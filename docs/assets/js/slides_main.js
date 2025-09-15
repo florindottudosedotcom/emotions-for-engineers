@@ -859,8 +859,8 @@ function createSlidePreviewElement(slide, slideNumber) {
     titleElement.addEventListener('focus', (e) => e.target.style.border = '2px solid var(--accent-color, #60a5fa)');
     titleElement.addEventListener('blur', (e) => e.target.style.border = '2px solid transparent');
 
-    // Select all text when clicking/focusing
-    selectAllOnFocus(titleElement);
+    // Remove auto-select behavior that interferes with editing
+    // selectAllOnFocus(titleElement);
 
     // Editable content list
     const contentContainer = document.createElement('div');
@@ -883,9 +883,9 @@ function createSlidePreviewElement(slide, slideNumber) {
                 font-family: Arial, sans-serif;
                 font-size: 14px;
                 line-height: 1.4;
-                display: flex;
-                align-items: center;
                 min-height: 20px;
+                word-wrap: break-word;
+                outline: none;
             `;
 
             // Add editing event listeners for content
@@ -897,8 +897,8 @@ function createSlidePreviewElement(slide, slideNumber) {
             listItem.addEventListener('focus', (e) => e.target.style.border = '2px solid var(--accent-color, #60a5fa)');
             listItem.addEventListener('blur', (e) => e.target.style.border = '2px solid transparent');
 
-            // Select all text when clicking/focusing
-            selectAllOnFocus(listItem);
+            // Remove auto-select behavior that interferes with editing
+            // selectAllOnFocus(listItem);
 
             // Make content item deletable with hover mechanism
             makeContentItemEditable(listItem, slideNumber - 1, index);
@@ -2121,24 +2121,25 @@ function makeContentItemEditable(listItem, slideIndex, itemIndex) {
     deleteBtn.style.cssText = `
         display: none;
         position: absolute;
-        top: 8px;
-        right: 8px;
-        width: 20px;
-        height: 20px;
+        top: 5px;
+        right: 5px;
+        width: 18px;
+        height: 18px;
         background: #e74c3c;
         color: white;
         border: none;
         border-radius: 50%;
         cursor: pointer;
-        font-size: 11px;
+        font-size: 10px;
         font-weight: bold;
         z-index: 1001;
         box-shadow: 0 2px 6px rgba(0,0,0,0.4);
         transition: all 0.2s ease;
-        line-height: 18px;
+        line-height: 16px;
         text-align: center;
         font-family: Arial, sans-serif;
         pointer-events: auto;
+        user-select: none;
     `;
     deleteBtn.addEventListener('click', (e) => {
         e.preventDefault();
@@ -2154,8 +2155,9 @@ function makeContentItemEditable(listItem, slideIndex, itemIndex) {
         deleteBtn.style.transform = 'scale(1)';
     });
 
-    // Make the list item position relative so the absolute delete button positions correctly
+    // Make the list item position relative and ensure proper padding for delete button space
     listItem.style.position = 'relative';
+    listItem.style.paddingRight = '30px'; // Add space for delete button
 
     listItem.appendChild(deleteBtn);
 }
