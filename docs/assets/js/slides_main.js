@@ -948,10 +948,11 @@ function createSlidePreviewElement(slide, slideNumber) {
     slideContent.appendChild(titleElement);
     slideContent.appendChild(contentContainer);
 
-    // Add advanced design elements if available
+    // Add advanced design elements with smart layout positioning
     if (slide.visualDesign && slide.visualDesign.designElements) {
-        slide.visualDesign.designElements.forEach(element => {
-            const designElement = createAdvancedDesignElement(element);
+        const layoutManager = createLayoutManager(slideContent);
+        slide.visualDesign.designElements.forEach((element, index) => {
+            const designElement = createAdvancedDesignElement(element, layoutManager, index);
             if (designElement) {
                 slideContent.appendChild(designElement);
             }
@@ -1144,43 +1145,130 @@ function createVisualShape(shape) {
             shapeElement.style.opacity = '0.8';
     }
 
-    return shapeElement;
+    return makeElementEditable(shapeElement);
+}
+
+// Smart Layout Manager for positioning design elements without overlap
+function createLayoutManager(slideContainer) {
+    const occupiedAreas = [];
+    const slideRect = { width: 800, height: 600 }; // Approximate slide dimensions
+
+    const layoutManager = {
+        getAvailablePosition: function(element, preferredPosition, elementSize) {
+            const positions = this.getPositionVariations(preferredPosition);
+
+            for (const position of positions) {
+                const rect = this.getElementRect(position, elementSize);
+                if (!this.hasOverlap(rect)) {
+                    this.occupyArea(rect, element.type);
+                    return { position, zIndex: 10 + occupiedAreas.length };
+                }
+            }
+
+            // Fallback: stack with increased z-index and slight offset
+            const fallbackRect = this.getElementRect(preferredPosition, elementSize);
+            const offset = occupiedAreas.length * 20;
+            fallbackRect.left += offset;
+            fallbackRect.top += offset;
+            this.occupyArea(fallbackRect, element.type);
+
+            return {
+                position: this.rectToPosition(fallbackRect),
+                zIndex: 20 + occupiedAreas.length
+            };
+        },
+
+        getPositionVariations: function(preferred) {
+            const variations = {
+                'top-left': ['top-left', 'top-center', 'center-left', 'top-right'],
+                'top-right': ['top-right', 'top-center', 'center-right', 'top-left'],
+                'center-right': ['center-right', 'bottom-right', 'top-right', 'center-left'],
+                'center-left': ['center-left', 'bottom-left', 'top-left', 'center-right'],
+                'bottom-right': ['bottom-right', 'bottom-center', 'center-right', 'bottom-left'],
+                'bottom-left': ['bottom-left', 'bottom-center', 'center-left', 'bottom-right'],
+                'bottom-center': ['bottom-center', 'bottom-left', 'bottom-right', 'center'],
+                'top-center': ['top-center', 'top-left', 'top-right', 'center'],
+                'center': ['center', 'center-left', 'center-right', 'top-center']
+            };
+            return variations[preferred] || [preferred, 'center', 'center-right', 'bottom-right'];
+        },
+
+        getElementRect: function(position, size) {
+            const padding = 20;
+            const width = size.width || 200;
+            const height = size.height || 150;
+
+            const positions = {
+                'top-left': { left: padding, top: padding },
+                'top-right': { left: slideRect.width - width - padding, top: padding },
+                'top-center': { left: (slideRect.width - width) / 2, top: padding },
+                'center-left': { left: padding, top: (slideRect.height - height) / 2 },
+                'center-right': { left: slideRect.width - width - padding, top: (slideRect.height - height) / 2 },
+                'center': { left: (slideRect.width - width) / 2, top: (slideRect.height - height) / 2 },
+                'bottom-left': { left: padding, top: slideRect.height - height - padding },
+                'bottom-right': { left: slideRect.width - width - padding, top: slideRect.height - height - padding },
+                'bottom-center': { left: (slideRect.width - width) / 2, top: slideRect.height - height - padding }
+            };
+
+            const pos = positions[position] || positions['center'];
+            return { ...pos, width, height };
+        },
+
+        hasOverlap: function(rect) {
+            return occupiedAreas.some(occupied =>
+                !(rect.left + rect.width < occupied.left ||
+                  occupied.left + occupied.width < rect.left ||
+                  rect.top + rect.height < occupied.top ||
+                  occupied.top + occupied.height < rect.top)
+            );
+        },
+
+        occupyArea: function(rect, type) {
+            occupiedAreas.push({ ...rect, type });
+        },
+
+        rectToPosition: function(rect) {
+            return `left: ${rect.left}px; top: ${rect.top}px;`;
+        }
+    };
+
+    return layoutManager;
 }
 
 // Advanced visual design element creation functions
-function createAdvancedDesignElement(element) {
+function createAdvancedDesignElement(element, layoutManager, index) {
     switch (element.type) {
         case 'gradient-card':
-            return createGradientCard(element);
+            return createGradientCard(element, layoutManager);
         case 'progress-bar':
-            return createProgressBar(element);
+            return createProgressBar(element, layoutManager);
         case 'icon-set':
-            return createIconSet(element);
+            return createIconSet(element, layoutManager);
         case 'stat-counter':
-            return createStatCounter(element);
+            return createStatCounter(element, layoutManager);
         case 'timeline-point':
-            return createTimelinePoint(element);
+            return createTimelinePoint(element, layoutManager);
         case 'geometric-accent':
-            return createGeometricAccent(element);
+            return createGeometricAccent(element, layoutManager);
         case 'quote-block':
-            return createQuoteBlock(element);
+            return createQuoteBlock(element, layoutManager);
         case 'feature-grid':
-            return createFeatureGrid(element);
+            return createFeatureGrid(element, layoutManager);
         case 'organic-shape':
-            return createOrganicShape(element);
+            return createOrganicShape(element, layoutManager);
         case 'polyline-accent':
-            return createPolylineAccent(element);
+            return createPolylineAccent(element, layoutManager);
         case 'topic-visualization':
-            return createTopicVisualization(element);
+            return createTopicVisualization(element, layoutManager);
         case 'contextual-metaphor':
-            return createContextualMetaphor(element);
+            return createContextualMetaphor(element, layoutManager);
         default:
             console.warn(`Unknown design element type: ${element.type}`);
             return null;
     }
 }
 
-function createGradientCard(element) {
+function createGradientCard(element, layoutManager) {
     const card = document.createElement('div');
     card.className = 'gradient-card';
 
@@ -1196,6 +1284,12 @@ function createGradientCard(element) {
     };
 
     const size = sizeClasses[element.size] || sizeClasses.medium;
+
+    // Use layout manager for smart positioning
+    const elementSize = { width: parseInt(size.width) || 250, height: parseInt(size.height) || 120 };
+    const positionInfo = layoutManager ?
+        layoutManager.getAvailablePosition(element, element.position, elementSize) :
+        { position: getPositionStyles(element.position), zIndex: 10 };
 
     card.style.cssText = `
         background: ${gradient};
@@ -1213,45 +1307,58 @@ function createGradientCard(element) {
         font-size: 16px;
         line-height: 1.4;
         position: absolute;
-        z-index: 10;
+        z-index: ${positionInfo.zIndex};
         backdrop-filter: blur(10px);
-        ${getPositionStyles(element.position)}
+        ${positionInfo.position}
     `;
 
-    card.textContent = element.content || 'Key Concept';
-    return card;
+    card.innerHTML = wrapTextInEditableSpan(element.content || 'Key Concept', 'color: white; font-weight: 600; font-size: 16px; line-height: 1.4;');
+    return makeElementEditable(card);
 }
 
-function createProgressBar(element) {
+function createProgressBar(element, layoutManager) {
     const container = document.createElement('div');
     container.className = 'progress-bar-container';
 
     const value = Math.max(0, Math.min(100, element.value || 50));
 
+    // Use layout manager for smart positioning
+    const elementSize = { width: 250, height: 60 };
+    const positionInfo = layoutManager ?
+        layoutManager.getAvailablePosition(element, element.position, elementSize) :
+        { position: getPositionStyles(element.position), zIndex: 10 };
+
     container.style.cssText = `
-        width: 250px;
+        width: ${elementSize.width}px;
         position: absolute;
-        z-index: 10;
-        ${getPositionStyles(element.position)}
+        z-index: ${positionInfo.zIndex};
+        ${positionInfo.position}
     `;
 
     container.innerHTML = `
         <div style="margin-bottom: 8px; font-size: 14px; font-weight: 500; color: inherit;">
-            ${element.label || 'Progress'}: ${value}%
+            ${wrapTextInEditableSpan(element.label || 'Progress', 'font-size: 14px; font-weight: 500;')}: ${value}%
         </div>
         <div style="width: 100%; height: 20px; background: rgba(255, 255, 255, 0.2); border-radius: 10px; overflow: hidden;">
             <div style="width: ${value}%; height: 100%; background: ${element.color || '#3b82f6'}; border-radius: 10px; transition: width 0.8s ease;"></div>
         </div>
     `;
 
-    return container;
+    return makeElementEditable(container);
 }
 
-function createIconSet(element) {
+function createIconSet(element, layoutManager) {
     const container = document.createElement('div');
     container.className = 'icon-set';
 
     const layout = element.layout === 'vertical' ? 'flex-direction: column;' : 'flex-direction: row;';
+
+    // Use layout manager for smart positioning
+    const isVertical = element.layout === 'vertical';
+    const elementSize = isVertical ? { width: 80, height: 200 } : { width: 200, height: 80 };
+    const positionInfo = layoutManager ?
+        layoutManager.getAvailablePosition(element, element.position, elementSize) :
+        { position: getPositionStyles(element.position), zIndex: 10 };
 
     container.style.cssText = `
         display: flex;
@@ -1259,9 +1366,9 @@ function createIconSet(element) {
         align-items: center;
         justify-content: center;
         position: absolute;
-        z-index: 10;
+        z-index: ${positionInfo.zIndex};
         ${layout}
-        ${getPositionStyles(element.position)}
+        ${positionInfo.position}
     `;
 
     // Create simple icon representations
@@ -1296,35 +1403,41 @@ function createIconSet(element) {
         container.appendChild(icon);
     });
 
-    return container;
+    return makeElementEditable(container);
 }
 
-function createStatCounter(element) {
+function createStatCounter(element, layoutManager) {
     const container = document.createElement('div');
     container.className = 'stat-counter';
+
+    // Use layout manager for smart positioning
+    const elementSize = { width: 120, height: 100 };
+    const positionInfo = layoutManager ?
+        layoutManager.getAvailablePosition(element, element.position, elementSize) :
+        { position: getPositionStyles(element.position), zIndex: 10 };
 
     container.style.cssText = `
         text-align: center;
         position: absolute;
-        z-index: 10;
+        z-index: ${positionInfo.zIndex};
         background: rgba(255, 255, 255, 0.1);
         backdrop-filter: blur(10px);
         border-radius: 12px;
         padding: 20px;
         border: 1px solid rgba(255, 255, 255, 0.2);
-        ${getPositionStyles(element.position)}
+        ${positionInfo.position}
     `;
 
     container.innerHTML = `
         <div style="font-size: 36px; font-weight: bold; color: inherit; margin-bottom: 8px;">
-            ${element.value || '0'}
+            ${wrapTextInEditableSpan(element.value || '0', 'font-size: 36px; font-weight: bold; margin-bottom: 8px;')}
         </div>
         <div style="font-size: 14px; opacity: 0.8; color: inherit;">
-            ${element.label || 'Statistic'}
+            ${wrapTextInEditableSpan(element.label || 'Statistic', 'font-size: 14px; opacity: 0.8;')}
         </div>
     `;
 
-    return container;
+    return makeElementEditable(container);
 }
 
 function createChartElement(chartData, slideId) {
@@ -1374,7 +1487,7 @@ function createChartElement(chartData, slideId) {
         }
     }, 100);
 
-    return container;
+    return makeElementEditable(container);
 }
 
 function createBackgroundPattern(patternType) {
@@ -1406,7 +1519,7 @@ function getPositionStyles(position) {
 }
 
 // New organic design element functions
-function createOrganicShape(element) {
+function createOrganicShape(element, layoutManager) {
     const container = document.createElement('div');
     container.className = 'organic-shape';
 
@@ -1426,22 +1539,28 @@ function createOrganicShape(element) {
     const shapeCreator = shapeTypes[element.shape] || shapeTypes['flowing-curve'];
     const svgContent = shapeCreator(primaryColor, secondaryColor);
 
+    // Use layout manager for smart positioning
+    const elementSize = { width: 200, height: 150 };
+    const positionInfo = layoutManager ?
+        layoutManager.getAvailablePosition(element, element.position, elementSize) :
+        { position: getPositionStyles(element.position), zIndex: 5 };
+
     container.style.cssText = `
         position: absolute;
-        z-index: 5;
-        width: 200px;
-        height: 150px;
-        ${getPositionStyles(element.position)}
+        z-index: ${positionInfo.zIndex};
+        width: ${elementSize.width}px;
+        height: ${elementSize.height}px;
+        ${positionInfo.position}
     `;
 
     container.innerHTML = `
         <div style="position: relative; width: 100%; height: 100%;">
             ${svgContent}
-            ${element.content ? `<div style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); color: white; font-weight: 600; text-align: center; font-size: 14px; text-shadow: 0 2px 4px rgba(0,0,0,0.3);">${element.content}</div>` : ''}
+            ${element.content ? `<div style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); color: white; font-weight: 600; text-align: center; font-size: 14px; text-shadow: 0 2px 4px rgba(0,0,0,0.3);">${wrapTextInEditableSpan(element.content, 'color: white; font-weight: 600; text-shadow: 0 2px 4px rgba(0,0,0,0.3);')}</div>` : ''}
         </div>
     `;
 
-    return container;
+    return makeElementEditable(container);
 }
 
 function createFlowingCurve(color1, color2) {
@@ -1537,7 +1656,7 @@ function createWaterRipple(color1, color2) {
     </svg>`;
 }
 
-function createPolylineAccent(element) {
+function createPolylineAccent(element, layoutManager) {
     const container = document.createElement('div');
     container.className = 'polyline-accent';
 
@@ -1554,17 +1673,23 @@ function createPolylineAccent(element) {
     const polylineCreator = polylineTypes[style] || polylineTypes['flowing-path'];
     const svgContent = polylineCreator(color);
 
+    // Use layout manager for smart positioning
+    const elementSize = { width: 300, height: 100 };
+    const positionInfo = layoutManager ?
+        layoutManager.getAvailablePosition(element, element.position, elementSize) :
+        { position: getPositionStyles(element.position), zIndex: 3 };
+
     container.style.cssText = `
         position: absolute;
-        z-index: 3;
-        width: 300px;
-        height: 100px;
+        z-index: ${positionInfo.zIndex};
+        width: ${elementSize.width}px;
+        height: ${elementSize.height}px;
         pointer-events: none;
-        ${getPositionStyles(element.position)}
+        ${positionInfo.position}
     `;
 
     container.innerHTML = svgContent;
-    return container;
+    return makeElementEditable(container);
 }
 
 function createFlowingPath(color) {
@@ -1660,35 +1785,41 @@ function createBranchingLines(color) {
     </svg>`;
 }
 
-function createTopicVisualization(element) {
+function createTopicVisualization(element, layoutManager) {
     const container = document.createElement('div');
     container.className = 'topic-visualization';
 
     const colors = element.colors || ['#3b82f6', '#1d4ed8'];
 
+    // Use layout manager for smart positioning
+    const elementSize = { width: 200, height: 120 };
+    const positionInfo = layoutManager ?
+        layoutManager.getAvailablePosition(element, element.position, elementSize) :
+        { position: getPositionStyles(element.position), zIndex: 8 };
+
     container.style.cssText = `
         position: absolute;
-        z-index: 8;
+        z-index: ${positionInfo.zIndex};
         background: rgba(255, 255, 255, 0.95);
         border-radius: 16px;
         padding: 20px;
         box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
         backdrop-filter: blur(10px);
         border: 1px solid rgba(255, 255, 255, 0.3);
-        min-width: 200px;
-        ${getPositionStyles(element.position)}
+        min-width: ${elementSize.width}px;
+        ${positionInfo.position}
     `;
 
     container.innerHTML = `
         <div style="text-align: center;">
             <div style="font-size: 32px; margin-bottom: 8px;">${getTopicIcon(element.visualType)}</div>
             <div style="font-weight: 600; color: ${colors[0]}; font-size: 14px; line-height: 1.4;">
-                ${element.description || 'Topic Concept'}
+                ${wrapTextInEditableSpan(element.description || 'Topic Concept', `font-weight: 600; color: ${colors[0]}; font-size: 14px; line-height: 1.4;`)}
             </div>
         </div>
     `;
 
-    return container;
+    return makeElementEditable(container);
 }
 
 function getTopicIcon(visualType) {
@@ -1707,22 +1838,28 @@ function getTopicIcon(visualType) {
     return icons[visualType] || icons.default;
 }
 
-function createContextualMetaphor(element) {
+function createContextualMetaphor(element, layoutManager) {
     const container = document.createElement('div');
     container.className = 'contextual-metaphor';
 
     const colors = element.colors || ['#3b82f6', '#1d4ed8'];
 
+    // Use layout manager for smart positioning
+    const elementSize = { width: 150, height: 100 };
+    const positionInfo = layoutManager ?
+        layoutManager.getAvailablePosition(element, element.position, elementSize) :
+        { position: getPositionStyles(element.position), zIndex: 6 };
+
     container.style.cssText = `
         position: absolute;
-        z-index: 6;
+        z-index: ${positionInfo.zIndex};
         background: linear-gradient(135deg, ${colors[0]}20, ${colors[1] || colors[0]}10);
         border-radius: 20px;
         padding: 16px;
         backdrop-filter: blur(8px);
         border: 1px solid ${colors[0]}40;
-        min-width: 150px;
-        ${getPositionStyles(element.position)}
+        min-width: ${elementSize.width}px;
+        ${positionInfo.position}
     `;
 
     const metaphorContent = getMetaphorContent(element.metaphor || 'growth');
@@ -1731,12 +1868,12 @@ function createContextualMetaphor(element) {
         <div style="text-align: center;">
             <div style="font-size: 28px; margin-bottom: 6px;">${metaphorContent.icon}</div>
             <div style="font-weight: 500; color: ${colors[0]}; font-size: 12px; line-height: 1.3;">
-                ${element.content || metaphorContent.text}
+                ${wrapTextInEditableSpan(element.content || metaphorContent.text, `font-weight: 500; color: ${colors[0]}; font-size: 12px; line-height: 1.3;`)}
             </div>
         </div>
     `;
 
-    return container;
+    return makeElementEditable(container);
 }
 
 function getMetaphorContent(type) {
@@ -1752,6 +1889,117 @@ function getMetaphorContent(type) {
     };
 
     return metaphors[type] || metaphors.growth;
+}
+
+// Helper functions for editable visual elements
+function makeElementEditable(element) {
+    // Don't make core slide elements deletable
+    if (element.classList.contains('slide-title-editable') ||
+        element.classList.contains('slide-content-item-editable') ||
+        element.classList.contains('slide-content-editable') ||
+        element.classList.contains('slide-preview')) {
+        return element;
+    }
+
+    // Add visual-element class for styling
+    element.classList.add('visual-element');
+
+    // Add hover functionality for showing/hiding delete button
+    element.addEventListener('mouseenter', () => {
+        const deleteBtn = element.querySelector('.delete-element-btn');
+        if (deleteBtn) {
+            deleteBtn.style.display = 'block';
+        }
+    });
+
+    element.addEventListener('mouseleave', () => {
+        const deleteBtn = element.querySelector('.delete-element-btn');
+        if (deleteBtn) {
+            deleteBtn.style.display = 'none';
+        }
+    });
+
+    // Add delete button
+    const deleteBtn = document.createElement('button');
+    deleteBtn.className = 'delete-element-btn';
+    deleteBtn.innerHTML = '×';
+    deleteBtn.title = 'Delete element';
+    // Set button styles and hide by default
+    deleteBtn.style.cssText = `
+        display: none;
+        position: absolute;
+        top: 8px;
+        right: 8px;
+        width: 20px;
+        height: 20px;
+        background: #e74c3c;
+        color: white;
+        border: none;
+        border-radius: 50%;
+        cursor: pointer;
+        font-size: 11px;
+        font-weight: bold;
+        z-index: 1001;
+        box-shadow: 0 2px 6px rgba(0,0,0,0.4);
+        transition: all 0.2s ease;
+        line-height: 18px;
+        text-align: center;
+        font-family: Arial, sans-serif;
+    `;
+    deleteBtn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        if (confirm('Delete this visual element?')) {
+            element.remove();
+            // Save slides state after deletion
+            if (window.stateModule && window.stateModule.saveState) {
+                window.stateModule.saveState();
+            }
+        }
+    });
+    deleteBtn.addEventListener('mouseenter', () => {
+        deleteBtn.style.background = '#c0392b';
+        deleteBtn.style.transform = 'scale(1.1)';
+    });
+    deleteBtn.addEventListener('mouseleave', () => {
+        deleteBtn.style.background = '#e74c3c';
+        deleteBtn.style.transform = 'scale(1)';
+    });
+    element.appendChild(deleteBtn);
+
+    // Make text content editable
+    makeTextContentEditable(element);
+
+    return element;
+}
+
+function makeTextContentEditable(element) {
+    // Find text nodes and make them editable
+    const textElements = element.querySelectorAll('[style*="color"], div, span');
+
+    textElements.forEach(textEl => {
+        const text = textEl.textContent.trim();
+        // Only make elements with significant text content editable
+        if (text && text.length > 2 && !textEl.querySelector('svg') && !textEl.classList.contains('delete-element-btn')) {
+            textEl.classList.add('editable-text');
+            textEl.contentEditable = true;
+            textEl.addEventListener('input', () => {
+                // Save state when text is edited
+                if (window.stateModule && window.stateModule.saveState) {
+                    window.stateModule.saveState();
+                }
+            });
+            textEl.addEventListener('blur', () => {
+                // Clean up any empty elements
+                if (!textEl.textContent.trim()) {
+                    textEl.textContent = 'Click to edit';
+                }
+            });
+        }
+    });
+}
+
+function wrapTextInEditableSpan(text, styles = '') {
+    return `<span class="editable-text" contenteditable="true" style="${styles}">${text}</span>`;
 }
 
 function createColorSchemeSelector() {
