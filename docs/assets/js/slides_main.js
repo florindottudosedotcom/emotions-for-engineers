@@ -608,6 +608,129 @@ function parseSlideResponse(aiResponse) {
     }
 }
 
+function showSlideGenerationConfirmation() {
+    return new Promise((resolve) => {
+        // Create modal overlay
+        const modal = document.createElement('div');
+        modal.style.cssText = `
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+            backdrop-filter: blur(4px);
+        `;
+
+        // Create modal content
+        const modalContent = document.createElement('div');
+        modalContent.style.cssText = `
+            background: white;
+            border-radius: 12px;
+            padding: 30px;
+            width: 400px;
+            max-width: 90vw;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.15);
+            text-align: center;
+        `;
+
+        modalContent.innerHTML = `
+            <div style="font-size: 48px; margin-bottom: 16px;">⚠️</div>
+            <h3 style="margin: 0 0 12px 0; color: #dc2626; font-size: 20px;">
+                Replace Existing Slides?
+            </h3>
+            <p style="margin: 0 0 24px 0; color: #6b7280; line-height: 1.5;">
+                You already have slides in your presentation. Generating new slides will
+                <strong>replace all existing content</strong>. This action cannot be undone.
+            </p>
+            <div style="display: flex; gap: 12px; justify-content: center;">
+                <button id="cancel-generation" style="
+                    padding: 12px 24px;
+                    border: 2px solid #d1d5db;
+                    background: white;
+                    border-radius: 8px;
+                    cursor: pointer;
+                    font-weight: 500;
+                    color: #374151;
+                    transition: all 0.2s ease;
+                ">
+                    Cancel
+                </button>
+                <button id="confirm-generation" style="
+                    padding: 12px 24px;
+                    border: 2px solid #dc2626;
+                    background: #dc2626;
+                    color: white;
+                    border-radius: 8px;
+                    cursor: pointer;
+                    font-weight: 500;
+                    transition: all 0.2s ease;
+                ">
+                    Replace Slides
+                </button>
+            </div>
+        `;
+
+        modal.appendChild(modalContent);
+        document.body.appendChild(modal);
+
+        // Add hover effects
+        const cancelBtn = modal.querySelector('#cancel-generation');
+        const confirmBtn = modal.querySelector('#confirm-generation');
+
+        cancelBtn.addEventListener('mouseenter', () => {
+            cancelBtn.style.backgroundColor = '#f9fafb';
+            cancelBtn.style.borderColor = '#9ca3af';
+        });
+        cancelBtn.addEventListener('mouseleave', () => {
+            cancelBtn.style.backgroundColor = 'white';
+            cancelBtn.style.borderColor = '#d1d5db';
+        });
+
+        confirmBtn.addEventListener('mouseenter', () => {
+            confirmBtn.style.backgroundColor = '#b91c1c';
+            confirmBtn.style.borderColor = '#b91c1c';
+        });
+        confirmBtn.addEventListener('mouseleave', () => {
+            confirmBtn.style.backgroundColor = '#dc2626';
+            confirmBtn.style.borderColor = '#dc2626';
+        });
+
+        // Handle button clicks
+        cancelBtn.addEventListener('click', () => {
+            modal.remove();
+            resolve(false);
+        });
+
+        confirmBtn.addEventListener('click', () => {
+            modal.remove();
+            resolve(true);
+        });
+
+        // Close on background click
+        modal.addEventListener('click', (e) => {
+            if (e.target === modal) {
+                modal.remove();
+                resolve(false);
+            }
+        });
+
+        // Close on Escape key
+        const handleEscape = (e) => {
+            if (e.key === 'Escape') {
+                modal.remove();
+                document.removeEventListener('keydown', handleEscape);
+                resolve(false);
+            }
+        };
+        document.addEventListener('keydown', handleEscape);
+    });
+}
+
 async function generatePresentation() {
     console.log('generatePresentation function called');
     const topic = slidesDom.presentationTopicTextarea.value.trim();
@@ -623,6 +746,15 @@ async function generatePresentation() {
     if (slidesAppState.isGenerating) {
         updateGenerationStatus('Generation already in progress...', 'warning');
         return;
+    }
+
+    // Check if there are existing slides and ask for confirmation
+    if (slidesAppState.currentSlideData && slidesAppState.currentSlideData.slides && slidesAppState.currentSlideData.slides.length > 0) {
+        const confirmed = await showSlideGenerationConfirmation();
+        if (!confirmed) {
+            console.log('User cancelled slide generation');
+            return;
+        }
     }
 
     try {
