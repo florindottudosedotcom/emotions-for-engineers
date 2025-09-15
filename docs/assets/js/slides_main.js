@@ -432,7 +432,17 @@ function selectTheme(themeKey) {
 
 // Create a universal slides prompt that works with any provider
 function createSlidesPrompt(topic, slideCount) {
+    // Get current color scheme for contextual design
+    const currentScheme = slidesAppState.currentTheme || COLOR_THEMES.lavender;
+    const schemeContext = `Using the "${currentScheme.name}" color scheme (${currentScheme.textColor}, ${currentScheme.borderColor}, ${currentScheme.fillColor}, ${currentScheme.backgroundColor})`;
+
     return `Create a professional presentation about "${topic}" with exactly ${slideCount} slides.
+
+TOPIC CONTEXT: Analyze "${topic}" and create contextually relevant visual designs that enhance the subject matter. Consider the industry, audience, and content type when designing visual elements.
+
+COLOR SCHEME CONTEXT: ${schemeContext} - ensure all design elements use and complement these specific colors.
+
+CONTENT DEPTH: Create rich, descriptive content with detailed explanations, examples, and insights rather than just bullet point titles.
 
 For each slide, provide structured data in this exact JSON format:
 
@@ -450,24 +460,28 @@ For each slide, provide structured data in this exact JSON format:
         "layout": "left-text",
         "designElements": [
           {
-            "type": "gradient-card",
-            "colors": ["#3182ce", "#1a365d"],
+            "type": "organic-shape",
+            "shape": "flowing-curve",
+            "colors": ["currentScheme.borderColor", "currentScheme.fillColor"],
             "position": "center-right",
             "size": "large",
-            "content": "Key concept or statistic"
+            "content": "Contextual concept related to the topic",
+            "topicRelevance": "High - directly relates to main theme"
           },
           {
-            "type": "progress-bar",
-            "value": 75,
-            "color": "#3182ce",
+            "type": "topic-visualization",
+            "visualType": "contextual-to-topic",
+            "data": "realistic-topic-related-data",
+            "colors": "currentScheme.colors",
             "position": "bottom-center",
-            "label": "Progress indicator"
+            "description": "Visual representation of key topic concepts"
           },
           {
-            "type": "icon-set",
-            "icons": ["lightbulb", "target", "growth"],
-            "layout": "horizontal",
-            "position": "top-center"
+            "type": "polyline-accent",
+            "points": "dynamic-based-on-content",
+            "style": "organic-flow",
+            "colors": ["currentScheme.borderColor"],
+            "position": "connecting-elements"
           }
         ],
         "chartData": {
@@ -497,33 +511,59 @@ Guidelines:
   * Warm Orange: background "#ea580c", text "#ffffff", accent "#fb923c"
   * Classic Navy: background "#1e3a8a", text "#ffffff", accent "#3b82f6"
 
-ADVANCED VISUAL DESIGN INSTRUCTIONS:
-- Create sophisticated, beautiful slide designs using modern UI patterns
-- Use designElements array for rich visual components:
-  * gradient-card: Cards with gradient backgrounds for highlighting key concepts
-  * progress-bar: Animated progress indicators with labels and values (0-100)
-  * icon-set: Groups of related icons (lightbulb, target, growth, shield, rocket, etc.)
-  * stat-counter: Large number displays with labels for statistics
-  * timeline-point: Timeline elements for process/history slides
-  * geometric-accent: Modern geometric shapes for visual interest
-  * quote-block: Stylized quote containers with attribution
-  * feature-grid: Grid layouts for feature/benefit comparisons
+ADVANCED CONTEXTUAL VISUAL DESIGN INSTRUCTIONS:
 
-- Add relevant charts/data visualizations using chartData:
-  * Types: bar, line, pie, doughnut, radar, scatter
-  * Include realistic data that matches slide content
-  * Use color schemes that complement the slide theme
-  * Add clear labels and legends
+🎯 TOPIC-DRIVEN DESIGN:
+- Analyze the topic deeply and create visually meaningful designs that directly relate to the subject
+- For business topics: use professional charts, growth curves, network diagrams
+- For creative topics: use flowing organic shapes, artistic elements, color gradients
+- For technical topics: use structured layouts, code-like elements, system diagrams
+- For educational topics: use progressive visual flows, step-by-step elements
 
-- Background patterns for visual texture:
-  * subtle-dots, diagonal-lines, geometric-pattern, gradient-mesh, circuit-board
-  * Keep patterns subtle to maintain text readability
+🎨 ORGANIC & ADVANCED VISUAL ELEMENTS:
+- organic-shape: Flowing, curved, natural shapes that complement the topic
+  * flowing-curve, wave-pattern, organic-blob, spiral-flow, leaf-shape, water-ripple
+  * Use bezier curves and smooth transitions, avoid rigid geometric shapes
+- polyline-accent: Connected line elements that create visual flow
+  * curved-connector, flowing-path, organic-network, branching-lines
+  * Points should follow natural, organic patterns, not straight lines
+- topic-visualization: Custom visual elements that represent core concepts
+  * Create unique visualizations based on topic (books for education, gears for business, etc.)
+- contextual-metaphor: Visual metaphors that enhance understanding
+  * Use imagery and shapes that naturally relate to the topic's domain
 
-- Layout options: left-text, center-text, right-text, split-content, full-width, card-grid
-- Position options: top-left, top-right, top-center, center-left, center-right, center, bottom-left, bottom-right, bottom-center
-- Size options: small, medium, large, full-width
-- Make each slide visually distinct while maintaining consistency
-- Focus on creating engaging, professional designs that enhance content comprehension
+📊 ENHANCED DATA VISUALIZATION:
+- Create realistic, topic-relevant data that tells a story
+- Chart types should match the narrative (growth charts for success topics, pie charts for distribution, etc.)
+- Use organic color transitions within the current color scheme
+- Add contextual labels that relate directly to the topic content
+
+🎨 RICH CONTENT GENERATION:
+- Generate detailed, comprehensive content beyond simple bullet points
+- Include explanations, examples, case studies, and insights
+- Use descriptive language that paints a vivid picture
+- Create narrative flow between slides that builds understanding
+- Each bullet point should be a complete thought with context
+
+💡 COLOR SCHEME INTEGRATION:
+- All visual elements MUST use the current selected color scheme colors
+- Create harmonious color variations within the scheme palette
+- Use color psychology appropriate to the topic (warm colors for passion, cool colors for technology)
+- Ensure visual hierarchy through color intensity and contrast
+
+🌊 ORGANIC DESIGN PRINCIPLES:
+- Embrace asymmetry and natural proportions
+- Use flowing, curved lines instead of rigid straight lines
+- Create depth through layered organic shapes
+- Use breathing space and natural composition
+- Incorporate subtle animations through CSS transitions
+
+📐 ADVANCED POSITIONING:
+- flowing-around-content: Elements that curve around text naturally
+- organic-cluster: Groups of elements that follow natural clustering patterns
+- contextual-placement: Positioning based on content meaning and visual flow
+
+CRITICAL: Every design element must serve the topic and enhance comprehension. Avoid generic placeholder content - make everything contextually meaningful and visually compelling.
 
 Return ONLY the JSON, no additional text.`;
 }
@@ -1010,6 +1050,14 @@ function createAdvancedDesignElement(element) {
             return createQuoteBlock(element);
         case 'feature-grid':
             return createFeatureGrid(element);
+        case 'organic-shape':
+            return createOrganicShape(element);
+        case 'polyline-accent':
+            return createPolylineAccent(element);
+        case 'topic-visualization':
+            return createTopicVisualization(element);
+        case 'contextual-metaphor':
+            return createContextualMetaphor(element);
         default:
             console.warn(`Unknown design element type: ${element.type}`);
             return null;
@@ -1239,6 +1287,355 @@ function getPositionStyles(position) {
     };
 
     return positions[position] || positions['top-right'];
+}
+
+// New organic design element functions
+function createOrganicShape(element) {
+    const container = document.createElement('div');
+    container.className = 'organic-shape';
+
+    const colors = Array.isArray(element.colors) ? element.colors : [element.colors];
+    const primaryColor = colors[0] || '#3b82f6';
+    const secondaryColor = colors[1] || colors[0] || '#1d4ed8';
+
+    const shapeTypes = {
+        'flowing-curve': createFlowingCurve,
+        'wave-pattern': createWavePattern,
+        'organic-blob': createOrganicBlob,
+        'spiral-flow': createSpiralFlow,
+        'leaf-shape': createLeafShape,
+        'water-ripple': createWaterRipple
+    };
+
+    const shapeCreator = shapeTypes[element.shape] || shapeTypes['flowing-curve'];
+    const svgContent = shapeCreator(primaryColor, secondaryColor);
+
+    container.style.cssText = `
+        position: absolute;
+        z-index: 5;
+        width: 200px;
+        height: 150px;
+        ${getPositionStyles(element.position)}
+    `;
+
+    container.innerHTML = `
+        <div style="position: relative; width: 100%; height: 100%;">
+            ${svgContent}
+            ${element.content ? `<div style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); color: white; font-weight: 600; text-align: center; font-size: 14px; text-shadow: 0 2px 4px rgba(0,0,0,0.3);">${element.content}</div>` : ''}
+        </div>
+    `;
+
+    return container;
+}
+
+function createFlowingCurve(color1, color2) {
+    return `<svg viewBox="0 0 200 150" style="width: 100%; height: 100%;">
+        <defs>
+            <linearGradient id="flowingGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+                <stop offset="0%" style="stop-color:${color1};stop-opacity:0.8" />
+                <stop offset="100%" style="stop-color:${color2};stop-opacity:0.6" />
+            </linearGradient>
+        </defs>
+        <path d="M20,80 Q60,20 120,50 T180,80 Q160,120 100,100 T20,80 Z"
+              fill="url(#flowingGrad)"
+              style="filter: drop-shadow(0 4px 8px rgba(0,0,0,0.2));" />
+    </svg>`;
+}
+
+function createWavePattern(color1, color2) {
+    return `<svg viewBox="0 0 200 150" style="width: 100%; height: 100%;">
+        <defs>
+            <linearGradient id="waveGrad" x1="0%" y1="0%" x2="0%" y2="100%">
+                <stop offset="0%" style="stop-color:${color1};stop-opacity:0.8" />
+                <stop offset="100%" style="stop-color:${color2};stop-opacity:0.4" />
+            </linearGradient>
+        </defs>
+        <path d="M0,75 Q50,25 100,75 T200,75 L200,150 L0,150 Z"
+              fill="url(#waveGrad)" />
+    </svg>`;
+}
+
+function createOrganicBlob(color1, color2) {
+    return `<svg viewBox="0 0 200 150" style="width: 100%; height: 100%;">
+        <defs>
+            <radialGradient id="blobGrad" cx="50%" cy="50%" r="50%">
+                <stop offset="0%" style="stop-color:${color1};stop-opacity:0.9" />
+                <stop offset="100%" style="stop-color:${color2};stop-opacity:0.5" />
+            </radialGradient>
+        </defs>
+        <path d="M100,20 C140,20 180,40 180,75 C180,110 140,130 100,130 C60,130 20,110 20,75 C20,40 60,20 100,20 Z"
+              fill="url(#blobGrad)"
+              style="filter: drop-shadow(0 4px 12px rgba(0,0,0,0.15));" />
+    </svg>`;
+}
+
+function createSpiralFlow(color1, color2) {
+    return `<svg viewBox="0 0 200 150" style="width: 100%; height: 100%;">
+        <defs>
+            <linearGradient id="spiralGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+                <stop offset="0%" style="stop-color:${color1};stop-opacity:0.9" />
+                <stop offset="100%" style="stop-color:${color2};stop-opacity:0.4" />
+            </linearGradient>
+        </defs>
+        <path d="M100,75 Q120,60 130,80 Q120,100 100,90 Q80,80 90,70 Q110,65 120,75 Q115,85 105,80"
+              stroke="url(#spiralGrad)"
+              stroke-width="8"
+              fill="none"
+              stroke-linecap="round" />
+    </svg>`;
+}
+
+function createLeafShape(color1, color2) {
+    return `<svg viewBox="0 0 200 150" style="width: 100%; height: 100%;">
+        <defs>
+            <linearGradient id="leafGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+                <stop offset="0%" style="stop-color:${color1};stop-opacity:0.8" />
+                <stop offset="100%" style="stop-color:${color2};stop-opacity:0.6" />
+            </linearGradient>
+        </defs>
+        <path d="M100,20 Q140,40 160,75 Q140,110 100,130 Q80,110 60,75 Q80,40 100,20 Z"
+              fill="url(#leafGrad)"
+              style="filter: drop-shadow(0 4px 8px rgba(0,0,0,0.2));" />
+        <path d="M100,20 Q120,50 140,75 Q120,100 100,130"
+              stroke="${color1}"
+              stroke-width="2"
+              fill="none"
+              opacity="0.7" />
+    </svg>`;
+}
+
+function createWaterRipple(color1, color2) {
+    return `<svg viewBox="0 0 200 150" style="width: 100%; height: 100%;">
+        <defs>
+            <radialGradient id="rippleGrad" cx="50%" cy="50%" r="50%">
+                <stop offset="0%" style="stop-color:${color1};stop-opacity:0.1" />
+                <stop offset="30%" style="stop-color:${color1};stop-opacity:0.6" />
+                <stop offset="60%" style="stop-color:${color2};stop-opacity:0.4" />
+                <stop offset="100%" style="stop-color:${color2};stop-opacity:0.1" />
+            </radialGradient>
+        </defs>
+        <circle cx="100" cy="75" r="70" fill="url(#rippleGrad)" />
+        <circle cx="100" cy="75" r="50" fill="none" stroke="${color1}" stroke-width="2" opacity="0.6" />
+        <circle cx="100" cy="75" r="30" fill="none" stroke="${color2}" stroke-width="2" opacity="0.4" />
+        <circle cx="100" cy="75" r="10" fill="none" stroke="${color1}" stroke-width="2" opacity="0.8" />
+    </svg>`;
+}
+
+function createPolylineAccent(element) {
+    const container = document.createElement('div');
+    container.className = 'polyline-accent';
+
+    const color = element.colors[0] || '#3b82f6';
+    const style = element.style || 'organic-flow';
+
+    const polylineTypes = {
+        'curved-connector': createCurvedConnector,
+        'flowing-path': createFlowingPath,
+        'organic-network': createOrganicNetwork,
+        'branching-lines': createBranchingLines
+    };
+
+    const polylineCreator = polylineTypes[style] || polylineTypes['flowing-path'];
+    const svgContent = polylineCreator(color);
+
+    container.style.cssText = `
+        position: absolute;
+        z-index: 3;
+        width: 300px;
+        height: 100px;
+        pointer-events: none;
+        ${getPositionStyles(element.position)}
+    `;
+
+    container.innerHTML = svgContent;
+    return container;
+}
+
+function createFlowingPath(color) {
+    return `<svg viewBox="0 0 300 100" style="width: 100%; height: 100%;">
+        <defs>
+            <linearGradient id="pathGrad" x1="0%" y1="0%" x2="100%" y2="0%">
+                <stop offset="0%" style="stop-color:${color};stop-opacity:0.8" />
+                <stop offset="50%" style="stop-color:${color};stop-opacity:0.4" />
+                <stop offset="100%" style="stop-color:${color};stop-opacity:0.1" />
+            </linearGradient>
+        </defs>
+        <path d="M10,50 Q80,20 150,50 T290,50"
+              stroke="url(#pathGrad)"
+              stroke-width="3"
+              fill="none"
+              stroke-linecap="round" />
+        <circle cx="10" cy="50" r="4" fill="${color}" opacity="0.8" />
+        <circle cx="290" cy="50" r="4" fill="${color}" opacity="0.3" />
+    </svg>`;
+}
+
+function createCurvedConnector(color) {
+    return `<svg viewBox="0 0 300 100" style="width: 100%; height: 100%;">
+        <defs>
+            <linearGradient id="connectorGrad" x1="0%" y1="0%" x2="100%" y2="0%">
+                <stop offset="0%" style="stop-color:${color};stop-opacity:0.8" />
+                <stop offset="100%" style="stop-color:${color};stop-opacity:0.3" />
+            </linearGradient>
+        </defs>
+        <path d="M20,50 C80,20 120,80 180,50 S240,20 280,50"
+              stroke="url(#connectorGrad)"
+              stroke-width="4"
+              fill="none"
+              stroke-linecap="round" />
+    </svg>`;
+}
+
+function createOrganicNetwork(color) {
+    return `<svg viewBox="0 0 300 100" style="width: 100%; height: 100%;">
+        <defs>
+            <radialGradient id="networkGrad" cx="50%" cy="50%" r="50%">
+                <stop offset="0%" style="stop-color:${color};stop-opacity:0.8" />
+                <stop offset="100%" style="stop-color:${color};stop-opacity:0.2" />
+            </radialGradient>
+        </defs>
+        <path d="M50,30 Q100,50 150,30 T250,30"
+              stroke="${color}"
+              stroke-width="2"
+              fill="none"
+              opacity="0.6" />
+        <path d="M50,50 Q150,70 250,50"
+              stroke="${color}"
+              stroke-width="2"
+              fill="none"
+              opacity="0.5" />
+        <path d="M50,70 Q100,50 150,70 T250,70"
+              stroke="${color}"
+              stroke-width="2"
+              fill="none"
+              opacity="0.4" />
+        <circle cx="50" cy="50" r="6" fill="url(#networkGrad)" />
+        <circle cx="150" cy="50" r="6" fill="url(#networkGrad)" />
+        <circle cx="250" cy="50" r="6" fill="url(#networkGrad)" />
+    </svg>`;
+}
+
+function createBranchingLines(color) {
+    return `<svg viewBox="0 0 300 100" style="width: 100%; height: 100%;">
+        <defs>
+            <linearGradient id="branchGrad" x1="0%" y1="0%" x2="100%" y2="0%">
+                <stop offset="0%" style="stop-color:${color};stop-opacity:0.9" />
+                <stop offset="100%" style="stop-color:${color};stop-opacity:0.3" />
+            </linearGradient>
+        </defs>
+        <path d="M50,50 Q100,50 150,50"
+              stroke="url(#branchGrad)"
+              stroke-width="4"
+              fill="none" />
+        <path d="M150,50 Q200,30 250,20"
+              stroke="url(#branchGrad)"
+              stroke-width="3"
+              fill="none" />
+        <path d="M150,50 Q200,50 250,50"
+              stroke="url(#branchGrad)"
+              stroke-width="3"
+              fill="none" />
+        <path d="M150,50 Q200,70 250,80"
+              stroke="url(#branchGrad)"
+              stroke-width="3"
+              fill="none" />
+        <circle cx="50" cy="50" r="4" fill="${color}" opacity="0.8" />
+        <circle cx="150" cy="50" r="4" fill="${color}" opacity="0.6" />
+    </svg>`;
+}
+
+function createTopicVisualization(element) {
+    const container = document.createElement('div');
+    container.className = 'topic-visualization';
+
+    const colors = element.colors || ['#3b82f6', '#1d4ed8'];
+
+    container.style.cssText = `
+        position: absolute;
+        z-index: 8;
+        background: rgba(255, 255, 255, 0.95);
+        border-radius: 16px;
+        padding: 20px;
+        box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+        backdrop-filter: blur(10px);
+        border: 1px solid rgba(255, 255, 255, 0.3);
+        min-width: 200px;
+        ${getPositionStyles(element.position)}
+    `;
+
+    container.innerHTML = `
+        <div style="text-align: center;">
+            <div style="font-size: 32px; margin-bottom: 8px;">${getTopicIcon(element.visualType)}</div>
+            <div style="font-weight: 600; color: ${colors[0]}; font-size: 14px; line-height: 1.4;">
+                ${element.description || 'Topic Concept'}
+            </div>
+        </div>
+    `;
+
+    return container;
+}
+
+function getTopicIcon(visualType) {
+    const icons = {
+        'business': '📊',
+        'education': '📚',
+        'technology': '⚡',
+        'creative': '🎨',
+        'health': '🌱',
+        'finance': '💰',
+        'science': '🔬',
+        'communication': '💬',
+        'default': '✨'
+    };
+
+    return icons[visualType] || icons.default;
+}
+
+function createContextualMetaphor(element) {
+    const container = document.createElement('div');
+    container.className = 'contextual-metaphor';
+
+    const colors = element.colors || ['#3b82f6', '#1d4ed8'];
+
+    container.style.cssText = `
+        position: absolute;
+        z-index: 6;
+        background: linear-gradient(135deg, ${colors[0]}20, ${colors[1] || colors[0]}10);
+        border-radius: 20px;
+        padding: 16px;
+        backdrop-filter: blur(8px);
+        border: 1px solid ${colors[0]}40;
+        min-width: 150px;
+        ${getPositionStyles(element.position)}
+    `;
+
+    const metaphorContent = getMetaphorContent(element.metaphor || 'growth');
+
+    container.innerHTML = `
+        <div style="text-align: center;">
+            <div style="font-size: 28px; margin-bottom: 6px;">${metaphorContent.icon}</div>
+            <div style="font-weight: 500; color: ${colors[0]}; font-size: 12px; line-height: 1.3;">
+                ${element.content || metaphorContent.text}
+            </div>
+        </div>
+    `;
+
+    return container;
+}
+
+function getMetaphorContent(type) {
+    const metaphors = {
+        'growth': { icon: '🌱', text: 'Growing Forward' },
+        'connection': { icon: '🔗', text: 'Building Bridges' },
+        'innovation': { icon: '💡', text: 'Spark of Ideas' },
+        'journey': { icon: '🛤️', text: 'Path to Success' },
+        'transformation': { icon: '🦋', text: 'Metamorphosis' },
+        'foundation': { icon: '🏗️', text: 'Strong Base' },
+        'exploration': { icon: '🧭', text: 'Navigate Forward' },
+        'collaboration': { icon: '🤝', text: 'Unity in Action' }
+    };
+
+    return metaphors[type] || metaphors.growth;
 }
 
 function createColorSchemeSelector() {

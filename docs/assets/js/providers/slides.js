@@ -108,7 +108,23 @@ export const SlidesProvider = {
             throw new Error('No model selected');
         }
 
+        // Get current color scheme for contextual design
+        const currentScheme = slidesAppState?.currentTheme || COLOR_THEMES?.lavender || {
+            name: 'Default Blue',
+            textColor: '#1e40af',
+            borderColor: '#3b82f6',
+            fillColor: '#dbeafe',
+            backgroundColor: '#f0f9ff'
+        };
+        const schemeContext = `Using the "${currentScheme.name}" color scheme (${currentScheme.textColor}, ${currentScheme.borderColor}, ${currentScheme.fillColor}, ${currentScheme.backgroundColor})`;
+
         const prompt = `Create a professional presentation about "${topic}" with exactly ${slideCount} slides.
+
+TOPIC CONTEXT: Analyze "${topic}" and create contextually relevant visual designs that enhance the subject matter. Consider the industry, audience, and content type when designing visual elements.
+
+COLOR SCHEME CONTEXT: ${schemeContext} - ensure all design elements use and complement these specific colors.
+
+CONTENT DEPTH: Create rich, descriptive content with detailed explanations, examples, and insights rather than just bullet point titles.
 
 For each slide, provide structured data in this exact JSON format:
 
@@ -126,24 +142,28 @@ For each slide, provide structured data in this exact JSON format:
         "layout": "left-text",
         "designElements": [
           {
-            "type": "gradient-card",
-            "colors": ["#3182ce", "#1a365d"],
+            "type": "organic-shape",
+            "shape": "flowing-curve",
+            "colors": ["currentScheme.borderColor", "currentScheme.fillColor"],
             "position": "center-right",
             "size": "large",
-            "content": "Key concept or statistic"
+            "content": "Contextual concept related to the topic",
+            "topicRelevance": "High - directly relates to main theme"
           },
           {
-            "type": "progress-bar",
-            "value": 75,
-            "color": "#3182ce",
+            "type": "topic-visualization",
+            "visualType": "contextual-to-topic",
+            "data": "realistic-topic-related-data",
+            "colors": "currentScheme.colors",
             "position": "bottom-center",
-            "label": "Progress indicator"
+            "description": "Visual representation of key topic concepts"
           },
           {
-            "type": "icon-set",
-            "icons": ["lightbulb", "target", "growth"],
-            "layout": "horizontal",
-            "position": "top-center"
+            "type": "polyline-accent",
+            "points": "dynamic-based-on-content",
+            "style": "organic-flow",
+            "colors": ["currentScheme.borderColor"],
+            "position": "connecting-elements"
           }
         ],
         "chartData": {
@@ -166,33 +186,59 @@ Guidelines:
 - Content slides: Maximum 4 bullet points each
 - Use professional color schemes (dark/light themes)
 
-ADVANCED VISUAL DESIGN INSTRUCTIONS:
-- Create sophisticated, beautiful slide designs using modern UI patterns
-- Use designElements array for rich visual components:
-  * gradient-card: Cards with gradient backgrounds for highlighting key concepts
-  * progress-bar: Animated progress indicators with labels and values (0-100)
-  * icon-set: Groups of related icons (lightbulb, target, growth, shield, rocket, etc.)
-  * stat-counter: Large number displays with labels for statistics
-  * timeline-point: Timeline elements for process/history slides
-  * geometric-accent: Modern geometric shapes for visual interest
-  * quote-block: Stylized quote containers with attribution
-  * feature-grid: Grid layouts for feature/benefit comparisons
+ADVANCED CONTEXTUAL VISUAL DESIGN INSTRUCTIONS:
 
-- Add relevant charts/data visualizations using chartData:
-  * Types: bar, line, pie, doughnut, radar, scatter
-  * Include realistic data that matches slide content
-  * Use color schemes that complement the slide theme
-  * Add clear labels and legends
+🎯 TOPIC-DRIVEN DESIGN:
+- Analyze the topic deeply and create visually meaningful designs that directly relate to the subject
+- For business topics: use professional charts, growth curves, network diagrams
+- For creative topics: use flowing organic shapes, artistic elements, color gradients
+- For technical topics: use structured layouts, code-like elements, system diagrams
+- For educational topics: use progressive visual flows, step-by-step elements
 
-- Background patterns for visual texture:
-  * subtle-dots, diagonal-lines, geometric-pattern, gradient-mesh, circuit-board
-  * Keep patterns subtle to maintain text readability
+🎨 ORGANIC & ADVANCED VISUAL ELEMENTS:
+- organic-shape: Flowing, curved, natural shapes that complement the topic
+  * flowing-curve, wave-pattern, organic-blob, spiral-flow, leaf-shape, water-ripple
+  * Use bezier curves and smooth transitions, avoid rigid geometric shapes
+- polyline-accent: Connected line elements that create visual flow
+  * curved-connector, flowing-path, organic-network, branching-lines
+  * Points should follow natural, organic patterns, not straight lines
+- topic-visualization: Custom visual elements that represent core concepts
+  * Create unique visualizations based on topic (books for education, gears for business, etc.)
+- contextual-metaphor: Visual metaphors that enhance understanding
+  * Use imagery and shapes that naturally relate to the topic's domain
 
-- Layout options: left-text, center-text, right-text, split-content, full-width, card-grid
-- Position options: top-left, top-right, top-center, center-left, center-right, center, bottom-left, bottom-right, bottom-center
-- Size options: small, medium, large, full-width
-- Make each slide visually distinct while maintaining consistency
-- Focus on creating engaging, professional designs that enhance content comprehension
+📊 ENHANCED DATA VISUALIZATION:
+- Create realistic, topic-relevant data that tells a story
+- Chart types should match the narrative (growth charts for success topics, pie charts for distribution, etc.)
+- Use organic color transitions within the current color scheme
+- Add contextual labels that relate directly to the topic content
+
+🎨 RICH CONTENT GENERATION:
+- Generate detailed, comprehensive content beyond simple bullet points
+- Include explanations, examples, case studies, and insights
+- Use descriptive language that paints a vivid picture
+- Create narrative flow between slides that builds understanding
+- Each bullet point should be a complete thought with context
+
+💡 COLOR SCHEME INTEGRATION:
+- All visual elements MUST use the current selected color scheme colors
+- Create harmonious color variations within the scheme palette
+- Use color psychology appropriate to the topic (warm colors for passion, cool colors for technology)
+- Ensure visual hierarchy through color intensity and contrast
+
+🌊 ORGANIC DESIGN PRINCIPLES:
+- Embrace asymmetry and natural proportions
+- Use flowing, curved lines instead of rigid straight lines
+- Create depth through layered organic shapes
+- Use breathing space and natural composition
+- Incorporate subtle animations through CSS transitions
+
+📐 ADVANCED POSITIONING:
+- flowing-around-content: Elements that curve around text naturally
+- organic-cluster: Groups of elements that follow natural clustering patterns
+- contextual-placement: Positioning based on content meaning and visual flow
+
+CRITICAL: Every design element must serve the topic and enhance comprehension. Avoid generic placeholder content - make everything contextually meaningful and visually compelling.
 
 Return ONLY the JSON, no additional text.`;
 
