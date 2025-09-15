@@ -100,9 +100,9 @@
 }
 
 /* Pure glyphicon variants - inherit color from parent */
-.icon-cloud::before { content: '◯'; color: inherit; }
-.icon-brain::before { content: '◉'; color: inherit; }
-.icon-desktop::before { content: '▢'; color: inherit; }
+.icon-cloud::before { content: '☁'; color: inherit; }
+.icon-brain::before { content: '⧉'; color: inherit; }
+.icon-desktop::before { content: '⌂'; color: inherit; }
 .icon-slides::before { content: '▤'; color: inherit; }
 .icon-export::before { content: '↓'; color: inherit; }
 .icon-generate::before { content: '✦'; color: inherit; }
@@ -110,10 +110,10 @@
 .icon-delete::before { content: '×'; color: inherit; }
 .icon-settings::before { content: '⚙'; color: inherit; }
 .icon-help::before { content: '?'; color: inherit; }
-.icon-document::before { content: '▢'; color: inherit; }
-.icon-palette::before { content: '◼'; color: inherit; }
+.icon-document::before { content: '⟄'; color: inherit; }
+.icon-palette::before { content: '◉'; color: inherit; }
 .icon-shape::before { content: '◆'; color: inherit; }
-.icon-image::before { content: '▢'; color: inherit; }
+.icon-image::before { content: '◪'; color: inherit; }
 .icon-notes::before { content: '≡'; color: inherit; }
 
 /* Pure glyphicon variants for main buttons - outlined style */
@@ -134,9 +134,9 @@
     color: inherit;
 }
 
-.icon-minimal.geometric.icon-cloud::before { content: '◯'; }
-.icon-minimal.geometric.icon-brain::before { content: '◉'; }
-.icon-minimal.geometric.icon-desktop::before { content: '▢'; }
+.icon-minimal.geometric.icon-cloud::before { content: '☁'; }
+.icon-minimal.geometric.icon-brain::before { content: '⧉'; }
+.icon-minimal.geometric.icon-desktop::before { content: '⌂'; }
 .icon-minimal.geometric.icon-slides::before { content: '▤'; }
 
 /* Base Button Styles - Outlined Design */
