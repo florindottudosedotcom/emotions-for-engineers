@@ -890,12 +890,8 @@ function createSlidePreviewElement(slide, slideNumber) {
 
             // Add editing event listeners for content
             listItem.addEventListener('blur', (e) => {
-                // Get text content excluding the remove button
-                const removeBtn = e.target.querySelector('.remove-content-btn');
-                let textContent = e.target.textContent;
-                if (removeBtn) {
-                    textContent = textContent.replace(removeBtn.textContent, '').trim();
-                }
+                // Get text content (no longer need to exclude remove button)
+                const textContent = e.target.textContent.trim();
                 updateSlideContentItem(slideNumber - 1, index, textContent);
             });
             listItem.addEventListener('focus', (e) => e.target.style.border = '2px solid var(--accent-color, #60a5fa)');
@@ -904,13 +900,8 @@ function createSlidePreviewElement(slide, slideNumber) {
             // Select all text when clicking/focusing
             selectAllOnFocus(listItem);
 
-            // Add remove button for content item
-            const removeBtn = document.createElement('button');
-            removeBtn.textContent = '✕';
-            removeBtn.className = 'remove-content-btn';
-            removeBtn.style.cssText = 'margin-left: 10px; padding: 2px 6px; font-size: 10px; background: #dc3545; color: white; border: none; border-radius: 3px; cursor: pointer; opacity: 0.7;';
-            removeBtn.addEventListener('click', () => removeContentItem(slideNumber - 1, index));
-            listItem.appendChild(removeBtn);
+            // Make content item deletable with hover mechanism
+            makeContentItemEditable(listItem, slideNumber - 1, index);
 
             contentList.appendChild(listItem);
         });
@@ -954,6 +945,10 @@ function createSlidePreviewElement(slide, slideNumber) {
         slide.visualDesign.designElements.forEach((element, index) => {
             const designElement = createAdvancedDesignElement(element, layoutManager, index);
             if (designElement) {
+                // Add data attributes to track the element for persistence
+                designElement.dataset.slideIndex = slideNumber - 1;
+                designElement.dataset.elementIndex = index;
+                designElement.dataset.elementType = 'designElement';
                 slideContent.appendChild(designElement);
             }
         });
@@ -969,13 +964,20 @@ function createSlidePreviewElement(slide, slideNumber) {
     // Add chart if specified
     if (slide.visualDesign && slide.visualDesign.chartData) {
         const chartElement = createChartElement(slide.visualDesign.chartData, slideNumber);
+        // Add data attributes to track the chart for persistence
+        chartElement.dataset.slideIndex = slideNumber - 1;
+        chartElement.dataset.elementType = 'chartData';
         slideContent.appendChild(chartElement);
     }
 
     // Keep legacy shapes support for backward compatibility
     if (slide.visualDesign && slide.visualDesign.shapes) {
-        slide.visualDesign.shapes.forEach(shape => {
+        slide.visualDesign.shapes.forEach((shape, index) => {
             const shapeElement = createVisualShape(shape);
+            // Add data attributes to track the shape for persistence
+            shapeElement.dataset.slideIndex = slideNumber - 1;
+            shapeElement.dataset.elementIndex = index;
+            shapeElement.dataset.elementType = 'legacyShape';
             slideContent.appendChild(shapeElement);
         });
     }
@@ -984,8 +986,11 @@ function createSlidePreviewElement(slide, slideNumber) {
     if (slide.visualDesign && slide.visualDesign.imageDescription) {
         const imageInfo = document.createElement('div');
         imageInfo.style.cssText = 'margin-top: 15px; padding: 10px; background: rgba(255,255,255,0.1); border-radius: 4px; font-size: 0.9em;';
-        imageInfo.innerHTML = `<strong>⬜ Image:</strong> ${slide.visualDesign.imageDescription}`;
-        slideContent.appendChild(imageInfo);
+        imageInfo.innerHTML = `<strong>⬜ Image:</strong> ${wrapTextInEditableSpan(slide.visualDesign.imageDescription, 'font-size: 0.9em;')}`;
+        // Add data attributes to track the image description for persistence
+        imageInfo.dataset.slideIndex = slideNumber - 1;
+        imageInfo.dataset.elementType = 'imageDescription';
+        slideContent.appendChild(makeElementEditable(imageInfo));
     }
 
     // Remove speaker notes from inside the slide - they'll be added separately below
@@ -1684,11 +1689,15 @@ function createPolylineAccent(element, layoutManager) {
         z-index: ${positionInfo.zIndex};
         width: ${elementSize.width}px;
         height: ${elementSize.height}px;
-        pointer-events: none;
         ${positionInfo.position}
     `;
 
-    container.innerHTML = svgContent;
+    // Create a wrapper for the SVG content with pointer-events: none to avoid interference
+    const svgWrapper = document.createElement('div');
+    svgWrapper.style.cssText = 'pointer-events: none; width: 100%; height: 100%;';
+    svgWrapper.innerHTML = svgContent;
+    container.appendChild(svgWrapper);
+
     return makeElementEditable(container);
 }
 
@@ -1921,9 +1930,11 @@ function makeElementEditable(element) {
 
     // Add delete button
     const deleteBtn = document.createElement('button');
+    deleteBtn.type = 'button'; // Explicitly set button type
     deleteBtn.className = 'delete-element-btn';
     deleteBtn.innerHTML = '×';
     deleteBtn.title = 'Delete element';
+    deleteBtn.contentEditable = false; // Prevent content editable interference
     // Set button styles and hide by default
     deleteBtn.style.cssText = `
         display: none;
@@ -1945,15 +1956,17 @@ function makeElementEditable(element) {
         line-height: 18px;
         text-align: center;
         font-family: Arial, sans-serif;
+        pointer-events: auto;
     `;
     deleteBtn.addEventListener('click', (e) => {
+        e.preventDefault();
         e.stopPropagation();
-        if (confirm('Delete this visual element?')) {
-            element.remove();
-            // Save slides state after deletion
-            if (window.stateModule && window.stateModule.saveState) {
-                window.stateModule.saveState();
-            }
+        // Remove from persistence before removing from DOM
+        removeElementFromPersistence(element);
+        element.remove();
+        // Save slides state after deletion
+        if (window.stateModule && window.stateModule.saveState) {
+            window.stateModule.saveState();
         }
     });
     deleteBtn.addEventListener('mouseenter', () => {
@@ -2000,6 +2013,146 @@ function makeTextContentEditable(element) {
 
 function wrapTextInEditableSpan(text, styles = '') {
     return `<span class="editable-text" contenteditable="true" style="${styles}">${text}</span>`;
+}
+
+function removeElementFromPersistence(element) {
+    if (!slidesAppState.currentSlideData || !element.dataset.slideIndex) {
+        return;
+    }
+
+    const slideIndex = parseInt(element.dataset.slideIndex);
+    const elementType = element.dataset.elementType;
+    const elementIndex = element.dataset.elementIndex ? parseInt(element.dataset.elementIndex) : null;
+
+    const slide = slidesAppState.currentSlideData.slides[slideIndex];
+    if (!slide || !slide.visualDesign) {
+        return;
+    }
+
+    try {
+        switch (elementType) {
+            case 'designElement':
+                if (slide.visualDesign.designElements && elementIndex !== null) {
+                    slide.visualDesign.designElements.splice(elementIndex, 1);
+                    console.log(`Removed design element ${elementIndex} from slide ${slideIndex}`);
+                }
+                break;
+
+            case 'chartData':
+                delete slide.visualDesign.chartData;
+                console.log(`Removed chart data from slide ${slideIndex}`);
+                break;
+
+            case 'legacyShape':
+                if (slide.visualDesign.shapes && elementIndex !== null) {
+                    slide.visualDesign.shapes.splice(elementIndex, 1);
+                    console.log(`Removed legacy shape ${elementIndex} from slide ${slideIndex}`);
+                }
+                break;
+
+            case 'imageDescription':
+                delete slide.visualDesign.imageDescription;
+                console.log(`Removed image description from slide ${slideIndex}`);
+                break;
+
+            default:
+                console.warn(`Unknown element type for persistence: ${elementType}`);
+        }
+
+        // Update the element indices for remaining elements of the same type
+        updateElementIndicesAfterDeletion(slideIndex, elementType, elementIndex);
+
+        // Save the updated slide data
+        saveSlides();
+
+    } catch (error) {
+        console.error('Error removing element from persistence:', error);
+    }
+}
+
+function updateElementIndicesAfterDeletion(slideIndex, elementType, deletedIndex) {
+    if (deletedIndex === null) return;
+
+    // Update data attributes for remaining elements of the same type
+    const slideContainer = document.querySelector(`[data-slide-index="${slideIndex}"]`);
+    if (!slideContainer) return;
+
+    const elements = slideContainer.querySelectorAll(`[data-element-type="${elementType}"]`);
+    elements.forEach(el => {
+        const currentIndex = parseInt(el.dataset.elementIndex);
+        if (currentIndex > deletedIndex) {
+            el.dataset.elementIndex = (currentIndex - 1).toString();
+        }
+    });
+}
+
+function makeContentItemEditable(listItem, slideIndex, itemIndex) {
+    // Add visual-element class for consistent styling
+    listItem.classList.add('visual-element');
+
+    // Add hover functionality for showing/hiding delete button
+    listItem.addEventListener('mouseenter', () => {
+        const deleteBtn = listItem.querySelector('.delete-element-btn');
+        if (deleteBtn) {
+            deleteBtn.style.display = 'block';
+        }
+    });
+
+    listItem.addEventListener('mouseleave', () => {
+        const deleteBtn = listItem.querySelector('.delete-element-btn');
+        if (deleteBtn) {
+            deleteBtn.style.display = 'none';
+        }
+    });
+
+    // Add delete button
+    const deleteBtn = document.createElement('button');
+    deleteBtn.type = 'button'; // Explicitly set button type
+    deleteBtn.className = 'delete-element-btn';
+    deleteBtn.innerHTML = '×';
+    deleteBtn.title = 'Delete content item';
+    deleteBtn.contentEditable = false; // Prevent content editable interference
+    // Set button styles and hide by default
+    deleteBtn.style.cssText = `
+        display: none;
+        position: absolute;
+        top: 8px;
+        right: 8px;
+        width: 20px;
+        height: 20px;
+        background: #e74c3c;
+        color: white;
+        border: none;
+        border-radius: 50%;
+        cursor: pointer;
+        font-size: 11px;
+        font-weight: bold;
+        z-index: 1001;
+        box-shadow: 0 2px 6px rgba(0,0,0,0.4);
+        transition: all 0.2s ease;
+        line-height: 18px;
+        text-align: center;
+        font-family: Arial, sans-serif;
+        pointer-events: auto;
+    `;
+    deleteBtn.addEventListener('click', (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        removeContentItem(slideIndex, itemIndex);
+    });
+    deleteBtn.addEventListener('mouseenter', () => {
+        deleteBtn.style.background = '#c0392b';
+        deleteBtn.style.transform = 'scale(1.1)';
+    });
+    deleteBtn.addEventListener('mouseleave', () => {
+        deleteBtn.style.background = '#e74c3c';
+        deleteBtn.style.transform = 'scale(1)';
+    });
+
+    // Make the list item position relative so the absolute delete button positions correctly
+    listItem.style.position = 'relative';
+
+    listItem.appendChild(deleteBtn);
 }
 
 function createColorSchemeSelector() {
@@ -2458,11 +2611,7 @@ function applyThemeToSlides() {
         // Apply colors to buttons
         const buttons = slide.querySelectorAll('button');
         buttons.forEach(button => {
-            if (button.classList.contains('remove-content-btn')) {
-                button.style.backgroundColor = theme.borderColor;
-                button.style.color = 'white';
-                button.style.border = 'none';
-            } else if (button.classList.contains('add-content-btn')) {
+            if (button.classList.contains('add-content-btn')) {
                 button.style.backgroundColor = 'transparent';
                 button.style.color = theme.borderColor;
                 button.style.border = `2px solid ${theme.borderColor}`;
