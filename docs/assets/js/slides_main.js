@@ -681,6 +681,8 @@ function showSlideGenerationConfirmation() {
 }
 
 function clearSlidesForGeneration() {
+    console.log('clearSlidesForGeneration called');
+
     // Clear slides data (similar to clearAllSlides but without the confirm dialog)
     slidesAppState.currentSlideData = null;
 
@@ -688,21 +690,32 @@ function clearSlidesForGeneration() {
     localStorage.removeItem(SLIDES_STORAGE_KEY);
     localStorage.removeItem(SLIDES_STORAGE_KEY + '_form');
 
-    // Clear the slides display but keep the section visible
-    const slidesPreview = document.querySelector('.slides-preview');
-    if (slidesPreview) {
-        slidesPreview.innerHTML = '';
+    // Clear the slides display using the correct DOM reference
+    if (slidesDom.slidesPreview) {
+        console.log('Clearing slides preview');
+        slidesDom.slidesPreview.innerHTML = '';
+    }
+
+    // Clear presentation title
+    if (slidesDom.presentationTitle) {
+        slidesDom.presentationTitle.innerHTML = '';
+    }
+
+    // Reset slide count
+    if (slidesDom.totalSlides) {
+        slidesDom.totalSlides.textContent = '0';
     }
 
     // Ensure presentation section remains visible for the new generation
     if (slidesDom.presentationSection) {
         slidesDom.presentationSection.style.display = 'block';
+        console.log('Presentation section kept visible');
     }
 
     // Update status to show clearing is complete
     updateGenerationStatus('Existing slides cleared, ready for new generation...', 'success');
 
-    console.log('Existing slides cleared for new generation');
+    console.log('Existing slides cleared for new generation - data cleared, UI cleared, section visible');
 }
 
 async function generatePresentation() {
@@ -754,6 +767,9 @@ async function generatePresentation() {
         }
 
         slidesAppState.currentSlideData = slideData;
+
+        // Ensure presentation section is visible
+        showPresentationSection();
 
         // Update UI with generated slides
         displaySlides(slideData);
