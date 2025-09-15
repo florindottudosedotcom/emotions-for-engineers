@@ -681,8 +681,6 @@ function showSlideGenerationConfirmation() {
 }
 
 function clearSlidesForGeneration() {
-    console.log('clearSlidesForGeneration called');
-
     // Clear slides data (similar to clearAllSlides but without the confirm dialog)
     slidesAppState.currentSlideData = null;
 
@@ -692,7 +690,6 @@ function clearSlidesForGeneration() {
 
     // Clear the slides display using the correct DOM reference
     if (slidesDom.slidesPreview) {
-        console.log('Clearing slides preview');
         slidesDom.slidesPreview.innerHTML = '';
     }
 
@@ -709,13 +706,10 @@ function clearSlidesForGeneration() {
     // Ensure presentation section remains visible for the new generation
     if (slidesDom.presentationSection) {
         slidesDom.presentationSection.style.display = 'block';
-        console.log('Presentation section kept visible');
     }
 
     // Update status to show clearing is complete
     updateGenerationStatus('Existing slides cleared, ready for new generation...', 'success');
-
-    console.log('Existing slides cleared for new generation - data cleared, UI cleared, section visible');
 }
 
 async function generatePresentation() {
