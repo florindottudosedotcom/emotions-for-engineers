@@ -10,49 +10,49 @@ const slidesAppState = {
 
 const slidesDom = {};
 
-// Predefined harmonious color themes
+// Predefined harmonious pastel color themes
 const COLOR_THEMES = {
-    corporate: {
-        name: 'Corporate Blue',
-        colors: ['#1e40af', '#3b82f6', '#60a5fa'],
-        background: '#1e40af',
-        text: '#ffffff',
-        accent: '#60a5fa'
+    lavender: {
+        name: 'Lavender Dreams',
+        textColor: '#4c1d95',      // Dark purple for text
+        borderColor: '#8b5cf6',    // Medium purple for borders
+        fillColor: '#e6e6fa',      // Light lavender for fills
+        backgroundColor: '#faf5ff' // Very light background that matches
     },
-    modern: {
-        name: 'Modern Dark',
-        colors: ['#1f2937', '#374151', '#10b981'],
-        background: '#1f2937',
-        text: '#f9fafb',
-        accent: '#10b981'
+    mint: {
+        name: 'Mint Fresh',
+        textColor: '#065f46',      // Dark green for text
+        borderColor: '#10b981',    // Medium green for borders
+        fillColor: '#d1f2eb',      // Light mint for fills
+        backgroundColor: '#f0fdfa' // Very light background that matches
     },
-    elegant: {
-        name: 'Elegant Purple',
-        colors: ['#581c87', '#7c3aed', '#a855f7'],
-        background: '#581c87',
-        text: '#ffffff',
-        accent: '#a855f7'
+    rose: {
+        name: 'Rose Blush',
+        textColor: '#9f1239',      // Dark rose for text
+        borderColor: '#e11d48',    // Medium rose for borders
+        fillColor: '#fce7f3',      // Light pink for fills
+        backgroundColor: '#fdf2f8' // Very light background that matches
     },
-    warm: {
-        name: 'Warm Orange',
-        colors: ['#ea580c', '#f97316', '#fb923c'],
-        background: '#ea580c',
-        text: '#ffffff',
-        accent: '#fb923c'
+    sky: {
+        name: 'Sky Blue',
+        textColor: '#1e3a8a',      // Dark blue for text
+        borderColor: '#2563eb',    // Medium blue for borders
+        fillColor: '#dbeafe',      // Light blue for fills
+        backgroundColor: '#f0f9ff' // Very light background that matches
     },
-    nature: {
-        name: 'Nature Green',
-        colors: ['#166534', '#22c55e', '#4ade80'],
-        background: '#166534',
-        text: '#ffffff',
-        accent: '#4ade80'
+    peach: {
+        name: 'Peach Cream',
+        textColor: '#9a3412',      // Dark orange for text
+        borderColor: '#ea580c',    // Medium orange for borders
+        fillColor: '#fed7aa',      // Light peach for fills
+        backgroundColor: '#fff7ed' // Very light background that matches
     },
-    ocean: {
-        name: 'Ocean Teal',
-        colors: ['#0f766e', '#14b8a6', '#5eead4'],
-        background: '#0f766e',
-        text: '#ffffff',
-        accent: '#5eead4'
+    sage: {
+        name: 'Sage Green',
+        textColor: '#14532d',      // Dark sage for text
+        borderColor: '#16a34a',    // Medium sage for borders
+        fillColor: '#dcfce7',      // Light sage for fills
+        backgroundColor: '#f0fdf4' // Very light background that matches
     }
 };
 
@@ -136,17 +136,20 @@ document.addEventListener('DOMContentLoaded', async () => {
     if (exportHtmlBtn) exportHtmlBtn.addEventListener('click', () => exportPresentation('html'));
     if (exportJsonBtn) exportJsonBtn.addEventListener('click', () => exportPresentation('json'));
 
-    // Initialize theme selector and load saved data
-    createThemeSelector();
+    // Load saved data
+    console.log('Starting slides initialization...');
     loadSavedSlides();
 
     // Initialize empty presentation if no saved slides
+    console.log('Current slide data after loading:', slidesAppState.currentSlideData);
     if (!slidesAppState.currentSlideData) {
+        console.log('No slide data found, initializing empty presentation...');
         initializeEmptyPresentation();
+        // Show presentation section for new presentations
+        showPresentationSection();
+    } else {
+        console.log('Slide data exists, skipping empty presentation initialization');
     }
-
-    // Always show presentation section
-    showPresentationSection();
 
     // Add clear button to bottom
     addClearButtonToBottom();
@@ -185,18 +188,41 @@ function saveFormState() {
 
 function loadSavedSlides() {
     try {
+        console.log('Loading saved slides...');
         const saved = localStorage.getItem(SLIDES_STORAGE_KEY);
         const savedTheme = localStorage.getItem(THEME_STORAGE_KEY);
         const savedForm = localStorage.getItem(SLIDES_STORAGE_KEY + '_form');
 
+        console.log('Saved slides data:', saved ? 'Found' : 'Not found');
+        console.log('Saved theme data:', savedTheme ? 'Found' : 'Not found');
+
         if (savedTheme) {
             slidesAppState.currentTheme = JSON.parse(savedTheme);
+            console.log('Loaded theme:', slidesAppState.currentTheme);
         }
 
         if (saved) {
             slidesAppState.currentSlideData = JSON.parse(saved);
+            console.log('Loaded slides data:', slidesAppState.currentSlideData);
+
+            // Show presentation section first, then display slides
+            console.log('Showing presentation section...');
+            showPresentationSection();
+
+            console.log('Displaying slides...');
             displaySlides(slidesAppState.currentSlideData);
+
+            // Apply saved theme if available
+            if (slidesAppState.currentTheme) {
+                console.log('Applying theme...');
+                applyThemeToSlides();
+                // Restore active state on color scheme selector
+                restoreColorSchemeSelection();
+            }
+
             console.log('Loaded saved slides from session storage');
+        } else {
+            console.log('No saved slides found');
         }
 
         // Restore form state
@@ -211,7 +237,7 @@ function loadSavedSlides() {
             console.log('Loaded saved form state');
         }
     } catch (error) {
-        console.warn('Error loading saved slides:', error);
+        console.error('Error loading saved slides:', error);
     }
 }
 
@@ -357,25 +383,6 @@ function selectTheme(themeKey) {
     }
 }
 
-function applyThemeToSlides() {
-    if (!slidesAppState.currentTheme || !slidesAppState.currentSlideData) return;
-
-    const theme = slidesAppState.currentTheme;
-
-    // Apply theme to all slides uniformly (no variations)
-    slidesAppState.currentSlideData.slides.forEach((slide, index) => {
-        slide.visualDesign = {
-            backgroundColor: theme.background,
-            textColor: theme.text,
-            accentColor: theme.accent,
-            layout: slide.visualDesign?.layout || 'left-text',
-            shapes: slide.visualDesign?.shapes || []
-        };
-    });
-
-    displaySlides(slidesAppState.currentSlideData);
-    saveSlides();
-}
 
 // Create a universal slides prompt that works with any provider
 function createSlidesPrompt(topic, slideCount) {
@@ -493,7 +500,6 @@ async function generatePresentation() {
         console.log('Starting generation process...');
         slidesAppState.isGenerating = true;
         slidesDom.generateSlidesBtn.disabled = true;
-        slidesDom.regenerateSlidesBtn.disabled = true;
 
         updateGenerationStatus('🎨 Generating AI-powered presentation...', 'loading');
         console.log('Status updated, calling provider...');
@@ -534,7 +540,6 @@ async function generatePresentation() {
     } finally {
         slidesAppState.isGenerating = false;
         slidesDom.generateSlidesBtn.disabled = false;
-        slidesDom.regenerateSlidesBtn.disabled = false;
     }
 }
 
@@ -560,6 +565,11 @@ function displaySlides(slideData) {
 
     // Add clear button at the bottom if it doesn't exist
     addClearButtonToBottom();
+
+    // Apply theme if available
+    if (slidesAppState.currentTheme) {
+        applyThemeToSlides();
+    }
 
     // Presentation section is always visible now
 }
@@ -613,7 +623,7 @@ function createSlidePreviewElement(slide, slideNumber) {
 
     if (slide.content && slide.content.length > 0) {
         const contentList = document.createElement('ul');
-        contentList.style.cssText = 'margin: 0; padding-left: 20px; line-height: 1.6;';
+        contentList.style.cssText = 'margin: 0; padding-left: 20px; line-height: 1.6; font-family: Arial, sans-serif;';
 
         slide.content.forEach((point, index) => {
             const listItem = document.createElement('li');
@@ -623,12 +633,26 @@ function createSlidePreviewElement(slide, slideNumber) {
             listItem.style.cssText = `
                 margin: 8px 0;
                 border: 2px solid transparent;
-                padding: 5px;
+                padding: 8px 12px;
                 border-radius: 4px;
+                font-family: Arial, sans-serif;
+                font-size: 14px;
+                line-height: 1.4;
+                display: flex;
+                align-items: center;
+                min-height: 20px;
             `;
 
             // Add editing event listeners for content
-            listItem.addEventListener('blur', (e) => updateSlideContentItem(slideNumber - 1, index, e.target.textContent));
+            listItem.addEventListener('blur', (e) => {
+                // Get text content excluding the remove button
+                const removeBtn = e.target.querySelector('.remove-content-btn');
+                let textContent = e.target.textContent;
+                if (removeBtn) {
+                    textContent = textContent.replace(removeBtn.textContent, '').trim();
+                }
+                updateSlideContentItem(slideNumber - 1, index, textContent);
+            });
             listItem.addEventListener('focus', (e) => e.target.style.border = '2px solid var(--accent-color, #60a5fa)');
             listItem.addEventListener('blur', (e) => e.target.style.border = '2px solid transparent');
 
@@ -701,15 +725,21 @@ function createSlidePreviewElement(slide, slideNumber) {
 
 // Helper functions for slide editing
 function applySlideDesign(slideDiv, slide, slideNumber) {
+    // Apply basic slide styling without colors (colors will be handled by theme)
+    slideDiv.style.cssText = `
+        padding: 20px;
+        margin: 10px 0;
+        border-radius: 8px;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        transition: all 0.2s ease;
+        min-height: 200px;
+        position: relative;
+    `;
+
     if (slide.visualDesign) {
         const design = slide.visualDesign;
 
-        // Apply colors
-        slideDiv.style.background = design.backgroundColor || '#1e40af';
-        slideDiv.style.color = design.textColor || '#ffffff';
-        slideDiv.style.borderLeft = `4px solid ${design.accentColor || '#60a5fa'}`;
-
-        // Apply layout-specific styling
+        // Apply layout-specific styling only (no colors)
         switch (design.layout) {
             case 'center-text':
                 slideDiv.style.textAlign = 'center';
@@ -725,14 +755,9 @@ function applySlideDesign(slideDiv, slide, slideNumber) {
                 slideDiv.style.textAlign = 'left';
         }
 
-        // Add subtle gradient for depth
-        const bgColor = design.backgroundColor || '#1e40af';
-        const accentColor = design.accentColor || '#60a5fa';
-        slideDiv.style.background = `linear-gradient(135deg, ${bgColor} 0%, ${adjustColor(bgColor, -10)} 100%)`;
-
-        // Add custom CSS variables for this slide
-        slideDiv.style.setProperty('--accent-color', accentColor);
-        slideDiv.style.setProperty('--text-color', design.textColor || '#ffffff');
+    } else {
+        // Default layout if no design specified
+        slideDiv.style.textAlign = 'left';
     }
 }
 
@@ -846,9 +871,278 @@ function createVisualShape(shape) {
     return shapeElement;
 }
 
+function createColorSchemeSelector() {
+    // Check if selector already exists
+    let existingSelector = document.getElementById('color-scheme-selector');
+    if (existingSelector) {
+        return existingSelector;
+    }
+
+    const selectorContainer = document.createElement('div');
+    selectorContainer.id = 'color-scheme-selector';
+    selectorContainer.style.cssText = `
+        background: #ffffff;
+        border: 1px solid #e5e7eb;
+        border-radius: 8px;
+        padding: 15px;
+        margin-bottom: 20px;
+        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+    `;
+
+    const title = document.createElement('h3');
+    title.textContent = 'Color Schemes';
+    title.style.cssText = `
+        margin: 0 0 10px 0;
+        font-size: 14px;
+        font-weight: 600;
+        color: #374151;
+    `;
+
+    const schemesGrid = document.createElement('div');
+    schemesGrid.style.cssText = `
+        display: grid;
+        grid-template-columns: repeat(6, 1fr);
+        gap: 10px;
+    `;
+
+    // Create color scheme tiles
+    Object.entries(COLOR_THEMES).forEach(([key, theme]) => {
+        const tile = document.createElement('div');
+        tile.className = 'color-scheme-tile';
+        tile.dataset.themeKey = key;
+        tile.title = theme.name;
+        tile.style.cssText = `
+            height: 60px;
+            border-radius: 6px;
+            cursor: pointer;
+            border: 3px solid transparent;
+            transition: all 0.2s ease;
+            position: relative;
+            overflow: hidden;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        `;
+
+        // Create 3-color layout showing dark, border, and light colors
+        tile.innerHTML = `
+            <div style="display: flex; height: 100%; border-radius: 3px; overflow: hidden;">
+                <div style="flex: 1; background-color: ${theme.textColor};" title="Text Color"></div>
+                <div style="flex: 1; background-color: ${theme.borderColor};" title="Border Color"></div>
+                <div style="flex: 1; background-color: ${theme.fillColor};" title="Fill Color"></div>
+            </div>
+        `;
+
+        // Add theme name label
+        const label = document.createElement('div');
+        label.textContent = theme.name;
+        label.style.cssText = `
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: rgba(255, 255, 255, 0.95);
+            color: ${theme.textColor};
+            font-size: 10px;
+            font-weight: 600;
+            text-align: center;
+            padding: 4px 2px;
+            line-height: 1;
+            backdrop-filter: blur(2px);
+        `;
+
+        tile.appendChild(label);
+
+        // Add click handler
+        tile.addEventListener('click', () => {
+            // Remove active state from all tiles
+            document.querySelectorAll('.color-scheme-tile').forEach(t => {
+                t.style.border = '3px solid transparent';
+            });
+
+            // Add active state to clicked tile
+            tile.style.border = `3px solid ${theme.borderColor}`;
+
+            // Apply the theme
+            applyColorScheme(key, theme);
+        });
+
+        // Add hover effect
+        tile.addEventListener('mouseenter', () => {
+            if (!tile.style.border.includes(theme.borderColor)) {
+                tile.style.transform = 'scale(1.05)';
+                tile.style.boxShadow = '0 4px 8px rgba(0, 0, 0, 0.15)';
+            }
+        });
+
+        tile.addEventListener('mouseleave', () => {
+            if (!tile.style.border.includes(theme.borderColor)) {
+                tile.style.transform = 'scale(1)';
+                tile.style.boxShadow = '0 2px 4px rgba(0, 0, 0, 0.1)';
+            }
+        });
+
+        schemesGrid.appendChild(tile);
+    });
+
+    selectorContainer.appendChild(title);
+    selectorContainer.appendChild(schemesGrid);
+
+    return selectorContainer;
+}
+
 function showPresentationSection() {
     slidesDom.presentationSection.style.display = 'block';
+
+    // Add color scheme selector if it doesn't exist
+    let colorSelector = document.getElementById('color-scheme-selector');
+    if (!colorSelector) {
+        colorSelector = createColorSchemeSelector();
+        // Insert at the very beginning of the presentation section
+        if (slidesDom.presentationSection) {
+            slidesDom.presentationSection.insertBefore(colorSelector, slidesDom.presentationSection.firstChild);
+        }
+
+        // Restore selection if there's a saved theme
+        if (slidesAppState.currentTheme) {
+            restoreColorSchemeSelection();
+        }
+    }
+
     slidesDom.presentationSection.scrollIntoView({ behavior: 'smooth' });
+}
+
+function applyColorScheme(themeKey, theme) {
+    // Store the selected theme
+    slidesAppState.currentTheme = { key: themeKey, ...theme };
+
+    // Save to localStorage
+    localStorage.setItem(THEME_STORAGE_KEY, JSON.stringify(slidesAppState.currentTheme));
+
+    // Apply theme to all slides
+    applyThemeToSlides();
+
+    console.log(`Applied color scheme: ${theme.name}`);
+}
+
+function restoreColorSchemeSelection() {
+    if (!slidesAppState.currentTheme || !slidesAppState.currentTheme.key) return;
+
+    // Wait a bit for the selector to be created
+    setTimeout(() => {
+        const activeThemeKey = slidesAppState.currentTheme.key;
+        const activeTile = document.querySelector(`[data-theme-key="${activeThemeKey}"]`);
+
+        if (activeTile) {
+            // Remove active state from all tiles
+            document.querySelectorAll('.color-scheme-tile').forEach(tile => {
+                tile.style.border = '3px solid transparent';
+            });
+
+            // Add active state to the saved theme tile
+            const theme = COLOR_THEMES[activeThemeKey];
+            if (theme) {
+                activeTile.style.border = `3px solid ${theme.borderColor}`;
+                console.log(`Restored color scheme selection: ${theme.name}`);
+            }
+        }
+    }, 100);
+}
+
+function applyThemeToSlides() {
+    if (!slidesAppState.currentTheme) return;
+
+    const theme = slidesAppState.currentTheme;
+
+    // Apply theme to all slide previews with consistent background
+    document.querySelectorAll('.slide-preview.editable-slide').forEach((slide, index) => {
+        // All slides get the calculated background color
+        slide.style.backgroundColor = theme.backgroundColor;
+        slide.style.color = theme.textColor;
+        slide.style.border = `2px solid ${theme.borderColor}`;
+
+        // Apply colors to slide title
+        const titleElement = slide.querySelector('.slide-title-editable, h2');
+        if (titleElement) {
+            titleElement.style.color = theme.textColor;
+            titleElement.style.fontWeight = '600';
+        }
+
+        // Apply colors to content items (bullet points)
+        const contentItems = slide.querySelectorAll('.slide-content-item-editable, li');
+        contentItems.forEach(item => {
+            item.style.color = theme.textColor;
+            item.style.backgroundColor = theme.fillColor;
+            item.style.border = `1px solid ${theme.borderColor}`;
+            item.style.borderRadius = '6px';
+            item.style.padding = '8px 12px';
+            item.style.margin = '6px 0';
+            item.style.fontFamily = 'Arial, sans-serif';
+            item.style.fontSize = '14px';
+            item.style.lineHeight = '1.4';
+            item.style.display = 'flex';
+            item.style.alignItems = 'center';
+            item.style.minHeight = '20px';
+        });
+
+        // Apply colors to buttons
+        const buttons = slide.querySelectorAll('button');
+        buttons.forEach(button => {
+            if (button.classList.contains('remove-content-btn')) {
+                button.style.backgroundColor = theme.borderColor;
+                button.style.color = 'white';
+                button.style.border = 'none';
+            } else if (button.classList.contains('add-content-btn')) {
+                button.style.backgroundColor = theme.borderColor;
+                button.style.color = 'white';
+                button.style.border = 'none';
+            }
+        });
+
+        // Style any shapes or visual elements
+        const shapes = slide.querySelectorAll('.visual-shape');
+        shapes.forEach(shape => {
+            shape.style.fill = theme.fillColor;
+            shape.style.stroke = theme.borderColor;
+            shape.style.strokeWidth = '2px';
+        });
+    });
+
+    // Update presentation title container and title element styling
+    const presentationPreview = document.querySelector('.presentation-preview');
+    if (presentationPreview) {
+        // Style the container like a slide - use !important to override CSS
+        presentationPreview.style.setProperty('background', theme.backgroundColor, 'important');
+        presentationPreview.style.setProperty('background-color', theme.backgroundColor, 'important');
+        presentationPreview.style.setProperty('border', `2px solid ${theme.borderColor}`, 'important');
+        presentationPreview.style.setProperty('color', theme.textColor, 'important');
+        presentationPreview.style.borderRadius = '8px';
+        presentationPreview.style.padding = '20px';
+        presentationPreview.style.margin = '10px 0';
+        presentationPreview.style.boxShadow = '0 2px 4px rgba(0, 0, 0, 0.1)';
+        presentationPreview.style.transition = 'all 0.2s ease';
+    }
+
+    // Style the title element itself
+    if (slidesDom.presentationTitle) {
+        slidesDom.presentationTitle.style.color = theme.textColor;
+        slidesDom.presentationTitle.style.backgroundColor = 'transparent';
+        slidesDom.presentationTitle.style.border = 'none';
+        slidesDom.presentationTitle.style.borderRadius = '4px';
+        slidesDom.presentationTitle.style.padding = '10px';
+        slidesDom.presentationTitle.style.margin = '0';
+        slidesDom.presentationTitle.style.fontWeight = '600';
+        slidesDom.presentationTitle.style.fontSize = '1.5em';
+        slidesDom.presentationTitle.style.textAlign = 'center';
+        slidesDom.presentationTitle.style.boxShadow = 'none';
+        slidesDom.presentationTitle.style.transition = 'all 0.2s ease';
+    }
+
+    // Update overall presentation section with fixed light grey background
+    if (slidesDom.presentationSection) {
+        slidesDom.presentationSection.style.backgroundColor = '#f8f9fa';
+        slidesDom.presentationSection.style.borderRadius = '12px';
+        slidesDom.presentationSection.style.padding = '20px';
+        slidesDom.presentationSection.style.border = '1px solid #e9ecef';
+    }
 }
 
 function showPresentationViewer() {
@@ -1009,6 +1303,14 @@ function exportHTML(includeSpeakerNotes = false) {
 }
 
 function generateStandaloneHTML(slideData) {
+    // Get current theme colors, fallback to default if no theme selected
+    const theme = slidesAppState.currentTheme || {
+        backgroundColor: '#ffffff',
+        textColor: '#000000',
+        borderColor: '#dddddd',
+        fillColor: '#f5f5f5'
+    };
+
     return `<!DOCTYPE html>
 <html lang="en">
 <head>
@@ -1016,25 +1318,94 @@ function generateStandaloneHTML(slideData) {
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>${slideData.title || 'Presentation'}</title>
     <style>
-        body { font-family: Arial, sans-serif; margin: 0; padding: 20px; }
-        .slide { page-break-after: always; margin-bottom: 50px; padding: 40px; border: 1px solid #ddd; }
-        h1, h2 { margin: 0 0 20px 0; }
-        ul { margin: 10px 0; padding-left: 30px; }
-        li { margin: 8px 0; line-height: 1.4; }
-        .slide-number { opacity: 0.6; font-size: 0.9em; margin-bottom: 10px; }
-        @media print { .slide { page-break-after: always; } }
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background-color: #f8f9fa;
+        }
+        .title-slide {
+            background-color: ${theme.backgroundColor};
+            color: ${theme.textColor};
+            border: 2px solid ${theme.borderColor};
+            border-radius: 8px;
+            padding: 40px;
+            margin-bottom: 30px;
+            text-align: center;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+        .slide {
+            background-color: ${theme.backgroundColor};
+            color: ${theme.textColor};
+            border: 2px solid ${theme.borderColor};
+            border-radius: 8px;
+            page-break-after: always;
+            margin-bottom: 30px;
+            padding: 40px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+        h1 {
+            margin: 0;
+            font-size: 2.5em;
+            font-weight: 600;
+        }
+        h2 {
+            margin: 0 0 20px 0;
+            color: ${theme.textColor};
+            font-weight: 600;
+        }
+        ul {
+            margin: 20px 0;
+            padding-left: 30px;
+        }
+        li {
+            margin: 12px 0;
+            line-height: 1.6;
+            padding: 8px 12px;
+            background-color: ${theme.fillColor};
+            border: 1px solid ${theme.borderColor};
+            border-radius: 6px;
+            list-style: none;
+        }
+        li::before {
+            content: "•";
+            color: ${theme.borderColor};
+            font-weight: bold;
+            margin-right: 10px;
+        }
+        .slide-number {
+            opacity: 0.6;
+            font-size: 0.9em;
+            margin-bottom: 15px;
+            color: ${theme.textColor};
+        }
+        .speaker-notes {
+            margin-top: 20px;
+            padding: 15px;
+            background-color: ${theme.fillColor};
+            border-left: 4px solid ${theme.borderColor};
+            border-radius: 4px;
+            font-style: italic;
+            opacity: 0.8;
+        }
+        @media print {
+            .slide { page-break-after: always; }
+            body { background-color: white; }
+        }
     </style>
 </head>
 <body>
-    <h1>${slideData.title || 'Presentation'}</h1>
+    <div class="title-slide">
+        <h1>${slideData.title || 'Presentation'}</h1>
+    </div>
     ${slideData.slides.map((slide, index) => `
-        <div class="slide" style="background: ${slide.visualDesign?.backgroundColor || '#ffffff'}; color: ${slide.visualDesign?.textColor || '#000000'};">
+        <div class="slide">
             <div class="slide-number">Slide ${index + 1}</div>
             <h2>${slide.title}</h2>
             ${slide.content && slide.content.length > 0 ?
                 `<ul>${slide.content.map(point => `<li>${point}</li>`).join('')}</ul>` : ''
             }
-            ${slide.speakerNotes ? `<p><em>Notes: ${slide.speakerNotes}</em></p>` : ''}
+            ${slide.speakerNotes ? `<div class="speaker-notes">Notes: ${slide.speakerNotes}</div>` : ''}
         </div>
     `).join('')}
 </body>
@@ -1052,63 +1423,116 @@ async function exportPDF() {
         const margin = 20;
         const contentWidth = pageWidth - (margin * 2);
 
-        // Title slide
-        doc.setFontSize(24);
-        doc.setTextColor(40, 40, 40);
+        // Get current theme colors
+        const theme = slidesAppState.currentTheme || {
+            backgroundColor: '#ffffff',
+            textColor: '#000000',
+            borderColor: '#dddddd',
+            fillColor: '#f5f5f5'
+        };
 
-        // Calculate text position to center it
+        const bgColor = hexToRgb(theme.backgroundColor) || { r: 255, g: 255, b: 255 };
+        const textColor = hexToRgb(theme.textColor) || { r: 40, g: 40, b: 40 };
+        const borderColor = hexToRgb(theme.borderColor) || { r: 200, g: 200, b: 200 };
+
+        // Title slide with theme colors (no border)
+        // Apply background color only
+        doc.setFillColor(bgColor.r, bgColor.g, bgColor.b);
+        doc.rect(0, 0, pageWidth, pageHeight, 'F');
+
+        // Title text
+        doc.setFontSize(28);
+        doc.setTextColor(textColor.r, textColor.g, textColor.b);
         const titleText = slideData.title || 'Presentation';
         const titleWidth = doc.getTextWidth(titleText);
         doc.text(titleText, (pageWidth - titleWidth) / 2, pageHeight / 2);
+
+        // Page number for title slide
+        doc.setFontSize(10);
+        doc.setTextColor(textColor.r, textColor.g, textColor.b);
+        doc.text('1', pageWidth - margin, pageHeight - margin);
 
         // Content slides
         slideData.slides.forEach((slide, index) => {
             doc.addPage();
 
-            // Apply background color if available
-            if (slide.visualDesign && slide.visualDesign.backgroundColor) {
-                const bgColor = hexToRgb(slide.visualDesign.backgroundColor);
-                if (bgColor) {
-                    doc.setFillColor(bgColor.r, bgColor.g, bgColor.b);
-                    doc.rect(0, 0, pageWidth, pageHeight, 'F');
-                }
-            }
+            // Apply theme background color only (no border)
+            doc.setFillColor(bgColor.r, bgColor.g, bgColor.b);
+            doc.rect(0, 0, pageWidth, pageHeight, 'F');
 
-            // Set text color
-            let textColor = { r: 40, g: 40, b: 40 };
-            if (slide.visualDesign && slide.visualDesign.textColor) {
-                textColor = hexToRgb(slide.visualDesign.textColor) || textColor;
-            }
+            // Set text color from theme
             doc.setTextColor(textColor.r, textColor.g, textColor.b);
 
-            // Slide number
-            doc.setFontSize(10);
-            doc.text(`Slide ${index + 1}`, margin, margin);
-
-            // Slide title
+            // Slide title (centered)
             doc.setFontSize(18);
             const lines = doc.splitTextToSize(slide.title, contentWidth);
-            doc.text(lines, margin, margin + 15);
+            const titleWidth = doc.getTextWidth(slide.title);
+            const titleX = titleWidth > contentWidth ? margin : (pageWidth - titleWidth) / 2;
+            doc.text(lines, titleX, margin + 15);
 
             let yPosition = margin + 30 + (lines.length - 1) * 7;
 
-            // Slide content
+            // Page number (bottom right)
+            doc.setFontSize(10);
+            doc.text(`${index + 2}`, pageWidth - margin, pageHeight - margin);
+
+            // Slide content with theme colors and rounded bullet points
             if (slide.content && slide.content.length > 0) {
                 doc.setFontSize(12);
+                doc.setTextColor(textColor.r, textColor.g, textColor.b);
+
                 slide.content.forEach((point, pointIndex) => {
-                    const bulletLines = doc.splitTextToSize(`• ${point}`, contentWidth - 10);
-                    doc.text(bulletLines, margin + 10, yPosition);
-                    yPosition += bulletLines.length * 6 + 3;
+                    // Add bullet point background with rounded corners like HTML
+                    const fillColor = hexToRgb(theme.fillColor) || { r: 245, g: 245, b: 245 };
+                    doc.setFillColor(fillColor.r, fillColor.g, fillColor.b);
+                    doc.setDrawColor(borderColor.r, borderColor.g, borderColor.b);
+                    doc.setLineWidth(0.3); // Thinner line like HTML (was 0.5)
+
+                    const bulletLines = doc.splitTextToSize(`• ${point}`, contentWidth - 20);
+                    const rectHeight = bulletLines.length * 6 + 6; // Slightly less padding
+                    const rectWidth = contentWidth - 10;
+                    const rectX = margin + 5;
+                    const rectY = yPosition - 3;
+                    const cornerRadius = 1.5; // Slightly smaller corners for better match
+
+                    // Simple rectangle approach for PDF (skip rounded corners for now)
+                    // Fill background
+                    doc.setFillColor(fillColor.r, fillColor.g, fillColor.b);
+                    doc.rect(rectX, rectY, rectWidth, rectHeight, 'F');
+
+                    // Draw border
+                    doc.setDrawColor(borderColor.r, borderColor.g, borderColor.b);
+                    doc.setLineWidth(0.3);
+                    doc.rect(rectX, rectY, rectWidth, rectHeight, 'D');
+
+                    // Add bullet text with consistent font and vertical centering
+                    doc.setFont('helvetica', 'normal');  // Consistent with Arial in HTML
+                    doc.setFontSize(12);  // Consistent with 14px in HTML (PDF scaling)
+                    doc.setTextColor(textColor.r, textColor.g, textColor.b);
+
+                    // Calculate vertical center position for text
+                    const textHeight = bulletLines.length * 4; // Approximate line height in PDF units
+                    const textY = yPosition + (rectHeight / 2) + (textHeight / 4); // Center vertically
+
+                    doc.text(bulletLines, margin + 12, textY);
+                    yPosition += rectHeight + 4; // Less spacing between bullets
                 });
             }
 
-            // Speaker notes
+            // Speaker notes with simple line separator
             if (slide.speakerNotes) {
-                yPosition += 10;
+                yPosition += 15;
+
+                // Draw a simple line above the notes using border color
+                doc.setDrawColor(borderColor.r, borderColor.g, borderColor.b);
+                doc.setLineWidth(0.3); // Same weight as bullet point borders
+                doc.line(margin, yPosition - 5, margin + contentWidth, yPosition - 5);
+
+                // Add notes text
                 doc.setFontSize(10);
-                doc.setTextColor(100, 100, 100);
+                doc.setTextColor(textColor.r, textColor.g, textColor.b);
                 const notesLines = doc.splitTextToSize(`Notes: ${slide.speakerNotes}`, contentWidth);
-                doc.text(notesLines, margin, yPosition);
+                doc.text(notesLines, margin, yPosition + 3);
             }
         });
 
