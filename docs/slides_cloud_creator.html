@@ -68,23 +68,25 @@
         }
 
         .presentation-preview {
-            border: 2px solid #3498db;
+            border: 1px solid #ddd;
             border-radius: 8px;
             padding: 20px;
             margin: 20px 0;
-            background: linear-gradient(135deg, #3498db 0%, #2980b9 100%);
-            color: white;
+            background: white;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
             text-align: center;
         }
 
         .presentation-preview h2 {
             margin: 0 0 10px 0;
-            font-size: 2em;
+            font-size: 1.8em;
+            color: #333;
         }
 
         .slide-counter {
             opacity: 0.8;
             font-size: 0.9em;
+            color: #666;
         }
 
         /* Theme selector styles */
@@ -262,8 +264,8 @@
         <!-- Presentation Preview Section -->
         <div id="presentation-section" style="display: block;">
             <div class="presentation-preview">
-                <h2 id="presentation-title">Presentation Title</h2>
-                <p class="slide-counter"><span id="total-slides">0</span> slides generated</p>
+                <h2 id="presentation-title" contenteditable="true" title="Click to edit presentation title" style="cursor: text; border: 2px solid transparent; border-radius: 4px; padding: 5px 10px; transition: border-color 0.2s;">My Presentation</h2>
+                <p class="slide-counter"><span id="total-slides">1</span> slides generated</p>
             </div>
 
 
@@ -324,6 +326,10 @@
     <script src="https://unpkg.com/jspdf@latest/dist/jspdf.umd.min.js"></script>
     <script src="https://unpkg.com/html2canvas@latest/dist/html2canvas.min.js"></script>
     <script src="https://unpkg.com/pptxgenjs@3.12.0/dist/pptxgen.bundle.js"></script>
+
+    <!-- Enhanced Editing and Export Libraries -->
+    <script src="./assets/js/slate-editor.js"></script>
+    <script src="./assets/js/pdfkit-export.js"></script>
 
     <!-- Advanced Graphics Libraries -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.js"></script>

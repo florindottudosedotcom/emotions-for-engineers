@@ -3,6 +3,10 @@ const SLIDES_STORAGE_KEY = 'aiSlidesCreator_slides';
 const THEME_STORAGE_KEY = 'aiSlidesCreator_theme';
 const CUSTOM_COLORS_STORAGE_KEY = 'aiSlidesCreator_customColors';
 
+// Enhanced editing flag
+let enhancedEditingEnabled = false;
+let slateEditors = new Map();
+
 const slidesAppState = {
     currentSlideData: null,
     isGenerating: false,
@@ -80,8 +84,63 @@ function saveCustomColors() {
     }
 }
 
+// Initialize enhanced editing components
+async function initializeEnhancedComponents() {
+    console.log('Initializing enhanced editing components...');
+
+    try {
+        // Load Slate.js editor if available
+        if (window.SlateEditor && window.SlateEditor.loadDependencies) {
+            enhancedEditingEnabled = await window.SlateEditor.loadDependencies();
+            console.log('Enhanced editing enabled:', enhancedEditingEnabled);
+        }
+
+        // Add enhanced editing toggle button
+        addEnhancedEditingToggle();
+
+    } catch (error) {
+        console.warn('Enhanced editing components failed to initialize:', error);
+        enhancedEditingEnabled = false;
+    }
+}
+
+function addEnhancedEditingToggle() {
+    // Add toggle button to presentation section
+    const presentationSection = document.getElementById('presentation-section');
+    if (!presentationSection) return;
+
+    const toggleContainer = document.createElement('div');
+    toggleContainer.style.cssText = 'margin: 10px 0; text-align: center;';
+
+    const toggleButton = document.createElement('button');
+    toggleButton.id = 'enhanced-editing-toggle';
+    toggleButton.className = 'btn btn-secondary';
+    toggleButton.textContent = enhancedEditingEnabled ? '📝 Enhanced Editing: ON' : '📝 Enhanced Editing: OFF';
+    toggleButton.style.cssText = 'margin: 5px;';
+
+    toggleButton.addEventListener('click', () => {
+        enhancedEditingEnabled = !enhancedEditingEnabled;
+        toggleButton.textContent = enhancedEditingEnabled ? '📝 Enhanced Editing: ON' : '📝 Enhanced Editing: OFF';
+        toggleButton.className = enhancedEditingEnabled ? 'btn btn-primary' : 'btn btn-secondary';
+
+        // Clean up existing editors before re-rendering
+        cleanupSlateEditors();
+
+        // Re-render slides with new editing mode
+        if (slidesAppState.currentSlideData) {
+            displaySlides(slidesAppState.currentSlideData);
+        }
+    });
+
+    toggleContainer.appendChild(toggleButton);
+    presentationSection.insertBefore(toggleContainer, presentationSection.querySelector('.slides-container'));
+}
+
 // Wait for the main provider to be initialized, then add slides functionality
 document.addEventListener('DOMContentLoaded', async () => {
+    // Initialize enhanced components first
+    await initializeEnhancedComponents();
+
     // Load custom colors first
     loadCustomColors();
 
@@ -99,6 +158,12 @@ document.addEventListener('DOMContentLoaded', async () => {
     slidesDom.presentationTopicTextarea = document.getElementById('presentation-topic');
     slidesDom.numSlidesSelect = document.getElementById('num-slides');
     slidesDom.generateSlidesBtn = document.getElementById('generate-slides-btn');
+
+    console.log('DOM elements initialized:', {
+        presentationTopicTextarea: !!slidesDom.presentationTopicTextarea,
+        numSlidesSelect: !!slidesDom.numSlidesSelect,
+        generateSlidesBtn: !!slidesDom.generateSlidesBtn
+    });
     slidesDom.generationStatus = document.getElementById('generation-status');
     slidesDom.presentationSection = document.getElementById('presentation-section');
     slidesDom.presentationTitle = document.getElementById('presentation-title');
@@ -121,6 +186,18 @@ document.addEventListener('DOMContentLoaded', async () => {
     if (slidesDom.generateSlidesBtn) {
         slidesDom.generateSlidesBtn.addEventListener('click', generatePresentation);
         console.log('Generate slides button event listener added');
+    }
+
+    // Auto-save form state when inputs change
+    if (slidesDom.presentationTopicTextarea) {
+        slidesDom.presentationTopicTextarea.addEventListener('input', saveFormState);
+        slidesDom.presentationTopicTextarea.addEventListener('blur', saveFormState);
+        console.log('Presentation topic auto-save listeners added');
+    }
+
+    if (slidesDom.numSlidesSelect) {
+        slidesDom.numSlidesSelect.addEventListener('change', saveFormState);
+        console.log('Number of slides auto-save listener added');
     }
 
     // Removed regenerate and preview buttons - no longer needed
@@ -167,6 +244,12 @@ document.addEventListener('DOMContentLoaded', async () => {
     console.log('Starting slides initialization...');
     loadSavedSlides();
 
+    // Also try to load form state with a delay to ensure DOM is ready
+    setTimeout(() => {
+        console.log('Loading form state with delay...');
+        loadFormState();
+    }, 100);
+
     // Initialize empty presentation if no saved slides
     console.log('Current slide data after loading:', slidesAppState.currentSlideData);
     if (!slidesAppState.currentSlideData) {
@@ -206,11 +289,56 @@ function saveSlides() {
 }
 
 function saveFormState() {
+    console.log('saveFormState called');
+    console.log('DOM elements:', {
+        presentationTopicTextarea: !!slidesDom.presentationTopicTextarea,
+        numSlidesSelect: !!slidesDom.numSlidesSelect
+    });
+
     const formState = {
         presentationTopic: slidesDom.presentationTopicTextarea ? slidesDom.presentationTopicTextarea.value : '',
         numSlides: slidesDom.numSlidesSelect ? slidesDom.numSlidesSelect.value : '8'
     };
+
+    console.log('Saving form state:', formState);
     localStorage.setItem(SLIDES_STORAGE_KEY + '_form', JSON.stringify(formState));
+}
+
+function loadFormState() {
+    try {
+        const savedForm = localStorage.getItem(SLIDES_STORAGE_KEY + '_form');
+        console.log('loadFormState called - found saved form:', !!savedForm);
+
+        if (savedForm) {
+            const formState = JSON.parse(savedForm);
+            console.log('Loading form state:', formState);
+
+            // Re-check DOM elements in case they weren't ready before
+            if (!slidesDom.presentationTopicTextarea) {
+                slidesDom.presentationTopicTextarea = document.getElementById('presentation-topic');
+            }
+            if (!slidesDom.numSlidesSelect) {
+                slidesDom.numSlidesSelect = document.getElementById('num-slides');
+            }
+
+            console.log('DOM elements for form loading:', {
+                presentationTopicTextarea: !!slidesDom.presentationTopicTextarea,
+                numSlidesSelect: !!slidesDom.numSlidesSelect
+            });
+
+            if (slidesDom.presentationTopicTextarea && formState.presentationTopic) {
+                slidesDom.presentationTopicTextarea.value = formState.presentationTopic;
+                console.log('Restored presentation topic:', formState.presentationTopic);
+            }
+
+            if (slidesDom.numSlidesSelect && formState.numSlides) {
+                slidesDom.numSlidesSelect.value = formState.numSlides;
+                console.log('Restored slide count:', formState.numSlides);
+            }
+        }
+    } catch (error) {
+        console.error('Error in loadFormState:', error);
+    }
 }
 
 function loadSavedSlides() {
@@ -254,14 +382,33 @@ function loadSavedSlides() {
 
         // Restore form state
         if (savedForm) {
+            console.log('Found saved form data:', savedForm);
             const formState = JSON.parse(savedForm);
+            console.log('Parsed form state:', formState);
+            console.log('Form DOM elements at load time:', {
+                presentationTopicTextarea: !!slidesDom.presentationTopicTextarea,
+                numSlidesSelect: !!slidesDom.numSlidesSelect,
+                topicValue: slidesDom.presentationTopicTextarea?.value,
+                slidesValue: slidesDom.numSlidesSelect?.value
+            });
+
             if (slidesDom.presentationTopicTextarea) {
                 slidesDom.presentationTopicTextarea.value = formState.presentationTopic || '';
+                console.log('Set presentation topic to:', formState.presentationTopic);
+            } else {
+                console.warn('presentationTopicTextarea element not found');
             }
+
             if (slidesDom.numSlidesSelect) {
                 slidesDom.numSlidesSelect.value = formState.numSlides || '8';
+                console.log('Set slide count to:', formState.numSlides);
+            } else {
+                console.warn('numSlidesSelect element not found');
             }
-            console.log('Loaded saved form state');
+
+            console.log('Loaded saved form state successfully');
+        } else {
+            console.log('No saved form state found');
         }
     } catch (error) {
         console.error('Error loading saved slides:', error);
@@ -776,6 +923,10 @@ async function generatePresentation() {
         // Save to session storage
         saveSlides();
 
+        // Also save form state to ensure persistence
+        saveFormState();
+        console.log('Saved slide data and form state after generation');
+
         updateGenerationStatus(`✅ Generated ${slideData.slides.length} slides successfully!`, 'success');
 
     } catch (error) {
@@ -854,10 +1005,21 @@ function createSlidePreviewElement(slide, slideNumber) {
         border-radius: 4px;
     `;
 
-    // Add editing event listeners for title
-    titleElement.addEventListener('blur', (e) => updateSlideData(slideNumber - 1, 'title', e.target.textContent));
-    titleElement.addEventListener('focus', (e) => e.target.style.border = '2px solid var(--accent-color, #60a5fa)');
-    titleElement.addEventListener('blur', (e) => e.target.style.border = '2px solid transparent');
+    // Use enhanced editor for title if available and enabled
+    if (enhancedEditingEnabled && window.SlateEditor) {
+        const editorKey = `slide-${slideNumber}-title`;
+        try {
+            const titleEditor = window.SlateEditor.create(titleElement, slide.title, (content) => {
+                updateSlideData(slideNumber - 1, 'title', content);
+            });
+            slateEditors.set(editorKey, titleEditor);
+        } catch (error) {
+            console.warn('Failed to create Slate editor for title, using fallback:', error);
+            setupBasicTitleEditor(titleElement, slideNumber);
+        }
+    } else {
+        setupBasicTitleEditor(titleElement, slideNumber);
+    }
 
     // Remove auto-select behavior that interferes with editing
     // selectAllOnFocus(titleElement);
@@ -873,7 +1035,6 @@ function createSlidePreviewElement(slide, slideNumber) {
         slide.content.forEach((point, index) => {
             const listItem = document.createElement('li');
             listItem.className = 'slide-content-item-editable';
-            listItem.contentEditable = true;
             listItem.textContent = point;
             listItem.style.cssText = `
                 margin: 8px 0;
@@ -888,14 +1049,21 @@ function createSlidePreviewElement(slide, slideNumber) {
                 outline: none;
             `;
 
-            // Add editing event listeners for content
-            listItem.addEventListener('blur', (e) => {
-                // Get text content (no longer need to exclude remove button)
-                const textContent = e.target.textContent.trim();
-                updateSlideContentItem(slideNumber - 1, index, textContent);
-            });
-            listItem.addEventListener('focus', (e) => e.target.style.border = '2px solid var(--accent-color, #60a5fa)');
-            listItem.addEventListener('blur', (e) => e.target.style.border = '2px solid transparent');
+            // Use enhanced editor if available and enabled
+            if (enhancedEditingEnabled && window.SlateEditor) {
+                const editorKey = `slide-${slideNumber}-content-${index}`;
+                try {
+                    const editor = window.SlateEditor.create(listItem, point, (content) => {
+                        updateSlideContentItem(slideNumber - 1, index, content);
+                    });
+                    slateEditors.set(editorKey, editor);
+                } catch (error) {
+                    console.warn('Failed to create Slate editor, using fallback:', error);
+                    setupBasicContentEditor(listItem, slideNumber, index);
+                }
+            } else {
+                setupBasicContentEditor(listItem, slideNumber, index);
+            }
 
             // Remove auto-select behavior that interferes with editing
             // selectAllOnFocus(listItem);
@@ -1047,22 +1215,26 @@ function applySlideDesign(slideDiv, slide, slideNumber) {
 
 function updateSlideData(slideIndex, field, value) {
     if (!slidesAppState.currentSlideData || !slidesAppState.currentSlideData.slides[slideIndex]) {
+        console.warn(`Cannot update slide data: slide ${slideIndex} not found`);
         return;
     }
 
+    const oldValue = slidesAppState.currentSlideData.slides[slideIndex][field];
     slidesAppState.currentSlideData.slides[slideIndex][field] = value;
     saveSlides();
-    console.log(`Updated slide ${slideIndex + 1} ${field}:`, value);
+    console.log(`Updated slide ${slideIndex + 1} ${field}:`, { from: oldValue, to: value });
 }
 
 function updateSlideContentItem(slideIndex, itemIndex, value) {
     if (!slidesAppState.currentSlideData || !slidesAppState.currentSlideData.slides[slideIndex] || !slidesAppState.currentSlideData.slides[slideIndex].content) {
+        console.warn(`Cannot update slide content: slide ${slideIndex} or content not found`);
         return;
     }
 
+    const oldValue = slidesAppState.currentSlideData.slides[slideIndex].content[itemIndex];
     slidesAppState.currentSlideData.slides[slideIndex].content[itemIndex] = value;
     saveSlides();
-    console.log(`Updated slide ${slideIndex + 1} content item ${itemIndex + 1}:`, value);
+    console.log(`Updated slide ${slideIndex + 1} content item ${itemIndex + 1}:`, { from: oldValue, to: value });
 }
 
 // updateSlideColor function removed - theme is now applied globally
@@ -2839,7 +3011,7 @@ async function exportPresentation(format) {
                 exportHTML(includeSpeakerNotes);
                 break;
             case 'pdf':
-                await exportPDF(includeSpeakerNotes);
+                await exportPDFEnhanced(includeSpeakerNotes);
                 break;
             case 'pptx':
                 await exportPowerPoint(includeSpeakerNotes);
@@ -3042,6 +3214,87 @@ function generateStandaloneHTML(slideData, includeSpeakerNotes = false) {
     `).join('')}
 </body>
 </html>`;
+}
+
+function setupBasicContentEditor(listItem, slideNumber, index) {
+    listItem.contentEditable = true;
+
+    // Add editing event listeners for content
+    listItem.addEventListener('blur', (e) => {
+        // Get text content (no longer need to exclude remove button)
+        const textContent = e.target.textContent.trim();
+        updateSlideContentItem(slideNumber - 1, index, textContent);
+    });
+    listItem.addEventListener('focus', (e) => e.target.style.border = '2px solid var(--accent-color, #60a5fa)');
+    listItem.addEventListener('blur', (e) => e.target.style.border = '2px solid transparent');
+}
+
+function setupBasicTitleEditor(titleElement, slideNumber) {
+    titleElement.contentEditable = true;
+
+    // Add editing event listeners for title
+    titleElement.addEventListener('blur', (e) => updateSlideData(slideNumber - 1, 'title', e.target.textContent));
+    titleElement.addEventListener('focus', (e) => e.target.style.border = '2px solid var(--accent-color, #60a5fa)');
+    titleElement.addEventListener('blur', (e) => e.target.style.border = '2px solid transparent');
+}
+
+function cleanupSlateEditors() {
+    console.log('Cleaning up Slate editors:', slateEditors.size);
+
+    // Destroy all existing Slate editors
+    slateEditors.forEach((editor, key) => {
+        try {
+            if (editor && typeof editor.destroy === 'function') {
+                editor.destroy();
+            }
+        } catch (error) {
+            console.warn('Error destroying Slate editor:', error);
+        }
+    });
+
+    // Clear the editors map
+    slateEditors.clear();
+
+    // Remove any existing toolbars
+    document.querySelectorAll('.slate-toolbar').forEach(toolbar => {
+        toolbar.remove();
+    });
+}
+
+// Enhanced PDF Export with PDFKit
+async function exportPDFEnhanced(includeSpeakerNotes = false) {
+    try {
+        updateExportModalStatus('Initializing PDF export...', 'loading');
+
+        // Use PDFKit exporter if available
+        if (window.PDFKitExporter && window.PDFKitExporter.exportToPDF) {
+            const slideData = slidesAppState.currentSlideData;
+            const options = {
+                includeNotes: includeSpeakerNotes,
+                theme: slidesAppState.currentTheme?.name || 'white',
+                pageSize: 'LETTER',
+                margin: 50
+            };
+
+            await window.PDFKitExporter.exportToPDF(slideData, options);
+            updateExportModalStatus('PDF exported successfully!', 'success');
+            return;
+        }
+
+        // Fall back to original PDF export
+        await exportPDF(includeSpeakerNotes);
+
+    } catch (error) {
+        console.error('Enhanced PDF export error:', error);
+        updateExportModalStatus(`PDF export failed: ${error.message}`, 'error');
+
+        // Try fallback
+        try {
+            await exportPDF(includeSpeakerNotes);
+        } catch (fallbackError) {
+            console.error('Fallback PDF export also failed:', fallbackError);
+        }
+    }
 }
 
 async function exportPDF(includeSpeakerNotes = false) {
