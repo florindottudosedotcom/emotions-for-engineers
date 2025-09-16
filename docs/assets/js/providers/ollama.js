@@ -125,6 +125,49 @@ export const OllamaProvider = {
         return data.response;
     },
 
+    async generateSlideContent(topic, slideCount = 8) {
+        const prompt = `Create a professional presentation about "${topic}" with exactly ${slideCount} slides.
+
+Generate structured data in this exact JSON format:
+
+{
+  "title": "Presentation Title",
+  "slides": [
+    {
+      "slideNumber": 1,
+      "title": "Slide Title",
+      "content": ["Bullet point 1", "Bullet point 2", "Bullet point 3"],
+      "speakerNotes": "Additional context for this slide"
+    }
+  ]
+}
+
+Guidelines:
+- First slide: Title slide with topic name
+- Last slide: Conclusion/Thank you slide
+- Content slides: Maximum 4 bullet points each
+- Create rich, descriptive content with detailed explanations
+- Include speaker notes for each slide
+
+Return ONLY the JSON, no additional text.`;
+
+        const response = await this.generateText(prompt);
+        console.log('AI response received for slides:', response.substring(0, 200) + '...');
+
+        // Try to parse JSON response
+        try {
+            return JSON.parse(response.trim());
+        } catch (parseError) {
+            // If JSON parsing fails, try to extract JSON from the response
+            const jsonMatch = response.match(/\{[\s\S]*\}/);
+            if (jsonMatch) {
+                return JSON.parse(jsonMatch[0]);
+            } else {
+                throw new Error('AI response was not in valid JSON format');
+            }
+        }
+    },
+
     saveStateExtensions(state) {
         return {
             ...state,
