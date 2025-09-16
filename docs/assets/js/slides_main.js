@@ -5,7 +5,8 @@ const CUSTOM_COLORS_STORAGE_KEY = 'aiSlidesCreator_customColors';
 
 // Enhanced editing flag
 let enhancedEditingEnabled = false;
-let slateEditors = new Map();
+let konvaEditors = new Map();
+let konvaSlideSystem = null; // New unified slide system
 
 const slidesAppState = {
     currentSlideData: null,
@@ -89,9 +90,9 @@ async function initializeEnhancedComponents() {
     console.log('Initializing enhanced editing components...');
 
     try {
-        // Load Slate.js editor if available
-        if (window.SlateEditor && window.SlateEditor.loadDependencies) {
-            enhancedEditingEnabled = await window.SlateEditor.loadDependencies();
+        // Load Konva.js editor if available
+        if (window.KonvaEditor && window.KonvaEditor.loadDependencies) {
+            enhancedEditingEnabled = await window.KonvaEditor.loadDependencies();
             console.log('Enhanced editing enabled:', enhancedEditingEnabled);
         }
 
@@ -124,7 +125,7 @@ function addEnhancedEditingToggle() {
         toggleButton.className = enhancedEditingEnabled ? 'btn btn-primary' : 'btn btn-secondary';
 
         // Clean up existing editors before re-rendering
-        cleanupSlateEditors();
+        cleanupKonvaEditors();
 
         // Re-render slides with new editing mode
         if (slidesAppState.currentSlideData) {
@@ -352,20 +353,34 @@ function loadSavedSlides() {
         console.log('Saved theme data:', savedTheme ? 'Found' : 'Not found');
 
         if (savedTheme) {
-            slidesAppState.currentTheme = JSON.parse(savedTheme);
-            console.log('Loaded theme:', slidesAppState.currentTheme);
+            try {
+                slidesAppState.currentTheme = JSON.parse(savedTheme);
+                console.log('Loaded theme:', slidesAppState.currentTheme);
+            } catch (error) {
+                console.warn('Error parsing saved theme, using as string value:', error);
+                // If it's just a string theme name (like "beige"), use it directly
+                slidesAppState.currentTheme = { name: savedTheme };
+            }
         }
 
         if (saved) {
-            slidesAppState.currentSlideData = JSON.parse(saved);
-            console.log('Loaded slides data:', slidesAppState.currentSlideData);
+            try {
+                slidesAppState.currentSlideData = JSON.parse(saved);
+                console.log('Loaded slides data:', slidesAppState.currentSlideData);
+            } catch (error) {
+                console.warn('Error parsing saved slides data:', error);
+                slidesAppState.currentSlideData = null;
+            }
 
-            // Show presentation section first, then display slides
-            console.log('Showing presentation section...');
-            showPresentationSection();
+            // Only proceed if we have valid slide data
+            if (slidesAppState.currentSlideData) {
+                // Show presentation section first, then display slides
+                console.log('Showing presentation section...');
+                showPresentationSection();
 
-            console.log('Displaying slides...');
-            displaySlides(slidesAppState.currentSlideData);
+                console.log('Displaying slides...');
+                displaySlides(slidesAppState.currentSlideData);
+            }
 
             // Apply saved theme if available
             if (slidesAppState.currentTheme) {
@@ -948,19 +963,43 @@ function displaySlides(slideData) {
         slidesDom.totalSlides.textContent = slideData.slides.length;
     }
 
-    // Clear existing slides
+    // Initialize or update Konva slide system
     if (slidesDom.slidesPreview) {
+        // Destroy existing Konva system if it exists
+        if (konvaSlideSystem) {
+            konvaSlideSystem.destroy();
+        }
+
+        // Clear the preview container
         slidesDom.slidesPreview.innerHTML = '';
 
-        // Generate slide previews with proper numbering starting at 1
-        slideData.slides.forEach((slide, index) => {
-            const slideElement = createSlidePreviewElement(slide, index + 1);
-            slidesDom.slidesPreview.appendChild(slideElement);
-        });
+        // Check if enhanced editing is enabled and we have KonvaSlideSystem
+        if (enhancedEditingEnabled && window.KonvaSlideSystem) {
+            console.log('Using Konva slide system for display');
+
+            // Create new Konva slide system
+            konvaSlideSystem = new window.KonvaSlideSystem(slidesDom.slidesPreview);
+
+            // Make it globally accessible for toolbar buttons
+            window.konvaSlideSystem = konvaSlideSystem;
+
+            // Load the slide data into Konva system
+            konvaSlideSystem.loadSlidesFromData(slideData);
+        } else {
+            console.log('Using traditional HTML slide system for display');
+
+            // Fall back to traditional HTML slides
+            slideData.slides.forEach((slide, index) => {
+                const slideElement = createSlidePreviewElement(slide, index + 1);
+                slidesDom.slidesPreview.appendChild(slideElement);
+            });
+        }
     }
 
-    // Add clear button at the bottom if it doesn't exist
-    addClearButtonToBottom();
+    // Add clear button at the bottom if it doesn't exist (only for HTML mode)
+    if (!enhancedEditingEnabled || !window.KonvaSlideSystem) {
+        addClearButtonToBottom();
+    }
 
     // Apply theme if available
     if (slidesAppState.currentTheme) {
@@ -1006,15 +1045,15 @@ function createSlidePreviewElement(slide, slideNumber) {
     `;
 
     // Use enhanced editor for title if available and enabled
-    if (enhancedEditingEnabled && window.SlateEditor) {
+    if (enhancedEditingEnabled && window.KonvaEditor) {
         const editorKey = `slide-${slideNumber}-title`;
         try {
-            const titleEditor = window.SlateEditor.create(titleElement, slide.title, (content) => {
+            const titleEditor = window.KonvaEditor.create(titleElement, slide.title, (content) => {
                 updateSlideData(slideNumber - 1, 'title', content);
             });
-            slateEditors.set(editorKey, titleEditor);
+            konvaEditors.set(editorKey, titleEditor);
         } catch (error) {
-            console.warn('Failed to create Slate editor for title, using fallback:', error);
+            console.warn('Failed to create Konva editor for title, using fallback:', error);
             setupBasicTitleEditor(titleElement, slideNumber);
         }
     } else {
@@ -1050,15 +1089,15 @@ function createSlidePreviewElement(slide, slideNumber) {
             `;
 
             // Use enhanced editor if available and enabled
-            if (enhancedEditingEnabled && window.SlateEditor) {
+            if (enhancedEditingEnabled && window.KonvaEditor) {
                 const editorKey = `slide-${slideNumber}-content-${index}`;
                 try {
-                    const editor = window.SlateEditor.create(listItem, point, (content) => {
+                    const editor = window.KonvaEditor.create(listItem, point, (content) => {
                         updateSlideContentItem(slideNumber - 1, index, content);
                     });
-                    slateEditors.set(editorKey, editor);
+                    konvaEditors.set(editorKey, editor);
                 } catch (error) {
-                    console.warn('Failed to create Slate editor, using fallback:', error);
+                    console.warn('Failed to create Konva editor, using fallback:', error);
                     setupBasicContentEditor(listItem, slideNumber, index);
                 }
             } else {
@@ -3238,25 +3277,35 @@ function setupBasicTitleEditor(titleElement, slideNumber) {
     titleElement.addEventListener('blur', (e) => e.target.style.border = '2px solid transparent');
 }
 
-function cleanupSlateEditors() {
-    console.log('Cleaning up Slate editors:', slateEditors.size);
+function cleanupKonvaEditors() {
+    console.log('Cleaning up Konva editors:', konvaEditors.size);
 
-    // Destroy all existing Slate editors
-    slateEditors.forEach((editor, key) => {
+    // Destroy all existing Konva editors
+    konvaEditors.forEach((editor, key) => {
         try {
             if (editor && typeof editor.destroy === 'function') {
                 editor.destroy();
             }
         } catch (error) {
-            console.warn('Error destroying Slate editor:', error);
+            console.warn('Error destroying Konva editor:', error);
         }
     });
 
     // Clear the editors map
-    slateEditors.clear();
+    konvaEditors.clear();
+
+    // Destroy Konva slide system if it exists
+    if (konvaSlideSystem) {
+        try {
+            konvaSlideSystem.destroy();
+            konvaSlideSystem = null;
+        } catch (error) {
+            console.warn('Error destroying Konva slide system:', error);
+        }
+    }
 
     // Remove any existing toolbars
-    document.querySelectorAll('.slate-toolbar').forEach(toolbar => {
+    document.querySelectorAll('.konva-toolbar, .konva-slide-toolbar').forEach(toolbar => {
         toolbar.remove();
     });
 }
