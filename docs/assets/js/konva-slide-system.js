@@ -427,15 +427,15 @@ class KonvaSlideSystem {
             return;
         }
 
-        // Clear current layer
-        this.layer.destroyChildren();
+        // Clear current layer without destroying objects (we'll reuse them)
+        this.layer.removeChildren();
 
-        // Add background rectangle first (for PDF export)
+        // Add background rectangle first (for PDF export) using actual dimensions
         const backgroundRect = new Konva.Rect({
             x: 0,
             y: 0,
-            width: this.slideWidth,
-            height: this.slideHeight,
+            width: this.actualWidth,
+            height: this.actualHeight,
             fill: this.currentTheme.backgroundColor,
             listening: false // Don't make it interactive
         });
@@ -805,9 +805,9 @@ class KonvaSlideSystem {
             this.canvasContainer.style.background = this.currentTheme.backgroundColor;
         }
 
-        // Redraw the current slide
-        if (this.layer) {
-            this.layer.draw();
+        // Force a complete redraw of the current slide with new theme
+        if (this.layer && this.currentSlideIndex >= 0) {
+            this.showSlide(this.currentSlideIndex);
         }
 
         console.log('Theme updated for Konva slides:', newTheme);
