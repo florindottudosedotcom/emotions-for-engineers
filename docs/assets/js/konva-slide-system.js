@@ -49,6 +49,7 @@ class KonvaSlideSystem {
             margin: 20px auto;
             box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
             position: relative;
+            overflow: hidden;
         `;
 
         this.container.appendChild(canvasContainer);
@@ -68,6 +69,12 @@ class KonvaSlideSystem {
 
         this.layer = new Konva.Layer();
         this.stage.add(this.layer);
+
+        // Apply border radius to the canvas element itself
+        const canvas = this.stage.content.querySelector('canvas');
+        if (canvas) {
+            canvas.style.borderRadius = '10px'; // Slightly less than container to account for border
+        }
 
         // Handle window resize
         this.setupResizeHandler(canvasContainer);
@@ -159,7 +166,6 @@ class KonvaSlideSystem {
             <div class="navigation-buttons">
                 <button class="nav-btn prev-btn" onclick="window.konvaSlideSystem?.previousSlide()">◀ Previous</button>
                 <button class="nav-btn next-btn" onclick="window.konvaSlideSystem?.nextSlide()">Next ▶</button>
-                <button class="nav-btn add-slide-btn" onclick="window.konvaSlideSystem?.addNewSlide()">+ Add Slide</button>
             </div>
         `;
 
@@ -303,11 +309,17 @@ class KonvaSlideSystem {
         this.slides = slideData.slides || [];
         this.slideObjects = [];
 
+        console.log('Loading slides data:', slideData);
+        console.log('Number of slides to load:', this.slides.length);
+
         // Convert each slide data to Konva objects
         this.slides.forEach((slide, index) => {
+            console.log(`Processing slide ${index + 1}:`, slide);
             const slideContent = this.createSlideFromData(slide, index);
             this.slideObjects.push(slideContent);
         });
+
+        console.log('Created slide objects:', this.slideObjects.length);
 
         // Show first slide
         this.currentSlideIndex = 0;
@@ -320,7 +332,7 @@ class KonvaSlideSystem {
         let yPosition = 80; // Start position for content
 
         // Check if this is a title slide
-        const isTitle = slide.isTitle || slide.slideNumber === 1;
+        const isTitle = slide.isTitle || slide.slideNumber === 1 || slideIndex === 0;
 
         // Add title
         if (slide.title) {
@@ -388,7 +400,11 @@ class KonvaSlideSystem {
     }
 
     showSlide(index) {
-        if (index < 0 || index >= this.slideObjects.length) return;
+        console.log(`Showing slide ${index + 1} of ${this.slideObjects.length}`);
+        if (index < 0 || index >= this.slideObjects.length) {
+            console.log('Invalid slide index:', index);
+            return;
+        }
 
         // Clear current layer
         this.layer.destroyChildren();
@@ -448,23 +464,6 @@ class KonvaSlideSystem {
         if (nextBtn) nextBtn.disabled = this.currentSlideIndex === this.slideObjects.length - 1;
     }
 
-    addNewSlide() {
-        // Add new slide to data
-        const newSlide = {
-            title: `Slide ${this.slides.length + 1}`,
-            content: []
-        };
-
-        this.slides.push(newSlide);
-
-        // Create empty slide objects
-        const newSlideObjects = this.createSlideFromData(newSlide, this.slides.length - 1);
-        this.slideObjects.push(newSlideObjects);
-
-        // Go to new slide
-        this.showSlide(this.slides.length - 1);
-        this.updateNavigation();
-    }
 
     // Content creation methods
     addTitle() {
