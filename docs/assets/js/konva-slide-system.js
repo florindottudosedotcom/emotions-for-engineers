@@ -211,80 +211,268 @@ class KonvaSlideSystem {
     }
 
     createContentToolbar() {
-        const toolbar = document.createElement('div');
-        toolbar.className = 'konva-slide-toolbar';
-        toolbar.style.cssText = `
+        // Create main container with left sidebar layout
+        const mainContainer = document.createElement('div');
+        mainContainer.className = 'konva-editor-layout';
+        mainContainer.style.cssText = `
             display: flex;
-            flex-wrap: wrap;
-            gap: 12px;
-            padding: 15px 20px;
-            background: rgba(255, 255, 255, 0.95);
-            border: 1px solid #e5e7eb;
-            border-radius: 8px;
+            gap: 20px;
             margin-top: 15px;
-            align-items: center;
-            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+            height: auto;
+            min-height: 600px;
+        `;
+
+        // Create left sidebar toolbar
+        const toolbar = document.createElement('div');
+        toolbar.className = 'konva-slide-sidebar';
+        toolbar.style.cssText = `
+            width: 280px;
+            min-width: 280px;
+            background: rgba(255, 255, 255, 0.98);
+            border: 1px solid #e5e7eb;
+            border-radius: 12px;
+            padding: 20px 16px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+            backdrop-filter: blur(10px);
+            max-height: 90vh;
+            overflow-y: auto;
+            position: sticky;
+            top: 20px;
+        `;
+
+        // Create content area wrapper for slides
+        const contentWrapper = document.createElement('div');
+        contentWrapper.className = 'konva-content-wrapper';
+        contentWrapper.style.cssText = `
+            flex: 1;
+            min-width: 0;
         `;
 
         toolbar.innerHTML = `
-            <div class="toolbar-group">
-                <label>Add Content:</label>
-                <button class="tool-btn" onclick="window.konvaSlideSystem?.addTitle()">📝 Title</button>
-                <button class="tool-btn" onclick="window.konvaSlideSystem?.addBulletPoint()">• Bullet</button>
-                <button class="tool-btn" onclick="window.konvaSlideSystem?.addTextBox()">📄 Text Box</button>
+            <!-- Color Schemes Section -->
+            <div class="sidebar-section">
+                <h3 class="sidebar-title">🎨 Color Schemes</h3>
+                <div class="color-schemes-grid">
+                    <div class="color-scheme-tile" data-scheme="blue" title="Professional Blue">
+                        <div class="scheme-preview">
+                            <div class="color-dot" style="background: #1e40af;"></div>
+                            <div class="color-dot" style="background: #dbeafe;"></div>
+                            <div class="color-dot" style="background: #2563eb;"></div>
+                        </div>
+                        <span class="scheme-name">Blue</span>
+                    </div>
+                    <div class="color-scheme-tile" data-scheme="green" title="Nature Green">
+                        <div class="scheme-preview">
+                            <div class="color-dot" style="background: #059669;"></div>
+                            <div class="color-dot" style="background: #d1fae5;"></div>
+                            <div class="color-dot" style="background: #10b981;"></div>
+                        </div>
+                        <span class="scheme-name">Green</span>
+                    </div>
+                    <div class="color-scheme-tile" data-scheme="purple" title="Creative Purple">
+                        <div class="scheme-preview">
+                            <div class="color-dot" style="background: #7c3aed;"></div>
+                            <div class="color-dot" style="background: #ede9fe;"></div>
+                            <div class="color-dot" style="background: #8b5cf6;"></div>
+                        </div>
+                        <span class="scheme-name">Purple</span>
+                    </div>
+                    <div class="color-scheme-tile" data-scheme="orange" title="Energetic Orange">
+                        <div class="scheme-preview">
+                            <div class="color-dot" style="background: #ea580c;"></div>
+                            <div class="color-dot" style="background: #fed7aa;"></div>
+                            <div class="color-dot" style="background: #fb923c;"></div>
+                        </div>
+                        <span class="scheme-name">Orange</span>
+                    </div>
+                </div>
             </div>
-            <div class="toolbar-group">
-                <label>Shapes:</label>
-                <button class="tool-btn" onclick="window.konvaSlideSystem?.addRectangle()">⬜ Rectangle</button>
-                <button class="tool-btn" onclick="window.konvaSlideSystem?.addCircle()">⭕ Circle</button>
-                <button class="tool-btn" onclick="window.konvaSlideSystem?.addArrow()">➡️ Arrow</button>
+
+            <!-- Content Tools -->
+            <div class="sidebar-section">
+                <h3 class="sidebar-title">📝 Add Content</h3>
+                <div class="tool-grid">
+                    <button class="sidebar-tool-btn" onclick="window.konvaSlideSystem?.addTitle()" title="Add Title">
+                        <div class="tool-icon">📝</div>
+                        <span>Title</span>
+                    </button>
+                    <button class="sidebar-tool-btn" onclick="window.konvaSlideSystem?.addBulletPoint()" title="Add Bullet Point">
+                        <div class="tool-icon">•</div>
+                        <span>Bullet</span>
+                    </button>
+                    <button class="sidebar-tool-btn" onclick="window.konvaSlideSystem?.addTextBox()" title="Add Text Box">
+                        <div class="tool-icon">📄</div>
+                        <span>Text Box</span>
+                    </button>
+                    <button class="sidebar-tool-btn" onclick="window.konvaSlideSystem?.addStyledText()" title="Add Styled Text">
+                        <div class="tool-icon">🎨</div>
+                        <span>Styled Text</span>
+                    </button>
+                </div>
             </div>
-            <div class="toolbar-group">
-                <label>Images:</label>
-                <button class="tool-btn" onclick="window.konvaSlideSystem?.addImageFromURL()">🌐 URL</button>
-                <button class="tool-btn" onclick="window.konvaSlideSystem?.addImageFromFile()">📁 Upload</button>
-                <button class="tool-btn" onclick="window.konvaSlideSystem?.generateAIImage()">🤖 AI Image</button>
+
+            <!-- Shapes -->
+            <div class="sidebar-section">
+                <h3 class="sidebar-title">⬜ Shapes</h3>
+                <div class="tool-grid">
+                    <button class="sidebar-tool-btn" onclick="window.konvaSlideSystem?.addRectangle()" title="Add Rectangle">
+                        <div class="tool-icon">⬜</div>
+                        <span>Rectangle</span>
+                    </button>
+                    <button class="sidebar-tool-btn" onclick="window.konvaSlideSystem?.addCircle()" title="Add Circle">
+                        <div class="tool-icon">⭕</div>
+                        <span>Circle</span>
+                    </button>
+                    <button class="sidebar-tool-btn" onclick="window.konvaSlideSystem?.addArrow()" title="Add Arrow">
+                        <div class="tool-icon">➡️</div>
+                        <span>Arrow</span>
+                    </button>
+                    <button class="sidebar-tool-btn" onclick="window.konvaSlideSystem?.addAdvancedShape()" title="More Shapes">
+                        <div class="tool-icon">🔷</div>
+                        <span>More Shapes</span>
+                    </button>
+                </div>
             </div>
-            <div class="toolbar-group">
-                <label>Layouts:</label>
-                <button class="tool-btn" onclick="window.konvaSlideSystem?.applyLayout('hero')">🎭 Hero</button>
-                <button class="tool-btn" onclick="window.konvaSlideSystem?.applyLayout('split')">⚏ Split</button>
-                <button class="tool-btn" onclick="window.konvaSlideSystem?.applyLayout('cards')">🃏 Cards</button>
-                <button class="tool-btn" onclick="window.konvaSlideSystem?.applyLayout('overlay')">🖼️ Overlay</button>
+
+            <!-- Images -->
+            <div class="sidebar-section">
+                <h3 class="sidebar-title">🖼️ Images</h3>
+                <div class="tool-grid">
+                    <button class="sidebar-tool-btn" onclick="window.konvaSlideSystem?.addImageFromURL()" title="Add Image from URL">
+                        <div class="tool-icon">🌐</div>
+                        <span>URL Image</span>
+                    </button>
+                    <button class="sidebar-tool-btn" onclick="window.konvaSlideSystem?.addImageFromFile()" title="Upload Image">
+                        <div class="tool-icon">📁</div>
+                        <span>Upload</span>
+                    </button>
+                    <button class="sidebar-tool-btn" onclick="window.konvaSlideSystem?.generateAIImage()" title="Generate AI Image">
+                        <div class="tool-icon">🤖</div>
+                        <span>AI Image</span>
+                    </button>
+                </div>
             </div>
-            <div class="toolbar-group">
-                <label>Effects:</label>
-                <button class="tool-btn" onclick="window.konvaSlideSystem?.applyTextEffect('shadow')">🌟 Shadow</button>
-                <button class="tool-btn" onclick="window.konvaSlideSystem?.applyTextEffect('glow')">✨ Glow</button>
-                <button class="tool-btn" onclick="window.konvaSlideSystem?.applyTextEffect('outline')">🔲 Outline</button>
-                <button class="tool-btn" onclick="window.konvaSlideSystem?.applyTextEffect('gradient')">🌈 Gradient</button>
+
+            <!-- Layouts -->
+            <div class="sidebar-section">
+                <h3 class="sidebar-title">🎭 Layouts</h3>
+                <div class="tool-grid">
+                    <button class="sidebar-tool-btn" onclick="window.konvaSlideSystem?.applyLayout('hero')" title="Hero Layout">
+                        <div class="tool-icon">🎭</div>
+                        <span>Hero</span>
+                    </button>
+                    <button class="sidebar-tool-btn" onclick="window.konvaSlideSystem?.applyLayout('split')" title="Split Layout">
+                        <div class="tool-icon">⚏</div>
+                        <span>Split</span>
+                    </button>
+                    <button class="sidebar-tool-btn" onclick="window.konvaSlideSystem?.applyLayout('cards')" title="Cards Layout">
+                        <div class="tool-icon">🃏</div>
+                        <span>Cards</span>
+                    </button>
+                    <button class="sidebar-tool-btn" onclick="window.konvaSlideSystem?.applyLayout('overlay')" title="Overlay Layout">
+                        <div class="tool-icon">🖼️</div>
+                        <span>Overlay</span>
+                    </button>
+                </div>
             </div>
-            <div class="toolbar-group">
-                <label>Animations:</label>
-                <button class="tool-btn" onclick="window.konvaSlideSystem?.animateSelected('fadeIn')">🎭 Fade In</button>
-                <button class="tool-btn" onclick="window.konvaSlideSystem?.animateSelected('slideInLeft')">◀️ Slide Left</button>
-                <button class="tool-btn" onclick="window.konvaSlideSystem?.animateSelected('bounce')">🏀 Bounce</button>
-                <button class="tool-btn" onclick="window.konvaSlideSystem?.animateSelected('pulse')">💓 Pulse</button>
+
+            <!-- Effects -->
+            <div class="sidebar-section">
+                <h3 class="sidebar-title">✨ Effects</h3>
+                <div class="tool-grid">
+                    <button class="sidebar-tool-btn" onclick="window.konvaSlideSystem?.applyTextEffect('shadow')" title="Shadow Effect">
+                        <div class="tool-icon">🌟</div>
+                        <span>Shadow</span>
+                    </button>
+                    <button class="sidebar-tool-btn" onclick="window.konvaSlideSystem?.applyTextEffect('glow')" title="Glow Effect">
+                        <div class="tool-icon">✨</div>
+                        <span>Glow</span>
+                    </button>
+                    <button class="sidebar-tool-btn" onclick="window.konvaSlideSystem?.applyTextEffect('outline')" title="Outline Effect">
+                        <div class="tool-icon">🔲</div>
+                        <span>Outline</span>
+                    </button>
+                    <button class="sidebar-tool-btn" onclick="window.konvaSlideSystem?.applyTextEffect('gradient')" title="Gradient Effect">
+                        <div class="tool-icon">🌈</div>
+                        <span>Gradient</span>
+                    </button>
+                </div>
             </div>
-            <div class="toolbar-group">
-                <label>Advanced:</label>
-                <button class="tool-btn" onclick="window.konvaSlideSystem?.addAdvancedShape()">🔷 Shapes</button>
-                <button class="tool-btn" onclick="window.konvaSlideSystem?.addStyledText()">🎨 Styled Text</button>
-                <button class="tool-btn" onclick="window.konvaSlideSystem?.setSlideTransition()">🎞️ Transition</button>
+
+            <!-- Animations -->
+            <div class="sidebar-section">
+                <h3 class="sidebar-title">🎬 Animations</h3>
+                <div class="tool-grid">
+                    <button class="sidebar-tool-btn" onclick="window.konvaSlideSystem?.animateSelected('fadeIn')" title="Fade In Animation">
+                        <div class="tool-icon">🎭</div>
+                        <span>Fade In</span>
+                    </button>
+                    <button class="sidebar-tool-btn" onclick="window.konvaSlideSystem?.animateSelected('slideInLeft')" title="Slide Left Animation">
+                        <div class="tool-icon">◀️</div>
+                        <span>Slide Left</span>
+                    </button>
+                    <button class="sidebar-tool-btn" onclick="window.konvaSlideSystem?.animateSelected('bounce')" title="Bounce Animation">
+                        <div class="tool-icon">🏀</div>
+                        <span>Bounce</span>
+                    </button>
+                    <button class="sidebar-tool-btn" onclick="window.konvaSlideSystem?.animateSelected('pulse')" title="Pulse Animation">
+                        <div class="tool-icon">💓</div>
+                        <span>Pulse</span>
+                    </button>
+                </div>
             </div>
-            <div class="toolbar-group">
-                <label>Style:</label>
-                <input type="color" id="text-color" value="#000000" onchange="window.konvaSlideSystem?.updateSelectedColor(this.value)">
-                <input type="range" id="font-size" min="12" max="72" value="24" onchange="window.konvaSlideSystem?.updateSelectedFontSize(this.value)">
-                <span id="font-size-display">24px</span>
+
+            <!-- Style Controls -->
+            <div class="sidebar-section">
+                <h3 class="sidebar-title">🎨 Style</h3>
+                <div class="style-controls">
+                    <div class="control-group">
+                        <label>Text Color:</label>
+                        <input type="color" id="text-color" value="#000000" onchange="window.konvaSlideSystem?.updateSelectedColor(this.value)">
+                    </div>
+                    <div class="control-group">
+                        <label>Font Size: <span id="font-size-display">24px</span></label>
+                        <input type="range" id="font-size" min="12" max="72" value="24" onchange="window.konvaSlideSystem?.updateSelectedFontSize(this.value)">
+                    </div>
+                </div>
             </div>
-            <div class="toolbar-group">
-                <button class="tool-btn delete-btn" onclick="window.konvaSlideSystem?.deleteSelected()">🗑️ Delete</button>
-                <button class="tool-btn" onclick="window.konvaSlideSystem?.clearSlide()">🧹 Clear Slide</button>
+
+            <!-- Advanced Tools -->
+            <div class="sidebar-section">
+                <h3 class="sidebar-title">⚙️ Advanced</h3>
+                <div class="tool-grid">
+                    <button class="sidebar-tool-btn" onclick="window.konvaSlideSystem?.setSlideTransition()" title="Slide Transitions">
+                        <div class="tool-icon">🎞️</div>
+                        <span>Transitions</span>
+                    </button>
+                    <button class="sidebar-tool-btn delete-btn" onclick="window.konvaSlideSystem?.deleteSelected()" title="Delete Selected">
+                        <div class="tool-icon">🗑️</div>
+                        <span>Delete</span>
+                    </button>
+                    <button class="sidebar-tool-btn" onclick="window.konvaSlideSystem?.clearSlide()" title="Clear Slide">
+                        <div class="tool-icon">🧹</div>
+                        <span>Clear Slide</span>
+                    </button>
+                </div>
             </div>
         `;
 
-        this.container.appendChild(toolbar);
+        // Set up the layout
+        mainContainer.appendChild(toolbar);
+        mainContainer.appendChild(contentWrapper);
+
+        // Move the existing slide container into the content wrapper
+        const originalContainer = this.container;
+        originalContainer.parentNode.insertBefore(mainContainer, originalContainer);
+        contentWrapper.appendChild(originalContainer);
+
+        // Update container reference
+        this.mainContainer = mainContainer;
+        this.sidebar = toolbar;
+        this.contentWrapper = contentWrapper;
+
+        // Set up color scheme functionality
+        this.setupColorSchemes();
 
         // Add toolbar styles
         if (!document.getElementById('konva-slide-toolbar-styles')) {
@@ -333,6 +521,245 @@ class KonvaSlideSystem {
                     border: 1px solid #d1d5db;
                     border-radius: 4px;
                     cursor: pointer;
+                }
+
+                /* Sidebar Layout */
+                .konva-slide-sidebar {
+                    scrollbar-width: thin;
+                    scrollbar-color: #d1d5db #f9fafb;
+                }
+
+                .konva-slide-sidebar::-webkit-scrollbar {
+                    width: 8px;
+                }
+
+                .konva-slide-sidebar::-webkit-scrollbar-track {
+                    background: #f9fafb;
+                    border-radius: 4px;
+                }
+
+                .konva-slide-sidebar::-webkit-scrollbar-thumb {
+                    background: #d1d5db;
+                    border-radius: 4px;
+                }
+
+                .konva-slide-sidebar::-webkit-scrollbar-thumb:hover {
+                    background: #9ca3af;
+                }
+
+                /* Sidebar Sections */
+                .sidebar-section {
+                    margin-bottom: 24px;
+                    padding-bottom: 20px;
+                    border-bottom: 1px solid #f3f4f6;
+                }
+
+                .sidebar-section:last-child {
+                    border-bottom: none;
+                    margin-bottom: 0;
+                }
+
+                .sidebar-title {
+                    font-size: 14px;
+                    font-weight: 700;
+                    color: #374151;
+                    margin: 0 0 12px 0;
+                    padding: 0;
+                    border: none;
+                    display: flex;
+                    align-items: center;
+                    gap: 6px;
+                }
+
+                /* Color Schemes Grid */
+                .color-schemes-grid {
+                    display: grid;
+                    grid-template-columns: 1fr 1fr;
+                    gap: 8px;
+                }
+
+                .color-scheme-tile {
+                    display: flex;
+                    flex-direction: column;
+                    align-items: center;
+                    padding: 12px 8px;
+                    border: 2px solid #e5e7eb;
+                    border-radius: 8px;
+                    cursor: pointer;
+                    transition: all 0.2s ease;
+                    background: white;
+                }
+
+                .color-scheme-tile:hover {
+                    border-color: #60a5fa;
+                    transform: translateY(-1px);
+                    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+                }
+
+                .color-scheme-tile.selected {
+                    border-color: #2563eb;
+                    background: #eff6ff;
+                    box-shadow: 0 2px 8px rgba(37, 99, 235, 0.2);
+                }
+
+                .scheme-preview {
+                    display: flex;
+                    gap: 3px;
+                    margin-bottom: 6px;
+                }
+
+                .color-dot {
+                    width: 12px;
+                    height: 12px;
+                    border-radius: 50%;
+                    border: 1px solid rgba(255, 255, 255, 0.8);
+                    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+                }
+
+                .scheme-name {
+                    font-size: 11px;
+                    font-weight: 600;
+                    color: #6b7280;
+                    text-transform: uppercase;
+                    letter-spacing: 0.5px;
+                }
+
+                /* Tool Grid */
+                .tool-grid {
+                    display: grid;
+                    grid-template-columns: 1fr 1fr;
+                    gap: 8px;
+                }
+
+                .sidebar-tool-btn {
+                    display: flex;
+                    flex-direction: column;
+                    align-items: center;
+                    gap: 6px;
+                    padding: 12px 8px;
+                    border: 1px solid #e5e7eb;
+                    border-radius: 8px;
+                    background: white;
+                    cursor: pointer;
+                    transition: all 0.2s ease;
+                    text-decoration: none;
+                    color: inherit;
+                    min-height: 60px;
+                }
+
+                .sidebar-tool-btn:hover {
+                    background: #f8fafc;
+                    border-color: #60a5fa;
+                    transform: translateY(-1px);
+                    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+                }
+
+                .sidebar-tool-btn.delete-btn:hover {
+                    background: #fef2f2;
+                    border-color: #ef4444;
+                }
+
+                .tool-icon {
+                    font-size: 20px;
+                    line-height: 1;
+                    filter: grayscale(0.2);
+                }
+
+                .sidebar-tool-btn:hover .tool-icon {
+                    filter: grayscale(0);
+                    transform: scale(1.1);
+                }
+
+                .sidebar-tool-btn span {
+                    font-size: 11px;
+                    font-weight: 600;
+                    color: #6b7280;
+                    text-align: center;
+                    line-height: 1.2;
+                }
+
+                /* Style Controls */
+                .style-controls {
+                    display: flex;
+                    flex-direction: column;
+                    gap: 12px;
+                }
+
+                .control-group {
+                    display: flex;
+                    flex-direction: column;
+                    gap: 6px;
+                }
+
+                .control-group label {
+                    font-size: 12px;
+                    font-weight: 600;
+                    color: #6b7280;
+                }
+
+                .control-group input[type="color"] {
+                    width: 100%;
+                    height: 36px;
+                    border: 1px solid #e5e7eb;
+                    border-radius: 6px;
+                    cursor: pointer;
+                    background: white;
+                }
+
+                .control-group input[type="range"] {
+                    width: 100%;
+                    height: 6px;
+                    background: #e5e7eb;
+                    border-radius: 3px;
+                    outline: none;
+                    cursor: pointer;
+                }
+
+                .control-group input[type="range"]::-webkit-slider-thumb {
+                    appearance: none;
+                    width: 16px;
+                    height: 16px;
+                    background: #2563eb;
+                    border-radius: 50%;
+                    cursor: pointer;
+                }
+
+                .control-group input[type="range"]::-moz-range-thumb {
+                    width: 16px;
+                    height: 16px;
+                    background: #2563eb;
+                    border-radius: 50%;
+                    cursor: pointer;
+                    border: none;
+                }
+
+                /* Responsive adjustments */
+                @media (max-width: 1200px) {
+                    .konva-slide-sidebar {
+                        width: 240px;
+                        min-width: 240px;
+                    }
+                }
+
+                @media (max-width: 768px) {
+                    .konva-editor-layout {
+                        flex-direction: column;
+                    }
+
+                    .konva-slide-sidebar {
+                        width: 100%;
+                        position: static;
+                        max-height: none;
+                        order: 2;
+                    }
+
+                    .tool-grid {
+                        grid-template-columns: repeat(4, 1fr);
+                    }
+
+                    .color-schemes-grid {
+                        grid-template-columns: repeat(4, 1fr);
+                    }
                 }
             `;
             document.head.appendChild(style);
@@ -2265,6 +2692,62 @@ class KonvaSlideSystem {
             transitions[transitionType]();
         } else {
             if (callback) callback();
+        }
+    }
+
+    setupColorSchemes() {
+        const colorSchemes = {
+            blue: {
+                name: 'Professional Blue',
+                textColor: '#1e40af',
+                borderColor: '#2563eb',
+                fillColor: '#dbeafe',
+                backgroundColor: '#f0f9ff'
+            },
+            green: {
+                name: 'Nature Green',
+                textColor: '#059669',
+                borderColor: '#10b981',
+                fillColor: '#d1fae5',
+                backgroundColor: '#ecfdf5'
+            },
+            purple: {
+                name: 'Creative Purple',
+                textColor: '#7c3aed',
+                borderColor: '#8b5cf6',
+                fillColor: '#ede9fe',
+                backgroundColor: '#faf5ff'
+            },
+            orange: {
+                name: 'Energetic Orange',
+                textColor: '#ea580c',
+                borderColor: '#fb923c',
+                fillColor: '#fed7aa',
+                backgroundColor: '#fff7ed'
+            }
+        };
+
+        // Add click handlers to color scheme tiles
+        this.sidebar.querySelectorAll('.color-scheme-tile').forEach(tile => {
+            tile.addEventListener('click', () => {
+                const scheme = tile.dataset.scheme;
+                if (colorSchemes[scheme]) {
+                    // Update active state
+                    this.sidebar.querySelectorAll('.color-scheme-tile').forEach(t => {
+                        t.classList.remove('selected');
+                    });
+                    tile.classList.add('selected');
+
+                    // Apply theme
+                    this.updateTheme(colorSchemes[scheme]);
+                }
+            });
+        });
+
+        // Set default selection (blue)
+        const defaultTile = this.sidebar.querySelector('.color-scheme-tile[data-scheme="blue"]');
+        if (defaultTile) {
+            defaultTile.classList.add('selected');
         }
     }
 
