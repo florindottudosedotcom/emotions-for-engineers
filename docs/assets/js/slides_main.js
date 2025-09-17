@@ -4,7 +4,7 @@ const THEME_STORAGE_KEY = 'aiSlidesCreator_theme';
 const CUSTOM_COLORS_STORAGE_KEY = 'aiSlidesCreator_customColors';
 
 // Enhanced editing flag
-let enhancedEditingEnabled = false;
+let enhancedEditingEnabled = true;
 let konvaEditors = new Map();
 let konvaSlideSystem = null; // New unified slide system
 
@@ -96,8 +96,8 @@ async function initializeEnhancedComponents() {
             console.log('Enhanced editing enabled:', enhancedEditingEnabled);
         }
 
-        // Add enhanced editing toggle button
-        addEnhancedEditingToggle();
+        // Enhanced editing is now always enabled
+        // addEnhancedEditingToggle();
 
     } catch (error) {
         console.warn('Enhanced editing components failed to initialize:', error);
@@ -167,8 +167,8 @@ document.addEventListener('DOMContentLoaded', async () => {
     });
     slidesDom.generationStatus = document.getElementById('generation-status');
     slidesDom.presentationSection = document.getElementById('presentation-section');
-    slidesDom.presentationTitle = document.getElementById('presentation-title');
-    slidesDom.totalSlides = document.getElementById('total-slides');
+    // slidesDom.presentationTitle = document.getElementById('presentation-title'); // Removed - title is now first slide
+    // slidesDom.totalSlides = document.getElementById('total-slides'); // Removed with presentation preview
     slidesDom.slidesPreview = document.getElementById('slides-preview');
     slidesDom.presentationViewer = document.getElementById('presentation-viewer');
     slidesDom.closePresentationBtn = document.getElementById('close-presentation-btn');
@@ -600,6 +600,8 @@ function createSlidesPrompt(topic, slideCount) {
 
     return `Create a professional presentation about "${topic}" with exactly ${slideCount} slides.
 
+IMPORTANT: The first slide MUST be a title slide with the presentation title and minimal content (author, date, or subtitle).
+
 TOPIC CONTEXT: Analyze "${topic}" and create contextually relevant visual designs that enhance the subject matter. Consider the industry, audience, and content type when designing visual elements.
 
 COLOR SCHEME CONTEXT: ${schemeContext} - ensure all design elements use and complement these specific colors.
@@ -955,13 +957,7 @@ async function generatePresentation() {
 }
 
 function displaySlides(slideData) {
-    // Update title and slide count (starting from 1, not 0)
-    if (slidesDom.presentationTitle) {
-        makePresentationTitleEditable(slideData.title || 'My Presentation');
-    }
-    if (slidesDom.totalSlides) {
-        slidesDom.totalSlides.textContent = slideData.slides.length;
-    }
+    // Slides are now displayed directly in Konva canvas
 
     // Initialize or update Konva slide system
     if (slidesDom.slidesPreview) {
@@ -977,8 +973,8 @@ function displaySlides(slideData) {
         if (enhancedEditingEnabled && window.KonvaSlideSystem) {
             console.log('Using Konva slide system for display');
 
-            // Create new Konva slide system
-            konvaSlideSystem = new window.KonvaSlideSystem(slidesDom.slidesPreview);
+            // Create new Konva slide system with current theme
+            konvaSlideSystem = new window.KonvaSlideSystem(slidesDom.slidesPreview, slidesAppState.currentTheme);
 
             // Make it globally accessible for toolbar buttons
             window.konvaSlideSystem = konvaSlideSystem;
@@ -2863,20 +2859,7 @@ function applyThemeToSlides() {
         presentationPreview.style.transition = 'all 0.2s ease';
     }
 
-    // Style the title element itself
-    if (slidesDom.presentationTitle) {
-        slidesDom.presentationTitle.style.color = theme.textColor;
-        slidesDom.presentationTitle.style.backgroundColor = 'transparent';
-        slidesDom.presentationTitle.style.border = 'none';
-        slidesDom.presentationTitle.style.borderRadius = '4px';
-        slidesDom.presentationTitle.style.padding = '10px';
-        slidesDom.presentationTitle.style.margin = '0';
-        slidesDom.presentationTitle.style.fontWeight = '600';
-        slidesDom.presentationTitle.style.fontSize = '1.5em';
-        slidesDom.presentationTitle.style.textAlign = 'center';
-        slidesDom.presentationTitle.style.boxShadow = 'none';
-        slidesDom.presentationTitle.style.transition = 'all 0.2s ease';
-    }
+    // Title styling removed - title is now the first slide
 
     // Update overall presentation section with fixed light grey background
     if (slidesDom.presentationSection) {
@@ -2884,6 +2867,11 @@ function applyThemeToSlides() {
         slidesDom.presentationSection.style.borderRadius = '12px';
         slidesDom.presentationSection.style.padding = '20px';
         slidesDom.presentationSection.style.border = '1px solid #e9ecef';
+    }
+
+    // Update Konva slide system theme if it exists
+    if (window.konvaSlideSystem && window.konvaSlideSystem.updateTheme) {
+        window.konvaSlideSystem.updateTheme(theme);
     }
 }
 
@@ -3310,10 +3298,105 @@ function cleanupKonvaEditors() {
     });
 }
 
+// Export Konva slides to PDF using toDataURL()
+async function exportKonvaPDF(includeSpeakerNotes = false) {
+    try {
+        // Check if jsPDF is available
+        let jsPDF;
+        if (window.jspdf && window.jspdf.jsPDF) {
+            jsPDF = window.jspdf.jsPDF;
+        } else if (window.jsPDF) {
+            jsPDF = window.jsPDF;
+        } else {
+            throw new Error('jsPDF library not loaded. Please refresh the page and try again.');
+        }
+
+        const slideData = slidesAppState.currentSlideData;
+        const konvaSystem = window.konvaSlideSystem;
+
+        if (!konvaSystem || !slideData) {
+            throw new Error('Konva slide system or slide data not available');
+        }
+
+        updateExportModalStatus('Creating PDF document...', 'loading');
+
+        // Create PDF in landscape orientation to match slides
+        const pdf = new jsPDF('landscape', 'mm', 'a4');
+        let isFirstPage = true;
+
+        // Get total number of slides
+        const totalSlides = slideData.slides.length;
+
+        updateExportModalStatus(`Exporting ${totalSlides} slides...`, 'loading');
+
+        // Export each slide from Konva
+        for (let i = 0; i < totalSlides; i++) {
+            updateExportModalStatus(`Rendering slide ${i + 1} of ${totalSlides}...`, 'loading');
+
+            // Navigate to the slide
+            konvaSystem.showSlide(i);
+
+            // Wait a bit for the slide to render
+            await new Promise(resolve => setTimeout(resolve, 100));
+
+            // Get the Konva stage as a data URL with high quality
+            const dataURL = konvaSystem.stage.toDataURL({
+                pixelRatio: 2, // High quality export
+                mimeType: 'image/png'
+            });
+
+            // Add new page if not first slide
+            if (!isFirstPage) {
+                pdf.addPage('a4', 'landscape');
+            }
+            isFirstPage = false;
+
+            // Calculate dimensions to fit A4 landscape (297mm x 210mm)
+            const pdfWidth = 297;
+            const pdfHeight = 210;
+
+            // Add image to PDF, filling the entire page
+            pdf.addImage(dataURL, 'PNG', 0, 0, pdfWidth, pdfHeight);
+
+            // Add speaker notes if requested
+            if (includeSpeakerNotes && slideData.slides[i].speakerNotes) {
+                // Add a new page for notes
+                pdf.addPage('a4', 'portrait');
+                pdf.setFontSize(12);
+                pdf.text(`Speaker Notes - Slide ${i + 1}`, 20, 20);
+                pdf.setFontSize(10);
+
+                // Split text into lines that fit the page
+                const notes = slideData.slides[i].speakerNotes;
+                const lines = pdf.splitTextToSize(notes, 170);
+                pdf.text(lines, 20, 40);
+            }
+        }
+
+        // Save the PDF
+        const filename = `${slideData.title || 'presentation'}.pdf`;
+        pdf.save(filename);
+
+        updateExportModalStatus('PDF exported successfully!', 'success');
+
+    } catch (error) {
+        console.error('Konva PDF export error:', error);
+        updateExportModalStatus(`PDF export failed: ${error.message}`, 'error');
+        throw error;
+    }
+}
+
 // Enhanced PDF Export with PDFKit
 async function exportPDFEnhanced(includeSpeakerNotes = false) {
     try {
         updateExportModalStatus('Initializing PDF export...', 'loading');
+
+        // Check if we're using Konva slides
+        if (enhancedEditingEnabled && window.konvaSlideSystem) {
+            console.log('Exporting Konva slides to PDF');
+            await exportKonvaPDF(includeSpeakerNotes);
+            return;
+        }
 
         // Use PDFKit exporter if available
         if (window.PDFKitExporter && window.PDFKitExporter.exportToPDF) {
@@ -3330,7 +3413,7 @@ async function exportPDFEnhanced(includeSpeakerNotes = false) {
             return;
         }
 
-        // Fall back to original PDF export
+        // Fall back to original PDF export for HTML slides
         await exportPDF(includeSpeakerNotes);
 
     } catch (error) {
@@ -4141,56 +4224,7 @@ function selectAllOnFocusTextarea(element) {
     });
 }
 
-function makePresentationTitleEditable(title) {
-    if (!slidesDom.presentationTitle) return;
-
-    // Set the title text
-    slidesDom.presentationTitle.textContent = title;
-
-    // Make it editable if it's not already
-    if (!slidesDom.presentationTitle.hasAttribute('contenteditable')) {
-        slidesDom.presentationTitle.contentEditable = true;
-        slidesDom.presentationTitle.style.cursor = 'text';
-        slidesDom.presentationTitle.title = 'Click to edit presentation title';
-
-        // Add visual styling for editable state
-        slidesDom.presentationTitle.style.border = '2px solid transparent';
-        slidesDom.presentationTitle.style.borderRadius = '4px';
-        slidesDom.presentationTitle.style.padding = '5px 10px';
-        slidesDom.presentationTitle.style.transition = 'border-color 0.2s ease';
-
-        // Add event listeners
-        slidesDom.presentationTitle.addEventListener('focus', () => {
-            slidesDom.presentationTitle.style.borderColor = '#60a5fa';
-            slidesDom.presentationTitle.style.backgroundColor = 'rgba(255,255,255,0.1)';
-        });
-
-        // Select all text when clicking/focusing
-        selectAllOnFocus(slidesDom.presentationTitle);
-
-        slidesDom.presentationTitle.addEventListener('blur', () => {
-            slidesDom.presentationTitle.style.borderColor = 'transparent';
-            slidesDom.presentationTitle.style.backgroundColor = 'transparent';
-
-            // Update the presentation title in the data
-            if (slidesAppState.currentSlideData) {
-                slidesAppState.currentSlideData.title = slidesDom.presentationTitle.textContent.trim() || 'My Presentation';
-                saveSlides();
-                console.log('Updated presentation title:', slidesAppState.currentSlideData.title);
-            }
-        });
-
-        // Handle Enter key to blur (finish editing)
-        slidesDom.presentationTitle.addEventListener('keydown', (e) => {
-            if (e.key === 'Enter') {
-                e.preventDefault();
-                slidesDom.presentationTitle.blur();
-            }
-        });
-
-        console.log('Made presentation title editable');
-    }
-}
+// makePresentationTitleEditable function removed - title is now handled as first slide
 
 function showExportModal() {
     const exportModal = document.getElementById('export-modal');

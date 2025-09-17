@@ -2,7 +2,7 @@
 // Replaces the HTML-based slide mechanism with a unified canvas approach
 
 class KonvaSlideSystem {
-    constructor(container) {
+    constructor(container, theme = null) {
         this.container = container;
         this.stage = null;
         this.layer = null;
@@ -14,7 +14,19 @@ class KonvaSlideSystem {
         this.slideWidth = 1000;
         this.slideHeight = 700;
 
+        // Theme support
+        this.currentTheme = theme || this.getDefaultTheme();
+
         this.init();
+    }
+
+    getDefaultTheme() {
+        return {
+            textColor: '#1e40af',
+            borderColor: '#2563eb',
+            fillColor: '#dbeafe',
+            backgroundColor: '#f0f9ff'
+        };
     }
 
     init() {
@@ -31,15 +43,18 @@ class KonvaSlideSystem {
             width: 100%;
             max-width: ${this.slideWidth}px;
             height: auto;
-            border: 2px solid #e5e7eb;
+            border: 2px solid ${this.currentTheme.borderColor};
             border-radius: 12px;
-            background: #ffffff;
+            background: ${this.currentTheme.backgroundColor};
             margin: 20px auto;
             box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
             position: relative;
         `;
 
         this.container.appendChild(canvasContainer);
+
+        // Store reference to canvas container for theme updates
+        this.canvasContainer = canvasContainer;
 
         // Calculate responsive dimensions
         this.calculateResponsiveDimensions(canvasContainer);
@@ -312,7 +327,7 @@ class KonvaSlideSystem {
                 text: slide.title,
                 fontSize: 36,
                 fontFamily: 'Arial, sans-serif',
-                fill: '#1e40af',
+                fill: this.currentTheme.textColor,
                 fontStyle: 'bold',
                 width: this.slideWidth - 100,
                 draggable: true
@@ -333,7 +348,7 @@ class KonvaSlideSystem {
                     text: `• ${point}`,
                     fontSize: 20,
                     fontFamily: 'Arial, sans-serif',
-                    fill: '#374151',
+                    fill: this.currentTheme.textColor,
                     width: this.slideWidth - 160,
                     draggable: true
                 });
@@ -367,6 +382,17 @@ class KonvaSlideSystem {
 
         // Clear current layer
         this.layer.destroyChildren();
+
+        // Add background rectangle first (for PDF export)
+        const backgroundRect = new Konva.Rect({
+            x: 0,
+            y: 0,
+            width: this.slideWidth,
+            height: this.slideHeight,
+            fill: this.currentTheme.backgroundColor,
+            listening: false // Don't make it interactive
+        });
+        this.layer.add(backgroundRect);
 
         // Add objects for current slide
         if (this.slideObjects[index]) {
@@ -438,7 +464,7 @@ class KonvaSlideSystem {
             text: 'New Title',
             fontSize: 36,
             fontFamily: 'Arial, sans-serif',
-            fill: '#1e40af',
+            fill: this.currentTheme.textColor,
             fontStyle: 'bold',
             draggable: true
         });
@@ -453,7 +479,7 @@ class KonvaSlideSystem {
             text: '• New bullet point',
             fontSize: 20,
             fontFamily: 'Arial, sans-serif',
-            fill: '#374151',
+            fill: this.currentTheme.textColor,
             draggable: true
         });
 
@@ -467,7 +493,7 @@ class KonvaSlideSystem {
             text: 'New text box',
             fontSize: 18,
             fontFamily: 'Arial, sans-serif',
-            fill: '#000000',
+            fill: this.currentTheme.textColor,
             padding: 10,
             draggable: true
         });
@@ -481,8 +507,8 @@ class KonvaSlideSystem {
             y: 200,
             width: 150,
             height: 100,
-            fill: '#60a5fa',
-            stroke: '#3b82f6',
+            fill: this.currentTheme.fillColor,
+            stroke: this.currentTheme.borderColor,
             strokeWidth: 2,
             draggable: true
         });
@@ -495,8 +521,8 @@ class KonvaSlideSystem {
             x: 300,
             y: 300,
             radius: 50,
-            fill: '#10b981',
-            stroke: '#059669',
+            fill: this.currentTheme.fillColor,
+            stroke: this.currentTheme.borderColor,
             strokeWidth: 2,
             draggable: true
         });
@@ -511,8 +537,8 @@ class KonvaSlideSystem {
             points: [0, 0, 150, 0],
             pointerLength: 20,
             pointerWidth: 20,
-            fill: '#ef4444',
-            stroke: '#dc2626',
+            fill: this.currentTheme.borderColor,
+            stroke: this.currentTheme.borderColor,
             strokeWidth: 3,
             draggable: true
         });
@@ -712,6 +738,43 @@ class KonvaSlideSystem {
         console.log('Slide state saved');
     }
 
+    // Update theme for all slides
+    updateTheme(newTheme) {
+        if (!newTheme) return;
+
+        this.currentTheme = newTheme;
+
+        // Update all slide objects with new theme colors
+        this.slideObjects.forEach((slideObjs, slideIndex) => {
+            if (slideObjs) {
+                slideObjs.forEach(obj => {
+                    if (obj.getClassName() === 'Text') {
+                        obj.fill(this.currentTheme.textColor);
+                    } else if (obj.getClassName() === 'Rect' || obj.getClassName() === 'Circle') {
+                        obj.fill(this.currentTheme.fillColor);
+                        obj.stroke(this.currentTheme.borderColor);
+                    } else if (obj.getClassName() === 'Arrow') {
+                        obj.fill(this.currentTheme.borderColor);
+                        obj.stroke(this.currentTheme.borderColor);
+                    }
+                });
+            }
+        });
+
+        // Update canvas container background and border colors
+        if (this.canvasContainer) {
+            this.canvasContainer.style.background = this.currentTheme.backgroundColor;
+            this.canvasContainer.style.border = `2px solid ${this.currentTheme.borderColor}`;
+        }
+
+        // Redraw the current slide
+        if (this.layer) {
+            this.layer.draw();
+        }
+
+        console.log('Theme updated for Konva slides:', newTheme);
+    }
+
     destroy() {
         // Cleanup resize observer
         if (this.resizeObserver) {
@@ -728,6 +791,7 @@ class KonvaSlideSystem {
         // Clear references
         this.layer = null;
         this.slideObjects = [];
+        this.canvasContainer = null;
 
         // Clear container
         this.container.innerHTML = '';
