@@ -430,10 +430,12 @@ class KonvaSlideSystem {
             this.addTextInteractionHandlers(titleText);
             slideObjects.push(titleText);
 
-            // Auto-animate title with delay
-            setTimeout(() => {
-                this.animateElement(titleText, isTitle ? 'slideInTop' : 'fadeIn', 800);
-            }, 200);
+            // Store animation info for later application
+            titleText._pendingAnimation = {
+                type: isTitle ? 'slideInTop' : 'fadeIn',
+                duration: 800,
+                delay: 200
+            };
 
             yPosition += (isTitle ? 100 : 90) * this.scaleFactor;
         }
@@ -467,10 +469,12 @@ class KonvaSlideSystem {
                 this.addTextInteractionHandlers(bulletText);
                 slideObjects.push(bulletText);
 
-                // Staggered animations for content
-                setTimeout(() => {
-                    this.animateElement(bulletText, 'slideInLeft', 600);
-                }, 500 + (index * 200)); // Stagger by 200ms each
+                // Store staggered animation info for later application
+                bulletText._pendingAnimation = {
+                    type: 'slideInLeft',
+                    duration: 600,
+                    delay: 500 + (index * 200)
+                };
 
                 yPosition += (isTitle ? 60 : 60) * this.scaleFactor;
             });
@@ -538,11 +542,17 @@ class KonvaSlideSystem {
             this.addTextInteractionHandlers(subtitle);
             slideObjects.push(subtitle);
 
-            // Animate with delay
-            setTimeout(() => {
-                this.animateElement(title, 'slideInTop', 1000);
-                this.animateElement(subtitle, 'fadeIn', 1200);
-            }, 300);
+            // Store animation info for later application
+            title._pendingAnimation = {
+                type: 'slideInTop',
+                duration: 1000,
+                delay: 300
+            };
+            subtitle._pendingAnimation = {
+                type: 'fadeIn',
+                duration: 1200,
+                delay: 300
+            };
         }
     }
 
@@ -603,11 +613,17 @@ class KonvaSlideSystem {
                 this.addTextInteractionHandlers(cardText);
                 slideObjects.push(cardText);
 
-                // Staggered animations
-                setTimeout(() => {
-                    this.animateElement(cardBg, 'slideInLeft', 600);
-                    this.animateElement(cardText, 'fadeIn', 800);
-                }, 400 + (index * 300));
+                // Store staggered animation info for later application
+                cardBg._pendingAnimation = {
+                    type: 'slideInLeft',
+                    duration: 600,
+                    delay: 400 + (index * 300)
+                };
+                cardText._pendingAnimation = {
+                    type: 'fadeIn',
+                    duration: 800,
+                    delay: 400 + (index * 300)
+                };
             });
         }
 
@@ -639,12 +655,22 @@ class KonvaSlideSystem {
         this.addTextInteractionHandlers(placeholderText);
         slideObjects.push(placeholderText);
 
-        // Animate title first
-        setTimeout(() => {
-            this.animateElement(title, 'slideInTop', 800);
-            this.animateElement(visualPlaceholder, 'slideInRight', 1000);
-            this.animateElement(placeholderText, 'fadeIn', 1200);
-        }, 200);
+        // Store animation info for later application
+        title._pendingAnimation = {
+            type: 'slideInTop',
+            duration: 800,
+            delay: 200
+        };
+        visualPlaceholder._pendingAnimation = {
+            type: 'slideInRight',
+            duration: 1000,
+            delay: 200
+        };
+        placeholderText._pendingAnimation = {
+            type: 'fadeIn',
+            duration: 1200,
+            delay: 200
+        };
     }
 
     addDecorativeElements(slideObjects, slideIndex) {
@@ -662,10 +688,12 @@ class KonvaSlideSystem {
             opacity: 0.3
         });
 
-        // Animate decorative element
-        setTimeout(() => {
-            this.animateElement(decorativeShape, 'bounce', 1000);
-        }, 1500);
+        // Store animation info for later application
+        decorativeShape._pendingAnimation = {
+            type: 'bounce',
+            duration: 1000,
+            delay: 1500
+        };
     }
 
     addTextInteractionHandlers(textObj) {
@@ -715,6 +743,9 @@ class KonvaSlideSystem {
 
         this.layer.draw();
         this.currentSlideIndex = index;
+
+        // Apply any pending animations now that objects are in the layer
+        this.applyPendingAnimations(index);
 
         // Update slide title in navigation
         const titleElement = document.getElementById('current-slide-title');
@@ -1885,6 +1916,27 @@ class KonvaSlideSystem {
             this.layer.draw();
             this.saveSlideState();
         }
+    }
+
+    applyPendingAnimations(slideIndex) {
+        if (!this.slideObjects[slideIndex]) return;
+
+        this.slideObjects[slideIndex].forEach(obj => {
+            if (obj._pendingAnimation) {
+                const { type, duration, delay } = obj._pendingAnimation;
+
+                // Apply animation with the stored delay
+                setTimeout(() => {
+                    // Double-check the object is still in the layer before animating
+                    if (obj.getLayer()) {
+                        this.animateElement(obj, type, duration);
+                    }
+                }, delay);
+
+                // Clear the pending animation to avoid re-applying
+                delete obj._pendingAnimation;
+            }
+        });
     }
 
     animateElement(element, animationType, duration = 1000) {
