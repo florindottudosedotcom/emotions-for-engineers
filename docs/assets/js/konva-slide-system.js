@@ -47,6 +47,8 @@ class KonvaSlideSystem {
             margin: 20px auto;
             position: relative;
             overflow: hidden;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+            border-radius: 8px;
         `;
 
         this.container.appendChild(canvasContainer);
@@ -67,6 +69,11 @@ class KonvaSlideSystem {
         this.layer = new Konva.Layer();
         this.stage.add(this.layer);
 
+        // Apply border radius to the canvas element to match container
+        const canvas = this.stage.content.querySelector('canvas');
+        if (canvas) {
+            canvas.style.borderRadius = '8px';
+        }
 
         // Handle window resize
         this.setupResizeHandler(canvasContainer);
