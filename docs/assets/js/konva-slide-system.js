@@ -391,7 +391,18 @@ class KonvaSlideSystem {
         const titleFontSize = (isTitle ? 48 : 36) * this.scaleFactor;
         const contentFontSize = (isTitle ? 24 : 20) * this.scaleFactor;
 
-        // Add title
+        // Professional enhancement: Apply layout template for certain slide types
+        if (isTitle && slideIndex === 0) {
+            // Apply Hero layout for first slide
+            this.applyEnhancedTitleSlide(slide, slideObjects);
+            return slideObjects;
+        } else if (slideIndex === 1 && slide.content && slide.content.length >= 3) {
+            // Apply Split or Cards layout for content-heavy slides
+            this.applyEnhancedContentSlide(slide, slideObjects, 'split');
+            return slideObjects;
+        }
+
+        // Enhanced title with automatic effects
         if (slide.title) {
             const titleText = new Konva.Text({
                 x: padding,
@@ -402,44 +413,259 @@ class KonvaSlideSystem {
                 fill: this.currentTheme.textColor,
                 fontStyle: 'bold',
                 width: this.actualWidth - (padding * 2),
-                align: isTitle ? 'center' : 'left', // Center align for title slides
+                align: isTitle ? 'center' : 'left',
                 draggable: true
             });
+
+            // Auto-apply professional effects based on slide type
+            if (isTitle) {
+                // Title slides get glow effect
+                this.addTextEffect(titleText, 'glow');
+            } else {
+                // Content slides get shadow effect
+                this.addTextEffect(titleText, 'shadow');
+            }
 
             // Add interaction handlers
             this.addTextInteractionHandlers(titleText);
             slideObjects.push(titleText);
-            yPosition += (isTitle ? 100 : 90) * this.scaleFactor; // Optimized space after title for better layout
+
+            // Auto-animate title with delay
+            setTimeout(() => {
+                this.animateElement(titleText, isTitle ? 'slideInTop' : 'fadeIn', 800);
+            }, 200);
+
+            yPosition += (isTitle ? 100 : 90) * this.scaleFactor;
         }
 
-        // Add content - handle differently for title vs content slides
+        // Enhanced content with staggered animations
         if (slide.content && slide.content.length > 0) {
             slide.content.forEach((point, index) => {
                 // Skip empty content
                 if (!point || point.trim() === '') return;
 
-                // For title slides, don't add bullet points, just center the text
                 const bulletText = new Konva.Text({
                     x: isTitle ? padding : contentPadding,
                     y: yPosition,
-                    text: isTitle ? point : `• ${point}`, // No bullets on title slides
+                    text: isTitle ? point : `• ${point}`,
                     fontSize: contentFontSize,
                     fontFamily: 'Arial, sans-serif',
                     fill: this.currentTheme.textColor,
                     width: this.actualWidth - (isTitle ? padding * 2 : contentPadding + padding),
-                    align: isTitle ? 'center' : 'left', // Center align for title slides
-                    fontStyle: isTitle && index === 0 ? 'italic' : 'normal', // Italic for subtitle
+                    align: isTitle ? 'center' : 'left',
+                    fontStyle: isTitle && index === 0 ? 'italic' : 'normal',
                     draggable: true
                 });
+
+                // Auto-apply subtle effects for better readability
+                if (!isTitle && index < 3) {
+                    // Apply outline effect to first 3 bullet points for emphasis
+                    this.addTextEffect(bulletText, 'outline');
+                }
 
                 // Add interaction handlers
                 this.addTextInteractionHandlers(bulletText);
                 slideObjects.push(bulletText);
-                yPosition += (isTitle ? 60 : 60) * this.scaleFactor; // Increased spacing for better readability
+
+                // Staggered animations for content
+                setTimeout(() => {
+                    this.animateElement(bulletText, 'slideInLeft', 600);
+                }, 500 + (index * 200)); // Stagger by 200ms each
+
+                yPosition += (isTitle ? 60 : 60) * this.scaleFactor;
             });
         }
 
+        // Auto-add decorative shapes for visual interest
+        if (!isTitle && slideObjects.length > 2) {
+            this.addDecorativeElements(slideObjects, slideIndex);
+        }
+
         return slideObjects;
+    }
+
+    // Enhanced slide templates for automatic application
+    applyEnhancedTitleSlide(slide, slideObjects) {
+        // Create gradient background
+        const background = new Konva.Rect({
+            x: 0,
+            y: 0,
+            width: this.actualWidth,
+            height: this.actualHeight,
+            fillLinearGradient: {
+                start: { x: 0, y: 0 },
+                end: { x: this.actualWidth, y: this.actualHeight },
+                colorStops: [0, 'rgba(102, 126, 234, 0.1)', 1, 'rgba(118, 75, 162, 0.1)']
+            }
+        });
+        slideObjects.push(background);
+
+        // Enhanced title with effects
+        const title = new Konva.Text({
+            x: this.actualWidth * 0.1,
+            y: this.actualHeight * 0.35,
+            text: slide.title,
+            fontSize: 52 * this.scaleFactor,
+            fontFamily: 'Arial, sans-serif',
+            fill: this.currentTheme.textColor,
+            fontStyle: 'bold',
+            width: this.actualWidth * 0.8,
+            align: 'center',
+            draggable: true
+        });
+
+        // Apply gradient effect to title
+        this.addTextEffect(title, 'gradient');
+        this.addTextInteractionHandlers(title);
+        slideObjects.push(title);
+
+        // Enhanced subtitle
+        if (slide.content && slide.content[0]) {
+            const subtitle = new Konva.Text({
+                x: this.actualWidth * 0.1,
+                y: this.actualHeight * 0.55,
+                text: slide.content[0],
+                fontSize: 28 * this.scaleFactor,
+                fontFamily: 'Arial, sans-serif',
+                fill: this.currentTheme.textColor,
+                fontStyle: 'italic',
+                width: this.actualWidth * 0.8,
+                align: 'center',
+                draggable: true
+            });
+
+            this.addTextEffect(subtitle, 'glow');
+            this.addTextInteractionHandlers(subtitle);
+            slideObjects.push(subtitle);
+
+            // Animate with delay
+            setTimeout(() => {
+                this.animateElement(title, 'slideInTop', 1000);
+                this.animateElement(subtitle, 'fadeIn', 1200);
+            }, 300);
+        }
+    }
+
+    applyEnhancedContentSlide(slide, slideObjects, layoutType) {
+        // Apply split layout with enhanced styling
+        const titleFontSize = 32 * this.scaleFactor;
+        const contentFontSize = 18 * this.scaleFactor;
+
+        // Enhanced title
+        const title = new Konva.Text({
+            x: this.actualWidth * 0.05,
+            y: this.actualHeight * 0.15,
+            text: slide.title,
+            fontSize: titleFontSize,
+            fontFamily: 'Arial, sans-serif',
+            fill: this.currentTheme.textColor,
+            fontStyle: 'bold',
+            width: this.actualWidth * 0.45,
+            draggable: true
+        });
+
+        this.addTextEffect(title, 'shadow');
+        this.addTextInteractionHandlers(title);
+        slideObjects.push(title);
+
+        // Enhanced content with cards
+        if (slide.content) {
+            slide.content.slice(0, 3).forEach((point, index) => {
+                const cardY = this.actualHeight * 0.3 + (index * 120 * this.scaleFactor);
+
+                // Card background
+                const cardBg = new Konva.Rect({
+                    x: this.actualWidth * 0.05,
+                    y: cardY - 10 * this.scaleFactor,
+                    width: this.actualWidth * 0.45,
+                    height: 80 * this.scaleFactor,
+                    fill: this.currentTheme.fillColor,
+                    stroke: this.currentTheme.borderColor,
+                    strokeWidth: 1,
+                    cornerRadius: 8 * this.scaleFactor,
+                    opacity: 0.8,
+                    draggable: true
+                });
+                slideObjects.push(cardBg);
+
+                // Card content
+                const cardText = new Konva.Text({
+                    x: this.actualWidth * 0.07,
+                    y: cardY,
+                    text: `${index + 1}. ${point}`,
+                    fontSize: contentFontSize,
+                    fontFamily: 'Arial, sans-serif',
+                    fill: this.currentTheme.textColor,
+                    width: this.actualWidth * 0.41,
+                    draggable: true
+                });
+
+                this.addTextInteractionHandlers(cardText);
+                slideObjects.push(cardText);
+
+                // Staggered animations
+                setTimeout(() => {
+                    this.animateElement(cardBg, 'slideInLeft', 600);
+                    this.animateElement(cardText, 'fadeIn', 800);
+                }, 400 + (index * 300));
+            });
+        }
+
+        // Right side visual placeholder
+        const visualPlaceholder = new Konva.Rect({
+            x: this.actualWidth * 0.55,
+            y: this.actualHeight * 0.2,
+            width: this.actualWidth * 0.4,
+            height: this.actualHeight * 0.6,
+            fill: 'rgba(102, 126, 234, 0.1)',
+            stroke: this.currentTheme.borderColor,
+            strokeWidth: 2,
+            cornerRadius: 12 * this.scaleFactor,
+            draggable: true
+        });
+        slideObjects.push(visualPlaceholder);
+
+        const placeholderText = new Konva.Text({
+            x: this.actualWidth * 0.55,
+            y: this.actualHeight * 0.45,
+            text: '📊 Visual Content\nClick to add image',
+            fontSize: 20 * this.scaleFactor,
+            fontFamily: 'Arial, sans-serif',
+            fill: this.currentTheme.textColor,
+            width: this.actualWidth * 0.4,
+            align: 'center',
+            draggable: true
+        });
+        this.addTextInteractionHandlers(placeholderText);
+        slideObjects.push(placeholderText);
+
+        // Animate title first
+        setTimeout(() => {
+            this.animateElement(title, 'slideInTop', 800);
+            this.animateElement(visualPlaceholder, 'slideInRight', 1000);
+            this.animateElement(placeholderText, 'fadeIn', 1200);
+        }, 200);
+    }
+
+    addDecorativeElements(slideObjects, slideIndex) {
+        // Add subtle decorative shapes based on slide index
+        const decorativeShapes = ['circle', 'triangle', 'star'];
+        const shapeType = decorativeShapes[slideIndex % decorativeShapes.length];
+
+        const decorativeShape = this.addShape(shapeType, {
+            x: this.actualWidth * 0.85,
+            y: this.actualHeight * 0.8,
+            width: this.actualWidth * 0.08,
+            height: this.actualWidth * 0.08,
+            fill: this.currentTheme.fillColor,
+            stroke: this.currentTheme.borderColor,
+            opacity: 0.3
+        });
+
+        // Animate decorative element
+        setTimeout(() => {
+            this.animateElement(decorativeShape, 'bounce', 1000);
+        }, 1500);
     }
 
     addTextInteractionHandlers(textObj) {
