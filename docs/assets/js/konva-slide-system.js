@@ -1902,12 +1902,14 @@ class KonvaSlideSystem {
                 textObj.strokeWidth(2);
             },
             gradient: () => {
-                const fillLinearGradient = {
-                    start: { x: 0, y: 0 },
-                    end: { x: textObj.width(), y: 0 },
-                    colorStops: [0, '#667eea', 1, '#764ba2']
-                };
-                textObj.fillLinearGradient(fillLinearGradient);
+                // For Konva text gradients, we need to set the property directly
+                textObj.setAttrs({
+                    fillLinearGradient: {
+                        start: { x: 0, y: 0 },
+                        end: { x: textObj.width(), y: 0 },
+                        colorStops: [0, '#667eea', 1, '#764ba2']
+                    }
+                });
             }
         };
 
