@@ -83,8 +83,10 @@ class KonvaSlideSystem {
     }
 
     calculateResponsiveDimensions(container) {
-        // Get container width
-        const containerWidth = container.clientWidth || this.container.clientWidth;
+        // Get container width - ensure we have a proper container reference
+        if (!container) container = this.canvasContainer || this.container;
+
+        const containerWidth = container.clientWidth || this.container.clientWidth || this.slideWidth;
         const maxWidth = Math.min(containerWidth - 40, this.slideWidth); // 40px for margins
 
         // Calculate scale factor
@@ -112,21 +114,19 @@ class KonvaSlideSystem {
         this.resizeObserver = resizeObserver;
     }
 
-    handleResize(container) {
+    handleResize(container = null) {
         const oldWidth = this.actualWidth;
         const oldHeight = this.actualHeight;
 
-        this.calculateResponsiveDimensions(container);
+        this.calculateResponsiveDimensions(container || this.canvasContainer);
 
         if (this.actualWidth !== oldWidth || this.actualHeight !== oldHeight) {
             // Update stage size
             this.stage.width(this.actualWidth);
             this.stage.height(this.actualHeight);
 
-            // Scale all objects
-            this.scaleAllObjects(this.scaleFactor);
-
-            this.layer.draw();
+            // Redraw current slide to apply new dimensions
+            this.showSlide(this.currentSlideIndex);
         }
     }
 
@@ -326,10 +326,18 @@ class KonvaSlideSystem {
 
         console.log('Created slide objects:', this.slideObjects.length);
 
-        // Show first slide
+        // Show first slide with a small delay to ensure container is properly sized
         this.currentSlideIndex = 0;
-        this.showSlide(0);
-        this.updateNavigation();
+
+        // Force recalculation of dimensions after slides are loaded
+        setTimeout(() => {
+            console.log('Forcing resize and redraw after slide load');
+            this.calculateResponsiveDimensions();
+            this.stage.width(this.actualWidth);
+            this.stage.height(this.actualHeight);
+            this.showSlide(0);
+            this.updateNavigation();
+        }, 100);
     }
 
     createSlideFromData(slide, slideIndex) {
