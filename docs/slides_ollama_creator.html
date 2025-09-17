@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self' 'unsafe-inline' 'unsafe-eval' blob: https://cdnjs.cloudflare.com https://unpkg.com; style-src 'self' 'unsafe-inline'; frame-src 'self'; img-src 'self' data: blob:; connect-src 'self' http://localhost:11434 https://cdnjs.cloudflare.com https://unpkg.com; font-src 'self'; object-src 'none'; base-uri 'self'; form-action 'self'; worker-src 'self' blob:;">
+    <meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self' 'unsafe-inline' 'unsafe-eval' blob: https://cdnjs.cloudflare.com https://unpkg.com https://cdn.jsdelivr.net https://d3js.org; style-src 'self' 'unsafe-inline'; frame-src 'self'; img-src 'self' data: blob:; connect-src 'self' http://localhost:11434 https://cdnjs.cloudflare.com https://unpkg.com; font-src 'self'; object-src 'none'; base-uri 'self'; form-action 'self'; worker-src 'self' blob:;">
     <title>Ollama Slides Creator</title>
     <link rel="stylesheet" href="./assets/css/minimal-theme.css" />
     <link rel="stylesheet" href="./assets/css/course-creator.css" />
@@ -68,23 +68,25 @@
         }
 
         .presentation-preview {
-            border: 2px solid #007bff;
+            border: 1px solid #ddd;
             border-radius: 8px;
             padding: 20px;
             margin: 20px 0;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
+            background: white;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
             text-align: center;
         }
 
         .presentation-preview h2 {
             margin: 0 0 10px 0;
-            font-size: 2em;
+            font-size: 1.8em;
+            color: #333;
         }
 
         .slide-counter {
             opacity: 0.8;
             font-size: 0.9em;
+            color: #666;
         }
 
         /* Theme selector styles */
@@ -159,7 +161,65 @@
 
         [contenteditable="true"]:focus {
             outline: 2px solid var(--accent-color, #60a5fa);
-            background: rgba(255,255,255,0.1);
+            background: rgba(255,255,255,0.9) !important;
+            color: #333 !important;
+        }
+
+        /* Editable visual elements styles */
+        .visual-element {
+            position: relative;
+            transition: all 0.2s ease;
+        }
+
+        .visual-element:hover {
+            outline: 2px dashed rgba(102, 126, 234, 0.5);
+        }
+
+        .visual-element:hover .delete-element-btn {
+            display: block;
+        }
+
+        .delete-element-btn {
+            display: none;
+            position: absolute;
+            top: 8px;
+            right: 8px;
+            width: 20px;
+            height: 20px;
+            background: #e74c3c;
+            color: white;
+            border: none;
+            border-radius: 50%;
+            cursor: pointer;
+            font-size: 11px;
+            font-weight: bold;
+            z-index: 1001;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.4);
+            transition: all 0.2s ease;
+            line-height: 18px;
+            text-align: center;
+            font-family: Arial, sans-serif;
+        }
+
+        .delete-element-btn:hover {
+            background: #c0392b;
+            transform: scale(1.1);
+        }
+
+        .editable-text {
+            cursor: text;
+            border-radius: 4px;
+            padding: 2px 4px;
+            transition: background-color 0.2s ease;
+        }
+
+        .editable-text:hover {
+            background: rgba(255, 255, 255, 0.1);
+        }
+
+        .editable-text:focus {
+            outline: 2px solid #667eea;
+            background: rgba(255, 255, 255, 0.2);
         }
     </style>
 </head>
@@ -204,8 +264,8 @@
         <!-- Presentation Preview Section -->
         <div id="presentation-section" style="display: block;">
             <div class="presentation-preview">
-                <h2 id="presentation-title">Presentation Title</h2>
-                <p class="slide-counter"><span id="total-slides">0</span> slides generated</p>
+                <h2 id="presentation-title" contenteditable="true" title="Click to edit presentation title" style="cursor: text; border: 2px solid transparent; border-radius: 4px; padding: 5px 10px; transition: border-color 0.2s;">My Presentation</h2>
+                <p class="slide-counter"><span id="total-slides">1</span> slides generated</p>
             </div>
 
 
@@ -266,6 +326,16 @@
     <script src="https://unpkg.com/jspdf@latest/dist/jspdf.umd.min.js"></script>
     <script src="https://unpkg.com/html2canvas@latest/dist/html2canvas.min.js"></script>
     <script src="https://unpkg.com/pptxgenjs@3.12.0/dist/pptxgen.bundle.js"></script>
+
+    <!-- Enhanced Editing and Export Libraries -->
+    <script src="./assets/js/konva-editor.js"></script>
+    <script src="./assets/js/konva-slide-system.js"></script>
+    <script src="./assets/js/pdfkit-export.js"></script>
+
+    <!-- Advanced Graphics Libraries -->
+    <script src="https://unpkg.com/chart.js@4.4.0/dist/chart.umd.js"></script>
+    <script src="https://d3js.org/d3.v7.min.js"></script>
+    <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.js"></script>
 
     <!-- Main Application Logic -->
     <script>

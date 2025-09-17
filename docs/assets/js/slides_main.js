@@ -3,6 +3,11 @@ const SLIDES_STORAGE_KEY = 'aiSlidesCreator_slides';
 const THEME_STORAGE_KEY = 'aiSlidesCreator_theme';
 const CUSTOM_COLORS_STORAGE_KEY = 'aiSlidesCreator_customColors';
 
+// Enhanced editing flag
+let enhancedEditingEnabled = false;
+let konvaEditors = new Map();
+let konvaSlideSystem = null; // New unified slide system
+
 const slidesAppState = {
     currentSlideData: null,
     isGenerating: false,
@@ -80,8 +85,63 @@ function saveCustomColors() {
     }
 }
 
+// Initialize enhanced editing components
+async function initializeEnhancedComponents() {
+    console.log('Initializing enhanced editing components...');
+
+    try {
+        // Load Konva.js editor if available
+        if (window.KonvaEditor && window.KonvaEditor.loadDependencies) {
+            enhancedEditingEnabled = await window.KonvaEditor.loadDependencies();
+            console.log('Enhanced editing enabled:', enhancedEditingEnabled);
+        }
+
+        // Add enhanced editing toggle button
+        addEnhancedEditingToggle();
+
+    } catch (error) {
+        console.warn('Enhanced editing components failed to initialize:', error);
+        enhancedEditingEnabled = false;
+    }
+}
+
+function addEnhancedEditingToggle() {
+    // Add toggle button to presentation section
+    const presentationSection = document.getElementById('presentation-section');
+    if (!presentationSection) return;
+
+    const toggleContainer = document.createElement('div');
+    toggleContainer.style.cssText = 'margin: 10px 0; text-align: center;';
+
+    const toggleButton = document.createElement('button');
+    toggleButton.id = 'enhanced-editing-toggle';
+    toggleButton.className = 'btn btn-secondary';
+    toggleButton.textContent = enhancedEditingEnabled ? '📝 Enhanced Editing: ON' : '📝 Enhanced Editing: OFF';
+    toggleButton.style.cssText = 'margin: 5px;';
+
+    toggleButton.addEventListener('click', () => {
+        enhancedEditingEnabled = !enhancedEditingEnabled;
+        toggleButton.textContent = enhancedEditingEnabled ? '📝 Enhanced Editing: ON' : '📝 Enhanced Editing: OFF';
+        toggleButton.className = enhancedEditingEnabled ? 'btn btn-primary' : 'btn btn-secondary';
+
+        // Clean up existing editors before re-rendering
+        cleanupKonvaEditors();
+
+        // Re-render slides with new editing mode
+        if (slidesAppState.currentSlideData) {
+            displaySlides(slidesAppState.currentSlideData);
+        }
+    });
+
+    toggleContainer.appendChild(toggleButton);
+    presentationSection.insertBefore(toggleContainer, presentationSection.querySelector('.slides-container'));
+}
+
 // Wait for the main provider to be initialized, then add slides functionality
 document.addEventListener('DOMContentLoaded', async () => {
+    // Initialize enhanced components first
+    await initializeEnhancedComponents();
+
     // Load custom colors first
     loadCustomColors();
 
@@ -99,6 +159,12 @@ document.addEventListener('DOMContentLoaded', async () => {
     slidesDom.presentationTopicTextarea = document.getElementById('presentation-topic');
     slidesDom.numSlidesSelect = document.getElementById('num-slides');
     slidesDom.generateSlidesBtn = document.getElementById('generate-slides-btn');
+
+    console.log('DOM elements initialized:', {
+        presentationTopicTextarea: !!slidesDom.presentationTopicTextarea,
+        numSlidesSelect: !!slidesDom.numSlidesSelect,
+        generateSlidesBtn: !!slidesDom.generateSlidesBtn
+    });
     slidesDom.generationStatus = document.getElementById('generation-status');
     slidesDom.presentationSection = document.getElementById('presentation-section');
     slidesDom.presentationTitle = document.getElementById('presentation-title');
@@ -121,6 +187,18 @@ document.addEventListener('DOMContentLoaded', async () => {
     if (slidesDom.generateSlidesBtn) {
         slidesDom.generateSlidesBtn.addEventListener('click', generatePresentation);
         console.log('Generate slides button event listener added');
+    }
+
+    // Auto-save form state when inputs change
+    if (slidesDom.presentationTopicTextarea) {
+        slidesDom.presentationTopicTextarea.addEventListener('input', saveFormState);
+        slidesDom.presentationTopicTextarea.addEventListener('blur', saveFormState);
+        console.log('Presentation topic auto-save listeners added');
+    }
+
+    if (slidesDom.numSlidesSelect) {
+        slidesDom.numSlidesSelect.addEventListener('change', saveFormState);
+        console.log('Number of slides auto-save listener added');
     }
 
     // Removed regenerate and preview buttons - no longer needed
@@ -167,6 +245,12 @@ document.addEventListener('DOMContentLoaded', async () => {
     console.log('Starting slides initialization...');
     loadSavedSlides();
 
+    // Also try to load form state with a delay to ensure DOM is ready
+    setTimeout(() => {
+        console.log('Loading form state with delay...');
+        loadFormState();
+    }, 100);
+
     // Initialize empty presentation if no saved slides
     console.log('Current slide data after loading:', slidesAppState.currentSlideData);
     if (!slidesAppState.currentSlideData) {
@@ -206,11 +290,56 @@ function saveSlides() {
 }
 
 function saveFormState() {
+    console.log('saveFormState called');
+    console.log('DOM elements:', {
+        presentationTopicTextarea: !!slidesDom.presentationTopicTextarea,
+        numSlidesSelect: !!slidesDom.numSlidesSelect
+    });
+
     const formState = {
         presentationTopic: slidesDom.presentationTopicTextarea ? slidesDom.presentationTopicTextarea.value : '',
         numSlides: slidesDom.numSlidesSelect ? slidesDom.numSlidesSelect.value : '8'
     };
+
+    console.log('Saving form state:', formState);
     localStorage.setItem(SLIDES_STORAGE_KEY + '_form', JSON.stringify(formState));
+}
+
+function loadFormState() {
+    try {
+        const savedForm = localStorage.getItem(SLIDES_STORAGE_KEY + '_form');
+        console.log('loadFormState called - found saved form:', !!savedForm);
+
+        if (savedForm) {
+            const formState = JSON.parse(savedForm);
+            console.log('Loading form state:', formState);
+
+            // Re-check DOM elements in case they weren't ready before
+            if (!slidesDom.presentationTopicTextarea) {
+                slidesDom.presentationTopicTextarea = document.getElementById('presentation-topic');
+            }
+            if (!slidesDom.numSlidesSelect) {
+                slidesDom.numSlidesSelect = document.getElementById('num-slides');
+            }
+
+            console.log('DOM elements for form loading:', {
+                presentationTopicTextarea: !!slidesDom.presentationTopicTextarea,
+                numSlidesSelect: !!slidesDom.numSlidesSelect
+            });
+
+            if (slidesDom.presentationTopicTextarea && formState.presentationTopic) {
+                slidesDom.presentationTopicTextarea.value = formState.presentationTopic;
+                console.log('Restored presentation topic:', formState.presentationTopic);
+            }
+
+            if (slidesDom.numSlidesSelect && formState.numSlides) {
+                slidesDom.numSlidesSelect.value = formState.numSlides;
+                console.log('Restored slide count:', formState.numSlides);
+            }
+        }
+    } catch (error) {
+        console.error('Error in loadFormState:', error);
+    }
 }
 
 function loadSavedSlides() {
@@ -224,20 +353,34 @@ function loadSavedSlides() {
         console.log('Saved theme data:', savedTheme ? 'Found' : 'Not found');
 
         if (savedTheme) {
-            slidesAppState.currentTheme = JSON.parse(savedTheme);
-            console.log('Loaded theme:', slidesAppState.currentTheme);
+            try {
+                slidesAppState.currentTheme = JSON.parse(savedTheme);
+                console.log('Loaded theme:', slidesAppState.currentTheme);
+            } catch (error) {
+                console.warn('Error parsing saved theme, using as string value:', error);
+                // If it's just a string theme name (like "beige"), use it directly
+                slidesAppState.currentTheme = { name: savedTheme };
+            }
         }
 
         if (saved) {
-            slidesAppState.currentSlideData = JSON.parse(saved);
-            console.log('Loaded slides data:', slidesAppState.currentSlideData);
+            try {
+                slidesAppState.currentSlideData = JSON.parse(saved);
+                console.log('Loaded slides data:', slidesAppState.currentSlideData);
+            } catch (error) {
+                console.warn('Error parsing saved slides data:', error);
+                slidesAppState.currentSlideData = null;
+            }
 
-            // Show presentation section first, then display slides
-            console.log('Showing presentation section...');
-            showPresentationSection();
+            // Only proceed if we have valid slide data
+            if (slidesAppState.currentSlideData) {
+                // Show presentation section first, then display slides
+                console.log('Showing presentation section...');
+                showPresentationSection();
 
-            console.log('Displaying slides...');
-            displaySlides(slidesAppState.currentSlideData);
+                console.log('Displaying slides...');
+                displaySlides(slidesAppState.currentSlideData);
+            }
 
             // Apply saved theme if available
             if (slidesAppState.currentTheme) {
@@ -254,14 +397,33 @@ function loadSavedSlides() {
 
         // Restore form state
         if (savedForm) {
+            console.log('Found saved form data:', savedForm);
             const formState = JSON.parse(savedForm);
+            console.log('Parsed form state:', formState);
+            console.log('Form DOM elements at load time:', {
+                presentationTopicTextarea: !!slidesDom.presentationTopicTextarea,
+                numSlidesSelect: !!slidesDom.numSlidesSelect,
+                topicValue: slidesDom.presentationTopicTextarea?.value,
+                slidesValue: slidesDom.numSlidesSelect?.value
+            });
+
             if (slidesDom.presentationTopicTextarea) {
                 slidesDom.presentationTopicTextarea.value = formState.presentationTopic || '';
+                console.log('Set presentation topic to:', formState.presentationTopic);
+            } else {
+                console.warn('presentationTopicTextarea element not found');
             }
+
             if (slidesDom.numSlidesSelect) {
                 slidesDom.numSlidesSelect.value = formState.numSlides || '8';
+                console.log('Set slide count to:', formState.numSlides);
+            } else {
+                console.warn('numSlidesSelect element not found');
             }
-            console.log('Loaded saved form state');
+
+            console.log('Loaded saved form state successfully');
+        } else {
+            console.log('No saved form state found');
         }
     } catch (error) {
         console.error('Error loading saved slides:', error);
@@ -432,7 +594,17 @@ function selectTheme(themeKey) {
 
 // Create a universal slides prompt that works with any provider
 function createSlidesPrompt(topic, slideCount) {
+    // Get current color scheme for contextual design
+    const currentScheme = slidesAppState.currentTheme || COLOR_THEMES.lavender;
+    const schemeContext = `Using the "${currentScheme.name}" color scheme (${currentScheme.textColor}, ${currentScheme.borderColor}, ${currentScheme.fillColor}, ${currentScheme.backgroundColor})`;
+
     return `Create a professional presentation about "${topic}" with exactly ${slideCount} slides.
+
+TOPIC CONTEXT: Analyze "${topic}" and create contextually relevant visual designs that enhance the subject matter. Consider the industry, audience, and content type when designing visual elements.
+
+COLOR SCHEME CONTEXT: ${schemeContext} - ensure all design elements use and complement these specific colors.
+
+CONTENT DEPTH: Create rich, descriptive content with detailed explanations, examples, and insights rather than just bullet point titles.
 
 For each slide, provide structured data in this exact JSON format:
 
@@ -448,14 +620,39 @@ For each slide, provide structured data in this exact JSON format:
         "textColor": "#ffffff",
         "accentColor": "#3182ce",
         "layout": "left-text",
-        "shapes": [
+        "designElements": [
           {
-            "type": "circle",
-            "color": "#3182ce",
-            "position": "top-right",
-            "size": "medium"
+            "type": "organic-shape",
+            "shape": "flowing-curve",
+            "colors": ["currentScheme.borderColor", "currentScheme.fillColor"],
+            "position": "center-right",
+            "size": "large",
+            "content": "Contextual concept related to the topic",
+            "topicRelevance": "High - directly relates to main theme"
+          },
+          {
+            "type": "topic-visualization",
+            "visualType": "contextual-to-topic",
+            "data": "realistic-topic-related-data",
+            "colors": "currentScheme.colors",
+            "position": "bottom-center",
+            "description": "Visual representation of key topic concepts"
+          },
+          {
+            "type": "polyline-accent",
+            "points": "dynamic-based-on-content",
+            "style": "organic-flow",
+            "colors": ["currentScheme.borderColor"],
+            "position": "connecting-elements"
           }
         ],
+        "chartData": {
+          "type": "bar",
+          "data": [65, 45, 80, 55],
+          "labels": ["Q1", "Q2", "Q3", "Q4"],
+          "colors": ["#3182ce", "#60a5fa", "#93c5fd", "#dbeafe"]
+        },
+        "backgroundPattern": "subtle-dots",
         "imageDescription": "Professional business meeting illustration"
       },
       "speakerNotes": "Additional context for this slide"
@@ -475,12 +672,60 @@ Guidelines:
   * Professional Green: background "#064e3b", text "#ffffff", accent "#34d399"
   * Warm Orange: background "#ea580c", text "#ffffff", accent "#fb923c"
   * Classic Navy: background "#1e3a8a", text "#ffffff", accent "#3b82f6"
-- Accent colors should be 40-60% lighter than background for visibility
-- Suggest relevant shapes: circle, rectangle, triangle, arrow, diamond
-- Position options: top-left, top-right, bottom-left, bottom-right, center
-- Layout options: left-text, center-text, right-text, full-width
-- Size options: small, medium, large
-- Provide specific image descriptions that match the content
+
+ADVANCED CONTEXTUAL VISUAL DESIGN INSTRUCTIONS:
+
+🎯 TOPIC-DRIVEN DESIGN:
+- Analyze the topic deeply and create visually meaningful designs that directly relate to the subject
+- For business topics: use professional charts, growth curves, network diagrams
+- For creative topics: use flowing organic shapes, artistic elements, color gradients
+- For technical topics: use structured layouts, code-like elements, system diagrams
+- For educational topics: use progressive visual flows, step-by-step elements
+
+🎨 ORGANIC & ADVANCED VISUAL ELEMENTS:
+- organic-shape: Flowing, curved, natural shapes that complement the topic
+  * flowing-curve, wave-pattern, organic-blob, spiral-flow, leaf-shape, water-ripple
+  * Use bezier curves and smooth transitions, avoid rigid geometric shapes
+- polyline-accent: Connected line elements that create visual flow
+  * curved-connector, flowing-path, organic-network, branching-lines
+  * Points should follow natural, organic patterns, not straight lines
+- topic-visualization: Custom visual elements that represent core concepts
+  * Create unique visualizations based on topic (books for education, gears for business, etc.)
+- contextual-metaphor: Visual metaphors that enhance understanding
+  * Use imagery and shapes that naturally relate to the topic's domain
+
+📊 ENHANCED DATA VISUALIZATION:
+- Create realistic, topic-relevant data that tells a story
+- Chart types should match the narrative (growth charts for success topics, pie charts for distribution, etc.)
+- Use organic color transitions within the current color scheme
+- Add contextual labels that relate directly to the topic content
+
+🎨 RICH CONTENT GENERATION:
+- Generate detailed, comprehensive content beyond simple bullet points
+- Include explanations, examples, case studies, and insights
+- Use descriptive language that paints a vivid picture
+- Create narrative flow between slides that builds understanding
+- Each bullet point should be a complete thought with context
+
+💡 COLOR SCHEME INTEGRATION:
+- All visual elements MUST use the current selected color scheme colors
+- Create harmonious color variations within the scheme palette
+- Use color psychology appropriate to the topic (warm colors for passion, cool colors for technology)
+- Ensure visual hierarchy through color intensity and contrast
+
+🌊 ORGANIC DESIGN PRINCIPLES:
+- Embrace asymmetry and natural proportions
+- Use flowing, curved lines instead of rigid straight lines
+- Create depth through layered organic shapes
+- Use breathing space and natural composition
+- Incorporate subtle animations through CSS transitions
+
+📐 ADVANCED POSITIONING:
+- flowing-around-content: Elements that curve around text naturally
+- organic-cluster: Groups of elements that follow natural clustering patterns
+- contextual-placement: Positioning based on content meaning and visual flow
+
+CRITICAL: Every design element must serve the topic and enhance comprehension. Avoid generic placeholder content - make everything contextually meaningful and visually compelling.
 
 Return ONLY the JSON, no additional text.`;
 }
@@ -525,6 +770,110 @@ function parseSlideResponse(aiResponse) {
     }
 }
 
+function showSlideGenerationConfirmation() {
+    return new Promise((resolve) => {
+        // Create modal using the same design pattern as course creator
+        const modal = document.createElement('div');
+        modal.className = 'modal-overlay visible';
+        modal.style.cssText = `
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+            opacity: 1;
+        `;
+
+        const modalContent = document.createElement('div');
+        modalContent.className = 'modal-content';
+        modalContent.innerHTML = `
+            <h2>Overwrite Existing Slides?</h2>
+            <p>You already have slides in your presentation. Generating new slides will replace all existing content. This action cannot be undone.</p>
+            <div class="input-group margin-top-1-5rem">
+                <button type="button" id="overwrite-slides-yes" class="btn btn-primary">✓ Yes, Replace Slides</button>
+                <button type="button" id="overwrite-slides-cancel" class="btn btn-danger margin-left-auto">× Cancel</button>
+            </div>
+        `;
+
+        modal.appendChild(modalContent);
+        document.body.appendChild(modal);
+
+        const yesBtn = modal.querySelector('#overwrite-slides-yes');
+        const cancelBtn = modal.querySelector('#overwrite-slides-cancel');
+
+        const cleanup = () => {
+            modal.remove();
+        };
+
+        yesBtn.addEventListener('click', () => {
+            cleanup();
+            // Clear existing slides and persistence like clearAllSlides() but without the confirm()
+            clearSlidesForGeneration();
+            resolve(true);
+        }, { once: true });
+
+        cancelBtn.addEventListener('click', () => {
+            cleanup();
+            resolve(false);
+        }, { once: true });
+
+        // Close on background click
+        modal.addEventListener('click', (e) => {
+            if (e.target === modal) {
+                cleanup();
+                resolve(false);
+            }
+        });
+
+        // Close on Escape key
+        const handleEscape = (e) => {
+            if (e.key === 'Escape') {
+                cleanup();
+                document.removeEventListener('keydown', handleEscape);
+                resolve(false);
+            }
+        };
+        document.addEventListener('keydown', handleEscape);
+    });
+}
+
+function clearSlidesForGeneration() {
+    // Clear slides data (similar to clearAllSlides but without the confirm dialog)
+    slidesAppState.currentSlideData = null;
+
+    // Clear localStorage persistence
+    localStorage.removeItem(SLIDES_STORAGE_KEY);
+    localStorage.removeItem(SLIDES_STORAGE_KEY + '_form');
+
+    // Clear the slides display using the correct DOM reference
+    if (slidesDom.slidesPreview) {
+        slidesDom.slidesPreview.innerHTML = '';
+    }
+
+    // Clear presentation title
+    if (slidesDom.presentationTitle) {
+        slidesDom.presentationTitle.innerHTML = '';
+    }
+
+    // Reset slide count
+    if (slidesDom.totalSlides) {
+        slidesDom.totalSlides.textContent = '0';
+    }
+
+    // Ensure presentation section remains visible for the new generation
+    if (slidesDom.presentationSection) {
+        slidesDom.presentationSection.style.display = 'block';
+    }
+
+    // Update status to show clearing is complete
+    updateGenerationStatus('Existing slides cleared, ready for new generation...', 'success');
+}
+
 async function generatePresentation() {
     console.log('generatePresentation function called');
     const topic = slidesDom.presentationTopicTextarea.value.trim();
@@ -540,6 +889,15 @@ async function generatePresentation() {
     if (slidesAppState.isGenerating) {
         updateGenerationStatus('Generation already in progress...', 'warning');
         return;
+    }
+
+    // Check if there are existing slides and ask for confirmation
+    if (slidesAppState.currentSlideData && slidesAppState.currentSlideData.slides && slidesAppState.currentSlideData.slides.length > 0) {
+        const confirmed = await showSlideGenerationConfirmation();
+        if (!confirmed) {
+            console.log('User cancelled slide generation');
+            return;
+        }
     }
 
     try {
@@ -566,6 +924,9 @@ async function generatePresentation() {
 
         slidesAppState.currentSlideData = slideData;
 
+        // Ensure presentation section is visible
+        showPresentationSection();
+
         // Update UI with generated slides
         displaySlides(slideData);
 
@@ -576,6 +937,10 @@ async function generatePresentation() {
 
         // Save to session storage
         saveSlides();
+
+        // Also save form state to ensure persistence
+        saveFormState();
+        console.log('Saved slide data and form state after generation');
 
         updateGenerationStatus(`✅ Generated ${slideData.slides.length} slides successfully!`, 'success');
 
@@ -598,19 +963,43 @@ function displaySlides(slideData) {
         slidesDom.totalSlides.textContent = slideData.slides.length;
     }
 
-    // Clear existing slides
+    // Initialize or update Konva slide system
     if (slidesDom.slidesPreview) {
+        // Destroy existing Konva system if it exists
+        if (konvaSlideSystem) {
+            konvaSlideSystem.destroy();
+        }
+
+        // Clear the preview container
         slidesDom.slidesPreview.innerHTML = '';
 
-        // Generate slide previews with proper numbering starting at 1
-        slideData.slides.forEach((slide, index) => {
-            const slideElement = createSlidePreviewElement(slide, index + 1);
-            slidesDom.slidesPreview.appendChild(slideElement);
-        });
+        // Check if enhanced editing is enabled and we have KonvaSlideSystem
+        if (enhancedEditingEnabled && window.KonvaSlideSystem) {
+            console.log('Using Konva slide system for display');
+
+            // Create new Konva slide system
+            konvaSlideSystem = new window.KonvaSlideSystem(slidesDom.slidesPreview);
+
+            // Make it globally accessible for toolbar buttons
+            window.konvaSlideSystem = konvaSlideSystem;
+
+            // Load the slide data into Konva system
+            konvaSlideSystem.loadSlidesFromData(slideData);
+        } else {
+            console.log('Using traditional HTML slide system for display');
+
+            // Fall back to traditional HTML slides
+            slideData.slides.forEach((slide, index) => {
+                const slideElement = createSlidePreviewElement(slide, index + 1);
+                slidesDom.slidesPreview.appendChild(slideElement);
+            });
+        }
     }
 
-    // Add clear button at the bottom if it doesn't exist
-    addClearButtonToBottom();
+    // Add clear button at the bottom if it doesn't exist (only for HTML mode)
+    if (!enhancedEditingEnabled || !window.KonvaSlideSystem) {
+        addClearButtonToBottom();
+    }
 
     // Apply theme if available
     if (slidesAppState.currentTheme) {
@@ -655,13 +1044,24 @@ function createSlidePreviewElement(slide, slideNumber) {
         border-radius: 4px;
     `;
 
-    // Add editing event listeners for title
-    titleElement.addEventListener('blur', (e) => updateSlideData(slideNumber - 1, 'title', e.target.textContent));
-    titleElement.addEventListener('focus', (e) => e.target.style.border = '2px solid var(--accent-color, #60a5fa)');
-    titleElement.addEventListener('blur', (e) => e.target.style.border = '2px solid transparent');
+    // Use enhanced editor for title if available and enabled
+    if (enhancedEditingEnabled && window.KonvaEditor) {
+        const editorKey = `slide-${slideNumber}-title`;
+        try {
+            const titleEditor = window.KonvaEditor.create(titleElement, slide.title, (content) => {
+                updateSlideData(slideNumber - 1, 'title', content);
+            });
+            konvaEditors.set(editorKey, titleEditor);
+        } catch (error) {
+            console.warn('Failed to create Konva editor for title, using fallback:', error);
+            setupBasicTitleEditor(titleElement, slideNumber);
+        }
+    } else {
+        setupBasicTitleEditor(titleElement, slideNumber);
+    }
 
-    // Select all text when clicking/focusing
-    selectAllOnFocus(titleElement);
+    // Remove auto-select behavior that interferes with editing
+    // selectAllOnFocus(titleElement);
 
     // Editable content list
     const contentContainer = document.createElement('div');
@@ -674,7 +1074,6 @@ function createSlidePreviewElement(slide, slideNumber) {
         slide.content.forEach((point, index) => {
             const listItem = document.createElement('li');
             listItem.className = 'slide-content-item-editable';
-            listItem.contentEditable = true;
             listItem.textContent = point;
             listItem.style.cssText = `
                 margin: 8px 0;
@@ -684,34 +1083,32 @@ function createSlidePreviewElement(slide, slideNumber) {
                 font-family: Arial, sans-serif;
                 font-size: 14px;
                 line-height: 1.4;
-                display: flex;
-                align-items: center;
                 min-height: 20px;
+                word-wrap: break-word;
+                outline: none;
             `;
 
-            // Add editing event listeners for content
-            listItem.addEventListener('blur', (e) => {
-                // Get text content excluding the remove button
-                const removeBtn = e.target.querySelector('.remove-content-btn');
-                let textContent = e.target.textContent;
-                if (removeBtn) {
-                    textContent = textContent.replace(removeBtn.textContent, '').trim();
+            // Use enhanced editor if available and enabled
+            if (enhancedEditingEnabled && window.KonvaEditor) {
+                const editorKey = `slide-${slideNumber}-content-${index}`;
+                try {
+                    const editor = window.KonvaEditor.create(listItem, point, (content) => {
+                        updateSlideContentItem(slideNumber - 1, index, content);
+                    });
+                    konvaEditors.set(editorKey, editor);
+                } catch (error) {
+                    console.warn('Failed to create Konva editor, using fallback:', error);
+                    setupBasicContentEditor(listItem, slideNumber, index);
                 }
-                updateSlideContentItem(slideNumber - 1, index, textContent);
-            });
-            listItem.addEventListener('focus', (e) => e.target.style.border = '2px solid var(--accent-color, #60a5fa)');
-            listItem.addEventListener('blur', (e) => e.target.style.border = '2px solid transparent');
+            } else {
+                setupBasicContentEditor(listItem, slideNumber, index);
+            }
 
-            // Select all text when clicking/focusing
-            selectAllOnFocus(listItem);
+            // Remove auto-select behavior that interferes with editing
+            // selectAllOnFocus(listItem);
 
-            // Add remove button for content item
-            const removeBtn = document.createElement('button');
-            removeBtn.textContent = '✕';
-            removeBtn.className = 'remove-content-btn';
-            removeBtn.style.cssText = 'margin-left: 10px; padding: 2px 6px; font-size: 10px; background: #dc3545; color: white; border: none; border-radius: 3px; cursor: pointer; opacity: 0.7;';
-            removeBtn.addEventListener('click', () => removeContentItem(slideNumber - 1, index));
-            listItem.appendChild(removeBtn);
+            // Make content item deletable with hover mechanism
+            makeContentItemEditable(listItem, slideNumber - 1, index);
 
             contentList.appendChild(listItem);
         });
@@ -749,10 +1146,47 @@ function createSlidePreviewElement(slide, slideNumber) {
     slideContent.appendChild(titleElement);
     slideContent.appendChild(contentContainer);
 
-    // Add visual shapes if available
+    // Create layout manager for all visual elements
+    const layoutManager = createLayoutManager(slideContent);
+
+    // Add advanced design elements with smart layout positioning
+    if (slide.visualDesign && slide.visualDesign.designElements) {
+        slide.visualDesign.designElements.forEach((element, index) => {
+            const designElement = createAdvancedDesignElement(element, layoutManager, index);
+            if (designElement) {
+                // Add data attributes to track the element for persistence
+                designElement.dataset.slideIndex = slideNumber - 1;
+                designElement.dataset.elementIndex = index;
+                designElement.dataset.elementType = 'designElement';
+                slideContent.appendChild(designElement);
+            }
+        });
+    }
+
+    // Add background pattern if specified
+    if (slide.visualDesign && slide.visualDesign.backgroundPattern) {
+        slideContent.style.backgroundImage = createBackgroundPattern(slide.visualDesign.backgroundPattern);
+        slideContent.style.backgroundSize = 'cover';
+        slideContent.style.backgroundRepeat = 'repeat';
+    }
+
+    // Add chart if specified with smart layout positioning
+    if (slide.visualDesign && slide.visualDesign.chartData) {
+        const chartElement = createChartElement(slide.visualDesign.chartData, slideNumber, layoutManager);
+        // Add data attributes to track the chart for persistence
+        chartElement.dataset.slideIndex = slideNumber - 1;
+        chartElement.dataset.elementType = 'chartData';
+        slideContent.appendChild(chartElement);
+    }
+
+    // Keep legacy shapes support for backward compatibility with smart layout
     if (slide.visualDesign && slide.visualDesign.shapes) {
-        slide.visualDesign.shapes.forEach(shape => {
-            const shapeElement = createVisualShape(shape);
+        slide.visualDesign.shapes.forEach((shape, index) => {
+            const shapeElement = createVisualShape(shape, layoutManager);
+            // Add data attributes to track the shape for persistence
+            shapeElement.dataset.slideIndex = slideNumber - 1;
+            shapeElement.dataset.elementIndex = index;
+            shapeElement.dataset.elementType = 'legacyShape';
             slideContent.appendChild(shapeElement);
         });
     }
@@ -761,8 +1195,11 @@ function createSlidePreviewElement(slide, slideNumber) {
     if (slide.visualDesign && slide.visualDesign.imageDescription) {
         const imageInfo = document.createElement('div');
         imageInfo.style.cssText = 'margin-top: 15px; padding: 10px; background: rgba(255,255,255,0.1); border-radius: 4px; font-size: 0.9em;';
-        imageInfo.innerHTML = `<strong>⬜ Image:</strong> ${slide.visualDesign.imageDescription}`;
-        slideContent.appendChild(imageInfo);
+        imageInfo.innerHTML = `<strong>⬜ Image:</strong> ${wrapTextInEditableSpan(slide.visualDesign.imageDescription, 'font-size: 0.9em;')}`;
+        // Add data attributes to track the image description for persistence
+        imageInfo.dataset.slideIndex = slideNumber - 1;
+        imageInfo.dataset.elementType = 'imageDescription';
+        slideContent.appendChild(makeElementEditable(imageInfo));
     }
 
     // Remove speaker notes from inside the slide - they'll be added separately below
@@ -817,51 +1254,54 @@ function applySlideDesign(slideDiv, slide, slideNumber) {
 
 function updateSlideData(slideIndex, field, value) {
     if (!slidesAppState.currentSlideData || !slidesAppState.currentSlideData.slides[slideIndex]) {
+        console.warn(`Cannot update slide data: slide ${slideIndex} not found`);
         return;
     }
 
+    const oldValue = slidesAppState.currentSlideData.slides[slideIndex][field];
     slidesAppState.currentSlideData.slides[slideIndex][field] = value;
     saveSlides();
-    console.log(`Updated slide ${slideIndex + 1} ${field}:`, value);
+    console.log(`Updated slide ${slideIndex + 1} ${field}:`, { from: oldValue, to: value });
 }
 
 function updateSlideContentItem(slideIndex, itemIndex, value) {
     if (!slidesAppState.currentSlideData || !slidesAppState.currentSlideData.slides[slideIndex] || !slidesAppState.currentSlideData.slides[slideIndex].content) {
+        console.warn(`Cannot update slide content: slide ${slideIndex} or content not found`);
         return;
     }
 
+    const oldValue = slidesAppState.currentSlideData.slides[slideIndex].content[itemIndex];
     slidesAppState.currentSlideData.slides[slideIndex].content[itemIndex] = value;
     saveSlides();
-    console.log(`Updated slide ${slideIndex + 1} content item ${itemIndex + 1}:`, value);
+    console.log(`Updated slide ${slideIndex + 1} content item ${itemIndex + 1}:`, { from: oldValue, to: value });
 }
 
 // updateSlideColor function removed - theme is now applied globally
 
 // Create visual shape elements
-function createVisualShape(shape) {
+function createVisualShape(shape, layoutManager) {
     const shapeElement = document.createElement('div');
     shapeElement.style.position = 'absolute';
-    shapeElement.style.zIndex = '10';
 
     // Set size
     const sizeMap = {
-        'small': '30px',
-        'medium': '50px',
-        'large': '80px'
+        'small': 30,
+        'medium': 50,
+        'large': 80
     };
-    const size = sizeMap[shape.size] || sizeMap['medium'];
+    const sizeValue = sizeMap[shape.size] || sizeMap['medium'];
+    const elementSize = { width: sizeValue, height: sizeValue };
 
-    // Set position
-    const positionMap = {
-        'top-left': { top: '10px', left: '10px' },
-        'top-right': { top: '10px', right: '10px' },
-        'bottom-left': { bottom: '10px', left: '10px' },
-        'bottom-right': { bottom: '10px', right: '10px' },
-        'center': { top: '50%', left: '50%', transform: 'translate(-50%, -50%)' }
-    };
-    const position = positionMap[shape.position] || positionMap['top-right'];
+    // Use layout manager for smart positioning
+    const positionInfo = layoutManager ?
+        layoutManager.getAvailablePosition(shape, shape.position || 'top-right', elementSize) :
+        { position: 'top: 10px; right: 10px;', zIndex: 10 };
 
-    Object.assign(shapeElement.style, position);
+    // Apply positioning styles
+    shapeElement.style.zIndex = positionInfo.zIndex;
+    shapeElement.style.cssText += `; ${positionInfo.position}`;
+
+    const size = `${sizeValue}px`;
 
     // Create shape based on type
     switch (shape.type) {
@@ -922,7 +1362,1015 @@ function createVisualShape(shape) {
             shapeElement.style.opacity = '0.8';
     }
 
-    return shapeElement;
+    return makeElementEditable(shapeElement);
+}
+
+// Smart Layout Manager for positioning design elements without overlap
+function createLayoutManager(slideContainer) {
+    const occupiedAreas = [];
+    const slideRect = { width: 800, height: 600 }; // Approximate slide dimensions
+
+    const layoutManager = {
+        getAvailablePosition: function(element, preferredPosition, elementSize) {
+            const positions = this.getPositionVariations(preferredPosition);
+
+            for (const position of positions) {
+                const rect = this.getElementRect(position, elementSize);
+                if (!this.hasOverlap(rect)) {
+                    this.occupyArea(rect, element.type);
+                    return { position, zIndex: 10 + occupiedAreas.length };
+                }
+            }
+
+            // Fallback: stack with increased z-index and slight offset
+            const fallbackRect = this.getElementRect(preferredPosition, elementSize);
+            const offset = occupiedAreas.length * 20;
+            fallbackRect.left += offset;
+            fallbackRect.top += offset;
+            this.occupyArea(fallbackRect, element.type);
+
+            return {
+                position: this.rectToPosition(fallbackRect),
+                zIndex: 20 + occupiedAreas.length
+            };
+        },
+
+        getPositionVariations: function(preferred) {
+            const variations = {
+                'top-left': ['top-left', 'top-center', 'center-left', 'top-right'],
+                'top-right': ['top-right', 'top-center', 'center-right', 'top-left'],
+                'center-right': ['center-right', 'bottom-right', 'top-right', 'center-left'],
+                'center-left': ['center-left', 'bottom-left', 'top-left', 'center-right'],
+                'bottom-right': ['bottom-right', 'bottom-center', 'center-right', 'bottom-left'],
+                'bottom-left': ['bottom-left', 'bottom-center', 'center-left', 'bottom-right'],
+                'bottom-center': ['bottom-center', 'bottom-left', 'bottom-right', 'center'],
+                'top-center': ['top-center', 'top-left', 'top-right', 'center'],
+                'center': ['center', 'center-left', 'center-right', 'top-center']
+            };
+            return variations[preferred] || [preferred, 'center', 'center-right', 'bottom-right'];
+        },
+
+        getElementRect: function(position, size) {
+            const padding = 20;
+            const width = size.width || 200;
+            const height = size.height || 150;
+
+            const positions = {
+                'top-left': { left: padding, top: padding },
+                'top-right': { left: slideRect.width - width - padding, top: padding },
+                'top-center': { left: (slideRect.width - width) / 2, top: padding },
+                'center-left': { left: padding, top: (slideRect.height - height) / 2 },
+                'center-right': { left: slideRect.width - width - padding, top: (slideRect.height - height) / 2 },
+                'center': { left: (slideRect.width - width) / 2, top: (slideRect.height - height) / 2 },
+                'bottom-left': { left: padding, top: slideRect.height - height - padding },
+                'bottom-right': { left: slideRect.width - width - padding, top: slideRect.height - height - padding },
+                'bottom-center': { left: (slideRect.width - width) / 2, top: slideRect.height - height - padding }
+            };
+
+            const pos = positions[position] || positions['center'];
+            return { ...pos, width, height };
+        },
+
+        hasOverlap: function(rect) {
+            return occupiedAreas.some(occupied =>
+                !(rect.left + rect.width < occupied.left ||
+                  occupied.left + occupied.width < rect.left ||
+                  rect.top + rect.height < occupied.top ||
+                  occupied.top + occupied.height < rect.top)
+            );
+        },
+
+        occupyArea: function(rect, type) {
+            occupiedAreas.push({ ...rect, type });
+        },
+
+        rectToPosition: function(rect) {
+            return `left: ${rect.left}px; top: ${rect.top}px;`;
+        }
+    };
+
+    return layoutManager;
+}
+
+// Advanced visual design element creation functions
+function createAdvancedDesignElement(element, layoutManager, index) {
+    switch (element.type) {
+        case 'gradient-card':
+            return createGradientCard(element, layoutManager);
+        case 'progress-bar':
+            return createProgressBar(element, layoutManager);
+        case 'icon-set':
+            return createIconSet(element, layoutManager);
+        case 'stat-counter':
+            return createStatCounter(element, layoutManager);
+        case 'timeline-point':
+            return createTimelinePoint(element, layoutManager);
+        case 'geometric-accent':
+            return createGeometricAccent(element, layoutManager);
+        case 'quote-block':
+            return createQuoteBlock(element, layoutManager);
+        case 'feature-grid':
+            return createFeatureGrid(element, layoutManager);
+        case 'organic-shape':
+            return createOrganicShape(element, layoutManager);
+        case 'polyline-accent':
+            return createPolylineAccent(element, layoutManager);
+        case 'topic-visualization':
+            return createTopicVisualization(element, layoutManager);
+        case 'contextual-metaphor':
+            return createContextualMetaphor(element, layoutManager);
+        default:
+            console.warn(`Unknown design element type: ${element.type}`);
+            return null;
+    }
+}
+
+function createGradientCard(element, layoutManager) {
+    const card = document.createElement('div');
+    card.className = 'gradient-card';
+
+    const gradient = element.colors.length >= 2 ?
+        `linear-gradient(135deg, ${element.colors[0]}, ${element.colors[1]})` :
+        element.colors[0];
+
+    const sizeClasses = {
+        small: { width: '200px', height: '100px', padding: '15px' },
+        medium: { width: '250px', height: '120px', padding: '20px' },
+        large: { width: '300px', height: '150px', padding: '25px' },
+        'full-width': { width: '100%', height: '120px', padding: '20px' }
+    };
+
+    const size = sizeClasses[element.size] || sizeClasses.medium;
+
+    // Use layout manager for smart positioning
+    const elementSize = { width: parseInt(size.width) || 250, height: parseInt(size.height) || 120 };
+    const positionInfo = layoutManager ?
+        layoutManager.getAvailablePosition(element, element.position, elementSize) :
+        { position: getPositionStyles(element.position), zIndex: 10 };
+
+    card.style.cssText = `
+        background: ${gradient};
+        color: white;
+        border-radius: 12px;
+        padding: ${size.padding};
+        width: ${size.width};
+        height: ${size.height};
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        text-align: center;
+        font-weight: 600;
+        font-size: 16px;
+        line-height: 1.4;
+        position: absolute;
+        z-index: ${positionInfo.zIndex};
+        backdrop-filter: blur(10px);
+        ${positionInfo.position}
+    `;
+
+    card.innerHTML = wrapTextInEditableSpan(element.content || 'Key Concept', 'color: white; font-weight: 600; font-size: 16px; line-height: 1.4;');
+    return makeElementEditable(card);
+}
+
+function createProgressBar(element, layoutManager) {
+    const container = document.createElement('div');
+    container.className = 'progress-bar-container';
+
+    const value = Math.max(0, Math.min(100, element.value || 50));
+
+    // Use layout manager for smart positioning
+    const elementSize = { width: 250, height: 60 };
+    const positionInfo = layoutManager ?
+        layoutManager.getAvailablePosition(element, element.position, elementSize) :
+        { position: getPositionStyles(element.position), zIndex: 10 };
+
+    container.style.cssText = `
+        width: ${elementSize.width}px;
+        position: absolute;
+        z-index: ${positionInfo.zIndex};
+        ${positionInfo.position}
+    `;
+
+    container.innerHTML = `
+        <div style="margin-bottom: 8px; font-size: 14px; font-weight: 500; color: inherit;">
+            ${wrapTextInEditableSpan(element.label || 'Progress', 'font-size: 14px; font-weight: 500;')}: ${value}%
+        </div>
+        <div style="width: 100%; height: 20px; background: rgba(255, 255, 255, 0.2); border-radius: 10px; overflow: hidden;">
+            <div style="width: ${value}%; height: 100%; background: ${element.color || '#3b82f6'}; border-radius: 10px; transition: width 0.8s ease;"></div>
+        </div>
+    `;
+
+    return makeElementEditable(container);
+}
+
+function createIconSet(element, layoutManager) {
+    const container = document.createElement('div');
+    container.className = 'icon-set';
+
+    const layout = element.layout === 'vertical' ? 'flex-direction: column;' : 'flex-direction: row;';
+
+    // Use layout manager for smart positioning
+    const isVertical = element.layout === 'vertical';
+    const elementSize = isVertical ? { width: 80, height: 200 } : { width: 200, height: 80 };
+    const positionInfo = layoutManager ?
+        layoutManager.getAvailablePosition(element, element.position, elementSize) :
+        { position: getPositionStyles(element.position), zIndex: 10 };
+
+    container.style.cssText = `
+        display: flex;
+        gap: 15px;
+        align-items: center;
+        justify-content: center;
+        position: absolute;
+        z-index: ${positionInfo.zIndex};
+        ${layout}
+        ${positionInfo.position}
+    `;
+
+    // Create simple icon representations
+    const iconMap = {
+        lightbulb: '💡',
+        target: '🎯',
+        growth: '📈',
+        shield: '🛡️',
+        rocket: '🚀',
+        gear: '⚙️',
+        star: '⭐',
+        check: '✓',
+        heart: '❤️',
+        trophy: '🏆'
+    };
+
+    (element.icons || ['lightbulb', 'target', 'growth']).forEach(iconName => {
+        const icon = document.createElement('div');
+        icon.style.cssText = `
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.1);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 20px;
+            backdrop-filter: blur(5px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        `;
+        icon.textContent = iconMap[iconName] || '🔵';
+        container.appendChild(icon);
+    });
+
+    return makeElementEditable(container);
+}
+
+function createStatCounter(element, layoutManager) {
+    const container = document.createElement('div');
+    container.className = 'stat-counter';
+
+    // Use layout manager for smart positioning
+    const elementSize = { width: 120, height: 100 };
+    const positionInfo = layoutManager ?
+        layoutManager.getAvailablePosition(element, element.position, elementSize) :
+        { position: getPositionStyles(element.position), zIndex: 10 };
+
+    container.style.cssText = `
+        text-align: center;
+        position: absolute;
+        z-index: ${positionInfo.zIndex};
+        background: rgba(255, 255, 255, 0.1);
+        backdrop-filter: blur(10px);
+        border-radius: 12px;
+        padding: 20px;
+        border: 1px solid rgba(255, 255, 255, 0.2);
+        ${positionInfo.position}
+    `;
+
+    container.innerHTML = `
+        <div style="font-size: 36px; font-weight: bold; color: inherit; margin-bottom: 8px;">
+            ${wrapTextInEditableSpan(element.value || '0', 'font-size: 36px; font-weight: bold; margin-bottom: 8px;')}
+        </div>
+        <div style="font-size: 14px; opacity: 0.8; color: inherit;">
+            ${wrapTextInEditableSpan(element.label || 'Statistic', 'font-size: 14px; opacity: 0.8;')}
+        </div>
+    `;
+
+    return makeElementEditable(container);
+}
+
+function createChartElement(chartData, slideId, layoutManager) {
+    const container = document.createElement('div');
+    const canvasId = `chart-${slideId}-${Date.now()}`;
+
+    // Use layout manager for smart positioning
+    const elementSize = { width: 400, height: 250 };
+    const positionInfo = layoutManager ?
+        layoutManager.getAvailablePosition({ position: 'center-right' }, 'center-right', elementSize) :
+        { position: 'top: 50%; right: 20px; transform: translateY(-50%);', zIndex: 10 };
+
+    container.style.cssText = `
+        width: ${elementSize.width}px;
+        height: ${elementSize.height}px;
+        position: absolute;
+        background: rgba(255, 255, 255, 0.9);
+        border-radius: 12px;
+        padding: 20px;
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+        z-index: ${positionInfo.zIndex};
+        ${positionInfo.position}
+    `;
+
+    const canvas = document.createElement('canvas');
+    canvas.id = canvasId;
+    container.appendChild(canvas);
+
+    // Initialize chart after a delay to ensure canvas is in DOM
+    setTimeout(() => {
+        if (window.Chart && document.getElementById(canvasId)) {
+            new Chart(canvas, {
+                type: chartData.type || 'bar',
+                data: {
+                    labels: chartData.labels || ['A', 'B', 'C', 'D'],
+                    datasets: [{
+                        data: chartData.data || [10, 20, 30, 40],
+                        backgroundColor: chartData.colors || ['#3b82f6', '#10b981', '#f59e0b', '#ef4444'],
+                        borderRadius: 6,
+                        borderWidth: 0
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    plugins: { legend: { display: false } },
+                    scales: {
+                        y: { display: chartData.type !== 'pie' && chartData.type !== 'doughnut' }
+                    }
+                }
+            });
+        }
+    }, 100);
+
+    return makeElementEditable(container);
+}
+
+function createBackgroundPattern(patternType) {
+    const patterns = {
+        'subtle-dots': 'radial-gradient(circle, rgba(255,255,255,0.1) 1px, transparent 1px)',
+        'diagonal-lines': 'repeating-linear-gradient(45deg, transparent, transparent 10px, rgba(255,255,255,0.05) 10px, rgba(255,255,255,0.05) 20px)',
+        'geometric-pattern': 'conic-gradient(from 45deg, transparent, rgba(255,255,255,0.05), transparent)',
+        'gradient-mesh': 'radial-gradient(ellipse at top left, rgba(255,255,255,0.1), transparent), radial-gradient(ellipse at bottom right, rgba(255,255,255,0.05), transparent)',
+        'circuit-board': 'linear-gradient(90deg, rgba(255,255,255,0.03) 50%, transparent 50%), linear-gradient(rgba(255,255,255,0.03) 50%, transparent 50%)'
+    };
+
+    return patterns[patternType] || patterns['subtle-dots'];
+}
+
+function getPositionStyles(position) {
+    const positions = {
+        'top-left': 'top: 20px; left: 20px;',
+        'top-right': 'top: 20px; right: 20px;',
+        'top-center': 'top: 20px; left: 50%; transform: translateX(-50%);',
+        'center-left': 'top: 50%; left: 20px; transform: translateY(-50%);',
+        'center-right': 'top: 50%; right: 20px; transform: translateY(-50%);',
+        'center': 'top: 50%; left: 50%; transform: translate(-50%, -50%);',
+        'bottom-left': 'bottom: 20px; left: 20px;',
+        'bottom-right': 'bottom: 20px; right: 20px;',
+        'bottom-center': 'bottom: 20px; left: 50%; transform: translateX(-50%);'
+    };
+
+    return positions[position] || positions['top-right'];
+}
+
+// New organic design element functions
+function createOrganicShape(element, layoutManager) {
+    const container = document.createElement('div');
+    container.className = 'organic-shape';
+
+    const colors = Array.isArray(element.colors) ? element.colors : [element.colors];
+    const primaryColor = colors[0] || '#3b82f6';
+    const secondaryColor = colors[1] || colors[0] || '#1d4ed8';
+
+    const shapeTypes = {
+        'flowing-curve': createFlowingCurve,
+        'wave-pattern': createWavePattern,
+        'organic-blob': createOrganicBlob,
+        'spiral-flow': createSpiralFlow,
+        'leaf-shape': createLeafShape,
+        'water-ripple': createWaterRipple
+    };
+
+    const shapeCreator = shapeTypes[element.shape] || shapeTypes['flowing-curve'];
+    const svgContent = shapeCreator(primaryColor, secondaryColor);
+
+    // Use layout manager for smart positioning
+    const elementSize = { width: 200, height: 150 };
+    const positionInfo = layoutManager ?
+        layoutManager.getAvailablePosition(element, element.position, elementSize) :
+        { position: getPositionStyles(element.position), zIndex: 5 };
+
+    container.style.cssText = `
+        position: absolute;
+        z-index: ${positionInfo.zIndex};
+        width: ${elementSize.width}px;
+        height: ${elementSize.height}px;
+        ${positionInfo.position}
+    `;
+
+    container.innerHTML = `
+        <div style="position: relative; width: 100%; height: 100%;">
+            ${svgContent}
+            ${element.content ? `<div style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); color: white; font-weight: 600; text-align: center; font-size: 14px; text-shadow: 0 2px 4px rgba(0,0,0,0.3);">${wrapTextInEditableSpan(element.content, 'color: white; font-weight: 600; text-shadow: 0 2px 4px rgba(0,0,0,0.3);')}</div>` : ''}
+        </div>
+    `;
+
+    return makeElementEditable(container);
+}
+
+function createFlowingCurve(color1, color2) {
+    return `<svg viewBox="0 0 200 150" style="width: 100%; height: 100%;">
+        <defs>
+            <linearGradient id="flowingGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+                <stop offset="0%" style="stop-color:${color1};stop-opacity:0.8" />
+                <stop offset="100%" style="stop-color:${color2};stop-opacity:0.6" />
+            </linearGradient>
+        </defs>
+        <path d="M20,80 Q60,20 120,50 T180,80 Q160,120 100,100 T20,80 Z"
+              fill="url(#flowingGrad)"
+              style="filter: drop-shadow(0 4px 8px rgba(0,0,0,0.2));" />
+    </svg>`;
+}
+
+function createWavePattern(color1, color2) {
+    return `<svg viewBox="0 0 200 150" style="width: 100%; height: 100%;">
+        <defs>
+            <linearGradient id="waveGrad" x1="0%" y1="0%" x2="0%" y2="100%">
+                <stop offset="0%" style="stop-color:${color1};stop-opacity:0.8" />
+                <stop offset="100%" style="stop-color:${color2};stop-opacity:0.4" />
+            </linearGradient>
+        </defs>
+        <path d="M0,75 Q50,25 100,75 T200,75 L200,150 L0,150 Z"
+              fill="url(#waveGrad)" />
+    </svg>`;
+}
+
+function createOrganicBlob(color1, color2) {
+    return `<svg viewBox="0 0 200 150" style="width: 100%; height: 100%;">
+        <defs>
+            <radialGradient id="blobGrad" cx="50%" cy="50%" r="50%">
+                <stop offset="0%" style="stop-color:${color1};stop-opacity:0.9" />
+                <stop offset="100%" style="stop-color:${color2};stop-opacity:0.5" />
+            </radialGradient>
+        </defs>
+        <path d="M100,20 C140,20 180,40 180,75 C180,110 140,130 100,130 C60,130 20,110 20,75 C20,40 60,20 100,20 Z"
+              fill="url(#blobGrad)"
+              style="filter: drop-shadow(0 4px 12px rgba(0,0,0,0.15));" />
+    </svg>`;
+}
+
+function createSpiralFlow(color1, color2) {
+    return `<svg viewBox="0 0 200 150" style="width: 100%; height: 100%;">
+        <defs>
+            <linearGradient id="spiralGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+                <stop offset="0%" style="stop-color:${color1};stop-opacity:0.9" />
+                <stop offset="100%" style="stop-color:${color2};stop-opacity:0.4" />
+            </linearGradient>
+        </defs>
+        <path d="M100,75 Q120,60 130,80 Q120,100 100,90 Q80,80 90,70 Q110,65 120,75 Q115,85 105,80"
+              stroke="url(#spiralGrad)"
+              stroke-width="8"
+              fill="none"
+              stroke-linecap="round" />
+    </svg>`;
+}
+
+function createLeafShape(color1, color2) {
+    return `<svg viewBox="0 0 200 150" style="width: 100%; height: 100%;">
+        <defs>
+            <linearGradient id="leafGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+                <stop offset="0%" style="stop-color:${color1};stop-opacity:0.8" />
+                <stop offset="100%" style="stop-color:${color2};stop-opacity:0.6" />
+            </linearGradient>
+        </defs>
+        <path d="M100,20 Q140,40 160,75 Q140,110 100,130 Q80,110 60,75 Q80,40 100,20 Z"
+              fill="url(#leafGrad)"
+              style="filter: drop-shadow(0 4px 8px rgba(0,0,0,0.2));" />
+        <path d="M100,20 Q120,50 140,75 Q120,100 100,130"
+              stroke="${color1}"
+              stroke-width="2"
+              fill="none"
+              opacity="0.7" />
+    </svg>`;
+}
+
+function createWaterRipple(color1, color2) {
+    return `<svg viewBox="0 0 200 150" style="width: 100%; height: 100%;">
+        <defs>
+            <radialGradient id="rippleGrad" cx="50%" cy="50%" r="50%">
+                <stop offset="0%" style="stop-color:${color1};stop-opacity:0.1" />
+                <stop offset="30%" style="stop-color:${color1};stop-opacity:0.6" />
+                <stop offset="60%" style="stop-color:${color2};stop-opacity:0.4" />
+                <stop offset="100%" style="stop-color:${color2};stop-opacity:0.1" />
+            </radialGradient>
+        </defs>
+        <circle cx="100" cy="75" r="70" fill="url(#rippleGrad)" />
+        <circle cx="100" cy="75" r="50" fill="none" stroke="${color1}" stroke-width="2" opacity="0.6" />
+        <circle cx="100" cy="75" r="30" fill="none" stroke="${color2}" stroke-width="2" opacity="0.4" />
+        <circle cx="100" cy="75" r="10" fill="none" stroke="${color1}" stroke-width="2" opacity="0.8" />
+    </svg>`;
+}
+
+function createPolylineAccent(element, layoutManager) {
+    const container = document.createElement('div');
+    container.className = 'polyline-accent';
+
+    const color = element.colors[0] || '#3b82f6';
+    const style = element.style || 'organic-flow';
+
+    const polylineTypes = {
+        'curved-connector': createCurvedConnector,
+        'flowing-path': createFlowingPath,
+        'organic-network': createOrganicNetwork,
+        'branching-lines': createBranchingLines
+    };
+
+    const polylineCreator = polylineTypes[style] || polylineTypes['flowing-path'];
+    const svgContent = polylineCreator(color);
+
+    // Use layout manager for smart positioning
+    const elementSize = { width: 300, height: 100 };
+    const positionInfo = layoutManager ?
+        layoutManager.getAvailablePosition(element, element.position, elementSize) :
+        { position: getPositionStyles(element.position), zIndex: 3 };
+
+    container.style.cssText = `
+        position: absolute;
+        z-index: ${positionInfo.zIndex};
+        width: ${elementSize.width}px;
+        height: ${elementSize.height}px;
+        ${positionInfo.position}
+    `;
+
+    // Create a wrapper for the SVG content with pointer-events: none to avoid interference
+    const svgWrapper = document.createElement('div');
+    svgWrapper.style.cssText = 'pointer-events: none; width: 100%; height: 100%;';
+    svgWrapper.innerHTML = svgContent;
+    container.appendChild(svgWrapper);
+
+    return makeElementEditable(container);
+}
+
+function createFlowingPath(color) {
+    return `<svg viewBox="0 0 300 100" style="width: 100%; height: 100%;">
+        <defs>
+            <linearGradient id="pathGrad" x1="0%" y1="0%" x2="100%" y2="0%">
+                <stop offset="0%" style="stop-color:${color};stop-opacity:0.8" />
+                <stop offset="50%" style="stop-color:${color};stop-opacity:0.4" />
+                <stop offset="100%" style="stop-color:${color};stop-opacity:0.1" />
+            </linearGradient>
+        </defs>
+        <path d="M10,50 Q80,20 150,50 T290,50"
+              stroke="url(#pathGrad)"
+              stroke-width="3"
+              fill="none"
+              stroke-linecap="round" />
+        <circle cx="10" cy="50" r="4" fill="${color}" opacity="0.8" />
+        <circle cx="290" cy="50" r="4" fill="${color}" opacity="0.3" />
+    </svg>`;
+}
+
+function createCurvedConnector(color) {
+    return `<svg viewBox="0 0 300 100" style="width: 100%; height: 100%;">
+        <defs>
+            <linearGradient id="connectorGrad" x1="0%" y1="0%" x2="100%" y2="0%">
+                <stop offset="0%" style="stop-color:${color};stop-opacity:0.8" />
+                <stop offset="100%" style="stop-color:${color};stop-opacity:0.3" />
+            </linearGradient>
+        </defs>
+        <path d="M20,50 C80,20 120,80 180,50 S240,20 280,50"
+              stroke="url(#connectorGrad)"
+              stroke-width="4"
+              fill="none"
+              stroke-linecap="round" />
+    </svg>`;
+}
+
+function createOrganicNetwork(color) {
+    return `<svg viewBox="0 0 300 100" style="width: 100%; height: 100%;">
+        <defs>
+            <radialGradient id="networkGrad" cx="50%" cy="50%" r="50%">
+                <stop offset="0%" style="stop-color:${color};stop-opacity:0.8" />
+                <stop offset="100%" style="stop-color:${color};stop-opacity:0.2" />
+            </radialGradient>
+        </defs>
+        <path d="M50,30 Q100,50 150,30 T250,30"
+              stroke="${color}"
+              stroke-width="2"
+              fill="none"
+              opacity="0.6" />
+        <path d="M50,50 Q150,70 250,50"
+              stroke="${color}"
+              stroke-width="2"
+              fill="none"
+              opacity="0.5" />
+        <path d="M50,70 Q100,50 150,70 T250,70"
+              stroke="${color}"
+              stroke-width="2"
+              fill="none"
+              opacity="0.4" />
+        <circle cx="50" cy="50" r="6" fill="url(#networkGrad)" />
+        <circle cx="150" cy="50" r="6" fill="url(#networkGrad)" />
+        <circle cx="250" cy="50" r="6" fill="url(#networkGrad)" />
+    </svg>`;
+}
+
+function createBranchingLines(color) {
+    return `<svg viewBox="0 0 300 100" style="width: 100%; height: 100%;">
+        <defs>
+            <linearGradient id="branchGrad" x1="0%" y1="0%" x2="100%" y2="0%">
+                <stop offset="0%" style="stop-color:${color};stop-opacity:0.9" />
+                <stop offset="100%" style="stop-color:${color};stop-opacity:0.3" />
+            </linearGradient>
+        </defs>
+        <path d="M50,50 Q100,50 150,50"
+              stroke="url(#branchGrad)"
+              stroke-width="4"
+              fill="none" />
+        <path d="M150,50 Q200,30 250,20"
+              stroke="url(#branchGrad)"
+              stroke-width="3"
+              fill="none" />
+        <path d="M150,50 Q200,50 250,50"
+              stroke="url(#branchGrad)"
+              stroke-width="3"
+              fill="none" />
+        <path d="M150,50 Q200,70 250,80"
+              stroke="url(#branchGrad)"
+              stroke-width="3"
+              fill="none" />
+        <circle cx="50" cy="50" r="4" fill="${color}" opacity="0.8" />
+        <circle cx="150" cy="50" r="4" fill="${color}" opacity="0.6" />
+    </svg>`;
+}
+
+function createTopicVisualization(element, layoutManager) {
+    const container = document.createElement('div');
+    container.className = 'topic-visualization';
+
+    const colors = element.colors || ['#3b82f6', '#1d4ed8'];
+
+    // Use layout manager for smart positioning
+    const elementSize = { width: 200, height: 120 };
+    const positionInfo = layoutManager ?
+        layoutManager.getAvailablePosition(element, element.position, elementSize) :
+        { position: getPositionStyles(element.position), zIndex: 8 };
+
+    container.style.cssText = `
+        position: absolute;
+        z-index: ${positionInfo.zIndex};
+        background: rgba(255, 255, 255, 0.95);
+        border-radius: 16px;
+        padding: 20px;
+        box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+        backdrop-filter: blur(10px);
+        border: 1px solid rgba(255, 255, 255, 0.3);
+        min-width: ${elementSize.width}px;
+        ${positionInfo.position}
+    `;
+
+    container.innerHTML = `
+        <div style="text-align: center;">
+            <div style="font-size: 32px; margin-bottom: 8px;">${getTopicIcon(element.visualType)}</div>
+            <div style="font-weight: 600; color: ${colors[0]}; font-size: 14px; line-height: 1.4;">
+                ${wrapTextInEditableSpan(element.description || 'Topic Concept', `font-weight: 600; color: ${colors[0]}; font-size: 14px; line-height: 1.4;`)}
+            </div>
+        </div>
+    `;
+
+    return makeElementEditable(container);
+}
+
+function getTopicIcon(visualType) {
+    const icons = {
+        'business': '📊',
+        'education': '📚',
+        'technology': '⚡',
+        'creative': '🎨',
+        'health': '🌱',
+        'finance': '💰',
+        'science': '🔬',
+        'communication': '💬',
+        'default': '✨'
+    };
+
+    return icons[visualType] || icons.default;
+}
+
+function createContextualMetaphor(element, layoutManager) {
+    const container = document.createElement('div');
+    container.className = 'contextual-metaphor';
+
+    const colors = element.colors || ['#3b82f6', '#1d4ed8'];
+
+    // Use layout manager for smart positioning
+    const elementSize = { width: 150, height: 100 };
+    const positionInfo = layoutManager ?
+        layoutManager.getAvailablePosition(element, element.position, elementSize) :
+        { position: getPositionStyles(element.position), zIndex: 6 };
+
+    container.style.cssText = `
+        position: absolute;
+        z-index: ${positionInfo.zIndex};
+        background: linear-gradient(135deg, ${colors[0]}20, ${colors[1] || colors[0]}10);
+        border-radius: 20px;
+        padding: 16px;
+        backdrop-filter: blur(8px);
+        border: 1px solid ${colors[0]}40;
+        min-width: ${elementSize.width}px;
+        ${positionInfo.position}
+    `;
+
+    const metaphorContent = getMetaphorContent(element.metaphor || 'growth');
+
+    container.innerHTML = `
+        <div style="text-align: center;">
+            <div style="font-size: 28px; margin-bottom: 6px;">${metaphorContent.icon}</div>
+            <div style="font-weight: 500; color: ${colors[0]}; font-size: 12px; line-height: 1.3;">
+                ${wrapTextInEditableSpan(element.content || metaphorContent.text, `font-weight: 500; color: ${colors[0]}; font-size: 12px; line-height: 1.3;`)}
+            </div>
+        </div>
+    `;
+
+    return makeElementEditable(container);
+}
+
+function getMetaphorContent(type) {
+    const metaphors = {
+        'growth': { icon: '🌱', text: 'Growing Forward' },
+        'connection': { icon: '🔗', text: 'Building Bridges' },
+        'innovation': { icon: '💡', text: 'Spark of Ideas' },
+        'journey': { icon: '🛤️', text: 'Path to Success' },
+        'transformation': { icon: '🦋', text: 'Metamorphosis' },
+        'foundation': { icon: '🏗️', text: 'Strong Base' },
+        'exploration': { icon: '🧭', text: 'Navigate Forward' },
+        'collaboration': { icon: '🤝', text: 'Unity in Action' }
+    };
+
+    return metaphors[type] || metaphors.growth;
+}
+
+// Helper functions for editable visual elements
+function makeElementEditable(element) {
+    // Don't make core slide elements deletable
+    if (element.classList.contains('slide-title-editable') ||
+        element.classList.contains('slide-content-item-editable') ||
+        element.classList.contains('slide-content-editable') ||
+        element.classList.contains('slide-preview')) {
+        return element;
+    }
+
+    // Add visual-element class for styling
+    element.classList.add('visual-element');
+
+    // Add hover functionality for showing/hiding delete button
+    element.addEventListener('mouseenter', () => {
+        const deleteBtn = element.querySelector('.delete-element-btn');
+        if (deleteBtn) {
+            deleteBtn.style.display = 'block';
+        }
+    });
+
+    element.addEventListener('mouseleave', () => {
+        const deleteBtn = element.querySelector('.delete-element-btn');
+        if (deleteBtn) {
+            deleteBtn.style.display = 'none';
+        }
+    });
+
+    // Add delete button
+    const deleteBtn = document.createElement('button');
+    deleteBtn.type = 'button'; // Explicitly set button type
+    deleteBtn.className = 'delete-element-btn';
+    deleteBtn.innerHTML = '×';
+    deleteBtn.title = 'Delete element';
+    deleteBtn.contentEditable = false; // Prevent content editable interference
+    // Set button styles and hide by default
+    deleteBtn.style.cssText = `
+        display: none;
+        position: absolute;
+        top: 8px;
+        right: 8px;
+        width: 20px;
+        height: 20px;
+        background: #e74c3c;
+        color: white;
+        border: none;
+        border-radius: 50%;
+        cursor: pointer;
+        font-size: 11px;
+        font-weight: bold;
+        z-index: 1001;
+        box-shadow: 0 2px 6px rgba(0,0,0,0.4);
+        transition: all 0.2s ease;
+        line-height: 18px;
+        text-align: center;
+        font-family: Arial, sans-serif;
+        pointer-events: auto;
+    `;
+    deleteBtn.addEventListener('click', (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        // Remove from persistence before removing from DOM
+        removeElementFromPersistence(element);
+        element.remove();
+        // Save slides state after deletion
+        if (window.stateModule && window.stateModule.saveState) {
+            window.stateModule.saveState();
+        }
+    });
+    deleteBtn.addEventListener('mouseenter', () => {
+        deleteBtn.style.background = '#c0392b';
+        deleteBtn.style.transform = 'scale(1.1)';
+    });
+    deleteBtn.addEventListener('mouseleave', () => {
+        deleteBtn.style.background = '#e74c3c';
+        deleteBtn.style.transform = 'scale(1)';
+    });
+    element.appendChild(deleteBtn);
+
+    // Make text content editable
+    makeTextContentEditable(element);
+
+    return element;
+}
+
+function makeTextContentEditable(element) {
+    // Find text nodes and make them editable
+    const textElements = element.querySelectorAll('[style*="color"], div, span');
+
+    textElements.forEach(textEl => {
+        const text = textEl.textContent.trim();
+        // Only make elements with significant text content editable
+        if (text && text.length > 2 && !textEl.querySelector('svg') && !textEl.classList.contains('delete-element-btn')) {
+            textEl.classList.add('editable-text');
+            textEl.contentEditable = true;
+            textEl.addEventListener('input', () => {
+                // Save state when text is edited
+                if (window.stateModule && window.stateModule.saveState) {
+                    window.stateModule.saveState();
+                }
+            });
+            textEl.addEventListener('blur', () => {
+                // Clean up any empty elements
+                if (!textEl.textContent.trim()) {
+                    textEl.textContent = 'Click to edit';
+                }
+            });
+        }
+    });
+}
+
+function wrapTextInEditableSpan(text, styles = '') {
+    return `<span class="editable-text" contenteditable="true" style="${styles}">${text}</span>`;
+}
+
+function removeElementFromPersistence(element) {
+    if (!slidesAppState.currentSlideData || !element.dataset.slideIndex) {
+        return;
+    }
+
+    const slideIndex = parseInt(element.dataset.slideIndex);
+    const elementType = element.dataset.elementType;
+    const elementIndex = element.dataset.elementIndex ? parseInt(element.dataset.elementIndex) : null;
+
+    const slide = slidesAppState.currentSlideData.slides[slideIndex];
+    if (!slide || !slide.visualDesign) {
+        return;
+    }
+
+    try {
+        switch (elementType) {
+            case 'designElement':
+                if (slide.visualDesign.designElements && elementIndex !== null) {
+                    slide.visualDesign.designElements.splice(elementIndex, 1);
+                    console.log(`Removed design element ${elementIndex} from slide ${slideIndex}`);
+                }
+                break;
+
+            case 'chartData':
+                delete slide.visualDesign.chartData;
+                console.log(`Removed chart data from slide ${slideIndex}`);
+                break;
+
+            case 'legacyShape':
+                if (slide.visualDesign.shapes && elementIndex !== null) {
+                    slide.visualDesign.shapes.splice(elementIndex, 1);
+                    console.log(`Removed legacy shape ${elementIndex} from slide ${slideIndex}`);
+                }
+                break;
+
+            case 'imageDescription':
+                delete slide.visualDesign.imageDescription;
+                console.log(`Removed image description from slide ${slideIndex}`);
+                break;
+
+            default:
+                console.warn(`Unknown element type for persistence: ${elementType}`);
+        }
+
+        // Update the element indices for remaining elements of the same type
+        updateElementIndicesAfterDeletion(slideIndex, elementType, elementIndex);
+
+        // Save the updated slide data
+        saveSlides();
+
+    } catch (error) {
+        console.error('Error removing element from persistence:', error);
+    }
+}
+
+function updateElementIndicesAfterDeletion(slideIndex, elementType, deletedIndex) {
+    if (deletedIndex === null) return;
+
+    // Update data attributes for remaining elements of the same type
+    const slideContainer = document.querySelector(`[data-slide-index="${slideIndex}"]`);
+    if (!slideContainer) return;
+
+    const elements = slideContainer.querySelectorAll(`[data-element-type="${elementType}"]`);
+    elements.forEach(el => {
+        const currentIndex = parseInt(el.dataset.elementIndex);
+        if (currentIndex > deletedIndex) {
+            el.dataset.elementIndex = (currentIndex - 1).toString();
+        }
+    });
+}
+
+function makeContentItemEditable(listItem, slideIndex, itemIndex) {
+    // Add visual-element class for consistent styling
+    listItem.classList.add('visual-element');
+
+    // Add hover functionality for showing/hiding delete button
+    listItem.addEventListener('mouseenter', () => {
+        const deleteBtn = listItem.querySelector('.delete-element-btn');
+        if (deleteBtn) {
+            deleteBtn.style.display = 'block';
+        }
+    });
+
+    listItem.addEventListener('mouseleave', () => {
+        const deleteBtn = listItem.querySelector('.delete-element-btn');
+        if (deleteBtn) {
+            deleteBtn.style.display = 'none';
+        }
+    });
+
+    // Add delete button
+    const deleteBtn = document.createElement('button');
+    deleteBtn.type = 'button'; // Explicitly set button type
+    deleteBtn.className = 'delete-element-btn';
+    deleteBtn.innerHTML = '×';
+    deleteBtn.title = 'Delete content item';
+    deleteBtn.contentEditable = false; // Prevent content editable interference
+    // Set button styles and hide by default
+    deleteBtn.style.cssText = `
+        display: none;
+        position: absolute;
+        top: 5px;
+        right: 5px;
+        width: 18px;
+        height: 18px;
+        background: #e74c3c;
+        color: white;
+        border: none;
+        border-radius: 50%;
+        cursor: pointer;
+        font-size: 10px;
+        font-weight: bold;
+        z-index: 1001;
+        box-shadow: 0 2px 6px rgba(0,0,0,0.4);
+        transition: all 0.2s ease;
+        line-height: 16px;
+        text-align: center;
+        font-family: Arial, sans-serif;
+        pointer-events: auto;
+        user-select: none;
+    `;
+    deleteBtn.addEventListener('click', (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        removeContentItem(slideIndex, itemIndex);
+    });
+    deleteBtn.addEventListener('mouseenter', () => {
+        deleteBtn.style.background = '#c0392b';
+        deleteBtn.style.transform = 'scale(1.1)';
+    });
+    deleteBtn.addEventListener('mouseleave', () => {
+        deleteBtn.style.background = '#e74c3c';
+        deleteBtn.style.transform = 'scale(1)';
+    });
+
+    // Make the list item position relative and ensure proper padding for delete button space
+    listItem.style.position = 'relative';
+    listItem.style.paddingRight = '30px'; // Add space for delete button
+
+    listItem.appendChild(deleteBtn);
 }
 
 function createColorSchemeSelector() {
@@ -1381,11 +2829,7 @@ function applyThemeToSlides() {
         // Apply colors to buttons
         const buttons = slide.querySelectorAll('button');
         buttons.forEach(button => {
-            if (button.classList.contains('remove-content-btn')) {
-                button.style.backgroundColor = theme.borderColor;
-                button.style.color = 'white';
-                button.style.border = 'none';
-            } else if (button.classList.contains('add-content-btn')) {
+            if (button.classList.contains('add-content-btn')) {
                 button.style.backgroundColor = 'transparent';
                 button.style.color = theme.borderColor;
                 button.style.border = `2px solid ${theme.borderColor}`;
@@ -1399,6 +2843,9 @@ function applyThemeToSlides() {
             shape.style.stroke = theme.borderColor;
             shape.style.strokeWidth = '2px';
         });
+
+        // Style advanced design elements
+        applyThemeToAdvancedElements(slide, theme);
     });
 
     // Update presentation title container and title element styling
@@ -1438,6 +2885,69 @@ function applyThemeToSlides() {
         slidesDom.presentationSection.style.padding = '20px';
         slidesDom.presentationSection.style.border = '1px solid #e9ecef';
     }
+}
+
+function applyThemeToAdvancedElements(slide, theme) {
+    // Apply theme to gradient cards
+    const gradientCards = slide.querySelectorAll('.gradient-card');
+    gradientCards.forEach(card => {
+        // Update gradient to use theme colors
+        const gradient = `linear-gradient(135deg, ${theme.borderColor}, ${theme.fillColor})`;
+        card.style.background = gradient;
+        card.style.color = theme.textColor;
+    });
+
+    // Apply theme to progress bars
+    const progressBars = slide.querySelectorAll('.progress-bar-container');
+    progressBars.forEach(container => {
+        const progressFill = container.querySelector('div[style*="width:"][style*="%"]');
+        if (progressFill) {
+            progressFill.style.background = theme.borderColor;
+        }
+        container.style.color = theme.textColor;
+    });
+
+    // Apply theme to icon sets
+    const iconSets = slide.querySelectorAll('.icon-set');
+    iconSets.forEach(iconSet => {
+        const icons = iconSet.querySelectorAll('div');
+        icons.forEach(icon => {
+            icon.style.background = `rgba(${hexToRgb(theme.borderColor)?.r || 59}, ${hexToRgb(theme.borderColor)?.g || 130}, ${hexToRgb(theme.borderColor)?.b || 246}, 0.2)`;
+            icon.style.border = `1px solid ${theme.borderColor}`;
+        });
+    });
+
+    // Apply theme to stat counters
+    const statCounters = slide.querySelectorAll('.stat-counter');
+    statCounters.forEach(counter => {
+        counter.style.background = `rgba(${hexToRgb(theme.fillColor)?.r || 255}, ${hexToRgb(theme.fillColor)?.g || 255}, ${hexToRgb(theme.fillColor)?.b || 255}, 0.1)`;
+        counter.style.border = `1px solid ${theme.borderColor}`;
+        counter.style.color = theme.textColor;
+    });
+
+    // Apply theme to chart containers (Chart.js charts will inherit text colors)
+    const chartContainers = slide.querySelectorAll('div[id*="chart-"]');
+    chartContainers.forEach(container => {
+        container.style.background = `rgba(${hexToRgb(theme.backgroundColor)?.r || 255}, ${hexToRgb(theme.backgroundColor)?.g || 255}, ${hexToRgb(theme.backgroundColor)?.b || 255}, 0.95)`;
+        container.style.border = `1px solid ${theme.borderColor}`;
+    });
+
+    // Update background patterns to blend with theme
+    const elementsWithPatterns = slide.querySelectorAll('[style*="background-image"]');
+    elementsWithPatterns.forEach(element => {
+        const currentBg = element.style.backgroundImage;
+        if (currentBg.includes('rgba(255,255,255,')) {
+            // Replace white pattern with theme-appropriate colors
+            const themeRgb = hexToRgb(theme.textColor);
+            if (themeRgb) {
+                const newPattern = currentBg.replace(
+                    /rgba\(255,255,255,([0-9.]+)\)/g,
+                    `rgba(${themeRgb.r}, ${themeRgb.g}, ${themeRgb.b}, $1)`
+                );
+                element.style.backgroundImage = newPattern;
+            }
+        }
+    });
 }
 
 function showPresentationViewer() {
@@ -1540,7 +3050,7 @@ async function exportPresentation(format) {
                 exportHTML(includeSpeakerNotes);
                 break;
             case 'pdf':
-                await exportPDF(includeSpeakerNotes);
+                await exportPDFEnhanced(includeSpeakerNotes);
                 break;
             case 'pptx':
                 await exportPowerPoint(includeSpeakerNotes);
@@ -1743,6 +3253,97 @@ function generateStandaloneHTML(slideData, includeSpeakerNotes = false) {
     `).join('')}
 </body>
 </html>`;
+}
+
+function setupBasicContentEditor(listItem, slideNumber, index) {
+    listItem.contentEditable = true;
+
+    // Add editing event listeners for content
+    listItem.addEventListener('blur', (e) => {
+        // Get text content (no longer need to exclude remove button)
+        const textContent = e.target.textContent.trim();
+        updateSlideContentItem(slideNumber - 1, index, textContent);
+    });
+    listItem.addEventListener('focus', (e) => e.target.style.border = '2px solid var(--accent-color, #60a5fa)');
+    listItem.addEventListener('blur', (e) => e.target.style.border = '2px solid transparent');
+}
+
+function setupBasicTitleEditor(titleElement, slideNumber) {
+    titleElement.contentEditable = true;
+
+    // Add editing event listeners for title
+    titleElement.addEventListener('blur', (e) => updateSlideData(slideNumber - 1, 'title', e.target.textContent));
+    titleElement.addEventListener('focus', (e) => e.target.style.border = '2px solid var(--accent-color, #60a5fa)');
+    titleElement.addEventListener('blur', (e) => e.target.style.border = '2px solid transparent');
+}
+
+function cleanupKonvaEditors() {
+    console.log('Cleaning up Konva editors:', konvaEditors.size);
+
+    // Destroy all existing Konva editors
+    konvaEditors.forEach((editor, key) => {
+        try {
+            if (editor && typeof editor.destroy === 'function') {
+                editor.destroy();
+            }
+        } catch (error) {
+            console.warn('Error destroying Konva editor:', error);
+        }
+    });
+
+    // Clear the editors map
+    konvaEditors.clear();
+
+    // Destroy Konva slide system if it exists
+    if (konvaSlideSystem) {
+        try {
+            konvaSlideSystem.destroy();
+            konvaSlideSystem = null;
+        } catch (error) {
+            console.warn('Error destroying Konva slide system:', error);
+        }
+    }
+
+    // Remove any existing toolbars
+    document.querySelectorAll('.konva-toolbar, .konva-slide-toolbar').forEach(toolbar => {
+        toolbar.remove();
+    });
+}
+
+// Enhanced PDF Export with PDFKit
+async function exportPDFEnhanced(includeSpeakerNotes = false) {
+    try {
+        updateExportModalStatus('Initializing PDF export...', 'loading');
+
+        // Use PDFKit exporter if available
+        if (window.PDFKitExporter && window.PDFKitExporter.exportToPDF) {
+            const slideData = slidesAppState.currentSlideData;
+            const options = {
+                includeNotes: includeSpeakerNotes,
+                theme: slidesAppState.currentTheme?.name || 'white',
+                pageSize: 'LETTER',
+                margin: 50
+            };
+
+            await window.PDFKitExporter.exportToPDF(slideData, options);
+            updateExportModalStatus('PDF exported successfully!', 'success');
+            return;
+        }
+
+        // Fall back to original PDF export
+        await exportPDF(includeSpeakerNotes);
+
+    } catch (error) {
+        console.error('Enhanced PDF export error:', error);
+        updateExportModalStatus(`PDF export failed: ${error.message}`, 'error');
+
+        // Try fallback
+        try {
+            await exportPDF(includeSpeakerNotes);
+        } catch (fallbackError) {
+            console.error('Fallback PDF export also failed:', fallbackError);
+        }
+    }
 }
 
 async function exportPDF(includeSpeakerNotes = false) {
