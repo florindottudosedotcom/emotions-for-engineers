@@ -373,7 +373,7 @@ class KonvaSlideSystem {
             // Add interaction handlers
             this.addTextInteractionHandlers(titleText);
             slideObjects.push(titleText);
-            yPosition += (isTitle ? 120 : 80) * this.scaleFactor; // More space after title slide heading
+            yPosition += (isTitle ? 100 : 90) * this.scaleFactor; // Optimized space after title for better layout
         }
 
         // Add content - handle differently for title vs content slides
@@ -399,7 +399,7 @@ class KonvaSlideSystem {
                 // Add interaction handlers
                 this.addTextInteractionHandlers(bulletText);
                 slideObjects.push(bulletText);
-                yPosition += (isTitle ? 50 : 40) * this.scaleFactor; // Different spacing for title slides
+                yPosition += (isTitle ? 60 : 60) * this.scaleFactor; // Increased spacing for better readability
             });
         }
 
