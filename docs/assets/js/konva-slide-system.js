@@ -43,11 +43,8 @@ class KonvaSlideSystem {
             width: 100%;
             max-width: ${this.slideWidth}px;
             height: auto;
-            border: 2px solid ${this.currentTheme.borderColor};
-            border-radius: 12px;
             background: ${this.currentTheme.backgroundColor};
             margin: 20px auto;
-            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
             position: relative;
             overflow: hidden;
         `;
@@ -70,11 +67,6 @@ class KonvaSlideSystem {
         this.layer = new Konva.Layer();
         this.stage.add(this.layer);
 
-        // Apply border radius to the canvas element itself
-        const canvas = this.stage.content.querySelector('canvas');
-        if (canvas) {
-            canvas.style.borderRadius = '10px'; // Slightly less than container to account for border
-        }
 
         // Handle window resize
         this.setupResizeHandler(canvasContainer);
@@ -315,8 +307,14 @@ class KonvaSlideSystem {
         // Convert each slide data to Konva objects
         this.slides.forEach((slide, index) => {
             console.log(`Processing slide ${index + 1}:`, slide);
-            const slideContent = this.createSlideFromData(slide, index);
-            this.slideObjects.push(slideContent);
+            try {
+                const slideContent = this.createSlideFromData(slide, index);
+                console.log(`Created ${slideContent.length} objects for slide ${index + 1}`);
+                this.slideObjects.push(slideContent);
+            } catch (error) {
+                console.error(`Error creating slide ${index + 1}:`, error);
+                this.slideObjects.push([]); // Add empty slide to maintain indexing
+            }
         });
 
         console.log('Created slide objects:', this.slideObjects.length);
@@ -421,10 +419,13 @@ class KonvaSlideSystem {
         this.layer.add(backgroundRect);
 
         // Add objects for current slide
-        if (this.slideObjects[index]) {
+        if (this.slideObjects[index] && this.slideObjects[index].length > 0) {
+            console.log(`Adding ${this.slideObjects[index].length} objects to slide ${index + 1}`);
             this.slideObjects[index].forEach(obj => {
                 this.layer.add(obj);
             });
+        } else {
+            console.log(`No objects found for slide ${index + 1}`);
         }
 
         this.layer.draw();
@@ -770,10 +771,9 @@ class KonvaSlideSystem {
             }
         });
 
-        // Update canvas container background and border colors
+        // Update canvas container background color
         if (this.canvasContainer) {
             this.canvasContainer.style.background = this.currentTheme.backgroundColor;
-            this.canvasContainer.style.border = `2px solid ${this.currentTheme.borderColor}`;
         }
 
         // Redraw the current slide

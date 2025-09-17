@@ -262,8 +262,10 @@ document.addEventListener('DOMContentLoaded', async () => {
         console.log('Slide data exists, skipping empty presentation initialization');
     }
 
-    // Add clear button to bottom
-    addClearButtonToBottom();
+    // Add clear button to bottom (only for HTML mode)
+    if (!enhancedEditingEnabled || !window.KonvaSlideSystem) {
+        addClearButtonToBottom();
+    }
 
     // Add form auto-save listeners and select-all behavior
     if (slidesDom.presentationTopicTextarea) {
