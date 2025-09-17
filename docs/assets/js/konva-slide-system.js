@@ -342,22 +342,30 @@ class KonvaSlideSystem {
 
     createSlideFromData(slide, slideIndex) {
         const slideObjects = [];
-        let yPosition = 80; // Start position for content
+
+        // Use relative positioning based on actual slide dimensions
+        const padding = this.actualWidth * 0.05; // 5% padding from edges
+        const contentPadding = this.actualWidth * 0.08; // 8% padding for content
+        let yPosition = this.actualHeight * 0.12; // Start at 12% from top
 
         // Check if this is a title slide
         const isTitle = slide.isTitle || slide.slideNumber === 1 || slideIndex === 0;
 
+        // Calculate font sizes relative to slide size
+        const titleFontSize = (isTitle ? 48 : 36) * this.scaleFactor;
+        const contentFontSize = (isTitle ? 24 : 20) * this.scaleFactor;
+
         // Add title
         if (slide.title) {
             const titleText = new Konva.Text({
-                x: 50,
+                x: padding,
                 y: yPosition,
                 text: slide.title,
-                fontSize: isTitle ? 48 : 36, // Larger font for title slides
+                fontSize: titleFontSize,
                 fontFamily: 'Arial, sans-serif',
                 fill: this.currentTheme.textColor,
                 fontStyle: 'bold',
-                width: this.slideWidth - 100,
+                width: this.actualWidth - (padding * 2),
                 align: isTitle ? 'center' : 'left', // Center align for title slides
                 draggable: true
             });
@@ -365,7 +373,7 @@ class KonvaSlideSystem {
             // Add interaction handlers
             this.addTextInteractionHandlers(titleText);
             slideObjects.push(titleText);
-            yPosition += isTitle ? 120 : 80; // More space after title slide heading
+            yPosition += (isTitle ? 120 : 80) * this.scaleFactor; // More space after title slide heading
         }
 
         // Add content - handle differently for title vs content slides
@@ -376,13 +384,13 @@ class KonvaSlideSystem {
 
                 // For title slides, don't add bullet points, just center the text
                 const bulletText = new Konva.Text({
-                    x: isTitle ? 50 : 80,
+                    x: isTitle ? padding : contentPadding,
                     y: yPosition,
                     text: isTitle ? point : `• ${point}`, // No bullets on title slides
-                    fontSize: isTitle ? 24 : 20, // Larger subtitle text on title slides
+                    fontSize: contentFontSize,
                     fontFamily: 'Arial, sans-serif',
                     fill: this.currentTheme.textColor,
-                    width: this.slideWidth - (isTitle ? 100 : 160),
+                    width: this.actualWidth - (isTitle ? padding * 2 : contentPadding + padding),
                     align: isTitle ? 'center' : 'left', // Center align for title slides
                     fontStyle: isTitle && index === 0 ? 'italic' : 'normal', // Italic for subtitle
                     draggable: true
@@ -391,7 +399,7 @@ class KonvaSlideSystem {
                 // Add interaction handlers
                 this.addTextInteractionHandlers(bulletText);
                 slideObjects.push(bulletText);
-                yPosition += isTitle ? 50 : 40; // Different spacing for title slides
+                yPosition += (isTitle ? 50 : 40) * this.scaleFactor; // Different spacing for title slides
             });
         }
 
@@ -483,14 +491,16 @@ class KonvaSlideSystem {
 
     // Content creation methods
     addTitle() {
+        const padding = this.actualWidth * 0.05;
         const titleText = new Konva.Text({
-            x: 50,
-            y: 50,
+            x: padding,
+            y: this.actualHeight * 0.1,
             text: 'New Title',
-            fontSize: 36,
+            fontSize: 36 * this.scaleFactor,
             fontFamily: 'Arial, sans-serif',
             fill: this.currentTheme.textColor,
             fontStyle: 'bold',
+            width: this.actualWidth - (padding * 2),
             draggable: true
         });
 
@@ -498,13 +508,15 @@ class KonvaSlideSystem {
     }
 
     addBulletPoint() {
+        const contentPadding = this.actualWidth * 0.08;
         const bulletText = new Konva.Text({
-            x: 80,
-            y: 150,
+            x: contentPadding,
+            y: this.actualHeight * 0.3,
             text: '• New bullet point',
-            fontSize: 20,
+            fontSize: 20 * this.scaleFactor,
             fontFamily: 'Arial, sans-serif',
             fill: this.currentTheme.textColor,
+            width: this.actualWidth - contentPadding - (this.actualWidth * 0.05),
             draggable: true
         });
 
@@ -512,14 +524,16 @@ class KonvaSlideSystem {
     }
 
     addTextBox() {
+        const padding = this.actualWidth * 0.1;
         const textBox = new Konva.Text({
-            x: 100,
-            y: 200,
+            x: padding,
+            y: this.actualHeight * 0.4,
             text: 'New text box',
-            fontSize: 18,
+            fontSize: 18 * this.scaleFactor,
             fontFamily: 'Arial, sans-serif',
             fill: this.currentTheme.textColor,
-            padding: 10,
+            width: this.actualWidth - (padding * 2),
+            padding: 10 * this.scaleFactor,
             draggable: true
         });
 
@@ -528,13 +542,13 @@ class KonvaSlideSystem {
 
     addRectangle() {
         const rect = new Konva.Rect({
-            x: 200,
-            y: 200,
-            width: 150,
-            height: 100,
+            x: this.actualWidth * 0.3,
+            y: this.actualHeight * 0.4,
+            width: 150 * this.scaleFactor,
+            height: 100 * this.scaleFactor,
             fill: this.currentTheme.fillColor,
             stroke: this.currentTheme.borderColor,
-            strokeWidth: 2,
+            strokeWidth: 2 * this.scaleFactor,
             draggable: true
         });
 
@@ -543,12 +557,12 @@ class KonvaSlideSystem {
 
     addCircle() {
         const circle = new Konva.Circle({
-            x: 300,
-            y: 300,
-            radius: 50,
+            x: this.actualWidth * 0.5,
+            y: this.actualHeight * 0.5,
+            radius: 50 * this.scaleFactor,
             fill: this.currentTheme.fillColor,
             stroke: this.currentTheme.borderColor,
-            strokeWidth: 2,
+            strokeWidth: 2 * this.scaleFactor,
             draggable: true
         });
 
@@ -557,14 +571,14 @@ class KonvaSlideSystem {
 
     addArrow() {
         const arrow = new Konva.Arrow({
-            x: 100,
-            y: 300,
-            points: [0, 0, 150, 0],
-            pointerLength: 20,
-            pointerWidth: 20,
+            x: this.actualWidth * 0.2,
+            y: this.actualHeight * 0.6,
+            points: [0, 0, 150 * this.scaleFactor, 0],
+            pointerLength: 20 * this.scaleFactor,
+            pointerWidth: 20 * this.scaleFactor,
             fill: this.currentTheme.borderColor,
             stroke: this.currentTheme.borderColor,
-            strokeWidth: 3,
+            strokeWidth: 3 * this.scaleFactor,
             draggable: true
         });
 
