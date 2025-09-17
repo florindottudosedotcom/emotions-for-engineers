@@ -319,44 +319,54 @@ class KonvaSlideSystem {
         const slideObjects = [];
         let yPosition = 80; // Start position for content
 
+        // Check if this is a title slide
+        const isTitle = slide.isTitle || slide.slideNumber === 1;
+
         // Add title
         if (slide.title) {
             const titleText = new Konva.Text({
                 x: 50,
                 y: yPosition,
                 text: slide.title,
-                fontSize: 36,
+                fontSize: isTitle ? 48 : 36, // Larger font for title slides
                 fontFamily: 'Arial, sans-serif',
                 fill: this.currentTheme.textColor,
                 fontStyle: 'bold',
                 width: this.slideWidth - 100,
+                align: isTitle ? 'center' : 'left', // Center align for title slides
                 draggable: true
             });
 
             // Add interaction handlers
             this.addTextInteractionHandlers(titleText);
             slideObjects.push(titleText);
-            yPosition += 80;
+            yPosition += isTitle ? 120 : 80; // More space after title slide heading
         }
 
-        // Add content bullet points
+        // Add content - handle differently for title vs content slides
         if (slide.content && slide.content.length > 0) {
             slide.content.forEach((point, index) => {
+                // Skip empty content
+                if (!point || point.trim() === '') return;
+
+                // For title slides, don't add bullet points, just center the text
                 const bulletText = new Konva.Text({
-                    x: 80,
+                    x: isTitle ? 50 : 80,
                     y: yPosition,
-                    text: `• ${point}`,
-                    fontSize: 20,
+                    text: isTitle ? point : `• ${point}`, // No bullets on title slides
+                    fontSize: isTitle ? 24 : 20, // Larger subtitle text on title slides
                     fontFamily: 'Arial, sans-serif',
                     fill: this.currentTheme.textColor,
-                    width: this.slideWidth - 160,
+                    width: this.slideWidth - (isTitle ? 100 : 160),
+                    align: isTitle ? 'center' : 'left', // Center align for title slides
+                    fontStyle: isTitle && index === 0 ? 'italic' : 'normal', // Italic for subtitle
                     draggable: true
                 });
 
                 // Add interaction handlers
                 this.addTextInteractionHandlers(bulletText);
                 slideObjects.push(bulletText);
-                yPosition += 40;
+                yPosition += isTitle ? 50 : 40; // Different spacing for title slides
             });
         }
 

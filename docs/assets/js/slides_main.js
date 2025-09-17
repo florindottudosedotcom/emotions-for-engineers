@@ -598,9 +598,19 @@ function createSlidesPrompt(topic, slideCount) {
     const currentScheme = slidesAppState.currentTheme || COLOR_THEMES.lavender;
     const schemeContext = `Using the "${currentScheme.name}" color scheme (${currentScheme.textColor}, ${currentScheme.borderColor}, ${currentScheme.fillColor}, ${currentScheme.backgroundColor})`;
 
-    return `Create a professional presentation about "${topic}" with exactly ${slideCount} slides.
+    // Always ensure we have at least 2 slides (title + content)
+    const actualSlideCount = slideCount + 1; // Add 1 for the title slide
 
-IMPORTANT: The first slide MUST be a title slide with the presentation title and minimal content (author, date, or subtitle).
+    return `Create a professional presentation about "${topic}" with exactly ${actualSlideCount} slides.
+
+IMPORTANT:
+- The FIRST slide MUST ALWAYS be a title slide with:
+  * The presentation title as the main heading
+  * A subtitle or brief description (optional)
+  * Author/date information (optional)
+  * NO bullet points or detailed content
+- Slides 2 through ${actualSlideCount} should contain the actual content
+- This means you will generate ${actualSlideCount} total slides: 1 title slide + ${slideCount} content slides
 
 TOPIC CONTEXT: Analyze "${topic}" and create contextually relevant visual designs that enhance the subject matter. Consider the industry, audience, and content type when designing visual elements.
 
@@ -615,8 +625,14 @@ For each slide, provide structured data in this exact JSON format:
   "slides": [
     {
       "slideNumber": 1,
-      "title": "Slide Title",
-      "content": ["Bullet point 1", "Bullet point 2", "Bullet point 3"],
+      "title": "Presentation Title",
+      "content": ["Optional subtitle", "Author: Your Name", "Date: Today"],
+      "isTitle": true
+    },
+    {
+      "slideNumber": 2,
+      "title": "First Content Slide Title",
+      "content": ["Bullet point 1", "Bullet point 2", "Bullet point 3", "Bullet point 4"],
       "visualDesign": {
         "backgroundColor": "#1a365d",
         "textColor": "#ffffff",
@@ -662,10 +678,12 @@ For each slide, provide structured data in this exact JSON format:
   ]
 }
 
-Guidelines:
-- First slide: Title slide with topic name
-- Last slide: Conclusion/Thank you slide
-- Content slides: Maximum 4 bullet points each
+CRITICAL REQUIREMENTS:
+- First slide: ALWAYS a title slide with presentation title (isTitle: true)
+- Content slides: MUST have 3-4 bullet points in "content" array
+- Each bullet point should be a complete, meaningful sentence
+- Bullet points MUST be provided in the "content" array as separate strings
+- Last slide: Should be a conclusion or summary slide
 - Color schemes must have high contrast (WCAG AA compliant)
 - Use these professional color palettes:
   * Corporate Blue: background "#1e40af", text "#ffffff", accent "#60a5fa"
@@ -703,11 +721,13 @@ ADVANCED CONTEXTUAL VISUAL DESIGN INSTRUCTIONS:
 - Add contextual labels that relate directly to the topic content
 
 🎨 RICH CONTENT GENERATION:
-- Generate detailed, comprehensive content beyond simple bullet points
+- Generate detailed, comprehensive content in bullet point format
 - Include explanations, examples, case studies, and insights
 - Use descriptive language that paints a vivid picture
 - Create narrative flow between slides that builds understanding
 - Each bullet point should be a complete thought with context
+- MANDATORY: Content slides MUST have an array of 3-4 bullet points in the "content" field
+- Example: "content": ["First bullet point with detailed explanation", "Second bullet point with examples", "Third bullet point with insights"]
 
 💡 COLOR SCHEME INTEGRATION:
 - All visual elements MUST use the current selected color scheme colors
@@ -728,6 +748,12 @@ ADVANCED CONTEXTUAL VISUAL DESIGN INSTRUCTIONS:
 - contextual-placement: Positioning based on content meaning and visual flow
 
 CRITICAL: Every design element must serve the topic and enhance comprehension. Avoid generic placeholder content - make everything contextually meaningful and visually compelling.
+
+⚠️ FINAL REQUIREMENT CHECK:
+- Slide 1: Title slide with isTitle: true
+- Slides 2+: Content slides with "content" array containing 3-4 bullet points each
+- All bullet points must be complete, meaningful sentences
+- NO empty content arrays allowed
 
 Return ONLY the JSON, no additional text.`;
 }
