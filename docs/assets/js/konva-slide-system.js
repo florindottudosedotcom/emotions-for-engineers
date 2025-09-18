@@ -79,11 +79,16 @@ class KonvaSlideSystem {
         // Create transformer for visual selection feedback
         this.transformer = new Konva.Transformer({
             enabledAnchors: ['top-left', 'top-right', 'bottom-left', 'bottom-right'],
-            borderStroke: '#2563eb',
-            borderStrokeWidth: 2,
-            anchorStroke: '#2563eb',
+            borderStroke: '#ff0000', // Bright red for testing visibility
+            borderStrokeWidth: 3,
+            anchorStroke: '#ff0000',
             anchorFill: '#ffffff',
-            anchorSize: 8
+            anchorStrokeWidth: 2,
+            anchorSize: 12,
+            borderDash: [5, 5],
+            rotateEnabled: false,
+            keepRatio: false,
+            centeredScaling: false
         });
         this.layer.add(this.transformer);
 
@@ -2436,6 +2441,17 @@ class KonvaSlideSystem {
         this.setupKeyboardHandlers();
 
         console.log('Selection system setup complete');
+
+        // Add global function for debugging transformer visibility
+        window.debugTransformer = () => {
+            console.log('Transformer debug info:');
+            console.log('- Visible:', this.transformer.visible());
+            console.log('- Nodes:', this.transformer.nodes().length);
+            console.log('- Position:', this.transformer.position());
+            console.log('- Size:', this.transformer.size());
+            console.log('- Layer children:', this.layer.children.length);
+            console.log('- Stage size:', this.stage.size());
+        };
     }
 
     selectObject(obj) {
@@ -2446,7 +2462,10 @@ class KonvaSlideSystem {
             // Attach transformer to selected object
             this.transformer.nodes([obj]);
             this.transformer.show();
-            console.log('Transformer attached and shown');
+            this.transformer.moveToTop(); // Ensure transformer is on top
+            console.log('Transformer attached and shown, moved to top');
+            console.log('Transformer visible:', this.transformer.visible());
+            console.log('Transformer nodes:', this.transformer.nodes().length);
         } else {
             // Hide transformer when nothing is selected
             this.transformer.nodes([]);
@@ -2454,7 +2473,9 @@ class KonvaSlideSystem {
             console.log('Transformer hidden');
         }
 
+        // Force layer redraw with debug
         this.layer.batchDraw();
+        console.log('Layer redrawn, children count:', this.layer.children.length);
     }
 
     setupKeyboardHandlers() {
