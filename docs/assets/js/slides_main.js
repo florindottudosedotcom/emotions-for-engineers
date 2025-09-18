@@ -17,6 +17,52 @@ const slidesAppState = {
 const slidesDom = {};
 
 // Predefined harmonious pastel color themes
+const ORIGINAL_COLOR_THEMES = {
+    lavender: {
+        name: 'Lavender Dreams',
+        textColor: '#4c1d95',      // Dark purple for text
+        borderColor: '#8b5cf6',    // Medium purple for borders
+        fillColor: '#e6e6fa',      // Light lavender for fills
+        backgroundColor: '#faf5ff' // Very light background that matches
+    },
+    mint: {
+        name: 'Mint Fresh',
+        textColor: '#065f46',      // Dark green for text
+        borderColor: '#10b981',    // Medium green for borders
+        fillColor: '#d1f2eb',      // Light mint for fills
+        backgroundColor: '#f0fdfa' // Very light background that matches
+    },
+    rose: {
+        name: 'Rose Blush',
+        textColor: '#9f1239',      // Dark rose for text
+        borderColor: '#e11d48',    // Medium rose for borders
+        fillColor: '#fce7f3',      // Light pink for fills
+        backgroundColor: '#fdf2f8' // Very light background that matches
+    },
+    sky: {
+        name: 'Sky Blue',
+        textColor: '#1e3a8a',      // Dark blue for text
+        borderColor: '#2563eb',    // Medium blue for borders
+        fillColor: '#dbeafe',      // Light blue for fills
+        backgroundColor: '#f0f9ff' // Very light background that matches
+    },
+    peach: {
+        name: 'Peach Cream',
+        textColor: '#9a3412',      // Dark orange for text
+        borderColor: '#ea580c',    // Medium orange for borders
+        fillColor: '#fed7aa',      // Light peach for fills
+        backgroundColor: '#fff7ed' // Very light background that matches
+    },
+    sage: {
+        name: 'Sage Green',
+        textColor: '#14532d',      // Dark sage for text
+        borderColor: '#16a34a',    // Medium sage for borders
+        fillColor: '#dcfce7',      // Light sage for fills
+        backgroundColor: '#f0fdf4' // Very light background that matches
+    }
+};
+
+// Working copy of themes (can be modified)
 const COLOR_THEMES = {
     lavender: {
         name: 'Lavender Dreams',
@@ -61,6 +107,9 @@ const COLOR_THEMES = {
         backgroundColor: '#f0fdf4' // Very light background that matches
     }
 };
+
+// Make COLOR_THEMES globally accessible for konva-slide-system
+window.COLOR_THEMES = COLOR_THEMES;
 
 // Load custom colors from localStorage
 function loadCustomColors() {
@@ -262,10 +311,8 @@ document.addEventListener('DOMContentLoaded', async () => {
         console.log('Slide data exists, skipping empty presentation initialization');
     }
 
-    // Add clear button to bottom (only for HTML mode)
-    if (!enhancedEditingEnabled || !window.KonvaSlideSystem) {
-        addClearButtonToBottom();
-    }
+    // Add clear button to bottom (for both HTML and Konva modes)
+    addClearButtonToBottom();
 
     // Add form auto-save listeners and select-all behavior
     if (slidesDom.presentationTopicTextarea) {
@@ -474,20 +521,6 @@ function addClearButtonToBottom() {
     const slidesPreview = slidesDom.slidesPreview;
     if (!slidesPreview) return;
 
-    // Create Add Slide section (above separator, right-aligned)
-    const addSlideSection = document.createElement('div');
-    addSlideSection.className = 'add-slide-section';
-    addSlideSection.style.cssText = 'display: flex; justify-content: flex-end; margin: 30px 0 10px 0;';
-
-    // Create Add Slide button (top right, matching insert button style)
-    const addSlideBtn = document.createElement('button');
-    addSlideBtn.type = 'button';
-    addSlideBtn.className = 'btn-small add-slide-bottom-btn';
-    addSlideBtn.textContent = '+';
-    addSlideBtn.title = 'Add new slide';
-    addSlideBtn.style.cssText = 'padding: 0; font-size: 12px; border: 2px solid #28a745; color: #28a745; background-color: transparent; border-radius: 3px; cursor: pointer; display: inline-flex; align-items: center; justify-content: center; width: 32px; height: 32px; box-sizing: border-box;';
-    addSlideBtn.addEventListener('click', addNewSlide);
-    addSlideSection.appendChild(addSlideBtn);
 
     // Create bottom controls container (below separator)
     const bottomControls = document.createElement('div');
@@ -515,13 +548,11 @@ function addClearButtonToBottom() {
     bottomControls.appendChild(exportBtn);
     bottomControls.appendChild(clearSlidesBtn);
 
-    // Insert sections after slides preview but before export options
+    // Insert bottom controls after slides preview but before export options
     const exportOptions = document.querySelector('.export-options');
     if (exportOptions) {
-        exportOptions.parentNode.insertBefore(addSlideSection, exportOptions);
         exportOptions.parentNode.insertBefore(bottomControls, exportOptions);
     } else {
-        slidesDom.presentationSection.appendChild(addSlideSection);
         slidesDom.presentationSection.appendChild(bottomControls);
     }
 }
@@ -1020,10 +1051,8 @@ function displaySlides(slideData) {
         }
     }
 
-    // Add clear button at the bottom if it doesn't exist (only for HTML mode)
-    if (!enhancedEditingEnabled || !window.KonvaSlideSystem) {
-        addClearButtonToBottom();
-    }
+    // Add clear button at the bottom if it doesn't exist (for both HTML and Konva modes)
+    addClearButtonToBottom();
 
     // Apply theme if available
     if (slidesAppState.currentTheme) {
@@ -2397,152 +2426,9 @@ function makeContentItemEditable(listItem, slideIndex, itemIndex) {
     listItem.appendChild(deleteBtn);
 }
 
-function createColorSchemeSelector() {
-    // Check if selector already exists
-    let existingSelector = document.getElementById('color-scheme-selector');
-    if (existingSelector) {
-        return existingSelector;
-    }
-
-    const selectorContainer = document.createElement('div');
-    selectorContainer.id = 'color-scheme-selector';
-    selectorContainer.style.cssText = `
-        background: #ffffff;
-        border: 1px solid #e5e7eb;
-        border-radius: 8px;
-        padding: 15px;
-        margin-bottom: 20px;
-        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
-    `;
-
-    const title = document.createElement('h3');
-    title.textContent = 'Color Schemes';
-    title.style.cssText = `
-        margin: 0 0 10px 0;
-        font-size: 14px;
-        font-weight: 600;
-        color: #374151;
-    `;
-
-    const schemesGrid = document.createElement('div');
-    schemesGrid.style.cssText = `
-        display: grid;
-        grid-template-columns: repeat(6, 1fr);
-        gap: 10px;
-    `;
-
-    // Create color scheme tiles
-    Object.entries(COLOR_THEMES).forEach(([key, theme]) => {
-        const tile = document.createElement('div');
-        tile.className = 'color-scheme-tile';
-        tile.dataset.themeKey = key;
-        tile.title = theme.name;
-        tile.style.cssText = `
-            height: 60px;
-            border-radius: 6px;
-            cursor: pointer;
-            border: 3px solid transparent;
-            transition: all 0.2s ease;
-            position: relative;
-            overflow: hidden;
-            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-        `;
-
-        // Create 3-color layout showing dark, border, and light colors
-        tile.innerHTML = `
-            <div style="display: flex; height: 100%; border-radius: 3px; overflow: hidden; position: relative;">
-                <div style="flex: 1; background-color: ${theme.textColor};" title="Text Color"></div>
-                <div style="flex: 1; background-color: ${theme.borderColor};" title="Border Color"></div>
-                <div style="flex: 1; background-color: ${theme.fillColor};" title="Fill Color"></div>
-                <div class="edit-theme-btn" style="position: absolute; top: 4px; right: 4px; width: 20px; height: 20px; background: rgba(255,255,255,0.9); border-radius: 50%; display: none; align-items: center; justify-content: center; cursor: pointer; font-size: 12px; color: #666; border: 1px solid #ddd;" title="Edit Colors">✎</div>
-            </div>
-        `;
-
-        // Add theme name label
-        const label = document.createElement('div');
-        label.textContent = theme.name;
-        label.style.cssText = `
-            position: absolute;
-            bottom: 0;
-            left: 0;
-            right: 0;
-            background: rgba(255, 255, 255, 0.95);
-            color: ${theme.textColor};
-            font-size: 10px;
-            font-weight: 600;
-            text-align: center;
-            padding: 4px 2px;
-            line-height: 1;
-            backdrop-filter: blur(2px);
-        `;
-
-        tile.appendChild(label);
-
-        // Add click handler
-        tile.addEventListener('click', () => {
-            // Remove active state from all tiles
-            document.querySelectorAll('.color-scheme-tile').forEach(t => {
-                t.style.border = '3px solid transparent';
-            });
-
-            // Add active state to clicked tile
-            tile.style.border = `3px solid ${theme.borderColor}`;
-
-            // Apply the theme
-            applyColorScheme(key, theme);
-        });
-
-        // Add edit button functionality
-        const editBtn = tile.querySelector('.edit-theme-btn');
-        editBtn.addEventListener('click', (e) => {
-            e.stopPropagation(); // Prevent tile selection
-            openColorEditor(key, theme);
-        });
-
-        // Add hover effect
-        tile.addEventListener('mouseenter', () => {
-            editBtn.style.display = 'flex';
-            if (!tile.style.border.includes(theme.borderColor)) {
-                tile.style.transform = 'scale(1.05)';
-                tile.style.boxShadow = '0 4px 8px rgba(0, 0, 0, 0.15)';
-            }
-        });
-
-        tile.addEventListener('mouseleave', () => {
-            editBtn.style.display = 'none';
-            if (!tile.style.border.includes(theme.borderColor)) {
-                tile.style.transform = 'scale(1)';
-                tile.style.boxShadow = '0 2px 4px rgba(0, 0, 0, 0.1)';
-            }
-        });
-
-        schemesGrid.appendChild(tile);
-    });
-
-    selectorContainer.appendChild(title);
-    selectorContainer.appendChild(schemesGrid);
-
-    return selectorContainer;
-}
 
 function showPresentationSection() {
     slidesDom.presentationSection.style.display = 'block';
-
-    // Add color scheme selector if it doesn't exist
-    let colorSelector = document.getElementById('color-scheme-selector');
-    if (!colorSelector) {
-        colorSelector = createColorSchemeSelector();
-        // Insert at the very beginning of the presentation section
-        if (slidesDom.presentationSection) {
-            slidesDom.presentationSection.insertBefore(colorSelector, slidesDom.presentationSection.firstChild);
-        }
-
-        // Restore selection if there's a saved theme
-        if (slidesAppState.currentTheme) {
-            restoreColorSchemeSelection();
-        }
-    }
-
     slidesDom.presentationSection.scrollIntoView({ behavior: 'smooth' });
 }
 
@@ -2723,11 +2609,37 @@ function openColorEditor(themeKey, theme) {
     buttonContainer.style.cssText = `
         display: flex;
         gap: 12px;
-        justify-content: flex-end;
+        justify-content: space-between;
         margin-top: 24px;
         padding-top: 16px;
         border-top: 1px solid #e5e7eb;
     `;
+
+    const resetBtn = document.createElement('button');
+    resetBtn.textContent = 'Reset to Original';
+    resetBtn.style.cssText = `
+        padding: 8px 16px;
+        border: 1px solid #f59e0b;
+        background: white;
+        border-radius: 6px;
+        cursor: pointer;
+        color: #f59e0b;
+        font-weight: 500;
+    `;
+    resetBtn.onclick = () => {
+        // Reset to original colors
+        const originalTheme = ORIGINAL_COLOR_THEMES[themeKey];
+        if (originalTheme) {
+            Object.entries(inputs).forEach(([key, { colorInput, textInput }]) => {
+                const originalValue = originalTheme[key];
+                colorInput.value = originalValue;
+                textInput.value = originalValue;
+            });
+        }
+    };
+
+    const rightButtons = document.createElement('div');
+    rightButtons.style.cssText = 'display: flex; gap: 12px;';
 
     const cancelBtn = document.createElement('button');
     cancelBtn.textContent = 'Cancel';
@@ -2770,14 +2682,19 @@ function openColorEditor(themeKey, theme) {
             applyColorScheme(themeKey, updatedTheme);
         }
 
-        // Refresh the color scheme selector to show updated colors
-        refreshColorSchemeSelector();
+        // Update accordion tile preview if Konva system is active
+        if (window.konvaSlideSystem && window.konvaSlideSystem.updateColorSchemeTile) {
+            window.konvaSlideSystem.updateColorSchemeTile(themeKey, updatedTheme);
+        }
 
         modal.remove();
     };
 
-    buttonContainer.appendChild(cancelBtn);
-    buttonContainer.appendChild(saveBtn);
+    rightButtons.appendChild(cancelBtn);
+    rightButtons.appendChild(saveBtn);
+
+    buttonContainer.appendChild(resetBtn);
+    buttonContainer.appendChild(rightButtons);
 
     // Assemble modal
     modalContent.appendChild(header);
@@ -2796,23 +2713,6 @@ function openColorEditor(themeKey, theme) {
     });
 }
 
-function refreshColorSchemeSelector() {
-    const existingSelector = document.getElementById('color-scheme-selector');
-    if (existingSelector) {
-        existingSelector.remove();
-    }
-
-    // Recreate the selector
-    const newSelector = createColorSchemeSelector();
-    if (slidesDom.presentationSection) {
-        slidesDom.presentationSection.insertBefore(newSelector, slidesDom.presentationSection.firstChild);
-
-        // Restore selection if there's a saved theme
-        if (slidesAppState.currentTheme) {
-            restoreColorSchemeSelection();
-        }
-    }
-}
 
 function applyThemeToSlides() {
     if (!slidesAppState.currentTheme) return;
@@ -4283,3 +4183,4 @@ function updateExportModalStatus(message, type) {
 
 // Make slides functionality globally available for debugging
 window.slidesAppState = slidesAppState;
+window.openColorEditor = openColorEditor;

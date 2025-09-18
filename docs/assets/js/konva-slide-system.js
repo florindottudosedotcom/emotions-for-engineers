@@ -259,37 +259,59 @@ class KonvaSlideSystem {
                 </div>
                 <div class="category-content">
                     <div class="color-schemes-grid">
-                    <div class="color-scheme-tile" data-scheme="blue" title="Professional Blue">
+                    <div class="color-scheme-tile" data-scheme="lavender" title="Lavender Dreams">
                         <div class="scheme-preview">
-                            <div class="color-dot" style="background: #1e40af;"></div>
-                            <div class="color-dot" style="background: #dbeafe;"></div>
-                            <div class="color-dot" style="background: #2563eb;"></div>
+                            <div class="color-stripe" style="background: #4c1d95;" title="Text Color"></div>
+                            <div class="color-stripe" style="background: #8b5cf6;" title="Border Color"></div>
+                            <div class="color-stripe" style="background: #e6e6fa;" title="Fill Color"></div>
+                            <div class="edit-theme-btn" title="Edit Colors">✎</div>
                         </div>
-                        <span class="scheme-name">Blue</span>
+                        <span class="scheme-name">Lavender Dreams</span>
                     </div>
-                    <div class="color-scheme-tile" data-scheme="green" title="Nature Green">
+                    <div class="color-scheme-tile" data-scheme="mint" title="Mint Fresh">
                         <div class="scheme-preview">
-                            <div class="color-dot" style="background: #059669;"></div>
-                            <div class="color-dot" style="background: #d1fae5;"></div>
-                            <div class="color-dot" style="background: #10b981;"></div>
+                            <div class="color-stripe" style="background: #065f46;" title="Text Color"></div>
+                            <div class="color-stripe" style="background: #10b981;" title="Border Color"></div>
+                            <div class="color-stripe" style="background: #d1f2eb;" title="Fill Color"></div>
+                            <div class="edit-theme-btn" title="Edit Colors">✎</div>
                         </div>
-                        <span class="scheme-name">Green</span>
+                        <span class="scheme-name">Mint Fresh</span>
                     </div>
-                    <div class="color-scheme-tile" data-scheme="purple" title="Creative Purple">
+                    <div class="color-scheme-tile" data-scheme="rose" title="Rose Blush">
                         <div class="scheme-preview">
-                            <div class="color-dot" style="background: #7c3aed;"></div>
-                            <div class="color-dot" style="background: #ede9fe;"></div>
-                            <div class="color-dot" style="background: #8b5cf6;"></div>
+                            <div class="color-stripe" style="background: #9f1239;" title="Text Color"></div>
+                            <div class="color-stripe" style="background: #e11d48;" title="Border Color"></div>
+                            <div class="color-stripe" style="background: #fce7f3;" title="Fill Color"></div>
+                            <div class="edit-theme-btn" title="Edit Colors">✎</div>
                         </div>
-                        <span class="scheme-name">Purple</span>
+                        <span class="scheme-name">Rose Blush</span>
                     </div>
-                    <div class="color-scheme-tile" data-scheme="orange" title="Energetic Orange">
+                    <div class="color-scheme-tile" data-scheme="sky" title="Sky Blue">
                         <div class="scheme-preview">
-                            <div class="color-dot" style="background: #ea580c;"></div>
-                            <div class="color-dot" style="background: #fed7aa;"></div>
-                            <div class="color-dot" style="background: #fb923c;"></div>
+                            <div class="color-stripe" style="background: #1e3a8a;" title="Text Color"></div>
+                            <div class="color-stripe" style="background: #2563eb;" title="Border Color"></div>
+                            <div class="color-stripe" style="background: #dbeafe;" title="Fill Color"></div>
+                            <div class="edit-theme-btn" title="Edit Colors">✎</div>
                         </div>
-                        <span class="scheme-name">Orange</span>
+                        <span class="scheme-name">Sky Blue</span>
+                    </div>
+                    <div class="color-scheme-tile" data-scheme="peach" title="Peach Cream">
+                        <div class="scheme-preview">
+                            <div class="color-stripe" style="background: #9a3412;" title="Text Color"></div>
+                            <div class="color-stripe" style="background: #ea580c;" title="Border Color"></div>
+                            <div class="color-stripe" style="background: #fed7aa;" title="Fill Color"></div>
+                            <div class="edit-theme-btn" title="Edit Colors">✎</div>
+                        </div>
+                        <span class="scheme-name">Peach Cream</span>
+                    </div>
+                    <div class="color-scheme-tile" data-scheme="sage" title="Sage Green">
+                        <div class="scheme-preview">
+                            <div class="color-stripe" style="background: #14532d;" title="Text Color"></div>
+                            <div class="color-stripe" style="background: #16a34a;" title="Border Color"></div>
+                            <div class="color-stripe" style="background: #dcfce7;" title="Fill Color"></div>
+                            <div class="edit-theme-btn" title="Edit Colors">✎</div>
+                        </div>
+                        <span class="scheme-name">Sage Green</span>
                     </div>
                     </div>
                 </div>
@@ -745,16 +767,50 @@ class KonvaSlideSystem {
 
                 .scheme-preview {
                     display: flex;
-                    gap: 3px;
+                    flex-direction: row;
+                    height: 40px;
+                    border-radius: 4px;
+                    overflow: hidden;
+                    position: relative;
                     margin-bottom: 6px;
+                    border: 1px solid rgba(0, 0, 0, 0.1);
+                    width: 100%;
                 }
 
-                .color-dot {
-                    width: 12px;
-                    height: 12px;
+                .color-stripe {
+                    flex: 1 1 33.333%;
+                    height: 100%;
+                    border: none;
+                    display: block;
+                    min-width: 12px;
+                    width: auto;
+                }
+
+                .edit-theme-btn {
+                    position: absolute;
+                    top: 4px;
+                    right: 4px;
+                    width: 20px;
+                    height: 20px;
+                    background: rgba(255, 255, 255, 0.95);
                     border-radius: 50%;
-                    border: 1px solid rgba(255, 255, 255, 0.8);
-                    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+                    display: none;
+                    align-items: center;
+                    justify-content: center;
+                    cursor: pointer;
+                    font-size: 12px;
+                    color: #666;
+                    border: 1px solid #ddd;
+                    font-weight: normal;
+                    z-index: 10;
+                    transition: all 0.2s ease;
+                    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+                }
+
+                .edit-theme-btn:hover {
+                    background: rgba(255, 255, 255, 1);
+                    color: #333;
+                    transform: scale(1.1);
                 }
 
                 .scheme-name {
@@ -2839,40 +2895,76 @@ class KonvaSlideSystem {
     }
 
     setupColorSchemes() {
-        const colorSchemes = {
-            blue: {
-                name: 'Professional Blue',
-                textColor: '#1e40af',
+        // Use the COLOR_THEMES from slides_main.js if available, otherwise fallback
+        const colorSchemes = window.COLOR_THEMES || {
+            lavender: {
+                name: 'Lavender Dreams',
+                textColor: '#4c1d95',
+                borderColor: '#8b5cf6',
+                fillColor: '#e6e6fa',
+                backgroundColor: '#faf5ff'
+            },
+            mint: {
+                name: 'Mint Fresh',
+                textColor: '#065f46',
+                borderColor: '#10b981',
+                fillColor: '#d1f2eb',
+                backgroundColor: '#f0fdfa'
+            },
+            rose: {
+                name: 'Rose Blush',
+                textColor: '#9f1239',
+                borderColor: '#e11d48',
+                fillColor: '#fce7f3',
+                backgroundColor: '#fdf2f8'
+            },
+            sky: {
+                name: 'Sky Blue',
+                textColor: '#1e3a8a',
                 borderColor: '#2563eb',
                 fillColor: '#dbeafe',
                 backgroundColor: '#f0f9ff'
             },
-            green: {
-                name: 'Nature Green',
-                textColor: '#059669',
-                borderColor: '#10b981',
-                fillColor: '#d1fae5',
-                backgroundColor: '#ecfdf5'
-            },
-            purple: {
-                name: 'Creative Purple',
-                textColor: '#7c3aed',
-                borderColor: '#8b5cf6',
-                fillColor: '#ede9fe',
-                backgroundColor: '#faf5ff'
-            },
-            orange: {
-                name: 'Energetic Orange',
-                textColor: '#ea580c',
-                borderColor: '#fb923c',
+            peach: {
+                name: 'Peach Cream',
+                textColor: '#9a3412',
+                borderColor: '#ea580c',
                 fillColor: '#fed7aa',
                 backgroundColor: '#fff7ed'
+            },
+            sage: {
+                name: 'Sage Green',
+                textColor: '#14532d',
+                borderColor: '#16a34a',
+                fillColor: '#dcfce7',
+                backgroundColor: '#f0fdf4'
             }
         };
 
         // Add click handlers to color scheme tiles
         this.sidebar.querySelectorAll('.color-scheme-tile').forEach(tile => {
-            tile.addEventListener('click', () => {
+            // Add hover effect for edit button
+            tile.addEventListener('mouseenter', () => {
+                const editBtn = tile.querySelector('.edit-theme-btn');
+                if (editBtn) {
+                    editBtn.style.display = 'flex';
+                }
+            });
+
+            tile.addEventListener('mouseleave', () => {
+                const editBtn = tile.querySelector('.edit-theme-btn');
+                if (editBtn) {
+                    editBtn.style.display = 'none';
+                }
+            });
+
+            // Tile click handler
+            tile.addEventListener('click', (e) => {
+                // Don't trigger tile selection if edit button was clicked
+                if (e.target.classList.contains('edit-theme-btn')) {
+                    return;
+                }
+
                 const scheme = tile.dataset.scheme;
                 if (colorSchemes[scheme]) {
                     // Update active state
@@ -2881,14 +2973,40 @@ class KonvaSlideSystem {
                     });
                     tile.classList.add('selected');
 
-                    // Apply theme
+                    // Apply theme to Konva system
                     this.updateTheme(colorSchemes[scheme]);
+
+                    // Sync with main slides system if available
+                    if (window.applyTheme && window.slidesAppState) {
+                        window.slidesAppState.currentTheme = { key: scheme, ...colorSchemes[scheme] };
+                        window.applyTheme(colorSchemes[scheme]);
+                    }
                 }
             });
+
+            // Edit button click handler
+            const editBtn = tile.querySelector('.edit-theme-btn');
+            if (editBtn) {
+                editBtn.addEventListener('click', (e) => {
+                    e.stopPropagation(); // Prevent tile selection
+                    const scheme = tile.dataset.scheme;
+                    console.log('Edit button clicked for scheme:', scheme);
+                    if (colorSchemes[scheme]) {
+                        if (window.openColorEditor) {
+                            console.log('Opening color editor for:', scheme, colorSchemes[scheme]);
+                            window.openColorEditor(scheme, colorSchemes[scheme]);
+                        } else {
+                            console.error('window.openColorEditor function not available');
+                        }
+                    } else {
+                        console.error('Color scheme not found:', scheme);
+                    }
+                });
+            }
         });
 
-        // Set default selection (blue)
-        const defaultTile = this.sidebar.querySelector('.color-scheme-tile[data-scheme="blue"]');
+        // Set default selection (lavender)
+        const defaultTile = this.sidebar.querySelector('.color-scheme-tile[data-scheme="lavender"]');
         if (defaultTile) {
             defaultTile.classList.add('selected');
         }
@@ -2961,6 +3079,25 @@ class KonvaSlideSystem {
                 header.click();
             }
         }
+    }
+
+    updateColorSchemeTile(themeKey, updatedTheme) {
+        // Find the specific tile for this theme
+        const tile = this.sidebar.querySelector(`.color-scheme-tile[data-scheme="${themeKey}"]`);
+        if (!tile) return;
+
+        // Update the color stripes with new values
+        const stripes = tile.querySelectorAll('.color-stripe');
+        if (stripes.length >= 3) {
+            stripes[0].style.background = updatedTheme.textColor;
+            stripes[0].title = 'Text Color';
+            stripes[1].style.background = updatedTheme.borderColor;
+            stripes[1].title = 'Border Color';
+            stripes[2].style.background = updatedTheme.fillColor;
+            stripes[2].title = 'Fill Color';
+        }
+
+        console.log('Updated color scheme tile preview for:', themeKey, updatedTheme);
     }
 
     destroy() {
