@@ -249,10 +249,15 @@ class KonvaSlideSystem {
         `;
 
         toolbar.innerHTML = `
-            <!-- Color Schemes Section -->
-            <div class="sidebar-section">
-                <h3 class="sidebar-title">🎨 Color Schemes</h3>
-                <div class="color-schemes-grid">
+            <!-- Accordion Category: Color Schemes -->
+            <div class="accordion-category" data-category="colors">
+                <div class="category-header">
+                    <div class="category-icon">&#127912;</div>
+                    <span class="category-title">Color Schemes</span>
+                    <div class="chevron">&#8250;</div>
+                </div>
+                <div class="category-content">
+                    <div class="color-schemes-grid">
                     <div class="color-scheme-tile" data-scheme="blue" title="Professional Blue">
                         <div class="scheme-preview">
                             <div class="color-dot" style="background: #1e40af;"></div>
@@ -288,171 +293,218 @@ class KonvaSlideSystem {
                 </div>
             </div>
 
-            <!-- Content Tools -->
-            <div class="sidebar-section">
-                <h3 class="sidebar-title">📝 Add Content</h3>
-                <div class="tool-grid">
-                    <button class="sidebar-tool-btn" onclick="window.konvaSlideSystem?.addTitle()" title="Add Title">
-                        <div class="tool-icon">📝</div>
-                        <span>Title</span>
-                    </button>
-                    <button class="sidebar-tool-btn" onclick="window.konvaSlideSystem?.addBulletPoint()" title="Add Bullet Point">
-                        <div class="tool-icon">•</div>
-                        <span>Bullet</span>
-                    </button>
-                    <button class="sidebar-tool-btn" onclick="window.konvaSlideSystem?.addTextBox()" title="Add Text Box">
-                        <div class="tool-icon">📄</div>
-                        <span>Text Box</span>
-                    </button>
-                    <button class="sidebar-tool-btn" onclick="window.konvaSlideSystem?.addStyledText()" title="Add Styled Text">
-                        <div class="tool-icon">🎨</div>
-                        <span>Styled Text</span>
-                    </button>
+            <!-- Accordion Category: Content -->
+            <div class="accordion-category" data-category="content">
+                <div class="category-header">
+                    <div class="category-icon">&#9998;</div>
+                    <span class="category-title">Add Content</span>
+                    <div class="chevron">&#8250;</div>
+                </div>
+                <div class="category-content">
+                    <div class="tool-grid">
+                        <button class="sidebar-tool-btn" onclick="window.konvaSlideSystem?.addTitle()" title="Add Title">
+                            <div class="tool-icon">&#9998;</div>
+                            <span>Title</span>
+                        </button>
+                        <button class="sidebar-tool-btn" onclick="window.konvaSlideSystem?.addBulletPoint()" title="Add Bullet Point">
+                            <div class="tool-icon">&#8226;</div>
+                            <span>Bullet</span>
+                        </button>
+                        <button class="sidebar-tool-btn" onclick="window.konvaSlideSystem?.addTextBox()" title="Add Text Box">
+                            <div class="tool-icon">&#128196;</div>
+                            <span>Text Box</span>
+                        </button>
+                        <button class="sidebar-tool-btn" onclick="window.konvaSlideSystem?.addStyledText()" title="Add Styled Text">
+                            <div class="tool-icon">&#127912;</div>
+                            <span>Styled Text</span>
+                        </button>
                 </div>
             </div>
 
-            <!-- Shapes -->
-            <div class="sidebar-section">
-                <h3 class="sidebar-title">⬜ Shapes</h3>
-                <div class="tool-grid">
-                    <button class="sidebar-tool-btn" onclick="window.konvaSlideSystem?.addRectangle()" title="Add Rectangle">
-                        <div class="tool-icon">⬜</div>
-                        <span>Rectangle</span>
-                    </button>
-                    <button class="sidebar-tool-btn" onclick="window.konvaSlideSystem?.addCircle()" title="Add Circle">
-                        <div class="tool-icon">⭕</div>
-                        <span>Circle</span>
-                    </button>
-                    <button class="sidebar-tool-btn" onclick="window.konvaSlideSystem?.addArrow()" title="Add Arrow">
-                        <div class="tool-icon">➡️</div>
-                        <span>Arrow</span>
-                    </button>
-                    <button class="sidebar-tool-btn" onclick="window.konvaSlideSystem?.addAdvancedShape()" title="More Shapes">
-                        <div class="tool-icon">🔷</div>
-                        <span>More Shapes</span>
-                    </button>
+            <!-- Accordion Category: Shapes -->
+            <div class="accordion-category" data-category="shapes">
+                <div class="category-header">
+                    <div class="category-icon">&#9643;</div>
+                    <span class="category-title">Shapes</span>
+                    <div class="chevron">&#8250;</div>
                 </div>
-            </div>
-
-            <!-- Images -->
-            <div class="sidebar-section">
-                <h3 class="sidebar-title">🖼️ Images</h3>
-                <div class="tool-grid">
-                    <button class="sidebar-tool-btn" onclick="window.konvaSlideSystem?.addImageFromURL()" title="Add Image from URL">
-                        <div class="tool-icon">🌐</div>
-                        <span>URL Image</span>
-                    </button>
-                    <button class="sidebar-tool-btn" onclick="window.konvaSlideSystem?.addImageFromFile()" title="Upload Image">
-                        <div class="tool-icon">📁</div>
-                        <span>Upload</span>
-                    </button>
-                    <button class="sidebar-tool-btn" onclick="window.konvaSlideSystem?.generateAIImage()" title="Generate AI Image">
-                        <div class="tool-icon">🤖</div>
-                        <span>AI Image</span>
-                    </button>
-                </div>
-            </div>
-
-            <!-- Layouts -->
-            <div class="sidebar-section">
-                <h3 class="sidebar-title">🎭 Layouts</h3>
-                <div class="tool-grid">
-                    <button class="sidebar-tool-btn" onclick="window.konvaSlideSystem?.applyLayout('hero')" title="Hero Layout">
-                        <div class="tool-icon">🎭</div>
-                        <span>Hero</span>
-                    </button>
-                    <button class="sidebar-tool-btn" onclick="window.konvaSlideSystem?.applyLayout('split')" title="Split Layout">
-                        <div class="tool-icon">⚏</div>
-                        <span>Split</span>
-                    </button>
-                    <button class="sidebar-tool-btn" onclick="window.konvaSlideSystem?.applyLayout('cards')" title="Cards Layout">
-                        <div class="tool-icon">🃏</div>
-                        <span>Cards</span>
-                    </button>
-                    <button class="sidebar-tool-btn" onclick="window.konvaSlideSystem?.applyLayout('overlay')" title="Overlay Layout">
-                        <div class="tool-icon">🖼️</div>
-                        <span>Overlay</span>
-                    </button>
-                </div>
-            </div>
-
-            <!-- Effects -->
-            <div class="sidebar-section">
-                <h3 class="sidebar-title">✨ Effects</h3>
-                <div class="tool-grid">
-                    <button class="sidebar-tool-btn" onclick="window.konvaSlideSystem?.applyTextEffect('shadow')" title="Shadow Effect">
-                        <div class="tool-icon">🌟</div>
-                        <span>Shadow</span>
-                    </button>
-                    <button class="sidebar-tool-btn" onclick="window.konvaSlideSystem?.applyTextEffect('glow')" title="Glow Effect">
-                        <div class="tool-icon">✨</div>
-                        <span>Glow</span>
-                    </button>
-                    <button class="sidebar-tool-btn" onclick="window.konvaSlideSystem?.applyTextEffect('outline')" title="Outline Effect">
-                        <div class="tool-icon">🔲</div>
-                        <span>Outline</span>
-                    </button>
-                    <button class="sidebar-tool-btn" onclick="window.konvaSlideSystem?.applyTextEffect('gradient')" title="Gradient Effect">
-                        <div class="tool-icon">🌈</div>
-                        <span>Gradient</span>
-                    </button>
-                </div>
-            </div>
-
-            <!-- Animations -->
-            <div class="sidebar-section">
-                <h3 class="sidebar-title">🎬 Animations</h3>
-                <div class="tool-grid">
-                    <button class="sidebar-tool-btn" onclick="window.konvaSlideSystem?.animateSelected('fadeIn')" title="Fade In Animation">
-                        <div class="tool-icon">🎭</div>
-                        <span>Fade In</span>
-                    </button>
-                    <button class="sidebar-tool-btn" onclick="window.konvaSlideSystem?.animateSelected('slideInLeft')" title="Slide Left Animation">
-                        <div class="tool-icon">◀️</div>
-                        <span>Slide Left</span>
-                    </button>
-                    <button class="sidebar-tool-btn" onclick="window.konvaSlideSystem?.animateSelected('bounce')" title="Bounce Animation">
-                        <div class="tool-icon">🏀</div>
-                        <span>Bounce</span>
-                    </button>
-                    <button class="sidebar-tool-btn" onclick="window.konvaSlideSystem?.animateSelected('pulse')" title="Pulse Animation">
-                        <div class="tool-icon">💓</div>
-                        <span>Pulse</span>
-                    </button>
-                </div>
-            </div>
-
-            <!-- Style Controls -->
-            <div class="sidebar-section">
-                <h3 class="sidebar-title">🎨 Style</h3>
-                <div class="style-controls">
-                    <div class="control-group">
-                        <label>Text Color:</label>
-                        <input type="color" id="text-color" value="#000000" onchange="window.konvaSlideSystem?.updateSelectedColor(this.value)">
-                    </div>
-                    <div class="control-group">
-                        <label>Font Size: <span id="font-size-display">24px</span></label>
-                        <input type="range" id="font-size" min="12" max="72" value="24" onchange="window.konvaSlideSystem?.updateSelectedFontSize(this.value)">
+                <div class="category-content">
+                    <div class="tool-grid">
+                        <button class="sidebar-tool-btn" onclick="window.konvaSlideSystem?.addRectangle()" title="Add Rectangle">
+                            <div class="tool-icon">&#9643;</div>
+                            <span>Rectangle</span>
+                        </button>
+                        <button class="sidebar-tool-btn" onclick="window.konvaSlideSystem?.addCircle()" title="Add Circle">
+                            <div class="tool-icon">&#9675;</div>
+                            <span>Circle</span>
+                        </button>
+                        <button class="sidebar-tool-btn" onclick="window.konvaSlideSystem?.addArrow()" title="Add Arrow">
+                            <div class="tool-icon">&#8594;</div>
+                            <span>Arrow</span>
+                        </button>
+                        <button class="sidebar-tool-btn" onclick="window.konvaSlideSystem?.addAdvancedShape()" title="More Shapes">
+                            <div class="tool-icon">&#9671;</div>
+                            <span>More Shapes</span>
+                        </button>
                     </div>
                 </div>
             </div>
 
-            <!-- Advanced Tools -->
-            <div class="sidebar-section">
-                <h3 class="sidebar-title">⚙️ Advanced</h3>
-                <div class="tool-grid">
-                    <button class="sidebar-tool-btn" onclick="window.konvaSlideSystem?.setSlideTransition()" title="Slide Transitions">
-                        <div class="tool-icon">🎞️</div>
-                        <span>Transitions</span>
-                    </button>
-                    <button class="sidebar-tool-btn delete-btn" onclick="window.konvaSlideSystem?.deleteSelected()" title="Delete Selected">
-                        <div class="tool-icon">🗑️</div>
-                        <span>Delete</span>
-                    </button>
-                    <button class="sidebar-tool-btn" onclick="window.konvaSlideSystem?.clearSlide()" title="Clear Slide">
-                        <div class="tool-icon">🧹</div>
-                        <span>Clear Slide</span>
-                    </button>
+            <!-- Accordion Category: Images -->
+            <div class="accordion-category" data-category="images">
+                <div class="category-header">
+                    <div class="category-icon">&#128247;</div>
+                    <span class="category-title">Images</span>
+                    <div class="chevron">&#8250;</div>
+                </div>
+                <div class="category-content">
+                    <div class="tool-grid">
+                        <button class="sidebar-tool-btn" onclick="window.konvaSlideSystem?.addImageFromURL()" title="Add Image from URL">
+                            <div class="tool-icon">&#127760;</div>
+                            <span>URL Image</span>
+                        </button>
+                        <button class="sidebar-tool-btn" onclick="window.konvaSlideSystem?.addImageFromFile()" title="Upload Image">
+                            <div class="tool-icon">&#128193;</div>
+                            <span>Upload</span>
+                        </button>
+                        <button class="sidebar-tool-btn" onclick="window.konvaSlideSystem?.generateAIImage()" title="Generate AI Image">
+                            <div class="tool-icon">&#129302;</div>
+                            <span>AI Image</span>
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Accordion Category: Layouts -->
+            <div class="accordion-category" data-category="layouts">
+                <div class="category-header">
+                    <div class="category-icon">&#128209;</div>
+                    <span class="category-title">Layouts</span>
+                    <div class="chevron">&#8250;</div>
+                </div>
+                <div class="category-content">
+                    <div class="tool-grid">
+                        <button class="sidebar-tool-btn" onclick="window.konvaSlideSystem?.applyLayout('hero')" title="Hero Layout">
+                            <div class="tool-icon">&#127917;</div>
+                            <span>Hero</span>
+                        </button>
+                        <button class="sidebar-tool-btn" onclick="window.konvaSlideSystem?.applyLayout('split')" title="Split Layout">
+                            <div class="tool-icon">&#8944;</div>
+                            <span>Split</span>
+                        </button>
+                        <button class="sidebar-tool-btn" onclick="window.konvaSlideSystem?.applyLayout('cards')" title="Cards Layout">
+                            <div class="tool-icon">&#127183;</div>
+                            <span>Cards</span>
+                        </button>
+                        <button class="sidebar-tool-btn" onclick="window.konvaSlideSystem?.applyLayout('overlay')" title="Overlay Layout">
+                            <div class="tool-icon">&#128444;</div>
+                            <span>Overlay</span>
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Accordion Category: Effects -->
+            <div class="accordion-category" data-category="effects">
+                <div class="category-header">
+                    <div class="category-icon">&#10024;</div>
+                    <span class="category-title">Effects</span>
+                    <div class="chevron">&#8250;</div>
+                </div>
+                <div class="category-content">
+                    <div class="tool-grid">
+                        <button class="sidebar-tool-btn" onclick="window.konvaSlideSystem?.applyTextEffect('shadow')" title="Shadow Effect">
+                            <div class="tool-icon">&#127775;</div>
+                            <span>Shadow</span>
+                        </button>
+                        <button class="sidebar-tool-btn" onclick="window.konvaSlideSystem?.applyTextEffect('glow')" title="Glow Effect">
+                            <div class="tool-icon">&#10024;</div>
+                            <span>Glow</span>
+                        </button>
+                        <button class="sidebar-tool-btn" onclick="window.konvaSlideSystem?.applyTextEffect('outline')" title="Outline Effect">
+                            <div class="tool-icon">&#9633;</div>
+                            <span>Outline</span>
+                        </button>
+                        <button class="sidebar-tool-btn" onclick="window.konvaSlideSystem?.applyTextEffect('gradient')" title="Gradient Effect">
+                            <div class="tool-icon">&#127752;</div>
+                            <span>Gradient</span>
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Accordion Category: Animations -->
+            <div class="accordion-category" data-category="animations">
+                <div class="category-header">
+                    <div class="category-icon">&#127916;</div>
+                    <span class="category-title">Animations</span>
+                    <div class="chevron">&#8250;</div>
+                </div>
+                <div class="category-content">
+                    <div class="tool-grid">
+                        <button class="sidebar-tool-btn" onclick="window.konvaSlideSystem?.animateSelected('fadeIn')" title="Fade In Animation">
+                            <div class="tool-icon">&#127917;</div>
+                            <span>Fade In</span>
+                        </button>
+                        <button class="sidebar-tool-btn" onclick="window.konvaSlideSystem?.animateSelected('slideInLeft')" title="Slide Left Animation">
+                            <div class="tool-icon">&#9664;</div>
+                            <span>Slide Left</span>
+                        </button>
+                        <button class="sidebar-tool-btn" onclick="window.konvaSlideSystem?.animateSelected('bounce')" title="Bounce Animation">
+                            <div class="tool-icon">&#9934;</div>
+                            <span>Bounce</span>
+                        </button>
+                        <button class="sidebar-tool-btn" onclick="window.konvaSlideSystem?.animateSelected('pulse')" title="Pulse Animation">
+                            <div class="tool-icon">&#128147;</div>
+                            <span>Pulse</span>
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Accordion Category: Style -->
+            <div class="accordion-category" data-category="style">
+                <div class="category-header">
+                    <div class="category-icon">&#127912;</div>
+                    <span class="category-title">Style</span>
+                    <div class="chevron">&#8250;</div>
+                </div>
+                <div class="category-content">
+                    <div class="style-controls">
+                        <div class="control-group">
+                            <label>Text Color:</label>
+                            <input type="color" id="text-color" value="#000000" onchange="window.konvaSlideSystem?.updateSelectedColor(this.value)">
+                        </div>
+                        <div class="control-group">
+                            <label>Font Size: <span id="font-size-display">24px</span></label>
+                            <input type="range" id="font-size" min="12" max="72" value="24" onchange="window.konvaSlideSystem?.updateSelectedFontSize(this.value)">
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Accordion Category: Advanced -->
+            <div class="accordion-category" data-category="advanced">
+                <div class="category-header">
+                    <div class="category-icon">&#9881;</div>
+                    <span class="category-title">Advanced</span>
+                    <div class="chevron">&#8250;</div>
+                </div>
+                <div class="category-content">
+                    <div class="tool-grid">
+                        <button class="sidebar-tool-btn" onclick="window.konvaSlideSystem?.setSlideTransition()" title="Slide Transitions">
+                            <div class="tool-icon">&#127902;</div>
+                            <span>Transitions</span>
+                        </button>
+                        <button class="sidebar-tool-btn delete-btn" onclick="window.konvaSlideSystem?.deleteSelected()" title="Delete Selected">
+                            <div class="tool-icon">&#128465;</div>
+                            <span>Delete</span>
+                        </button>
+                        <button class="sidebar-tool-btn" onclick="window.konvaSlideSystem?.clearSlide()" title="Clear Slide">
+                            <div class="tool-icon">&#129529;</div>
+                            <span>Clear Slide</span>
+                        </button>
+                    </div>
                 </div>
             </div>
         `;
@@ -547,28 +599,89 @@ class KonvaSlideSystem {
                     background: #9ca3af;
                 }
 
-                /* Sidebar Sections */
-                .sidebar-section {
-                    margin-bottom: 24px;
-                    padding-bottom: 20px;
-                    border-bottom: 1px solid #f3f4f6;
+                /* Accordion Categories */
+                .accordion-category {
+                    margin-bottom: 8px;
+                    border: 1px solid #e5e7eb;
+                    border-radius: 8px;
+                    overflow: hidden;
+                    transition: all 0.2s ease;
                 }
 
-                .sidebar-section:last-child {
-                    border-bottom: none;
-                    margin-bottom: 0;
+                .accordion-category:hover {
+                    border-color: #60a5fa;
+                    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
                 }
 
-                .sidebar-title {
-                    font-size: 14px;
-                    font-weight: 700;
-                    color: #374151;
-                    margin: 0 0 12px 0;
-                    padding: 0;
-                    border: none;
+                .category-header {
                     display: flex;
                     align-items: center;
-                    gap: 6px;
+                    gap: 12px;
+                    padding: 16px 18px;
+                    background: #f8fafc;
+                    cursor: pointer;
+                    transition: all 0.2s ease;
+                    border-bottom: 1px solid transparent;
+                }
+
+                .category-header:hover {
+                    background: #f1f5f9;
+                }
+
+                .accordion-category.expanded .category-header {
+                    background: #eff6ff;
+                    border-bottom-color: #e5e7eb;
+                }
+
+                .category-icon {
+                    font-size: 24px;
+                    line-height: 1;
+                    color: #6b7280;
+                    transition: all 0.2s ease;
+                    width: 24px;
+                    text-align: center;
+                }
+
+                .accordion-category.expanded .category-icon {
+                    color: #2563eb;
+                    transform: scale(1.1);
+                }
+
+                .category-title {
+                    font-size: 15px;
+                    font-weight: 600;
+                    color: #374151;
+                    flex: 1;
+                    transition: color 0.2s ease;
+                }
+
+                .accordion-category.expanded .category-title {
+                    color: #1e40af;
+                }
+
+                .chevron {
+                    font-size: 16px;
+                    color: #9ca3af;
+                    transition: all 0.2s ease;
+                    font-weight: bold;
+                }
+
+                .accordion-category.expanded .chevron {
+                    transform: rotate(90deg);
+                    color: #2563eb;
+                }
+
+                .category-content {
+                    padding: 0;
+                    max-height: 0;
+                    overflow: hidden;
+                    transition: all 0.3s ease;
+                    background: white;
+                }
+
+                .accordion-category.expanded .category-content {
+                    padding: 16px 18px;
+                    max-height: 500px;
                 }
 
                 /* Color Schemes Grid */
@@ -2748,6 +2861,59 @@ class KonvaSlideSystem {
         const defaultTile = this.sidebar.querySelector('.color-scheme-tile[data-scheme="blue"]');
         if (defaultTile) {
             defaultTile.classList.add('selected');
+        }
+
+        // Setup accordion functionality
+        this.setupAccordion();
+    }
+
+    setupAccordion() {
+        const categoryHeaders = this.sidebar.querySelectorAll('.category-header');
+
+        categoryHeaders.forEach(header => {
+            header.addEventListener('click', () => {
+                const category = header.parentElement;
+                const content = category.querySelector('.category-content');
+                const chevron = header.querySelector('.chevron');
+
+                // Toggle expanded state
+                const isExpanded = category.classList.contains('expanded');
+
+                if (isExpanded) {
+                    // Collapse
+                    category.classList.remove('expanded');
+                    content.style.maxHeight = '0';
+                    content.style.opacity = '0';
+                    chevron.style.transform = 'rotate(0deg)';
+                } else {
+                    // Collapse all other categories first
+                    categoryHeaders.forEach(otherHeader => {
+                        const otherCategory = otherHeader.parentElement;
+                        const otherContent = otherCategory.querySelector('.category-content');
+                        const otherChevron = otherHeader.querySelector('.chevron');
+
+                        otherCategory.classList.remove('expanded');
+                        otherContent.style.maxHeight = '0';
+                        otherContent.style.opacity = '0';
+                        otherChevron.style.transform = 'rotate(0deg)';
+                    });
+
+                    // Expand this category
+                    category.classList.add('expanded');
+                    content.style.maxHeight = content.scrollHeight + 'px';
+                    content.style.opacity = '1';
+                    chevron.style.transform = 'rotate(90deg)';
+                }
+            });
+        });
+
+        // Set default expanded category (Color Schemes)
+        const defaultCategory = this.sidebar.querySelector('.accordion-category[data-category="colors"]');
+        if (defaultCategory) {
+            const header = defaultCategory.querySelector('.category-header');
+            if (header) {
+                header.click();
+            }
         }
     }
 
