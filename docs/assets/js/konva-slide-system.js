@@ -20,6 +20,10 @@ class KonvaSlideSystem {
         // Animation and transition support
         this.slideTransition = 'fade'; // Default transition type
 
+        // Selection system
+        this.selectedObject = null;
+        this.transformer = null;
+
         this.init();
     }
 
@@ -71,6 +75,20 @@ class KonvaSlideSystem {
 
         this.layer = new Konva.Layer();
         this.stage.add(this.layer);
+
+        // Create transformer for visual selection feedback
+        this.transformer = new Konva.Transformer({
+            enabledAnchors: ['top-left', 'top-right', 'bottom-left', 'bottom-right'],
+            borderStroke: '#2563eb',
+            borderStrokeWidth: 2,
+            anchorStroke: '#2563eb',
+            anchorFill: '#ffffff',
+            anchorSize: 8
+        });
+        this.layer.add(this.transformer);
+
+        // Setup selection system
+        this.setupSelection();
 
         // Apply border radius to the canvas element to match container
         const canvas = this.stage.content.querySelector('canvas');
@@ -253,7 +271,7 @@ class KonvaSlideSystem {
             <!-- Accordion Category: Color Schemes -->
             <div class="accordion-category" data-category="colors">
                 <div class="category-header">
-                    <div class="category-icon">&#127912;</div>
+                    <div class="category-icon"><span class="icon-tint"></span></div>
                     <span class="category-title">Color Schemes</span>
                     <div class="chevron">&#8250;</div>
                 </div>
@@ -320,12 +338,16 @@ class KonvaSlideSystem {
             <!-- Accordion Category: Content -->
             <div class="accordion-category" data-category="content">
                 <div class="category-header">
-                    <div class="category-icon">&#9998;</div>
+                    <div class="category-icon"><span class="icon-plus"></span></div>
                     <span class="category-title">Add Content</span>
                     <div class="chevron">&#8250;</div>
                 </div>
                 <div class="category-content">
                     <div class="tool-grid">
+                        <button class="sidebar-tool-btn" onclick="console.log('New slide button clicked'); if(window.addNewSlide) { window.addNewSlide(); } else { console.error('addNewSlide function not available'); }" title="Add New Slide">
+                            <div class="tool-icon">📄</div>
+                            <span>New Slide</span>
+                        </button>
                         <button class="sidebar-tool-btn" onclick="window.konvaSlideSystem?.addTitle()" title="Add Title">
                             <div class="tool-icon">&#9998;</div>
                             <span>Title</span>
@@ -349,7 +371,7 @@ class KonvaSlideSystem {
             <!-- Accordion Category: Shapes -->
             <div class="accordion-category" data-category="shapes">
                 <div class="category-header">
-                    <div class="category-icon">&#9643;</div>
+                    <div class="category-icon"><span class="icon-stop"></span></div>
                     <span class="category-title">Shapes</span>
                     <div class="chevron">&#8250;</div>
                 </div>
@@ -378,7 +400,7 @@ class KonvaSlideSystem {
             <!-- Accordion Category: Images -->
             <div class="accordion-category" data-category="images">
                 <div class="category-header">
-                    <div class="category-icon">&#128247;</div>
+                    <div class="category-icon"><span class="icon-picture"></span></div>
                     <span class="category-title">Images</span>
                     <div class="chevron">&#8250;</div>
                 </div>
@@ -403,7 +425,7 @@ class KonvaSlideSystem {
             <!-- Accordion Category: Layouts -->
             <div class="accordion-category" data-category="layouts">
                 <div class="category-header">
-                    <div class="category-icon">&#128209;</div>
+                    <div class="category-icon"><span class="icon-th-large"></span></div>
                     <span class="category-title">Layouts</span>
                     <div class="chevron">&#8250;</div>
                 </div>
@@ -432,7 +454,7 @@ class KonvaSlideSystem {
             <!-- Accordion Category: Effects -->
             <div class="accordion-category" data-category="effects">
                 <div class="category-header">
-                    <div class="category-icon">&#10024;</div>
+                    <div class="category-icon"><span class="icon-flash"></span></div>
                     <span class="category-title">Effects</span>
                     <div class="chevron">&#8250;</div>
                 </div>
@@ -461,7 +483,7 @@ class KonvaSlideSystem {
             <!-- Accordion Category: Animations -->
             <div class="accordion-category" data-category="animations">
                 <div class="category-header">
-                    <div class="category-icon">&#127916;</div>
+                    <div class="category-icon"><span class="icon-play-circle"></span></div>
                     <span class="category-title">Animations</span>
                     <div class="chevron">&#8250;</div>
                 </div>
@@ -490,7 +512,7 @@ class KonvaSlideSystem {
             <!-- Accordion Category: Style -->
             <div class="accordion-category" data-category="style">
                 <div class="category-header">
-                    <div class="category-icon">&#127912;</div>
+                    <div class="category-icon"><span class="icon-brush"></span></div>
                     <span class="category-title">Style</span>
                     <div class="chevron">&#8250;</div>
                 </div>
@@ -511,7 +533,7 @@ class KonvaSlideSystem {
             <!-- Accordion Category: Advanced -->
             <div class="accordion-category" data-category="advanced">
                 <div class="category-header">
-                    <div class="category-icon">&#9881;</div>
+                    <div class="category-icon"><span class="icon-cog"></span></div>
                     <span class="category-title">Advanced</span>
                     <div class="chevron">&#8250;</div>
                 </div>
@@ -672,16 +694,46 @@ class KonvaSlideSystem {
                 .category-icon {
                     font-size: 24px;
                     line-height: 1;
-                    color: #6b7280;
+                    color: #374151;
                     transition: all 0.2s ease;
-                    width: 24px;
+                    min-width: 32px;
+                    width: auto;
                     text-align: center;
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
                 }
 
                 .accordion-category.expanded .category-icon {
-                    color: #2563eb;
+                    color: #1e40af;
                     transform: scale(1.1);
                 }
+
+                /* Custom CSS Icons */
+                .category-icon span[class^="icon-"] {
+                    color: #374151;
+                    font-size: 20px;
+                    line-height: 1;
+                    display: inline-block;
+                    width: 20px;
+                    height: 20px;
+                    position: relative;
+                }
+
+                .accordion-category.expanded .category-icon span[class^="icon-"] {
+                    color: #1e40af;
+                }
+
+                /* Icon definitions using CSS */
+                .icon-tint:before { content: "●"; }
+                .icon-plus:before { content: "+"; font-weight: bold; }
+                .icon-stop:before { content: "■"; }
+                .icon-picture:before { content: "🖼"; }
+                .icon-th-large:before { content: "▦"; }
+                .icon-flash:before { content: "✦"; }
+                .icon-play-circle:before { content: "▶"; }
+                .icon-brush:before { content: "🖌"; }
+                .icon-cog:before { content: "⚙"; }
 
                 .category-title {
                     font-size: 15px;
@@ -721,8 +773,9 @@ class KonvaSlideSystem {
 
                 .accordion-category.expanded .category-content {
                     padding: 18px;
-                    max-height: none;
+                    max-height: 500px; /* Large enough for content but still allows animation */
                     opacity: 1;
+                    overflow: visible; /* Ensure content isn't clipped */
                 }
 
                 /* Content Area Reset */
@@ -739,8 +792,10 @@ class KonvaSlideSystem {
                 .color-schemes-grid {
                     display: grid;
                     grid-template-columns: 1fr 1fr;
-                    gap: 8px;
+                    gap: 12px;
                     margin: 0;
+                    min-height: fit-content;
+                    width: 100%;
                 }
 
                 .color-scheme-tile {
@@ -753,6 +808,9 @@ class KonvaSlideSystem {
                     cursor: pointer;
                     transition: all 0.2s ease;
                     background: white;
+                    min-height: 80px;
+                    width: 100%;
+                    box-sizing: border-box;
                 }
 
                 .color-scheme-tile:hover {
@@ -2321,13 +2379,89 @@ class KonvaSlideSystem {
     }
 
     getSelectedObject() {
-        // Get the last clicked object for simplicity
-        // In a real implementation, you'd track selection state
-        const pos = this.stage.getPointerPosition();
-        if (pos) {
-            return this.stage.getIntersection(pos);
+        return this.selectedObject;
+    }
+
+    setupSelection() {
+        // Click on empty space to deselect
+        this.stage.on('click tap', (e) => {
+            // If clicking on empty space
+            if (e.target === this.stage) {
+                this.selectObject(null);
+                return;
+            }
+
+            // If clicking on an object
+            const clickedObject = e.target;
+            if (clickedObject.getClassName() !== 'Transformer') {
+                this.selectObject(clickedObject);
+            }
+        });
+
+        // Setup keyboard events
+        this.setupKeyboardHandlers();
+    }
+
+    selectObject(obj) {
+        this.selectedObject = obj;
+
+        if (obj) {
+            // Attach transformer to selected object
+            this.transformer.nodes([obj]);
+            this.transformer.show();
+        } else {
+            // Hide transformer when nothing is selected
+            this.transformer.nodes([]);
+            this.transformer.hide();
         }
-        return null;
+
+        this.layer.batchDraw();
+    }
+
+    setupKeyboardHandlers() {
+        // Make stage focusable
+        this.stage.container().tabIndex = 1;
+        this.stage.container().focus();
+
+        // Handle keydown events
+        this.stage.container().addEventListener('keydown', (e) => {
+            // Delete selected object with Delete key
+            if (e.key === 'Delete' && this.selectedObject) {
+                this.deleteSelectedObject();
+                e.preventDefault();
+            }
+
+            // Add new slide with Ctrl+M
+            if (e.ctrlKey && e.key.toLowerCase() === 'm') {
+                if (window.addNewSlide) {
+                    window.addNewSlide();
+                } else {
+                    console.error('addNewSlide function not available');
+                }
+                e.preventDefault();
+            }
+        });
+    }
+
+    deleteSelectedObject() {
+        if (!this.selectedObject) return;
+
+        // Remove from current slide objects array
+        const slideObjects = this.slideObjects[this.currentSlideIndex];
+        if (slideObjects) {
+            const index = slideObjects.indexOf(this.selectedObject);
+            if (index > -1) {
+                slideObjects.splice(index, 1);
+            }
+        }
+
+        // Remove from stage
+        this.selectedObject.destroy();
+
+        // Clear selection
+        this.selectObject(null);
+
+        console.log('Deleted selected object');
     }
 
     showShapeModal() {
@@ -3054,18 +3188,10 @@ class KonvaSlideSystem {
 
                     // Expand this category
                     category.classList.add('expanded');
-                    // Calculate the actual content height
-                    content.style.padding = '18px';
+                    // Let CSS handle the expansion with proper height calculation
                     content.style.maxHeight = 'none';
-                    const actualHeight = content.scrollHeight;
-                    content.style.maxHeight = '0px';
-                    content.style.padding = '0px';
-                    // Use setTimeout to allow the browser to apply the height calculation
-                    setTimeout(() => {
-                        content.style.padding = '18px';
-                        content.style.maxHeight = actualHeight + 'px';
-                        content.style.opacity = '1';
-                    }, 10);
+                    content.style.padding = '18px';
+                    content.style.opacity = '1';
                     chevron.style.transform = 'rotate(90deg)';
                 }
             });

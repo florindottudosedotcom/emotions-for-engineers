@@ -4184,3 +4184,4 @@ function updateExportModalStatus(message, type) {
 // Make slides functionality globally available for debugging
 window.slidesAppState = slidesAppState;
 window.openColorEditor = openColorEditor;
+window.addNewSlide = addNewSlide;
