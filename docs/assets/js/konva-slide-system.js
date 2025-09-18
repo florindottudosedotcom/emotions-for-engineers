@@ -249,6 +249,7 @@ class KonvaSlideSystem {
         `;
 
         toolbar.innerHTML = `
+            <div class="accordion-container">
             <!-- Accordion Category: Color Schemes -->
             <div class="accordion-category" data-category="colors">
                 <div class="category-header">
@@ -507,6 +508,7 @@ class KonvaSlideSystem {
                     </div>
                 </div>
             </div>
+            </div>
         `;
 
         // Set up the layout
@@ -599,18 +601,23 @@ class KonvaSlideSystem {
                     background: #9ca3af;
                 }
 
-                /* Accordion Categories */
-                .accordion-category {
-                    margin-bottom: 8px;
+                /* Accordion Container */
+                .accordion-container {
                     border: 1px solid #e5e7eb;
-                    border-radius: 8px;
+                    border-radius: 12px;
                     overflow: hidden;
-                    transition: all 0.2s ease;
+                    background: white;
+                    margin: 0;
+                    padding: 0;
                 }
 
-                .accordion-category:hover {
-                    border-color: #60a5fa;
-                    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+                /* Accordion Categories */
+                .accordion-category {
+                    margin: 0;
+                    border: none;
+                    border-radius: 0;
+                    overflow: hidden;
+                    transition: all 0.2s ease;
                 }
 
                 .category-header {
@@ -621,7 +628,12 @@ class KonvaSlideSystem {
                     background: #f8fafc;
                     cursor: pointer;
                     transition: all 0.2s ease;
-                    border-bottom: 1px solid transparent;
+                    border-top: 1px solid #e5e7eb;
+                    position: relative;
+                }
+
+                .accordion-category:first-child .category-header {
+                    border-top: none;
                 }
 
                 .category-header:hover {
@@ -630,7 +642,7 @@ class KonvaSlideSystem {
 
                 .accordion-category.expanded .category-header {
                     background: #eff6ff;
-                    border-bottom-color: #e5e7eb;
+                    border-bottom: 1px solid #e5e7eb;
                 }
 
                 .category-icon {
@@ -673,15 +685,34 @@ class KonvaSlideSystem {
 
                 .category-content {
                     padding: 0;
+                    margin: 0;
                     max-height: 0;
                     overflow: hidden;
                     transition: all 0.3s ease;
-                    background: white;
+                    background: #fafbfc;
+                    opacity: 0;
+                    border: none;
+                    box-sizing: border-box;
                 }
 
                 .accordion-category.expanded .category-content {
-                    padding: 16px 18px;
-                    max-height: 500px;
+                    padding: 18px;
+                    max-height: none;
+                    opacity: 1;
+                }
+
+                .accordion-category.expanded .category-header {
+                    border-bottom: none;
+                }
+
+                /* Content Area Reset */
+                .category-content * {
+                    margin: 0 !important;
+                    box-sizing: border-box;
+                }
+
+                .category-content {
+                    margin: 0 !important;
                 }
 
                 /* Color Schemes Grid */
@@ -689,6 +720,7 @@ class KonvaSlideSystem {
                     display: grid;
                     grid-template-columns: 1fr 1fr;
                     gap: 8px;
+                    margin: 0;
                 }
 
                 .color-scheme-tile {
@@ -705,14 +737,12 @@ class KonvaSlideSystem {
 
                 .color-scheme-tile:hover {
                     border-color: #60a5fa;
-                    transform: translateY(-1px);
-                    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+                    background: #f8fafc;
                 }
 
                 .color-scheme-tile.selected {
                     border-color: #2563eb;
                     background: #eff6ff;
-                    box-shadow: 0 2px 8px rgba(37, 99, 235, 0.2);
                 }
 
                 .scheme-preview {
@@ -742,6 +772,7 @@ class KonvaSlideSystem {
                     display: grid;
                     grid-template-columns: 1fr 1fr;
                     gap: 8px;
+                    margin: 0;
                 }
 
                 .sidebar-tool-btn {
@@ -796,6 +827,7 @@ class KonvaSlideSystem {
                     display: flex;
                     flex-direction: column;
                     gap: 12px;
+                    margin: 0;
                 }
 
                 .control-group {
@@ -2882,7 +2914,8 @@ class KonvaSlideSystem {
                 if (isExpanded) {
                     // Collapse
                     category.classList.remove('expanded');
-                    content.style.maxHeight = '0';
+                    content.style.maxHeight = '0px';
+                    content.style.padding = '0px';
                     content.style.opacity = '0';
                     chevron.style.transform = 'rotate(0deg)';
                 } else {
@@ -2893,15 +2926,26 @@ class KonvaSlideSystem {
                         const otherChevron = otherHeader.querySelector('.chevron');
 
                         otherCategory.classList.remove('expanded');
-                        otherContent.style.maxHeight = '0';
+                        otherContent.style.maxHeight = '0px';
+                        otherContent.style.padding = '0px';
                         otherContent.style.opacity = '0';
                         otherChevron.style.transform = 'rotate(0deg)';
                     });
 
                     // Expand this category
                     category.classList.add('expanded');
-                    content.style.maxHeight = content.scrollHeight + 'px';
-                    content.style.opacity = '1';
+                    // Calculate the actual content height
+                    content.style.padding = '18px';
+                    content.style.maxHeight = 'none';
+                    const actualHeight = content.scrollHeight;
+                    content.style.maxHeight = '0px';
+                    content.style.padding = '0px';
+                    // Use setTimeout to allow the browser to apply the height calculation
+                    setTimeout(() => {
+                        content.style.padding = '18px';
+                        content.style.maxHeight = actualHeight + 'px';
+                        content.style.opacity = '1';
+                    }, 10);
                     chevron.style.transform = 'rotate(90deg)';
                 }
             });
