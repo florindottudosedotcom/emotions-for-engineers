@@ -291,6 +291,7 @@ class KonvaSlideSystem {
                         </div>
                         <span class="scheme-name">Orange</span>
                     </div>
+                    </div>
                 </div>
             </div>
 
@@ -319,6 +320,7 @@ class KonvaSlideSystem {
                             <div class="tool-icon">&#127912;</div>
                             <span>Styled Text</span>
                         </button>
+                    </div>
                 </div>
             </div>
 
@@ -699,10 +701,6 @@ class KonvaSlideSystem {
                     padding: 18px;
                     max-height: none;
                     opacity: 1;
-                }
-
-                .accordion-category.expanded .category-header {
-                    border-bottom: none;
                 }
 
                 /* Content Area Reset */
@@ -2921,6 +2919,9 @@ class KonvaSlideSystem {
                 } else {
                     // Collapse all other categories first
                     categoryHeaders.forEach(otherHeader => {
+                        // Skip the current header to prevent visual flicker
+                        if (otherHeader === header) return;
+
                         const otherCategory = otherHeader.parentElement;
                         const otherContent = otherCategory.querySelector('.category-content');
                         const otherChevron = otherHeader.querySelector('.chevron');
@@ -2929,7 +2930,8 @@ class KonvaSlideSystem {
                         otherContent.style.maxHeight = '0px';
                         otherContent.style.padding = '0px';
                         otherContent.style.opacity = '0';
-                        otherChevron.style.transform = 'rotate(0deg)';
+                        // Remove inline transform to let CSS handle it
+                        otherChevron.style.transform = '';
                     });
 
                     // Expand this category
