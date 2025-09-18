@@ -3845,16 +3845,31 @@ function addNewSlide() {
     };
 
     slidesAppState.currentSlideData.slides.push(newSlide);
-    displaySlides(slidesAppState.currentSlideData);
-    saveSlides();
 
-    console.log('Added new slide:', newSlide);
+    // If we have a Konva system, add the slide directly without recreating everything
+    if (window.konvaSlideSystem && enhancedEditingEnabled) {
+        console.log('Adding slide directly to Konva system');
 
-    // Scroll to the new slide
-    const newSlideElement = document.querySelector(`[data-slide-index="${newSlideNumber - 1}"]`);
-    if (newSlideElement) {
-        newSlideElement.scrollIntoView({ behavior: 'smooth' });
+        // Add the new slide to the Konva system
+        window.konvaSlideSystem.addSlideFromData(newSlide);
+
+        // Navigate to the new slide (make it current)
+        const newSlideIndex = slidesAppState.currentSlideData.slides.length - 1;
+        window.konvaSlideSystem.showSlide(newSlideIndex);
+
+    } else {
+        // Fall back to full redisplay for HTML mode
+        displaySlides(slidesAppState.currentSlideData);
+
+        // Scroll to the new slide
+        const newSlideElement = document.querySelector(`[data-slide-index="${newSlideNumber - 1}"]`);
+        if (newSlideElement) {
+            newSlideElement.scrollIntoView({ behavior: 'smooth' });
+        }
     }
+
+    saveSlides();
+    console.log('Added new slide:', newSlide);
 }
 
 function deleteSlide(slideIndex) {

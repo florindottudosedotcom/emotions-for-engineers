@@ -1060,6 +1060,30 @@ class KonvaSlideSystem {
         }, 100);
     }
 
+    addSlideFromData(slideData) {
+        console.log('Adding new slide to Konva system:', slideData);
+
+        // Add to slides array
+        this.slides.push(slideData);
+
+        // Create slide objects for this slide
+        const slideIndex = this.slides.length - 1;
+        try {
+            const slideContent = this.createSlideFromData(slideData, slideIndex);
+            console.log(`Created ${slideContent.length} objects for new slide ${slideIndex + 1}`);
+            this.slideObjects.push(slideContent);
+        } catch (error) {
+            console.error(`Error creating new slide ${slideIndex + 1}:`, error);
+            this.slideObjects.push([]); // Add empty slide to maintain indexing
+        }
+
+        // Update navigation to show new slide count
+        this.updateNavigation();
+
+        console.log(`Added slide ${slideIndex + 1}, total slides: ${this.slides.length}`);
+        return slideIndex;
+    }
+
     createSlideFromData(slide, slideIndex) {
         const slideObjects = [];
 
@@ -2383,10 +2407,15 @@ class KonvaSlideSystem {
     }
 
     setupSelection() {
+        console.log('Setting up selection system');
+
         // Click on empty space to deselect
         this.stage.on('click tap', (e) => {
+            console.log('Stage clicked, target:', e.target.getClassName());
+
             // If clicking on empty space
             if (e.target === this.stage) {
+                console.log('Clicked on empty space, deselecting');
                 this.selectObject(null);
                 return;
             }
@@ -2394,45 +2423,61 @@ class KonvaSlideSystem {
             // If clicking on an object
             const clickedObject = e.target;
             if (clickedObject.getClassName() !== 'Transformer') {
+                console.log('Selecting object:', clickedObject.getClassName());
                 this.selectObject(clickedObject);
             }
         });
 
+        // Ensure stage is focusable and focused for keyboard events
+        this.stage.container().tabIndex = 1;
+        this.stage.container().focus();
+
         // Setup keyboard events
         this.setupKeyboardHandlers();
+
+        console.log('Selection system setup complete');
     }
 
     selectObject(obj) {
+        console.log('Selecting object:', obj ? obj.getClassName() : 'null');
         this.selectedObject = obj;
 
         if (obj) {
             // Attach transformer to selected object
             this.transformer.nodes([obj]);
             this.transformer.show();
+            console.log('Transformer attached and shown');
         } else {
             // Hide transformer when nothing is selected
             this.transformer.nodes([]);
             this.transformer.hide();
+            console.log('Transformer hidden');
         }
 
         this.layer.batchDraw();
     }
 
     setupKeyboardHandlers() {
-        // Make stage focusable
+        console.log('Setting up keyboard handlers');
+
+        // Make stage focusable - redundant call but ensure it's set
         this.stage.container().tabIndex = 1;
         this.stage.container().focus();
 
         // Handle keydown events
         this.stage.container().addEventListener('keydown', (e) => {
+            console.log('Key pressed:', e.key, 'Selected object:', this.selectedObject);
+
             // Delete selected object with Delete key
             if (e.key === 'Delete' && this.selectedObject) {
+                console.log('Deleting selected object');
                 this.deleteSelectedObject();
                 e.preventDefault();
             }
 
             // Add new slide with Ctrl+M
             if (e.ctrlKey && e.key.toLowerCase() === 'm') {
+                console.log('Ctrl+M pressed, adding new slide');
                 if (window.addNewSlide) {
                     window.addNewSlide();
                 } else {
@@ -2441,6 +2486,8 @@ class KonvaSlideSystem {
                 e.preventDefault();
             }
         });
+
+        console.log('Keyboard handlers setup complete');
     }
 
     deleteSelectedObject() {
