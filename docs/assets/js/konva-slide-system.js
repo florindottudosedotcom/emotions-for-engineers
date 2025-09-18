@@ -1430,8 +1430,9 @@ class KonvaSlideSystem {
             return;
         }
 
-        // Clear current layer without destroying objects (we'll reuse them)
-        this.layer.removeChildren();
+        // Clear current layer but preserve the transformer
+        const childrenToRemove = this.layer.children.filter(child => child !== this.transformer);
+        childrenToRemove.forEach(child => child.remove());
 
         // Add background rectangle first (for PDF export) using actual dimensions
         const backgroundRect = new Konva.Rect({
@@ -1452,6 +1453,12 @@ class KonvaSlideSystem {
             });
         } else {
             console.log(`No objects found for slide ${index + 1}`);
+        }
+
+        // Ensure transformer is in the layer after switching slides
+        if (this.transformer.getParent() !== this.layer) {
+            console.log('Re-adding transformer to layer after slide switch');
+            this.layer.add(this.transformer);
         }
 
         this.layer.draw();
@@ -2364,7 +2371,15 @@ class KonvaSlideSystem {
     }
 
     clearSlide() {
-        this.layer.destroyChildren();
+        // Destroy all children except the transformer
+        const childrenToDestroy = this.layer.children.filter(child => child !== this.transformer);
+        childrenToDestroy.forEach(child => child.destroy());
+
+        // Re-add transformer if it was removed
+        if (this.transformer.getParent() !== this.layer) {
+            this.layer.add(this.transformer);
+        }
+
         this.slideObjects[this.currentSlideIndex] = [];
         this.layer.draw();
         this.saveSlideState();
@@ -2459,13 +2474,26 @@ class KonvaSlideSystem {
         this.selectedObject = obj;
 
         if (obj) {
+            // Ensure transformer is in the layer first
+            if (this.transformer.getParent() !== this.layer) {
+                console.log('Re-adding transformer to layer');
+                this.layer.add(this.transformer);
+            }
+
             // Attach transformer to selected object
             this.transformer.nodes([obj]);
             this.transformer.show();
-            this.transformer.moveToTop(); // Ensure transformer is on top
-            console.log('Transformer attached and shown, moved to top');
+
+            // Move to top only if it has a parent
+            if (this.transformer.getParent()) {
+                this.transformer.moveToTop();
+                console.log('Transformer moved to top');
+            }
+
+            console.log('Transformer attached and shown');
             console.log('Transformer visible:', this.transformer.visible());
             console.log('Transformer nodes:', this.transformer.nodes().length);
+            console.log('Transformer parent:', this.transformer.getParent() ? 'has parent' : 'no parent');
         } else {
             // Hide transformer when nothing is selected
             this.transformer.nodes([]);
@@ -2476,6 +2504,10 @@ class KonvaSlideSystem {
         // Force layer redraw with debug
         this.layer.batchDraw();
         console.log('Layer redrawn, children count:', this.layer.children.length);
+
+        // Additional debug: force stage redraw
+        this.stage.batchDraw();
+        console.log('Stage also redrawn');
     }
 
     setupKeyboardHandlers() {
