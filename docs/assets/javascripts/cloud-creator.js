@@ -10,8 +10,7 @@
           this.languageSelector = null;
           this.courseDisplay = null;
           this.currentCourse = null;
-          this.apiKeys =
-  this.common.loadFromLocalStorage('cloudCreator_apiKeys', {});
+          this.apiKeys = this.common.loadFromLocalStorage('cloudCreator_apiKeys') || {};
 
           this.init();
       }
@@ -111,12 +110,14 @@
 
       loadSavedSettings() {
           // Load saved API keys
-          Object.entries(this.apiKeys).forEach(([provider, key]) => {
-              const input = document.getElementById(`${provider}-key`);
-              if (input && key) {
-                  input.value = key;
-              }
-          });
+          if (this.apiKeys && typeof this.apiKeys === 'object') {
+              Object.entries(this.apiKeys).forEach(([provider, key]) => {
+                  const input = document.getElementById(`${provider}-key`);
+                  if (input && key) {
+                      input.value = key;
+                  }
+              });
+          }
 
           // Load last used provider
           const lastProvider =
