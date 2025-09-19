@@ -1,0 +1,220 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Slides Creator - Choose Your AI Provider</title>
+    <link rel="stylesheet" href="./assets/minimal-theme.css" />
+    <link rel="stylesheet" href="./assets/course-creator.css" />
+    <style>
+        .provider-selector {
+            margin: 2rem 0;
+            text-align: center;
+        }
+
+        .provider-tabs {
+            display: flex;
+            justify-content: center;
+            gap: 1rem;
+            margin-bottom: 2rem;
+            flex-wrap: wrap;
+        }
+
+        .provider-tab {
+            padding: 12px 24px;
+            border: 2px solid #ddd;
+            border-radius: 8px;
+            background: white;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-weight: 500;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            min-width: 140px;
+            justify-content: center;
+        }
+
+        .provider-tab:hover {
+            border-color: #667eea;
+            background: #f8f9ff;
+        }
+
+        .provider-tab.active {
+            border-color: #667eea;
+            background: #667eea;
+            color: white;
+        }
+
+        .provider-tab .icon {
+            font-size: 1.2em;
+        }
+
+        .creator-frame {
+            width: 100%;
+            height: calc(100vh - 200px);
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            min-height: 600px;
+        }
+
+        .loading-state {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            height: 400px;
+            color: #666;
+            flex-direction: column;
+            gap: 1rem;
+        }
+
+        .provider-info {
+            text-align: center;
+            margin: 1rem 0;
+            padding: 1rem;
+            background: #f8f9ff;
+            border-radius: 8px;
+            display: none;
+        }
+
+        .provider-info.active {
+            display: block;
+        }
+
+        .provider-info h3 {
+            margin: 0 0 0.5rem 0;
+            color: #667eea;
+        }
+
+        .provider-info p {
+            margin: 0;
+            color: #666;
+            font-size: 0.9em;
+        }
+
+        .back-button {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            text-decoration: none;
+            color: #667eea;
+            font-weight: 500;
+            margin-bottom: 1rem;
+            padding: 0.5rem 1rem;
+            border-radius: 6px;
+            transition: background-color 0.2s;
+        }
+
+        .back-button:hover {
+            background-color: #f8f9ff;
+        }
+
+        .slides-icon {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+    </style>
+</head>
+<body class="text-minimal">
+    <div class="main-container container-minimal">
+        <a href="index.html" class="back-button">
+            ← Back to Creator Hub
+        </a>
+
+        <h1><span class="slides-icon">🎨</span> AI Slides Creator</h1>
+        <p>Create beautiful, AI-powered presentations with visual elements. Choose your preferred AI provider below:</p>
+
+        <div class="provider-selector">
+            <div class="provider-tabs">
+                <div class="provider-tab" data-provider="cloud">
+                    <span class="icon">☁️</span>
+                    <span>Cloud AI</span>
+                </div>
+                <div class="provider-tab" data-provider="webllm">
+                    <span class="icon">🧠</span>
+                    <span>WebLLM</span>
+                </div>
+                <div class="provider-tab" data-provider="ollama">
+                    <span class="icon">🖥️</span>
+                    <span>Ollama</span>
+                </div>
+            </div>
+
+            <div class="provider-info" data-info="cloud">
+                <h3>☁️ Cloud AI Slides</h3>
+                <p>Create presentations with OpenAI, Anthropic, or Google AI. Advanced visual generation capabilities with API access.</p>
+            </div>
+
+            <div class="provider-info" data-info="webllm">
+                <h3>🧠 WebLLM Slides</h3>
+                <p>Generate slides entirely in your browser. No API keys needed, works offline with local AI models.</p>
+            </div>
+
+            <div class="provider-info" data-info="ollama">
+                <h3>🖥️ Ollama Slides</h3>
+                <p>Use your local Ollama server for slide generation. Complete privacy with local AI processing.</p>
+            </div>
+        </div>
+
+        <div id="creator-container">
+            <div class="loading-state">
+                <div>👆 Select an AI provider above to get started</div>
+                <p>Each provider offers different capabilities for creating engaging presentations.</p>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const providerTabs = document.querySelectorAll('.provider-tab');
+        const providerInfos = document.querySelectorAll('.provider-info');
+        const creatorContainer = document.getElementById('creator-container');
+
+        const providerUrls = {
+            cloud: 'slides/cloud.html',
+            webllm: 'slides/webllm.html',
+            ollama: 'slides/ollama.html'
+        };
+
+        function showProvider(provider) {
+            // Update tab states
+            providerTabs.forEach(tab => {
+                tab.classList.toggle('active', tab.dataset.provider === provider);
+            });
+
+            // Update info states
+            providerInfos.forEach(info => {
+                info.classList.toggle('active', info.dataset.info === provider);
+            });
+
+            // Load provider in iframe
+            const iframe = document.createElement('iframe');
+            iframe.src = providerUrls[provider];
+            iframe.className = 'creator-frame';
+            iframe.title = `${provider} Slides Creator`;
+
+            // Clear container and add iframe
+            creatorContainer.innerHTML = '';
+            creatorContainer.appendChild(iframe);
+
+            // Store selection
+            localStorage.setItem('lastSlidesProvider', provider);
+        }
+
+        // Add click listeners
+        providerTabs.forEach(tab => {
+            tab.addEventListener('click', () => {
+                const provider = tab.dataset.provider;
+                showProvider(provider);
+            });
+        });
+
+        // Restore last selection
+        const lastProvider = localStorage.getItem('lastSlidesProvider');
+        if (lastProvider && providerUrls[lastProvider]) {
+            showProvider(lastProvider);
+        }
+    </script>
+</body>
+</html>
