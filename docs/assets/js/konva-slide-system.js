@@ -22,6 +22,7 @@ class KonvaSlideSystem {
 
         // Selection system
         this.selectedObject = null;
+        this.selectedSlide = false; // Track if entire slide is selected
         this.transformer = null;
 
         this.init();
@@ -79,16 +80,23 @@ class KonvaSlideSystem {
         // Create transformer for visual selection feedback
         this.transformer = new Konva.Transformer({
             enabledAnchors: ['top-left', 'top-right', 'bottom-left', 'bottom-right'],
-            borderStroke: '#ff0000', // Bright red for testing visibility
-            borderStrokeWidth: 3,
-            anchorStroke: '#ff0000',
+            borderStroke: '#60a5fa', // Soft blue color
+            borderStrokeWidth: 1.5,
+            anchorStroke: '#3b82f6',
             anchorFill: '#ffffff',
-            anchorStrokeWidth: 2,
-            anchorSize: 12,
-            borderDash: [5, 5],
+            anchorStrokeWidth: 1,
+            anchorSize: 8,
             rotateEnabled: false,
             keepRatio: false,
-            centeredScaling: false
+            centeredScaling: false,
+            boundBoxFunc: (oldBox, newBox) => {
+                // Ensure minimum size for visibility
+                return {
+                    ...newBox,
+                    width: Math.max(newBox.width, 10),
+                    height: Math.max(newBox.height, 10)
+                };
+            }
         });
         this.layer.add(this.transformer);
 
@@ -1430,8 +1438,10 @@ class KonvaSlideSystem {
             return;
         }
 
-        // Clear current layer but preserve the transformer
-        const childrenToRemove = this.layer.children.filter(child => child !== this.transformer);
+        // Clear current layer but preserve the transformer and slide selection
+        const childrenToRemove = this.layer.children.filter(child =>
+            child !== this.transformer && child.name() !== 'slide-selection'
+        );
         childrenToRemove.forEach(child => child.remove());
 
         // Add background rectangle first (for PDF export) using actual dimensions
@@ -2371,8 +2381,10 @@ class KonvaSlideSystem {
     }
 
     clearSlide() {
-        // Destroy all children except the transformer
-        const childrenToDestroy = this.layer.children.filter(child => child !== this.transformer);
+        // Destroy all children except the transformer and slide selection
+        const childrenToDestroy = this.layer.children.filter(child =>
+            child !== this.transformer && child.name() !== 'slide-selection'
+        );
         childrenToDestroy.forEach(child => child.destroy());
 
         // Re-add transformer if it was removed
@@ -2429,14 +2441,21 @@ class KonvaSlideSystem {
     setupSelection() {
         console.log('Setting up selection system');
 
-        // Click on empty space to deselect
+        // Click on empty space to deselect or select slide
         this.stage.on('click tap', (e) => {
             console.log('Stage clicked, target:', e.target.getClassName());
 
             // If clicking on empty space
             if (e.target === this.stage) {
-                console.log('Clicked on empty space, deselecting');
-                this.selectObject(null);
+                // If Ctrl is held, select the entire slide
+                if (e.evt && e.evt.ctrlKey) {
+                    console.log('Ctrl+Click on empty space, selecting slide');
+                    this.selectSlide();
+                } else {
+                    console.log('Clicked on empty space, deselecting');
+                    this.selectObject(null);
+                    this.deselectSlide();
+                }
                 return;
             }
 
@@ -2445,6 +2464,15 @@ class KonvaSlideSystem {
             if (clickedObject.getClassName() !== 'Transformer') {
                 console.log('Selecting object:', clickedObject.getClassName());
                 this.selectObject(clickedObject);
+                this.deselectSlide(); // Deselect slide when selecting object
+            }
+        });
+
+        // Double click on empty space to select slide
+        this.stage.on('dblclick dbltap', (e) => {
+            if (e.target === this.stage) {
+                console.log('Double-click on empty space, selecting slide');
+                this.selectSlide();
             }
         });
 
@@ -2510,6 +2538,54 @@ class KonvaSlideSystem {
         console.log('Stage also redrawn');
     }
 
+    selectSlide() {
+        console.log('Selecting entire slide');
+        this.selectedSlide = true;
+        this.selectObject(null); // Deselect any objects
+
+        // Add visual indicator for selected slide
+        this.showSlideSelection();
+    }
+
+    deselectSlide() {
+        if (this.selectedSlide) {
+            console.log('Deselecting slide');
+            this.selectedSlide = false;
+            this.hideSlideSelection();
+        }
+    }
+
+    showSlideSelection() {
+        // Remove existing slide selection indicator
+        this.hideSlideSelection();
+
+        // Create a border around the entire slide area
+        this.slideSelectionRect = new Konva.Rect({
+            x: 0,
+            y: 0,
+            width: this.actualWidth,
+            height: this.actualHeight,
+            stroke: '#3b82f6',
+            strokeWidth: 3,
+            fill: 'transparent',
+            dash: [10, 5],
+            listening: false,
+            name: 'slide-selection'
+        });
+
+        this.layer.add(this.slideSelectionRect);
+        this.slideSelectionRect.moveToTop();
+        this.layer.batchDraw();
+    }
+
+    hideSlideSelection() {
+        if (this.slideSelectionRect) {
+            this.slideSelectionRect.destroy();
+            this.slideSelectionRect = null;
+            this.layer.batchDraw();
+        }
+    }
+
     setupKeyboardHandlers() {
         console.log('Setting up keyboard handlers');
 
@@ -2519,13 +2595,19 @@ class KonvaSlideSystem {
 
         // Handle keydown events
         this.stage.container().addEventListener('keydown', (e) => {
-            console.log('Key pressed:', e.key, 'Selected object:', this.selectedObject);
+            console.log('Key pressed:', e.key, 'Selected object:', this.selectedObject, 'Selected slide:', this.selectedSlide);
 
-            // Delete selected object with Delete key
-            if (e.key === 'Delete' && this.selectedObject) {
-                console.log('Deleting selected object');
-                this.deleteSelectedObject();
-                e.preventDefault();
+            // Delete selected object or slide with Delete key
+            if (e.key === 'Delete') {
+                if (this.selectedObject) {
+                    console.log('Deleting selected object');
+                    this.deleteSelectedObject();
+                    e.preventDefault();
+                } else if (this.selectedSlide) {
+                    console.log('Deleting selected slide');
+                    this.deleteCurrentSlide();
+                    e.preventDefault();
+                }
             }
 
             // Add new slide with Ctrl+M
@@ -2562,6 +2644,54 @@ class KonvaSlideSystem {
         this.selectObject(null);
 
         console.log('Deleted selected object');
+    }
+
+    deleteCurrentSlide() {
+        if (this.slides.length <= 1) {
+            console.log('Cannot delete the last slide');
+            alert('Cannot delete the last slide. A presentation must have at least one slide.');
+            return;
+        }
+
+        const slideNumber = this.currentSlideIndex + 1;
+        const confirmDelete = confirm(`Are you sure you want to delete Slide ${slideNumber}?`);
+
+        if (!confirmDelete) {
+            return;
+        }
+
+        console.log(`Deleting slide ${slideNumber}`);
+
+        // Remove from slides array
+        this.slides.splice(this.currentSlideIndex, 1);
+        this.slideObjects.splice(this.currentSlideIndex, 1);
+
+        // Update the main slides data
+        if (window.slidesAppState && window.slidesAppState.currentSlideData) {
+            window.slidesAppState.currentSlideData.slides.splice(this.currentSlideIndex, 1);
+
+            // Renumber remaining slides
+            window.slidesAppState.currentSlideData.slides.forEach((slide, index) => {
+                slide.slideNumber = index + 1;
+            });
+
+            // Save the updated data
+            if (window.saveSlides) {
+                window.saveSlides();
+            }
+        }
+
+        // Adjust current slide index
+        if (this.currentSlideIndex >= this.slides.length) {
+            this.currentSlideIndex = this.slides.length - 1;
+        }
+
+        // Deselect slide and show the adjusted current slide
+        this.deselectSlide();
+        this.showSlide(this.currentSlideIndex);
+        this.updateNavigation();
+
+        console.log(`Slide deleted. Showing slide ${this.currentSlideIndex + 1} of ${this.slides.length}`);
     }
 
     showShapeModal() {
