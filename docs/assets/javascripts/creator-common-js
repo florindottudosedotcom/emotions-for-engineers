@@ -1,0 +1,240 @@
+/**
+   * Common utilities and functions shared across course creator tools
+   * Replaces 3000+ lines of duplicated code
+   */
+
+  class CreatorCommon {
+      constructor() {
+          this.supportedLanguages = [
+              { code: 'en', name: 'English', flag: '🇺🇸' },
+              { code: 'de', name: 'Deutsch', flag: '🇩🇪' },
+              { code: 'fr', name: 'Français', flag: '🇫🇷' },
+              { code: 'hi', name: 'हिन्दी', flag: '🇮🇳' },
+              { code: 'it', name: 'Italiano', flag: '🇮🇹' },
+              { code: 'ja', name: '日本語', flag: '🇯🇵' },
+              { code: 'pt', name: 'Português', flag: '🇵🇹' },
+              { code: 'ro', name: 'Română', flag: '🇷🇴' },
+              { code: 'ru', name: 'Русский', flag: '🇷🇺' },
+              { code: 'es', name: 'Español', flag: '🇪🇸' },
+              { code: 'zh', name: '中文', flag: '🇨🇳' }
+          ];
+      }
+
+      // Safe element creation to prevent XSS
+      createElement(tag, attributes = {}, textContent = '') {
+          const element = document.createElement(tag);
+          Object.entries(attributes).forEach(([key, value]) => {
+              if (key === 'className') {
+                  element.className = value;
+              } else {
+                  element.setAttribute(key, value);
+              }
+          });
+          if (textContent) {
+              element.textContent = textContent;
+          }
+          return element;
+      }
+
+      // Safe text content setting
+      setTextContent(elementId, text) {
+          const element = document.getElementById(elementId);
+          if (element) {
+              element.textContent = text;
+          }
+      }
+
+      // Show/hide elements with animation
+      showElement(elementId, display = 'block') {
+          const element = document.getElementById(elementId);
+          if (element) {
+              element.style.display = display;
+              element.style.opacity = '0';
+              element.style.transition = 'opacity 0.3s ease-in-out';
+              setTimeout(() => element.style.opacity = '1', 10);
+          }
+      }
+
+      hideElement(elementId) {
+          const element = document.getElementById(elementId);
+          if (element) {
+              element.style.transition = 'opacity 0.3s ease-in-out';
+              element.style.opacity = '0';
+              setTimeout(() => element.style.display = 'none', 300);
+          }
+      }
+
+      // Language management
+      populateLanguageSelect(selectElementId, defaultLang = 'en') {
+          const select = document.getElementById(selectElementId);
+          if (!select) return;
+          select.innerHTML = '';
+          this.supportedLanguages.forEach(lang => {
+              const option = this.createElement('option', { value: lang.code
+   });
+              option.textContent = `${lang.flag} ${lang.name}`;
+              if (lang.code === defaultLang) {
+                  option.selected = true;
+              }
+              select.appendChild(option);
+          });
+      }
+
+      getLanguageName(code) {
+          const lang = this.supportedLanguages.find(l => l.code === code);
+          return lang ? lang.name : 'Unknown';
+      }
+
+      // Notifications
+      showNotification(type, message, duration = 5000) {
+          const existingNotifications =
+  document.querySelectorAll('.notification');
+          existingNotifications.forEach(notification =>
+  notification.remove());
+
+          const notification = this.createElement('div', {
+              className: `notification notification-${type}`,
+              style: `position: fixed; top: 20px; right: 20px; padding: 15px
+   20px; border-radius: 5px; color: white; font-weight: bold; z-index: 9999;
+   max-width: 400px; opacity: 0; transition: opacity 0.3s ease-in-out; 
+  background-color: ${type === 'error' ? '#dc3545' : type === 'success' ? 
+  '#28a745' : '#007bff'};`
+          }, message);
+
+          document.body.appendChild(notification);
+          setTimeout(() => notification.style.opacity = '1', 10);
+          setTimeout(() => {
+              notification.style.opacity = '0';
+              setTimeout(() => notification.remove(), 300);
+          }, duration);
+          return notification;
+      }
+
+      showError(message) {
+          console.error('Creator Error:', message);
+          return this.showNotification('error', message);
+      }
+
+      showSuccess(message) {
+          return this.showNotification('success', message);
+      }
+
+      showInfo(message) {
+          return this.showNotification('info', message);
+      }
+
+      // API utilities
+      async makeApiRequest(url, options = {}) {
+          const defaultOptions = {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              ...options
+          };
+
+          try {
+              const response = await fetch(url, defaultOptions);
+              if (!response.ok) {
+                  throw new Error(`HTTP error! status: ${response.status}`);
+              }
+              return await response.json();
+          } catch (error) {
+              console.error('API Request failed:', error);
+              throw error;
+          }
+      }
+
+      // File utilities
+      sanitizeFilename(filename) {
+          return filename.toLowerCase().replace(/[^a-z0-9\s-]/g,
+  '').replace(/\s+/g, '-').replace(/-+/g, '-').trim();
+      }
+
+      async createCourseZip(courseData, courseName) {
+          const JSZip = await
+  import('https://cdn.jsdelivr.net/npm/jszip@3.10.1/+esm');
+          const zip = new JSZip.default();
+          const sanitizedName = this.sanitizeFilename(courseName);
+
+          Object.entries(courseData.files).forEach(([filename, content]) =>
+  {
+              zip.file(filename, content);
+          });
+
+          const blob = await zip.generateAsync({ type: 'blob' });
+          return { blob, filename: `${sanitizedName}-course.zip` };
+      }
+
+      downloadFile(blob, filename) {
+          const url = URL.createObjectURL(blob);
+          const a = this.createElement('a', { href: url, download: filename,
+   style: 'display: none' });
+          document.body.appendChild(a);
+          a.click();
+          document.body.removeChild(a);
+          URL.revokeObjectURL(url);
+      }
+
+      // Validation
+      validateRequired(value, fieldName) {
+          if (!value || value.trim() === '') {
+              throw new Error(`${fieldName} is required`);
+          }
+          return true;
+      }
+
+      validateApiKey(apiKey, provider) {
+          this.validateRequired(apiKey, `${provider} API key`);
+          const patterns = {
+              openai: /^sk-[a-zA-Z0-9]{48,}$/,
+              anthropic: /^sk-ant-[a-zA-Z0-9-]{95,}$/,
+              google: /^[a-zA-Z0-9_-]{39}$/
+          };
+          if (patterns[provider] && !patterns[provider].test(apiKey)) {
+              throw new Error(`Invalid ${provider} API key format`);
+          }
+          return true;
+      }
+
+      // Storage
+      saveToLocalStorage(key, data) {
+          try {
+              localStorage.setItem(key, JSON.stringify(data));
+          } catch (error) {
+              console.warn('Failed to save to localStorage:', error);
+          }
+      }
+
+      loadFromLocalStorage(key, defaultValue = null) {
+          try {
+              const stored = localStorage.getItem(key);
+              return stored ? JSON.parse(stored) : defaultValue;
+          } catch (error) {
+              console.warn('Failed to load from localStorage:', error);
+              return defaultValue;
+          }
+      }
+
+      // Environment detection
+      isLocalEnvironment() {
+          return window.location.hostname === 'localhost' ||
+  window.location.hostname === '127.0.0.1';
+      }
+
+      // Debounce utility
+      debounce(func, wait) {
+          let timeout;
+          return function executedFunction(...args) {
+              const later = () => {
+                  clearTimeout(timeout);
+                  func(...args);
+              };
+              clearTimeout(timeout);
+              timeout = setTimeout(later, wait);
+          };
+      }
+  }
+
+  // Export for use in other modules
+  window.CreatorCommon = CreatorCommon;
+  window.creatorCommon = new CreatorCommon();
+

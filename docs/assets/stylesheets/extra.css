@@ -1,0 +1,581 @@
+  /* Custom styles for the Universal Course Platform */
+
+  /* CSS Custom Properties for consistent theming */
+  :root {
+      --primary-color: #667eea;
+      --secondary-color: #764ba2;
+      --success-color: #28a745;
+      --danger-color: #dc3545;
+      --warning-color: #ffc107;
+      --info-color: #17a2b8;
+      --light-color: #f8f9fa;
+      --dark-color: #343a40;
+      --border-radius: 12px;
+      --box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+      --transition: all 0.3s ease;
+  }
+
+  /* Course Grid Layout */
+  .course-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+      gap: 2rem;
+      padding: 2rem 0;
+  }
+
+  .course-card {
+      border: 1px solid #e0e0e0;
+      border-radius: var(--border-radius);
+      padding: 1.5rem;
+      background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+      transition: var(--transition);
+      height: 100%;
+      display: flex;
+      flex-direction: column;
+  }
+
+  .course-card:hover {
+      transform: translateY(-5px);
+      box-shadow: var(--box-shadow);
+  }
+
+  .course-card h3 {
+      color: var(--dark-color);
+      margin-bottom: 1rem;
+      font-weight: 600;
+  }
+
+  .course-card .course-meta {
+      margin-top: auto;
+      padding-top: 1rem;
+      border-top: 1px solid rgba(255,255,255,0.3);
+  }
+
+  /* Component Styles */
+
+  /* Language Selector Component */
+  .language-selector {
+      margin-bottom: 1rem;
+  }
+
+  .language-label {
+      font-weight: 600;
+      color: var(--dark-color);
+      margin-bottom: 0.5rem;
+      display: block;
+  }
+
+  .language-selector select {
+      border-radius: var(--border-radius);
+      border: 2px solid #e9ecef;
+      transition: var(--transition);
+  }
+
+  .language-selector select:focus {
+      border-color: var(--primary-color);
+      box-shadow: 0 0 0 0.2rem rgba(102, 126, 234, 0.25);
+  }
+
+  /* Progress Indicator Component */
+  .progress-indicator {
+      margin: 1rem 0;
+  }
+
+  .progress {
+      border-radius: 10px;
+      overflow: hidden;
+      background-color: #e9ecef;
+      height: 25px;
+  }
+
+  .progress-bar {
+      border-radius: 10px;
+      font-size: 14px;
+      font-weight: 600;
+      text-align: center;
+      line-height: 25px;
+      transition: width 0.6s ease;
+  }
+
+  .progress-status {
+      text-align: center;
+      margin-top: 0.5rem;
+      font-size: 14px;
+      color: #6c757d;
+      font-weight: 500;
+  }
+
+  /* Course Structure Display Component */
+  .course-structure {
+      background: var(--light-color);
+      border-radius: var(--border-radius);
+      padding: 1.5rem;
+      border: 1px solid #dee2e6;
+  }
+
+  .course-title {
+      color: var(--primary-color);
+      margin-bottom: 1rem;
+      font-weight: 700;
+  }
+
+  .course-description {
+      color: #6c757d;
+      margin-bottom: 1rem;
+      line-height: 1.6;
+  }
+
+  .chapter-count {
+      font-size: 0.9rem;
+      color: #6c757d;
+      margin-bottom: 1rem;
+  }
+
+  .chapters-list {
+      padding-left: 1.5rem;
+  }
+
+  .chapter-item {
+      margin-bottom: 0.75rem;
+      line-height: 1.5;
+  }
+
+  /* Settings Panel Component */
+  .settings-panel {
+      background: #f8f9fa;
+      border-radius: var(--border-radius);
+      padding: 1.5rem;
+      border: 1px solid #dee2e6;
+  }
+
+  .setting-group {
+      margin-bottom: 1.5rem;
+  }
+
+  .setting-group:last-child {
+      margin-bottom: 0;
+  }
+
+  .setting-group label {
+      font-weight: 600;
+      color: var(--dark-color);
+      margin-bottom: 0.5rem;
+      display: block;
+  }
+
+  .setting-group input,
+  .setting-group select {
+      border-radius: var(--border-radius);
+      border: 2px solid #e9ecef;
+      transition: var(--transition);
+  }
+
+  .setting-group input:focus,
+  .setting-group select:focus {
+      border-color: var(--primary-color);
+      box-shadow: 0 0 0 0.2rem rgba(102, 126, 234, 0.25);
+  }
+
+  .setting-group small {
+      color: #6c757d;
+      font-size: 0.875rem;
+      line-height: 1.4;
+  }
+
+  /* Notification Styles */
+  .notification {
+      position: fixed;
+      top: 20px;
+      right: 20px;
+      z-index: 9999;
+      max-width: 400px;
+      border-radius: var(--border-radius);
+      font-weight: 600;
+      box-shadow: var(--box-shadow);
+  }
+
+  .notification-error {
+      background-color: var(--danger-color);
+      color: white;
+  }
+
+  .notification-success {
+      background-color: var(--success-color);
+      color: white;
+  }
+
+  .notification-info {
+      background-color: var(--info-color);
+      color: white;
+  }
+
+  /* Enhanced Button Styles */
+  .btn {
+      border-radius: var(--border-radius);
+      font-weight: 600;
+      transition: var(--transition);
+  }
+
+  .btn:hover {
+      transform: translateY(-2px);
+      box-shadow: var(--box-shadow);
+  }
+
+  /* Language Flag */
+  .language-flag {
+      font-size: 1.2em;
+      margin-right: 0.5rem;
+  }
+
+  /* Creator Card Styles for Main Launcher */
+  .creator-card {
+      border: none;
+      border-radius: 15px;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+      transition: transform 0.3s ease, box-shadow 0.3s ease;
+      height: 100%;
+      position: relative;
+  }
+
+  .creator-card:hover {
+      transform: translateY(-5px);
+      box-shadow: 0 15px 40px rgba(0,0,0,0.15);
+  }
+
+  .creator-icon {
+      font-size: 3rem;
+      margin-bottom: 1rem;
+  }
+
+  .feature-list {
+      list-style: none;
+      padding: 0;
+  }
+
+  .feature-list li {
+      padding: 0.5rem 0;
+      border-bottom: 1px solid #eee;
+  }
+
+  .feature-list li:last-child {
+      border-bottom: none;
+  }
+
+  .feature-list li i {
+      color: #28a745;
+      margin-right: 0.5rem;
+  }
+
+  .availability-badge {
+      position: absolute;
+      top: 15px;
+      right: 15px;
+      font-size: 0.8rem;
+  }
+
+  .btn-creator {
+      background: linear-gradient(45deg, #667eea, #764ba2);
+      border: none;
+      color: white;
+      font-weight: bold;
+      padding: 12px 30px;
+      border-radius: 25px;
+      transition: all 0.3s ease;
+  }
+
+  .btn-creator:hover {
+      transform: scale(1.05);
+      box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+      color: white;
+  }
+
+  .pros-cons {
+      background: #f8f9fa;
+      border-radius: 10px;
+      padding: 1rem;
+      margin-top: 1rem;
+  }
+
+  .pros {
+      color: #28a745;
+  }
+
+  .cons {
+      color: #dc3545;
+  }
+
+  /* Gradient Backgrounds for Different Creators */
+  .bg-gradient-primary {
+      background: linear-gradient(135deg, #007bff 0%, #0056b3 100%);
+  }
+
+  .bg-gradient-success {
+      background: linear-gradient(135deg, #28a745 0%, #1e7e34 100%);
+  }
+
+  .bg-gradient-warning {
+      background: linear-gradient(135deg, #ffc107 0%, #e0a800 100%);
+  }
+
+  /* Responsive Design */
+  @media (max-width: 768px) {
+      .course-grid {
+          grid-template-columns: 1fr;
+          gap: 1rem;
+          padding: 1rem 0;
+      }
+
+      .course-card {
+          padding: 1rem;
+      }
+
+      .settings-panel {
+          padding: 1rem;
+      }
+
+      .course-structure {
+          padding: 1rem;
+      }
+
+      .notification {
+          top: 10px;
+          right: 10px;
+          left: 10px;
+          max-width: none;
+      }
+
+      .creator-card {
+          margin-bottom: 1.5rem;
+      }
+
+      .creator-icon {
+          font-size: 2.5rem;
+      }
+  }
+
+  @media (max-width: 576px) {
+      .btn-lg {
+          font-size: 1rem;
+          padding: 0.75rem 1rem;
+      }
+
+      .course-title {
+          font-size: 1.5rem;
+      }
+
+      .chapters-list {
+          padding-left: 1rem;
+      }
+
+      .btn-creator {
+          padding: 10px 20px;
+          font-size: 0.9rem;
+      }
+
+      .setting-group {
+          margin-bottom: 1rem;
+      }
+  }
+
+  /* Loading States */
+  .loading {
+      opacity: 0.6;
+      pointer-events: none;
+  }
+
+  .loading::after {
+      content: '';
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      width: 20px;
+      height: 20px;
+      margin-top: -10px;
+      margin-left: -10px;
+      border: 2px solid #f3f3f3;
+      border-top: 2px solid var(--primary-color);
+      border-radius: 50%;
+      animation: spin 1s linear infinite;
+  }
+
+  @keyframes spin {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+  }
+
+  /* Progress Bar Animation */
+  @keyframes progress-bar-stripes {
+      0% {
+          background-position: 1rem 0;
+      }
+      100% {
+          background-position: 0 0;
+      }
+  }
+
+  /* Error States */
+  .is-invalid {
+      border-color: var(--danger-color) !important;
+  }
+
+  .is-valid {
+      border-color: var(--success-color) !important;
+  }
+
+  /* API Key Section Styling */
+  .api-key-section {
+      transition: var(--transition);
+  }
+
+  .api-key-section input[type="password"] {
+      font-family: monospace;
+      font-size: 0.9rem;
+  }
+
+  /* Form Enhancement */
+  .form-control:focus {
+      border-color: var(--primary-color);
+      box-shadow: 0 0 0 0.2rem rgba(102, 126, 234, 0.25);
+  }
+
+  .form-check-input:checked {
+      background-color: var(--primary-color);
+      border-color: var(--primary-color);
+  }
+
+  /* Card Enhancements */
+  .card {
+      border: none;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+      border-radius: var(--border-radius);
+  }
+
+  .card-header {
+      border-radius: var(--border-radius) var(--border-radius) 0 0
+  !important;
+      border-bottom: none;
+  }
+
+  /* Alert Enhancements */
+  .alert {
+      border-radius: var(--border-radius);
+      border: none;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+  }
+
+  /* Footer Styling */
+  footer {
+      margin-top: auto;
+  }
+
+  /* Dark Mode Support */
+  @media (prefers-color-scheme: dark) {
+      :root {
+          --light-color: #2d3748;
+          --dark-color: #e2e8f0;
+          --border-color: #4a5568;
+      }
+
+      .course-card {
+          background: linear-gradient(135deg, #2d3748 0%, #4a5568 100%);
+          border-color: #4a5568;
+          color: #e2e8f0;
+      }
+
+      .settings-panel,
+      .course-structure {
+          background: #2d3748;
+          border-color: #4a5568;
+          color: #e2e8f0;
+      }
+
+      .card {
+          background-color: #2d3748;
+          color: #e2e8f0;
+      }
+
+      .form-control {
+          background-color: #4a5568;
+          border-color: #718096;
+          color: #e2e8f0;
+      }
+
+      .form-control:focus {
+          background-color: #4a5568;
+          border-color: var(--primary-color);
+          color: #e2e8f0;
+      }
+  }
+
+  /* Accessibility Improvements */
+  .sr-only {
+      position: absolute !important;
+      width: 1px !important;
+      height: 1px !important;
+      padding: 0 !important;
+      margin: -1px !important;
+      overflow: hidden !important;
+      clip: rect(0, 0, 0, 0) !important;
+      white-space: nowrap !important;
+      border: 0 !important;
+  }
+
+  /* Focus indicators for better accessibility */
+  *:focus {
+      outline: 2px solid var(--primary-color);
+      outline-offset: 2px;
+  }
+
+  button:focus,
+  input:focus,
+  select:focus {
+      outline: none;
+      box-shadow: 0 0 0 0.2rem rgba(102, 126, 234, 0.25);
+  }
+
+  /* High contrast mode support */
+  @media (prefers-contrast: high) {
+      .course-card,
+      .creator-card {
+          border: 2px solid currentColor;
+      }
+
+      .btn {
+          border: 2px solid currentColor;
+      }
+  }
+
+  /* Reduced motion support */
+  @media (prefers-reduced-motion: reduce) {
+      *,
+      *::before,
+      *::after {
+          animation-duration: 0.01ms !important;
+          animation-iteration-count: 1 !important;
+          transition-duration: 0.01ms !important;
+          scroll-behavior: auto !important;
+      }
+  }
+
+  /* Print styles */
+  @media print {
+      .navbar,
+      footer,
+      .btn,
+      #progress-section,
+      #download-section {
+          display: none !important;
+      }
+
+      .card {
+          box-shadow: none;
+          border: 1px solid #000;
+      }
+
+      .course-structure,
+      .settings-panel {
+          background: white !important;
+          color: black !important;
+      }
+  }
+
