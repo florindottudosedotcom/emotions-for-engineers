@@ -94,7 +94,7 @@ markdown_extensions:
 nav:
 - Home: index.md
 - Available Courses: courses.md
-- Course Creator: /creator/
+- Course Creator: creator/
 - About: about.md
 - Collect Emotions:
   - Overview: collect-emotions/index.md
