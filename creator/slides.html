@@ -9,15 +9,26 @@
     <style>
         .provider-selector {
             margin: 2rem 0;
-            text-align: center;
+        }
+
+        .provider-row {
+            display: flex;
+            align-items: flex-start;
+            gap: 2rem;
+            margin-bottom: 2rem;
+            flex-wrap: wrap;
         }
 
         .provider-tabs {
             display: flex;
-            justify-content: center;
-            gap: 1rem;
-            margin-bottom: 2rem;
-            flex-wrap: wrap;
+            flex-direction: column;
+            gap: 0.75rem;
+            flex: 0 0 auto;
+        }
+
+        .provider-info-container {
+            flex: 1;
+            min-width: 300px;
         }
 
         .provider-tab {
@@ -79,12 +90,13 @@
         }
 
         .provider-info {
-            text-align: center;
-            margin: 1rem 0;
-            padding: 1rem;
+            text-align: right;
+            margin: 0;
+            padding: 1rem 1.5rem;
             background: #f8f9ff;
             border-radius: 8px;
             display: none;
+            border-left: 4px solid #667eea;
         }
 
         .provider-info.active {
@@ -137,34 +149,38 @@
         <p>Create beautiful, AI-powered presentations with visual elements. Choose your preferred AI provider below:</p>
 
         <div class="provider-selector">
-            <div class="provider-tabs">
-                <div class="provider-tab" data-provider="cloud">
-                    <span class="icon">☁️</span>
-                    <span>Cloud AI</span>
+            <div class="provider-row">
+                <div class="provider-tabs">
+                    <div class="provider-tab" data-provider="cloud">
+                        <span class="icon">☁️</span>
+                        <span>Cloud AI</span>
+                    </div>
+                    <div class="provider-tab" data-provider="webllm">
+                        <span class="icon">🧠</span>
+                        <span>WebLLM</span>
+                    </div>
+                    <div class="provider-tab" data-provider="ollama">
+                        <span class="icon">🖥️</span>
+                        <span>Ollama</span>
+                    </div>
                 </div>
-                <div class="provider-tab" data-provider="webllm">
-                    <span class="icon">🧠</span>
-                    <span>WebLLM</span>
+
+                <div class="provider-info-container">
+                    <div class="provider-info" data-info="cloud">
+                        <h3>☁️ Cloud AI Slides</h3>
+                        <p>Create presentations with OpenAI, Anthropic, or Google AI. Advanced visual generation capabilities with API access.</p>
+                    </div>
+
+                    <div class="provider-info" data-info="webllm">
+                        <h3>🧠 WebLLM Slides</h3>
+                        <p>Generate slides entirely in your browser. No API keys needed, works offline with local AI models.</p>
+                    </div>
+
+                    <div class="provider-info" data-info="ollama">
+                        <h3>🖥️ Ollama Slides</h3>
+                        <p>Use your local Ollama server for slide generation. Complete privacy with local AI processing.</p>
+                    </div>
                 </div>
-                <div class="provider-tab" data-provider="ollama">
-                    <span class="icon">🖥️</span>
-                    <span>Ollama</span>
-                </div>
-            </div>
-
-            <div class="provider-info" data-info="cloud">
-                <h3>☁️ Cloud AI Slides</h3>
-                <p>Create presentations with OpenAI, Anthropic, or Google AI. Advanced visual generation capabilities with API access.</p>
-            </div>
-
-            <div class="provider-info" data-info="webllm">
-                <h3>🧠 WebLLM Slides</h3>
-                <p>Generate slides entirely in your browser. No API keys needed, works offline with local AI models.</p>
-            </div>
-
-            <div class="provider-info" data-info="ollama">
-                <h3>🖥️ Ollama Slides</h3>
-                <p>Use your local Ollama server for slide generation. Complete privacy with local AI processing.</p>
             </div>
         </div>
 

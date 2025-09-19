@@ -9,15 +9,26 @@
     <style>
         .provider-selector {
             margin: 2rem 0;
-            text-align: center;
+        }
+
+        .provider-row {
+            display: flex;
+            align-items: flex-start;
+            gap: 2rem;
+            margin-bottom: 2rem;
+            flex-wrap: wrap;
         }
 
         .provider-tabs {
             display: flex;
-            justify-content: center;
-            gap: 1rem;
-            margin-bottom: 2rem;
-            flex-wrap: wrap;
+            flex-direction: column;
+            gap: 0.75rem;
+            flex: 0 0 auto;
+        }
+
+        .provider-info-container {
+            flex: 1;
+            min-width: 300px;
         }
 
         .provider-tab {
@@ -79,12 +90,13 @@
         }
 
         .provider-info {
-            text-align: center;
-            margin: 1rem 0;
-            padding: 1rem;
+            text-align: right;
+            margin: 0;
+            padding: 1rem 1.5rem;
             background: #f8f9ff;
             border-radius: 8px;
             display: none;
+            border-left: 4px solid #667eea;
         }
 
         .provider-info.active {
@@ -130,34 +142,38 @@
         <p>Generate complete, multi-chapter courses using AI. Choose your preferred AI provider below:</p>
 
         <div class="provider-selector">
-            <div class="provider-tabs">
-                <div class="provider-tab" data-provider="cloud">
-                    <span class="icon">☁️</span>
-                    <span>Cloud AI</span>
+            <div class="provider-row">
+                <div class="provider-tabs">
+                    <div class="provider-tab" data-provider="cloud">
+                        <span class="icon">☁️</span>
+                        <span>Cloud AI</span>
+                    </div>
+                    <div class="provider-tab" data-provider="webllm">
+                        <span class="icon">🧠</span>
+                        <span>WebLLM</span>
+                    </div>
+                    <div class="provider-tab" data-provider="ollama">
+                        <span class="icon">🖥️</span>
+                        <span>Ollama</span>
+                    </div>
                 </div>
-                <div class="provider-tab" data-provider="webllm">
-                    <span class="icon">🧠</span>
-                    <span>WebLLM</span>
+
+                <div class="provider-info-container">
+                    <div class="provider-info" data-info="cloud">
+                        <h3>☁️ Cloud AI</h3>
+                        <p>Use OpenAI, Anthropic, or Google AI APIs. Requires API keys but offers the most advanced models.</p>
+                    </div>
+
+                    <div class="provider-info" data-info="webllm">
+                        <h3>🧠 WebLLM</h3>
+                        <p>Run AI models directly in your browser. No API keys needed, but requires modern browser and good hardware.</p>
+                    </div>
+
+                    <div class="provider-info" data-info="ollama">
+                        <h3>🖥️ Ollama</h3>
+                        <p>Use local Ollama server. Requires Ollama installation but offers complete privacy and control.</p>
+                    </div>
                 </div>
-                <div class="provider-tab" data-provider="ollama">
-                    <span class="icon">🖥️</span>
-                    <span>Ollama</span>
-                </div>
-            </div>
-
-            <div class="provider-info" data-info="cloud">
-                <h3>☁️ Cloud AI</h3>
-                <p>Use OpenAI, Anthropic, or Google AI APIs. Requires API keys but offers the most advanced models.</p>
-            </div>
-
-            <div class="provider-info" data-info="webllm">
-                <h3>🧠 WebLLM</h3>
-                <p>Run AI models directly in your browser. No API keys needed, but requires modern browser and good hardware.</p>
-            </div>
-
-            <div class="provider-info" data-info="ollama">
-                <h3>🖥️ Ollama</h3>
-                <p>Use local Ollama server. Requires Ollama installation but offers complete privacy and control.</p>
             </div>
         </div>
 
