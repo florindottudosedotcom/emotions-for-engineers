@@ -3850,12 +3850,8 @@ function addNewSlide() {
     if (window.konvaSlideSystem && enhancedEditingEnabled) {
         console.log('Adding slide directly to Konva system');
 
-        // Add the new slide to the Konva system
+        // Add the new slide to the Konva system (automatically shows the new slide)
         window.konvaSlideSystem.addSlideFromData(newSlide);
-
-        // Navigate to the new slide (make it current)
-        const newSlideIndex = slidesAppState.currentSlideData.slides.length - 1;
-        window.konvaSlideSystem.showSlide(newSlideIndex);
 
     } else {
         // Fall back to full redisplay for HTML mode

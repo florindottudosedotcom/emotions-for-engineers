@@ -1090,8 +1090,8 @@ class KonvaSlideSystem {
             this.slideObjects.push([]); // Add empty slide to maintain indexing
         }
 
-        // Update navigation to show new slide count
-        this.updateNavigation();
+        // Show the new slide immediately
+        this.showSlide(slideIndex);
 
         console.log(`Added slide ${slideIndex + 1}, total slides: ${this.slides.length}`);
         return slideIndex;
@@ -1507,12 +1507,22 @@ class KonvaSlideSystem {
         const totalSpan = document.querySelector('.total-slides');
         const prevBtn = document.querySelector('.prev-btn');
         const nextBtn = document.querySelector('.next-btn');
+        const titleElement = document.getElementById('current-slide-title');
 
+        // Update slide counter
         if (currentSpan) currentSpan.textContent = this.currentSlideIndex + 1;
         if (totalSpan) totalSpan.textContent = this.slideObjects.length;
 
+        // Update slide title
+        if (titleElement && this.slides[this.currentSlideIndex]) {
+            titleElement.textContent = this.slides[this.currentSlideIndex].title || `Slide ${this.currentSlideIndex + 1}`;
+        }
+
+        // Update button states
         if (prevBtn) prevBtn.disabled = this.currentSlideIndex === 0;
         if (nextBtn) nextBtn.disabled = this.currentSlideIndex === this.slideObjects.length - 1;
+
+        console.log(`Navigation updated: Slide ${this.currentSlideIndex + 1} of ${this.slideObjects.length}`);
     }
 
 
