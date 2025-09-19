@@ -111,7 +111,7 @@ function addChapter() {
             <label for="chapter-title-${chapterId}">Chapter Title</label>
             <input type="text" id="chapter-title-${chapterId}" name="chapter-title-${chapterId}" class="chapter-title" placeholder="e.g., Getting Started" required>
             <div class="editor-label">Chapter Content</div>
-            <iframe id="editor-iframe-${chapterId}" class="editor-iframe" src="editor_iframe.html?id=${chapterId}" title="Chapter ${chapterId} Content Editor"></iframe>
+            <iframe id="editor-iframe-${chapterId}" class="editor-iframe" src="slides/editor_iframe.html?id=${chapterId}" title="Chapter ${chapterId} Content Editor"></iframe>
         </div>
     `;
     dom.chapterContentContainer.appendChild(chapterDiv);
