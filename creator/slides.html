@@ -58,6 +58,16 @@
             min-height: 600px;
         }
 
+        .main-container {
+            max-width: none !important;
+            width: 100% !important;
+        }
+
+        #creator-container {
+            width: 100%;
+            margin: 0;
+        }
+
         .loading-state {
             display: flex;
             align-items: center;
@@ -118,7 +128,7 @@
     </style>
 </head>
 <body class="text-minimal">
-    <div class="main-container container-minimal">
+    <div class="main-container" style="max-width: none; padding: 1rem;">
         <a href="index.html" class="back-button">
             ← Back to Creator Hub
         </a>
