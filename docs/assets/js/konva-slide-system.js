@@ -2408,9 +2408,105 @@ class KonvaSlideSystem {
     }
 
     saveSlideState() {
-        // Update slides data structure with current Konva objects
-        // This would sync back to the original slide data format if needed
-        console.log('Slide state saved');
+        // Sync Konva objects back to slidesAppState for persistence
+        if (!window.slidesAppState || !window.slidesAppState.currentSlideData) {
+            console.warn('No slidesAppState available for saving');
+            return;
+        }
+
+        try {
+            // Ensure we have a slide to save to
+            if (!window.slidesAppState.currentSlideData.slides[this.currentSlideIndex]) {
+                console.warn(`No slide data at index ${this.currentSlideIndex}`);
+                return;
+            }
+
+            const slide = window.slidesAppState.currentSlideData.slides[this.currentSlideIndex];
+            const slideObjects = this.slideObjects[this.currentSlideIndex] || [];
+
+            // Convert Konva objects back to slide data format
+            const textElements = [];
+            const shapes = [];
+
+            slideObjects.forEach(obj => {
+                if (obj.getClassName() === 'Text') {
+                    textElements.push({
+                        text: obj.text(),
+                        x: obj.x(),
+                        y: obj.y(),
+                        fontSize: obj.fontSize(),
+                        fill: obj.fill(),
+                        fontFamily: obj.fontFamily() || 'Arial',
+                        align: obj.align() || 'left'
+                    });
+                } else if (['Rect', 'Circle', 'Arrow', 'Line'].includes(obj.getClassName())) {
+                    shapes.push({
+                        type: obj.getClassName().toLowerCase(),
+                        x: obj.x(),
+                        y: obj.y(),
+                        width: obj.width ? obj.width() : undefined,
+                        height: obj.height ? obj.height() : undefined,
+                        radius: obj.radius ? obj.radius() : undefined,
+                        fill: obj.fill(),
+                        stroke: obj.stroke(),
+                        strokeWidth: obj.strokeWidth()
+                    });
+                }
+            });
+
+            // Update slide content based on text elements
+            if (textElements.length > 0) {
+                slide.content = textElements.map(elem => elem.text);
+            }
+
+            // Update visual design with shapes and theme
+            if (!slide.visualDesign) {
+                slide.visualDesign = {};
+            }
+
+            slide.visualDesign.shapes = shapes;
+            slide.visualDesign.backgroundColor = this.currentTheme.backgroundColor;
+            slide.visualDesign.textColor = this.currentTheme.textColor;
+            slide.visualDesign.accentColor = this.currentTheme.borderColor;
+
+            // Save to localStorage
+            if (window.saveSlides) {
+                window.saveSlides();
+            }
+
+            console.log(`Slide ${this.currentSlideIndex + 1} state saved to persistence`);
+
+        } catch (error) {
+            console.error('Error saving slide state:', error);
+        }
+    }
+
+    syncAllSlidesToPersistence() {
+        // Sync all slides back to slidesAppState
+        if (!window.slidesAppState || !window.slidesAppState.currentSlideData) {
+            console.warn('No slidesAppState available for syncing all slides');
+            return;
+        }
+
+        console.log('Syncing all slides to persistence...');
+
+        try {
+            const currentSlideIndex = this.currentSlideIndex;
+
+            // Save each slide
+            for (let i = 0; i < this.slides.length; i++) {
+                this.currentSlideIndex = i;
+                this.saveSlideState();
+            }
+
+            // Restore current slide index
+            this.currentSlideIndex = currentSlideIndex;
+
+            console.log(`Synced ${this.slides.length} slides to persistence`);
+
+        } catch (error) {
+            console.error('Error syncing all slides:', error);
+        }
     }
 
     // Phase 4: Toolbar Wrapper Methods
@@ -2653,7 +2749,10 @@ class KonvaSlideSystem {
         // Clear selection
         this.selectObject(null);
 
-        console.log('Deleted selected object');
+        // Sync changes to persistence
+        this.saveSlideState();
+
+        console.log('Deleted selected object and synced to persistence');
     }
 
     deleteCurrentSlide() {

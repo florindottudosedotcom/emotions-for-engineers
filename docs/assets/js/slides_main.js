@@ -1038,6 +1038,20 @@ function displaySlides(slideData) {
             // Make it globally accessible for toolbar buttons
             window.konvaSlideSystem = konvaSlideSystem;
 
+            // Add global sync function for external calls
+            window.syncSlidesToPersistence = () => {
+                if (window.konvaSlideSystem) {
+                    window.konvaSlideSystem.syncAllSlidesToPersistence();
+                }
+            };
+
+            // Auto-sync on page unload to prevent data loss
+            window.addEventListener('beforeunload', () => {
+                if (window.syncSlidesToPersistence) {
+                    window.syncSlidesToPersistence();
+                }
+            });
+
             // Load the slide data into Konva system
             konvaSlideSystem.loadSlidesFromData(slideData);
         } else {
