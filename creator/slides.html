@@ -21,9 +21,10 @@
 
         .provider-tabs {
             display: flex;
-            flex-direction: column;
-            gap: 0.75rem;
+            flex-direction: row;
+            gap: 1rem;
             flex: 0 0 auto;
+            flex-wrap: wrap;
         }
 
         .provider-info-container {
@@ -96,7 +97,6 @@
             background: #f8f9ff;
             border-radius: 8px;
             display: none;
-            border-left: 4px solid #667eea;
         }
 
         .provider-info.active {
