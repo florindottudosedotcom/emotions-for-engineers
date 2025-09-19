@@ -153,6 +153,90 @@
         .back-button:hover {
             background-color: #f8f9ff;
         }
+
+        /* Icon styles */
+        .icon {
+            display: inline-block;
+            width: 1em;
+            height: 1em;
+            vertical-align: middle;
+        }
+
+        .icon-book::before {
+            content: "📖";
+            font-style: normal;
+        }
+
+        .icon-cloud::before {
+            content: "☁";
+            font-style: normal;
+        }
+
+        .icon-brain::before {
+            content: "🧠";
+            font-style: normal;
+        }
+
+        .icon-desktop::before {
+            content: "🖥";
+            font-style: normal;
+        }
+
+        .icon-point::before {
+            content: "👆";
+            font-style: normal;
+        }
+
+        /* CSS-based icons */
+        .icon-book-css {
+            display: inline-block;
+            width: 1.2em;
+            height: 1.2em;
+            background: currentColor;
+            mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath d='M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-5 14H7v-2h7v2zm3-4H7v-2h10v2zm0-4H7V7h10v2z'/%3E%3C/svg%3E") no-repeat center;
+            mask-size: contain;
+            vertical-align: middle;
+        }
+
+        .icon-cloud-css {
+            display: inline-block;
+            width: 1.2em;
+            height: 1.2em;
+            background: currentColor;
+            mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath d='M19.35 10.04C18.67 6.59 15.64 4 12 4 9.11 4 6.6 5.64 5.35 8.04 2.34 8.36 0 10.91 0 14c0 3.31 2.69 6 6 6h13c2.76 0 5-2.24 5-5 0-2.64-2.05-4.78-4.65-4.96z'/%3E%3C/svg%3E") no-repeat center;
+            mask-size: contain;
+            vertical-align: middle;
+        }
+
+        .icon-brain-css {
+            display: inline-block;
+            width: 1.2em;
+            height: 1.2em;
+            background: currentColor;
+            mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath d='M12,2A3,3 0 0,1 15,5V11A3,3 0 0,1 12,14A3,3 0 0,1 9,11V5A3,3 0 0,1 12,2M19,11A3,3 0 0,1 22,14A3,3 0 0,1 19,17H18V22H16V17H13V15H16V13H18A1,1 0 0,0 19,12A1,1 0 0,0 18,11H16V9H18A3,3 0 0,1 19,11M5,11A3,3 0 0,1 8,9H10V11H8A1,1 0 0,0 7,12A1,1 0 0,0 8,13H10V15H8V22H6V17H5A3,3 0 0,1 2,14A3,3 0 0,1 5,11Z'/%3E%3C/svg%3E") no-repeat center;
+            mask-size: contain;
+            vertical-align: middle;
+        }
+
+        .icon-desktop-css {
+            display: inline-block;
+            width: 1.2em;
+            height: 1.2em;
+            background: currentColor;
+            mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath d='M21,16H3V4H21M21,2H3C1.89,2 1,2.89 1,4V16A2,2 0 0,0 3,18H10V20H8V22H16V20H14V18H21A2,2 0 0,0 23,16V4C23,2.89 22.1,2 21,2Z'/%3E%3C/svg%3E") no-repeat center;
+            mask-size: contain;
+            vertical-align: middle;
+        }
+
+        .icon-point-css {
+            display: inline-block;
+            width: 1.2em;
+            height: 1.2em;
+            background: currentColor;
+            mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath d='M7,14L12,9L17,14H7Z'/%3E%3C/svg%3E") no-repeat center;
+            mask-size: contain;
+            vertical-align: middle;
+        }
     </style>
 </head>
 <body class="text-minimal">
@@ -161,39 +245,39 @@
             ← Back to Creator Hub
         </a>
 
-        <h1 style="padding-left: 16px;">📚 Course Creator</h1>
+        <h1 style="padding-left: 16px;"><span class="icon-book-css"></span> Course Creator</h1>
         <p style="padding-left: 16px;">Generate complete, multi-chapter courses using AI. Choose your preferred AI provider below:</p>
 
         <div class="provider-selector">
             <div class="provider-row">
                 <div class="provider-tabs">
                     <div class="provider-tab" data-provider="cloud">
-                        <span class="icon">☁️</span>
+                        <span class="icon-cloud-css"></span>
                         <span>Cloud AI</span>
                     </div>
                     <div class="provider-tab" data-provider="webllm">
-                        <span class="icon">🧠</span>
+                        <span class="icon-brain-css"></span>
                         <span>WebLLM</span>
                     </div>
                     <div class="provider-tab" data-provider="ollama">
-                        <span class="icon">🖥️</span>
+                        <span class="icon-desktop-css"></span>
                         <span>Ollama</span>
                     </div>
                 </div>
 
                 <div class="provider-info-container">
                     <div class="provider-info" data-info="cloud">
-                        <h3>☁️ Cloud AI</h3>
+                        <h3><span class="icon-cloud-css"></span> Cloud AI</h3>
                         <p>Use OpenAI, Anthropic, or Google AI APIs. Requires API keys but offers the most advanced models.</p>
                     </div>
 
                     <div class="provider-info" data-info="webllm">
-                        <h3>🧠 WebLLM</h3>
+                        <h3><span class="icon-brain-css"></span> WebLLM</h3>
                         <p>Run AI models directly in your browser. No API keys needed, but requires modern browser and good hardware.</p>
                     </div>
 
                     <div class="provider-info" data-info="ollama">
-                        <h3>🖥️ Ollama</h3>
+                        <h3><span class="icon-desktop-css"></span> Ollama</h3>
                         <p>Use local Ollama server. Requires Ollama installation but offers complete privacy and control.</p>
                     </div>
                 </div>
@@ -202,7 +286,7 @@
 
         <div id="creator-container">
             <div class="loading-state">
-                <div>👆 Select an AI provider above to get started</div>
+                <div><span class="icon-point-css"></span> Select an AI provider above to get started</div>
                 <p>Each provider offers different advantages - choose the one that best fits your needs.</p>
             </div>
         </div>
