@@ -3,10 +3,10 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self' 'unsafe-eval' 'unsafe-inline' blob: https://cdnjs.cloudflare.com https://unpkg.com https://cdn.jsdelivr.net https://d3js.org; style-src 'self' 'unsafe-inline'; frame-src 'self'; img-src 'self' data: blob: https://source.unsplash.com https://images.unsplash.com https://cdn.openai.com https://oaidalleapiprodscus.blob.core.windows.net https://api.stability.ai; connect-src 'self' https://huggingface.co https://raw.githubusercontent.com https://cdn-lfs-us-1.hf.co https://cdnjs.cloudflare.com https://unpkg.com https://api.openai.com https://api.stability.ai; font-src 'self'; object-src 'none'; base-uri 'self'; form-action 'self'; worker-src 'self' blob:;">
-    <title>WebLLM Slides Creator</title>
-    <link rel="stylesheet" href="./assets/css/minimal-theme.css" />
-    <link rel="stylesheet" href="./assets/css/course-creator.css" />
+    <meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self' 'unsafe-inline' https://cdnjs.cloudflare.com https://unpkg.com https://cdn.jsdelivr.net https://d3js.org; style-src 'self' 'unsafe-inline'; frame-src 'self'; img-src 'self' data: blob: https://source.unsplash.com https://images.unsplash.com https://cdn.openai.com https://oaidalleapiprodscus.blob.core.windows.net https://api.stability.ai; connect-src 'self' https://api.openai.com https://api.anthropic.com https://generativelanguage.googleapis.com https://cdnjs.cloudflare.com https://unpkg.com https://api.stability.ai; font-src 'self'; object-src 'none'; base-uri 'self'; form-action 'self'; worker-src 'self' blob:;">
+    <title>Cloud AI Slides Creator</title>
+    <link rel="stylesheet" href="../assets/minimal-theme.css" />
+    <link rel="stylesheet" href="../assets/course-creator.css" />
     <style>
         .slides-container {
             max-width: 1200px;
@@ -67,22 +67,6 @@
             flex-wrap: wrap;
         }
 
-        .presentation-preview {
-            border: 1px solid #ddd;
-            border-radius: 8px;
-            padding: 20px;
-            margin: 20px 0;
-            background: white;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-            text-align: center;
-        }
-
-        .presentation-preview h2 {
-            margin: 0 0 10px 0;
-            font-size: 1.8em;
-            color: #333;
-        }
-
         .slide-counter {
             opacity: 0.8;
             font-size: 0.9em;
@@ -118,15 +102,15 @@
         }
 
         .theme-tile:hover {
-            border-color: #2ecc71;
+            border-color: #007bff;
             transform: translateY(-2px);
             box-shadow: 0 4px 8px rgba(0,0,0,0.1);
         }
 
         .theme-tile.selected {
-            border-color: #2ecc71;
-            background: #f0fff4;
-            box-shadow: 0 4px 8px rgba(46,204,113,0.2);
+            border-color: #007bff;
+            background: #f0f8ff;
+            box-shadow: 0 4px 8px rgba(0,123,255,0.2);
         }
 
         .theme-colors {
@@ -172,7 +156,7 @@
         }
 
         .visual-element:hover {
-            outline: 2px dashed rgba(46, 204, 113, 0.5);
+            outline: 2px dashed rgba(52, 152, 219, 0.5);
         }
 
         .visual-element:hover .delete-element-btn {
@@ -218,14 +202,14 @@
         }
 
         .editable-text:focus {
-            outline: 2px solid #2ecc71;
+            outline: 2px solid #3498db;
             background: rgba(255, 255, 255, 0.2);
         }
     </style>
 </head>
 <body>
     <div class="container">
-        <h1>WebLLM Slides Creator</h1>
+        <h1>Cloud AI Slides Creator</h1>
         <div id="ai-status" class="ai-status-initial"></div>
 
         <!-- Provider-specific section will be injected here -->
@@ -334,7 +318,7 @@
     <!-- Main Application Logic -->
     <script>
         // Configure provider type
-        window.COURSE_CREATOR_PROVIDER = 'webllm';
+        window.COURSE_CREATOR_PROVIDER = 'cloud';
     </script>
     <script type="module" src="./assets/js/unified_main.js"></script>
     <script type="module" src="./assets/js/slides_main.js"></script>

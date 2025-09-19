@@ -3,10 +3,10 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self' 'unsafe-inline' 'unsafe-eval' blob: https://cdnjs.cloudflare.com https://unpkg.com https://cdn.jsdelivr.net https://d3js.org; style-src 'self' 'unsafe-inline'; frame-src 'self'; img-src 'self' data: blob: https://source.unsplash.com https://images.unsplash.com https://cdn.openai.com https://oaidalleapiprodscus.blob.core.windows.net https://api.stability.ai; connect-src 'self' http://localhost:11434 https://cdnjs.cloudflare.com https://unpkg.com https://api.openai.com https://api.stability.ai; font-src 'self'; object-src 'none'; base-uri 'self'; form-action 'self'; worker-src 'self' blob:;">
-    <title>Ollama Slides Creator</title>
-    <link rel="stylesheet" href="./assets/css/minimal-theme.css" />
-    <link rel="stylesheet" href="./assets/css/course-creator.css" />
+    <meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self' 'unsafe-eval' 'unsafe-inline' blob: https://cdnjs.cloudflare.com https://unpkg.com https://cdn.jsdelivr.net https://d3js.org; style-src 'self' 'unsafe-inline'; frame-src 'self'; img-src 'self' data: blob: https://source.unsplash.com https://images.unsplash.com https://cdn.openai.com https://oaidalleapiprodscus.blob.core.windows.net https://api.stability.ai; connect-src 'self' https://huggingface.co https://raw.githubusercontent.com https://cdn-lfs-us-1.hf.co https://cdnjs.cloudflare.com https://unpkg.com https://api.openai.com https://api.stability.ai; font-src 'self'; object-src 'none'; base-uri 'self'; form-action 'self'; worker-src 'self' blob:;">
+    <title>WebLLM Slides Creator</title>
+    <link rel="stylesheet" href="../assets/minimal-theme.css" />
+    <link rel="stylesheet" href="../assets/course-creator.css" />
     <style>
         .slides-container {
             max-width: 1200px;
@@ -118,15 +118,15 @@
         }
 
         .theme-tile:hover {
-            border-color: #667eea;
+            border-color: #2ecc71;
             transform: translateY(-2px);
             box-shadow: 0 4px 8px rgba(0,0,0,0.1);
         }
 
         .theme-tile.selected {
-            border-color: #667eea;
-            background: #f0f4ff;
-            box-shadow: 0 4px 8px rgba(102,126,234,0.2);
+            border-color: #2ecc71;
+            background: #f0fff4;
+            box-shadow: 0 4px 8px rgba(46,204,113,0.2);
         }
 
         .theme-colors {
@@ -172,7 +172,7 @@
         }
 
         .visual-element:hover {
-            outline: 2px dashed rgba(102, 126, 234, 0.5);
+            outline: 2px dashed rgba(46, 204, 113, 0.5);
         }
 
         .visual-element:hover .delete-element-btn {
@@ -218,14 +218,14 @@
         }
 
         .editable-text:focus {
-            outline: 2px solid #667eea;
+            outline: 2px solid #2ecc71;
             background: rgba(255, 255, 255, 0.2);
         }
     </style>
 </head>
 <body>
     <div class="container">
-        <h1>Ollama Slides Creator</h1>
+        <h1>WebLLM Slides Creator</h1>
         <div id="ai-status" class="ai-status-initial"></div>
 
         <!-- Provider-specific section will be injected here -->
@@ -334,7 +334,7 @@
     <!-- Main Application Logic -->
     <script>
         // Configure provider type
-        window.COURSE_CREATOR_PROVIDER = 'ollama';
+        window.COURSE_CREATOR_PROVIDER = 'webllm';
     </script>
     <script type="module" src="./assets/js/unified_main.js"></script>
     <script type="module" src="./assets/js/slides_main.js"></script>

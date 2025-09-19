@@ -36,6 +36,8 @@ jobs:
         run: python build_site.py
       - name: Build the MkDocs site
         run: mkdocs build
+      - name: Copy creator directory to site
+        run: cp -r creator site/
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
         with:
