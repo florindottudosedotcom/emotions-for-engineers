@@ -1,6 +1,310 @@
 // Konva-based Slide System
 // Replaces the HTML-based slide mechanism with a unified canvas approach
 
+// Command pattern for undo/redo functionality
+class Command {
+    constructor(description) {
+        this.description = description;
+        this.timestamp = Date.now();
+    }
+
+    execute() {
+        throw new Error('execute() must be implemented');
+    }
+
+    undo() {
+        throw new Error('undo() must be implemented');
+    }
+}
+
+class UndoRedoManager {
+    constructor(maxHistorySize = 50) {
+        this.undoStack = [];
+        this.redoStack = [];
+        this.maxHistorySize = maxHistorySize;
+    }
+
+    executeCommand(command) {
+        // Execute the command
+        command.execute();
+
+        // Add to undo stack
+        this.undoStack.push(command);
+
+        // Clear redo stack (new action invalidates redo history)
+        this.redoStack = [];
+
+        // Limit stack size
+        if (this.undoStack.length > this.maxHistorySize) {
+            this.undoStack.shift();
+        }
+
+        console.log(`Executed: ${command.description}`);
+    }
+
+    undo() {
+        if (this.undoStack.length === 0) {
+            console.log('Nothing to undo');
+            return false;
+        }
+
+        const command = this.undoStack.pop();
+        command.undo();
+        this.redoStack.push(command);
+
+        console.log(`Undid: ${command.description}`);
+        return true;
+    }
+
+    redo() {
+        if (this.redoStack.length === 0) {
+            console.log('Nothing to redo');
+            return false;
+        }
+
+        const command = this.redoStack.pop();
+        command.execute();
+        this.undoStack.push(command);
+
+        console.log(`Redid: ${command.description}`);
+        return true;
+    }
+
+    canUndo() {
+        return this.undoStack.length > 0;
+    }
+
+    canRedo() {
+        return this.redoStack.length > 0;
+    }
+
+    clear() {
+        this.undoStack = [];
+        this.redoStack = [];
+    }
+
+    getUndoDescription() {
+        if (this.undoStack.length === 0) return '';
+        return this.undoStack[this.undoStack.length - 1].description;
+    }
+
+    getRedoDescription() {
+        if (this.redoStack.length === 0) return '';
+        return this.redoStack[this.redoStack.length - 1].description;
+    }
+}
+
+// Specific command implementations
+class DeleteSlideCommand extends Command {
+    constructor(slideSystem, slideIndex) {
+        super(`Delete Slide ${slideIndex + 1}`);
+        this.slideSystem = slideSystem;
+        this.slideIndex = slideIndex;
+        this.deletedSlide = null;
+        this.deletedSlideObjects = null;
+        this.wasCurrentSlide = false;
+    }
+
+    execute() {
+        // Store the slide data before deletion
+        this.deletedSlide = JSON.parse(JSON.stringify(this.slideSystem.slides[this.slideIndex]));
+        this.deletedSlideObjects = [...this.slideSystem.slideObjects[this.slideIndex]];
+        this.wasCurrentSlide = this.slideSystem.currentSlideIndex === this.slideIndex;
+
+        // Perform the deletion
+        this.slideSystem.slides.splice(this.slideIndex, 1);
+        this.slideSystem.slideObjects.splice(this.slideIndex, 1);
+
+        // Update slidesAppState
+        if (window.slidesAppState && window.slidesAppState.currentSlideData) {
+            window.slidesAppState.currentSlideData.slides.splice(this.slideIndex, 1);
+
+            // Renumber remaining slides
+            window.slidesAppState.currentSlideData.slides.forEach((slide, index) => {
+                slide.slideNumber = index + 1;
+            });
+        }
+
+        // Adjust current slide index
+        if (this.slideSystem.currentSlideIndex >= this.slideSystem.slides.length) {
+            this.slideSystem.currentSlideIndex = this.slideSystem.slides.length - 1;
+        }
+
+        // Update display
+        this.slideSystem.showSlide(this.slideSystem.currentSlideIndex);
+        this.slideSystem.updateNavigation();
+
+        // Save changes
+        if (window.saveSlides) {
+            window.saveSlides();
+        }
+    }
+
+    undo() {
+        // Restore the deleted slide
+        this.slideSystem.slides.splice(this.slideIndex, 0, this.deletedSlide);
+        this.slideSystem.slideObjects.splice(this.slideIndex, 0, this.deletedSlideObjects);
+
+        // Update slidesAppState
+        if (window.slidesAppState && window.slidesAppState.currentSlideData) {
+            window.slidesAppState.currentSlideData.slides.splice(this.slideIndex, 0, this.deletedSlide);
+
+            // Renumber all slides
+            window.slidesAppState.currentSlideData.slides.forEach((slide, index) => {
+                slide.slideNumber = index + 1;
+            });
+        }
+
+        // Restore current slide if it was the deleted one
+        if (this.wasCurrentSlide) {
+            this.slideSystem.currentSlideIndex = this.slideIndex;
+        }
+
+        // Update display
+        this.slideSystem.showSlide(this.slideSystem.currentSlideIndex);
+        this.slideSystem.updateNavigation();
+
+        // Save changes
+        if (window.saveSlides) {
+            window.saveSlides();
+        }
+    }
+}
+
+class DeleteObjectCommand extends Command {
+    constructor(slideSystem, obj) {
+        super(`Delete ${obj.getClassName()}`);
+        this.slideSystem = slideSystem;
+        this.objectId = obj.id() || obj._id;
+        this.objectData = this.captureObjectState(obj);
+        this.slideIndex = slideSystem.currentSlideIndex;
+        this.objectIndex = slideSystem.slideObjects[slideSystem.currentSlideIndex].indexOf(obj);
+    }
+
+    captureObjectState(obj) {
+        // Capture complete object state for restoration
+        const state = {
+            className: obj.getClassName(),
+            x: obj.x(),
+            y: obj.y(),
+            opacity: obj.opacity(),
+            rotation: obj.rotation(),
+            scaleX: obj.scaleX(),
+            scaleY: obj.scaleY(),
+            zIndex: obj.zIndex()
+        };
+
+        if (obj.getClassName() === 'Text') {
+            state.text = obj.text();
+            state.fontSize = obj.fontSize();
+            state.fontFamily = obj.fontFamily();
+            state.fill = obj.fill();
+            state.align = obj.align();
+            if (obj.fontWeight) state.fontWeight = obj.fontWeight();
+            if (obj.fontStyle) state.fontStyle = obj.fontStyle();
+            if (obj.textDecoration) state.textDecoration = obj.textDecoration();
+        } else {
+            state.fill = obj.fill();
+            state.stroke = obj.stroke();
+            state.strokeWidth = obj.strokeWidth();
+            if (obj.width) state.width = obj.width();
+            if (obj.height) state.height = obj.height();
+            if (obj.radius) state.radius = obj.radius();
+        }
+
+        return state;
+    }
+
+    execute() {
+        // Find and remove the object
+        const slideObjects = this.slideSystem.slideObjects[this.slideIndex];
+        const objIndex = slideObjects.findIndex(obj =>
+            (obj.id() && obj.id() === this.objectId) || obj._id === this.objectId
+        );
+
+        if (objIndex > -1) {
+            const obj = slideObjects[objIndex];
+            slideObjects.splice(objIndex, 1);
+            obj.destroy();
+            this.slideSystem.selectObject(null);
+            this.slideSystem.saveSlideState();
+        }
+    }
+
+    undo() {
+        // Recreate the object
+        const recreatedObj = this.recreateObject(this.objectData);
+
+        // Insert at original position
+        this.slideSystem.slideObjects[this.slideIndex].splice(this.objectIndex, 0, recreatedObj);
+        this.slideSystem.layer.add(recreatedObj);
+        this.slideSystem.layer.draw();
+        this.slideSystem.saveSlideState();
+    }
+
+    recreateObject(state) {
+        let obj;
+
+        if (state.className === 'Text') {
+            obj = new Konva.Text({
+                x: state.x,
+                y: state.y,
+                text: state.text,
+                fontSize: state.fontSize,
+                fontFamily: state.fontFamily,
+                fill: state.fill,
+                align: state.align,
+                opacity: state.opacity,
+                rotation: state.rotation,
+                scaleX: state.scaleX,
+                scaleY: state.scaleY,
+                draggable: true
+            });
+
+            if (state.fontWeight) obj.fontWeight(state.fontWeight);
+            if (state.fontStyle) obj.fontStyle(state.fontStyle);
+            if (state.textDecoration) obj.textDecoration(state.textDecoration);
+        } else if (state.className === 'Rect') {
+            obj = new Konva.Rect({
+                x: state.x,
+                y: state.y,
+                width: state.width,
+                height: state.height,
+                fill: state.fill,
+                stroke: state.stroke,
+                strokeWidth: state.strokeWidth,
+                opacity: state.opacity,
+                rotation: state.rotation,
+                scaleX: state.scaleX,
+                scaleY: state.scaleY,
+                draggable: true
+            });
+        } else if (state.className === 'Circle') {
+            obj = new Konva.Circle({
+                x: state.x,
+                y: state.y,
+                radius: state.radius,
+                fill: state.fill,
+                stroke: state.stroke,
+                strokeWidth: state.strokeWidth,
+                opacity: state.opacity,
+                rotation: state.rotation,
+                scaleX: state.scaleX,
+                scaleY: state.scaleY,
+                draggable: true
+            });
+        }
+
+        // Add standard event handlers
+        if (obj) {
+            obj.on('dragend', () => this.slideSystem.saveSlideState());
+            obj.id(this.objectId);
+        }
+
+        return obj;
+    }
+}
+
 class KonvaSlideSystem {
     constructor(container, theme = null) {
         this.container = container;
@@ -24,6 +328,9 @@ class KonvaSlideSystem {
         this.selectedObject = null;
         this.selectedSlide = false; // Track if entire slide is selected
         this.transformer = null;
+
+        // Undo/Redo system
+        this.undoRedoManager = new UndoRedoManager();
 
         this.init();
     }
@@ -197,6 +504,9 @@ class KonvaSlideSystem {
                 <h2 id="current-slide-title" contenteditable="true" style="margin: 0; padding: 8px; border: 2px solid transparent; border-radius: 4px;">Slide Title</h2>
             </div>
             <div class="navigation-buttons">
+                <button class="nav-btn undo-btn" onclick="window.konvaSlideSystem?.undo()" title="Undo (Ctrl+Z)">↶ Undo</button>
+                <button class="nav-btn redo-btn" onclick="window.konvaSlideSystem?.redo()" title="Redo (Ctrl+Y)">↷ Redo</button>
+                <span style="margin: 0 8px; border-left: 1px solid #d1d5db; height: 20px;"></span>
                 <button class="nav-btn prev-btn" onclick="window.konvaSlideSystem?.previousSlide()">◀ Previous</button>
                 <button class="nav-btn next-btn" onclick="window.konvaSlideSystem?.nextSlide()">Next ▶</button>
             </div>
@@ -1059,8 +1369,16 @@ class KonvaSlideSystem {
 
         console.log('Created slide objects:', this.slideObjects.length);
 
-        // Show first slide with a small delay to ensure container is properly sized
-        this.currentSlideIndex = 0;
+        // Restore current slide index from persistence, default to 0
+        this.currentSlideIndex = slideData.currentSlideIndex || 0;
+
+        // Ensure slide index is within bounds
+        if (this.currentSlideIndex >= this.slides.length) {
+            this.currentSlideIndex = this.slides.length - 1;
+        }
+        if (this.currentSlideIndex < 0) {
+            this.currentSlideIndex = 0;
+        }
 
         // Force recalculation of dimensions after slides are loaded
         setTimeout(() => {
@@ -1068,7 +1386,7 @@ class KonvaSlideSystem {
             this.calculateResponsiveDimensions();
             this.stage.width(this.actualWidth);
             this.stage.height(this.actualHeight);
-            this.showSlide(0);
+            this.showSlide(this.currentSlideIndex);
             this.updateNavigation();
         }, 100);
     }
@@ -1523,6 +1841,9 @@ class KonvaSlideSystem {
         if (nextBtn) nextBtn.disabled = this.currentSlideIndex === this.slideObjects.length - 1;
 
         console.log(`Navigation updated: Slide ${this.currentSlideIndex + 1} of ${this.slideObjects.length}`);
+
+        // Update undo/redo button states
+        this.updateUndoRedoButtons();
     }
 
 
@@ -2428,19 +2749,29 @@ class KonvaSlideSystem {
             const textElements = [];
             const shapes = [];
 
-            slideObjects.forEach(obj => {
+            slideObjects.forEach((obj, index) => {
                 if (obj.getClassName() === 'Text') {
                     textElements.push({
+                        id: obj.id() || `text_${index}`,
                         text: obj.text(),
                         x: obj.x(),
                         y: obj.y(),
                         fontSize: obj.fontSize(),
                         fill: obj.fill(),
                         fontFamily: obj.fontFamily() || 'Arial',
-                        align: obj.align() || 'left'
+                        fontWeight: obj.fontWeight ? obj.fontWeight() : 'normal',
+                        fontStyle: obj.fontStyle ? obj.fontStyle() : 'normal',
+                        textDecoration: obj.textDecoration ? obj.textDecoration() : 'none',
+                        align: obj.align() || 'left',
+                        opacity: obj.opacity(),
+                        rotation: obj.rotation(),
+                        scaleX: obj.scaleX(),
+                        scaleY: obj.scaleY(),
+                        zIndex: obj.zIndex()
                     });
                 } else if (['Rect', 'Circle', 'Arrow', 'Line'].includes(obj.getClassName())) {
                     shapes.push({
+                        id: obj.id() || `shape_${index}`,
                         type: obj.getClassName().toLowerCase(),
                         x: obj.x(),
                         y: obj.y(),
@@ -2449,25 +2780,57 @@ class KonvaSlideSystem {
                         radius: obj.radius ? obj.radius() : undefined,
                         fill: obj.fill(),
                         stroke: obj.stroke(),
-                        strokeWidth: obj.strokeWidth()
+                        strokeWidth: obj.strokeWidth(),
+                        opacity: obj.opacity(),
+                        rotation: obj.rotation(),
+                        scaleX: obj.scaleX(),
+                        scaleY: obj.scaleY(),
+                        zIndex: obj.zIndex()
+                    });
+                } else if (obj.getClassName() === 'Image') {
+                    // Handle image objects
+                    shapes.push({
+                        id: obj.id() || `image_${index}`,
+                        type: 'image',
+                        x: obj.x(),
+                        y: obj.y(),
+                        width: obj.width(),
+                        height: obj.height(),
+                        src: obj.image() ? obj.image().src : '',
+                        opacity: obj.opacity(),
+                        rotation: obj.rotation(),
+                        scaleX: obj.scaleX(),
+                        scaleY: obj.scaleY(),
+                        zIndex: obj.zIndex()
                     });
                 }
             });
 
-            // Update slide content based on text elements
+            // Update slide content based on text elements (preserve backward compatibility)
             if (textElements.length > 0) {
                 slide.content = textElements.map(elem => elem.text);
             }
+
+            // Store complete object data for full restoration
+            slide.objects = {
+                texts: textElements,
+                shapes: shapes
+            };
 
             // Update visual design with shapes and theme
             if (!slide.visualDesign) {
                 slide.visualDesign = {};
             }
 
-            slide.visualDesign.shapes = shapes;
+            slide.visualDesign.shapes = shapes; // Keep for backward compatibility
             slide.visualDesign.backgroundColor = this.currentTheme.backgroundColor;
             slide.visualDesign.textColor = this.currentTheme.textColor;
             slide.visualDesign.accentColor = this.currentTheme.borderColor;
+
+            // Save current slide index to persistence
+            if (window.slidesAppState.currentSlideData) {
+                window.slidesAppState.currentSlideData.currentSlideIndex = this.currentSlideIndex;
+            }
 
             // Save to localStorage
             if (window.saveSlides) {
@@ -2726,6 +3089,21 @@ class KonvaSlideSystem {
                 }
                 e.preventDefault();
             }
+
+            // Undo with Ctrl+Z
+            if (e.ctrlKey && e.key.toLowerCase() === 'z' && !e.shiftKey) {
+                console.log('Ctrl+Z pressed, undo');
+                this.undo();
+                e.preventDefault();
+            }
+
+            // Redo with Ctrl+Y or Ctrl+Shift+Z
+            if ((e.ctrlKey && e.key.toLowerCase() === 'y') ||
+                (e.ctrlKey && e.shiftKey && e.key.toLowerCase() === 'z')) {
+                console.log('Ctrl+Y or Ctrl+Shift+Z pressed, redo');
+                this.redo();
+                e.preventDefault();
+            }
         });
 
         console.log('Keyboard handlers setup complete');
@@ -2734,73 +3112,114 @@ class KonvaSlideSystem {
     deleteSelectedObject() {
         if (!this.selectedObject) return;
 
-        // Remove from current slide objects array
-        const slideObjects = this.slideObjects[this.currentSlideIndex];
-        if (slideObjects) {
-            const index = slideObjects.indexOf(this.selectedObject);
-            if (index > -1) {
-                slideObjects.splice(index, 1);
-            }
-        }
+        // Use command pattern for undo/redo capability
+        const command = new DeleteObjectCommand(this, this.selectedObject);
+        this.undoRedoManager.executeCommand(command);
 
-        // Remove from stage
-        this.selectedObject.destroy();
-
-        // Clear selection
-        this.selectObject(null);
-
-        // Sync changes to persistence
-        this.saveSlideState();
-
-        console.log('Deleted selected object and synced to persistence');
+        console.log('Deleted selected object (undoable)');
     }
 
     deleteCurrentSlide() {
         if (this.slides.length <= 1) {
             console.log('Cannot delete the last slide');
-            alert('Cannot delete the last slide. A presentation must have at least one slide.');
+            // Show notification instead of alert
+            this.showNotification('Cannot delete the last slide', 'warning');
             return;
         }
 
-        const slideNumber = this.currentSlideIndex + 1;
-        const confirmDelete = confirm(`Are you sure you want to delete Slide ${slideNumber}?`);
+        // Use command pattern for undo/redo capability (no confirmation dialog)
+        const command = new DeleteSlideCommand(this, this.currentSlideIndex);
+        this.undoRedoManager.executeCommand(command);
 
-        if (!confirmDelete) {
-            return;
-        }
-
-        console.log(`Deleting slide ${slideNumber}`);
-
-        // Remove from slides array
-        this.slides.splice(this.currentSlideIndex, 1);
-        this.slideObjects.splice(this.currentSlideIndex, 1);
-
-        // Update the main slides data
-        if (window.slidesAppState && window.slidesAppState.currentSlideData) {
-            window.slidesAppState.currentSlideData.slides.splice(this.currentSlideIndex, 1);
-
-            // Renumber remaining slides
-            window.slidesAppState.currentSlideData.slides.forEach((slide, index) => {
-                slide.slideNumber = index + 1;
-            });
-
-            // Save the updated data
-            if (window.saveSlides) {
-                window.saveSlides();
-            }
-        }
-
-        // Adjust current slide index
-        if (this.currentSlideIndex >= this.slides.length) {
-            this.currentSlideIndex = this.slides.length - 1;
-        }
-
-        // Deselect slide and show the adjusted current slide
+        // Deselect slide
         this.deselectSlide();
-        this.showSlide(this.currentSlideIndex);
-        this.updateNavigation();
 
-        console.log(`Slide deleted. Showing slide ${this.currentSlideIndex + 1} of ${this.slides.length}`);
+        // Show undo notification
+        this.showNotification(`Slide ${this.currentSlideIndex + 2} deleted. Press Ctrl+Z to undo.`, 'info');
+
+        console.log(`Slide deleted (undoable). Showing slide ${this.currentSlideIndex + 1} of ${this.slides.length}`);
+    }
+
+    showNotification(message, type = 'info') {
+        // Create or update notification element
+        let notification = document.getElementById('konva-notification');
+        if (!notification) {
+            notification = document.createElement('div');
+            notification.id = 'konva-notification';
+            notification.style.cssText = `
+                position: fixed;
+                top: 20px;
+                right: 20px;
+                padding: 12px 20px;
+                border-radius: 6px;
+                color: white;
+                font-size: 14px;
+                font-weight: 500;
+                z-index: 1000;
+                max-width: 300px;
+                opacity: 0;
+                transition: opacity 0.3s ease;
+                pointer-events: none;
+            `;
+            document.body.appendChild(notification);
+        }
+
+        // Set message and style based on type
+        notification.textContent = message;
+        const colors = {
+            info: '#3b82f6',
+            warning: '#f59e0b',
+            error: '#ef4444',
+            success: '#10b981'
+        };
+        notification.style.backgroundColor = colors[type] || colors.info;
+
+        // Show notification
+        notification.style.opacity = '1';
+
+        // Hide after 4 seconds
+        setTimeout(() => {
+            notification.style.opacity = '0';
+        }, 4000);
+    }
+
+    undo() {
+        const success = this.undoRedoManager.undo();
+        if (success) {
+            this.updateUndoRedoButtons();
+            this.showNotification(`Undid: ${this.undoRedoManager.getRedoDescription()}`, 'success');
+        } else {
+            this.showNotification('Nothing to undo', 'warning');
+        }
+    }
+
+    redo() {
+        const success = this.undoRedoManager.redo();
+        if (success) {
+            this.updateUndoRedoButtons();
+            this.showNotification(`Redid: ${this.undoRedoManager.getUndoDescription()}`, 'success');
+        } else {
+            this.showNotification('Nothing to redo', 'warning');
+        }
+    }
+
+    updateUndoRedoButtons() {
+        const undoBtn = document.querySelector('.undo-btn');
+        const redoBtn = document.querySelector('.redo-btn');
+
+        if (undoBtn) {
+            undoBtn.disabled = !this.undoRedoManager.canUndo();
+            undoBtn.title = this.undoRedoManager.canUndo() ?
+                `Undo: ${this.undoRedoManager.getUndoDescription()} (Ctrl+Z)` :
+                'Nothing to undo (Ctrl+Z)';
+        }
+
+        if (redoBtn) {
+            redoBtn.disabled = !this.undoRedoManager.canRedo();
+            redoBtn.title = this.undoRedoManager.canRedo() ?
+                `Redo: ${this.undoRedoManager.getRedoDescription()} (Ctrl+Y)` :
+                'Nothing to redo (Ctrl+Y)';
+        }
     }
 
     showShapeModal() {
