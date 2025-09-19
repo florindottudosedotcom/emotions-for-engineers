@@ -5,8 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self' 'unsafe-inline' 'unsafe-eval' blob: https://cdnjs.cloudflare.com https://unpkg.com https://cdn.jsdelivr.net https://d3js.org; style-src 'self' 'unsafe-inline'; frame-src 'self'; img-src 'self' data: blob: https://source.unsplash.com https://images.unsplash.com https://cdn.openai.com https://oaidalleapiprodscus.blob.core.windows.net https://api.stability.ai; connect-src 'self' http://localhost:11434 https://cdnjs.cloudflare.com https://unpkg.com https://api.openai.com https://api.stability.ai; font-src 'self'; object-src 'none'; base-uri 'self'; form-action 'self'; worker-src 'self' blob:;">
     <title>Ollama Slides Creator</title>
-    <link rel="stylesheet" href="./assets/css/minimal-theme.css" />
-    <link rel="stylesheet" href="./assets/css/course-creator.css" />
+    <link rel="stylesheet" href="./assets/stylesheets/extra.css" />
     <style>
         .slides-container {
             max-width: 1200px;
@@ -315,28 +314,56 @@
         </div>
     </div>
 
-    <!-- JS Libraries -->
-    <script src="./assets/js/jszip/3.10.1/jszip.min.js"></script>
-    <script src="https://unpkg.com/jspdf@latest/dist/jspdf.umd.min.js"></script>
-    <script src="https://unpkg.com/html2canvas@latest/dist/html2canvas.min.js"></script>
-    <script src="https://unpkg.com/pptxgenjs@3.12.0/dist/pptxgen.bundle.js"></script>
+    <!-- Security and Common Utilities (loaded first) -->
+    <script src="./assets/javascripts/security.js"></script>
+    <script src="./assets/javascripts/creator-common.js"></script>
 
-    <!-- Enhanced Editing and Export Libraries -->
-    <script src="./assets/js/konva-editor.js"></script>
-    <script src="./assets/js/konva-slide-system.js"></script>
-    <script src="./assets/js/pdfkit-export.js"></script>
+    <!-- Slide-specific Modules -->
+    <script type="module" src="./assets/javascripts/slides-common.js"></script>
+    <script type="module" src="./assets/javascripts/slides-components.js"></script>
+    <script type="module" src="./assets/javascripts/slides-konva-integration.js"></script>
+    <script type="module" src="./assets/javascripts/konva-core.js"></script>
+    <script type="module" src="./assets/javascripts/konva-components.js"></script>
 
-    <!-- Advanced Graphics Libraries -->
-    <script src="https://unpkg.com/chart.js@4.4.0/dist/chart.umd.js"></script>
-    <script src="https://d3js.org/d3.v7.min.js"></script>
-    <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.js"></script>
+    <!-- Provider Integration -->
+    <script type="module" src="./assets/javascripts/ollama-creator.js"></script>
 
-    <!-- Main Application Logic -->
+    <!-- External Libraries (lazy loaded) -->
     <script>
         // Configure provider type
         window.COURSE_CREATOR_PROVIDER = 'ollama';
+
+        // Initialize slide creator when DOM is ready
+        document.addEventListener('DOMContentLoaded', async () => {
+            // Lazy load external libraries only when needed
+            const libs = [
+                './assets/js/jszip/3.10.1/jszip.min.js',
+                'https://unpkg.com/jspdf@latest/dist/jspdf.umd.min.js',
+                'https://unpkg.com/html2canvas@latest/dist/html2canvas.min.js',
+                'https://unpkg.com/pptxgenjs@3.12.0/dist/pptxgen.bundle.js',
+                'https://unpkg.com/chart.js@4.4.0/dist/chart.umd.js',
+                'https://d3js.org/d3.v7.min.js',
+                'https://unpkg.com/lucide@latest/dist/umd/lucide.js'
+            ];
+
+            // Load libraries in parallel
+            const loadPromises = libs.map(src => {
+                return new Promise((resolve, reject) => {
+                    const script = document.createElement('script');
+                    script.src = src;
+                    script.onload = resolve;
+                    script.onerror = reject;
+                    document.head.appendChild(script);
+                });
+            });
+
+            try {
+                await Promise.all(loadPromises);
+                console.log('External libraries loaded successfully');
+            } catch (error) {
+                console.warn('Some external libraries failed to load:', error);
+            }
+        });
     </script>
-    <script type="module" src="./assets/js/unified_main.js"></script>
-    <script type="module" src="./assets/js/slides_main.js"></script>
 </body>
 </html>
