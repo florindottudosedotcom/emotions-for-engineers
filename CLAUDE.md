@@ -104,3 +104,193 @@ git push origin main
   - **Cloud AI**: Works from any hosted environment but requires API keys
 - All content is licensed under CC BY-SA 4.0
 - GitHub Pages deployment is automatic via `.github/workflows/deploy.yml`
+
+
+---
+  🏗️ DEVELOPMENT GUIDELINES - OPTIMIZED ARCHITECTURE STANDARDS
+
+  These guidelines ensure all future development follows the optimized, 
+  modular architecture established in the comprehensive refactoring.
+
+  📂 File Organization Standards
+
+  JavaScript Structure:
+
+  docs/assets/javascripts/
+  ├── security.js              # Always loaded first - security utilities
+  ├── creator-common.js         # Shared utilities across all creators
+  ├── creator-components.js     # Reusable UI components
+  ├── [feature]-creator.js      # Specific feature implementations
+  └── [feature]-components.js   # Feature-specific components (if needed)
+
+  Component-Based Architecture:
+
+  - NEVER embed JavaScript in HTML files
+  - ALWAYS use modular, reusable components
+  - EXTRACT common functionality into shared utilities
+  - SEPARATE business logic from presentation
+
+  🔒 Security-First Development
+
+  Mandatory Security Practices:
+
+  1. DOM Manipulation: ALWAYS use createElement() and textContent, NEVER
+  innerHTML
+  2. Input Validation: Validate and sanitize ALL user inputs
+  3. API Calls: Use SecurityManager.validateUrl() before external requests
+  4. XSS Prevention: Use security utilities for all dynamic content
+
+  Required Security Imports:
+
+  <script src="assets/javascripts/security.js"></script>
+  <script src="assets/javascripts/creator-common.js"></script>
+
+  🎨 UI Component Standards
+
+  Reusable Components Created:
+
+  - LanguageSelector - For all language selection needs
+  - ProgressIndicator - For all progress tracking
+  - CourseStructureDisplay - For content preview
+  - SettingsPanel - For configurable options
+
+  Component Usage Rules:
+
+  // ✅ CORRECT - Use existing components
+  this.languageSelector = new LanguageSelector('container-id', options);
+
+  // ❌ WRONG - Don't recreate functionality
+  const select = document.createElement('select'); // Use LanguageSelector 
+  instead
+
+  📱 CSS & Styling Standards
+
+  Use CSS Custom Properties:
+
+  :root {
+      --primary-color: #667eea;
+      --border-radius: 12px;
+      --transition: all 0.3s ease;
+  }
+
+  Required Responsive & Accessibility:
+
+  - Mobile-first responsive design
+  - Dark mode support via @media (prefers-color-scheme: dark)
+  - High contrast support via @media (prefers-contrast: high)
+  - Focus indicators for keyboard navigation
+  - Screen reader compatibility
+
+  🚀 Performance Standards
+
+  Mandatory Optimizations:
+
+  1. Lazy Loading: Import heavy dependencies only when needed
+  2. Caching: Use localStorage for user preferences
+  3. Debouncing: Use common.debounce() for input handlers
+  4. Error Handling: Comprehensive try-catch with user feedback
+
+  Code Examples:
+
+  // ✅ Lazy loading
+  const JSZip = await
+  import('https://cdn.jsdelivr.net/npm/jszip@3.10.1/+esm');
+
+  // ✅ Caching
+  this.common.saveToLocalStorage('feature_settings', data);
+
+  // ✅ Error handling with user feedback
+  try {
+      await this.performAction();
+      this.common.showSuccess('Action completed!');
+  } catch (error) {
+      this.common.showError(`Action failed: ${error.message}`);
+  }
+
+  🔧 Development Workflow
+
+  For Every New Feature:
+
+  1. Plan: Identify reusable components vs feature-specific code
+  2. Security: Apply security standards from start
+  3. Components: Use existing components or extend them
+  4. Testing: Verify accessibility, responsive design, error handling
+  5. Documentation: Update this guide if new patterns are established
+
+  File Creation Checklist:
+
+  - Security utilities imported
+  - Common utilities used (no duplication)
+  - Components follow established patterns
+  - Responsive CSS implemented
+  - Accessibility features included
+  - Error handling comprehensive
+  - Performance optimizations applied
+
+  🎯 Code Quality Standards
+
+  JavaScript Best Practices:
+
+  // ✅ Class-based architecture
+  class FeatureCreator {
+      constructor() {
+          this.common = new CreatorCommon();
+          this.init();
+      }
+
+      init() {
+          this.setupComponents();
+          this.bindEvents();
+          this.loadSavedSettings();
+      }
+  }
+
+  // ✅ Consistent error handling
+  async performAction() {
+      try {
+          this.progressIndicator.update(10, 'Starting...');
+          const result = await this.apiCall();
+          this.progressIndicator.complete('Success!');
+          return result;
+      } catch (error) {
+          this.progressIndicator.error('Failed');
+          this.common.showError(error.message);
+          throw error;
+      }
+  }
+
+  HTML Structure Standards:
+
+  <!-- ✅ Component containers, not hardcoded elements -->
+  <div id="language-container"></div>
+  <div id="progress-container"></div>
+  <div id="settings-container"></div>
+
+  <!-- ✅ Proper script loading order -->
+  <script src="assets/javascripts/security.js"></script>
+  <script src="assets/javascripts/creator-common.js"></script>
+  <script src="assets/javascripts/creator-components.js"></script>
+  <script src="assets/javascripts/[feature]-creator.js"></script>
+
+  📝 Maintenance Standards
+
+  Before Adding Any Code:
+
+  1. Check existing utilities - Can CreatorCommon handle this?
+  2. Check existing components - Can existing components be extended?
+  3. Check security implications - Are inputs validated?
+  4. Check performance - Will this impact load times?
+
+  Code Review Questions:
+
+  - Does this follow DRY principles?
+  - Is this accessible and responsive?
+  - Does this maintain security standards?
+  - Can this be reused for other features?
+
+  ---
+  🎯 GOAL: Maintain the 81% code reduction and modular architecture achieved
+   in the optimization while ensuring all new features are secure, 
+  performant, and maintainable.
+
+  ---
