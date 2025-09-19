@@ -19,8 +19,8 @@ body {
     font-family: var(--font-family, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif);
     line-height: 1.6;
     color: var(--text-primary, #212121);
-    max-width: 1200px;
-    margin: 2rem auto;
+    max-width: 100%;
+    margin: 0;
     padding: 0 var(--spacing-md, 1rem);
     background-color: #f8f9fa !important;
 }
@@ -31,6 +31,10 @@ h1, h2, h3 { color: var(--text-primary, #212121); }
     border-radius: var(--radius-medium, 8px);
     box-shadow: var(--shadow-medium, 0 3px 6px rgba(0,0,0,0.16), 0 3px 6px rgba(0,0,0,0.23));
     border: 1px solid var(--border-light, #e0e0e0);
+    width: 100%;
+    max-width: 100%;
+    margin: 0;
+    box-sizing: border-box;
 }
 .instructions {
     background-color: var(--info-light);
