@@ -82,11 +82,11 @@
 
         .creator-frame {
             width: 100%;
-            height: 1200px;
+            height: 800px;
             border: 1px solid #ddd;
             border-radius: 0 8px 8px 8px;
             border-top: none;
-            min-height: 1200px;
+            min-height: 600px;
         }
 
         .main-container {
@@ -221,6 +221,54 @@
             ollama: 'ollama.html'
         };
 
+        function resizeIframe(iframe) {
+            try {
+                // Wait for iframe to load, then resize
+                iframe.onload = function() {
+                    try {
+                        // Get the height of the iframe's content
+                        const iframeDoc = iframe.contentDocument || iframe.contentWindow.document;
+                        const height = Math.max(
+                            iframeDoc.body.scrollHeight,
+                            iframeDoc.body.offsetHeight,
+                            iframeDoc.documentElement.clientHeight,
+                            iframeDoc.documentElement.scrollHeight,
+                            iframeDoc.documentElement.offsetHeight
+                        );
+
+                        // Set the iframe height with some padding
+                        iframe.style.height = (height + 50) + 'px';
+
+                        // Also listen for content changes
+                        const observer = new MutationObserver(() => {
+                            setTimeout(() => {
+                                const newHeight = Math.max(
+                                    iframeDoc.body.scrollHeight,
+                                    iframeDoc.body.offsetHeight,
+                                    iframeDoc.documentElement.clientHeight,
+                                    iframeDoc.documentElement.scrollHeight,
+                                    iframeDoc.documentElement.offsetHeight
+                                );
+                                iframe.style.height = (newHeight + 50) + 'px';
+                            }, 100);
+                        });
+
+                        observer.observe(iframeDoc.body, {
+                            childList: true,
+                            subtree: true,
+                            attributes: true
+                        });
+                    } catch (e) {
+                        // Cross-origin restrictions - use fallback height
+                        iframe.style.height = '1400px';
+                    }
+                };
+            } catch (e) {
+                // Fallback if iframe resizing fails
+                iframe.style.height = '1400px';
+            }
+        }
+
         function showProvider(provider) {
             // Update tab states
             providerTabs.forEach(tab => {
@@ -237,6 +285,9 @@
             iframe.src = providerUrls[provider];
             iframe.className = 'creator-frame';
             iframe.title = `${provider} Course Creator`;
+
+            // Auto-resize iframe based on content
+            resizeIframe(iframe);
 
             // Clear container and add iframe
             creatorContainer.innerHTML = '';
