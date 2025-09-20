@@ -53,6 +53,9 @@ function loadState() {
     console.log("Found saved state, loading...");
     const loadedState = JSON.parse(savedState);
 
+    // If we don't have course-specific DOM elements, only load basic state
+    const hasChapterElements = dom.chapterTabsContainer && dom.chapterContentContainer;
+
     // Only load course-specific fields if they exist (course creator)
     if (dom.courseNameInput) {
         dom.courseNameInput.value = loadedState.courseName || '';
@@ -73,21 +76,23 @@ function loadState() {
     }
 
     // Clear existing chapter UI (only if they exist - course creator)
-    if (dom.chapterTabsContainer) {
-        dom.chapterTabsContainer.innerHTML = '';
-    }
-    if (dom.chapterContentContainer) {
-        dom.chapterContentContainer.innerHTML = '';
-    }
-    if (ui.editorInstances) {
-        Object.keys(ui.editorInstances).forEach(key => delete ui.editorInstances[key]);
-    }
-    if (ui.resetChapterCount) {
-        ui.resetChapterCount(); // Reset the counter in UI module
+    if (hasChapterElements) {
+        if (dom.chapterTabsContainer) {
+            dom.chapterTabsContainer.innerHTML = '';
+        }
+        if (dom.chapterContentContainer) {
+            dom.chapterContentContainer.innerHTML = '';
+        }
+        if (ui.editorInstances) {
+            Object.keys(ui.editorInstances).forEach(key => delete ui.editorInstances[key]);
+        }
+        if (ui.resetChapterCount) {
+            ui.resetChapterCount(); // Reset the counter in UI module
+        }
     }
 
     // Only restore chapters if we have the necessary UI components (course creator)
-    if (loadedState.chapters && loadedState.chapters.length > 0 && ui.addChapter && ui.editorInstances) {
+    if (hasChapterElements && loadedState.chapters && loadedState.chapters.length > 0 && ui.addChapter && ui.editorInstances) {
         loadedState.chapters.forEach(chapterData => {
             ui.addChapter(); // This creates the tab and content pane with correct event listeners
 
