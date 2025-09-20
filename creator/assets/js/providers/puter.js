@@ -198,43 +198,27 @@ export const PuterProvider = {
                 stream: false
             });
 
-            console.log('Puter.js response:', response);
-            console.log('Response type:', typeof response);
-            console.log('Response keys:', response ? Object.keys(response) : 'null');
-            console.log('Response structure:', JSON.stringify(response, null, 2));
-
             // Handle different response formats from Puter.js
             let extractedText = '';
 
             if (typeof response === 'string') {
                 extractedText = response;
-                console.log('Using direct string response');
             } else if (response && response.message && typeof response.message.content === 'string') {
                 extractedText = response.message.content;
-                console.log('Using response.message.content (OpenAI format)');
             } else if (response && typeof response.text === 'string') {
                 extractedText = response.text;
-                console.log('Using response.text');
             } else if (response && typeof response.content === 'string') {
                 extractedText = response.content;
-                console.log('Using response.content');
             } else if (response && typeof response.message === 'string') {
                 extractedText = response.message;
-                console.log('Using response.message');
             } else if (response && typeof response.response === 'string') {
                 extractedText = response.response;
-                console.log('Using response.response');
             } else if (response && typeof response.data === 'string') {
                 extractedText = response.data;
-                console.log('Using response.data');
             } else {
-                console.warn('Unexpected response format from Puter.js:', response);
+                console.warn('Unexpected response format from Puter.js, using fallback');
                 extractedText = JSON.stringify(response);
-                console.log('Fallback to JSON.stringify');
             }
-
-            console.log('Final extracted text:', extractedText);
-            console.log('Final text type:', typeof extractedText);
             return extractedText;
         } catch (error) {
             console.error('Puter.js generation error:', error);
