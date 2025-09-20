@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Creator Hub</title>
+    <link rel="icon" type="image/svg+xml" href="favicon.svg">
+    <link rel="stylesheet" href="./assets/minimal-theme.css" />
+    <link rel="stylesheet" href="./assets/course-creator.css" />
+    <script src="./assets/js/theme-manager.js"></script>
+</head>
+<body class="text-minimal">
+    <div class="main-container container-minimal">
+        <h1>⚙️ AI Creator Hub</h1>
+        <p>Create courses and presentations using AI. Choose what you want to create:</p>
+
+        <div class="launcher-container grid-minimal grid-2">
+            <a href="course.html" class="launcher-btn btn-minimal btn-primary card-minimal">
+                <span class="icon-minimal geometric icon-book-large"></span>
+                <div>
+                    <div style="font-weight: 600; margin-bottom: 4px;">Course Creator</div>
+                    <div style="font-size: 0.85em; opacity: 0.8;">Generate complete multi-chapter courses</div>
+                </div>
+            </a>
+            <a href="slides.html" class="launcher-btn btn-minimal btn-primary card-minimal">
+                <span class="icon-minimal geometric icon-slides-large"></span>
+                <div>
+                    <div style="font-weight: 600; margin-bottom: 4px;">Slides Creator</div>
+                    <div style="font-size: 0.85em; opacity: 0.8;">Create beautiful AI-powered presentations</div>
+                </div>
+            </a>
+        </div>
+
+        <div class="help-section card-minimal">
+            <h2>AI Providers Available</h2>
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 1rem; margin: 1rem 0;">
+                <div style="padding: 1rem; border: 1px solid #e0e0e0; border-radius: 8px;">
+                    <h3 style="margin: 0 0 0.5rem 0; color: #667eea;"><span class="icon-cloud-provider"></span> Cloud AI</h3>
+                    <p style="margin: 0; font-size: 0.9em;">Use OpenAI, Anthropic, and Google AI. Requires API keys but offers the most advanced models.</p>
+                </div>
+                <div style="padding: 1rem; border: 1px solid #e0e0e0; border-radius: 8px;">
+                    <h3 style="margin: 0 0 0.5rem 0; color: #667eea;"><span class="icon-brain-provider"></span> WebLLM</h3>
+                    <p style="margin: 0; font-size: 0.9em;">Run AI models directly in your browser. No API keys needed, works completely offline.</p>
+                </div>
+                <div style="padding: 1rem; border: 1px solid #e0e0e0; border-radius: 8px;">
+                    <h3 style="margin: 0 0 0.5rem 0; color: #667eea;"><span class="icon-desktop-provider"></span> Ollama</h3>
+                    <p style="margin: 0; font-size: 0.9em;">Connect to your local Ollama server. Complete privacy and control over your data.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <style>
+        .launcher-btn {
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            transition: transform 0.2s ease;
+        }
+
+        .launcher-btn:hover {
+            transform: translateY(-2px);
+        }
+
+        .launcher-btn .icon-minimal {
+            font-size: 2.5em;
+            min-width: 60px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        /* CSS-based icons for launcher */
+        .icon-minimal.icon-book-large {
+            display: inline-block !important;
+            width: 2.5em !important;
+            height: 2.5em !important;
+            background: #667eea !important;
+            mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath d='M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-5 14H7v-2h7v2zm3-4H7v-2h10v2zm0-4H7V7h10v2z'/%3E%3C/svg%3E") no-repeat center !important;
+            mask-size: contain !important;
+            vertical-align: middle;
+            font-size: 1em !important;
+        }
+
+        .icon-minimal.icon-slides-large {
+            display: inline-block !important;
+            width: 2.5em !important;
+            height: 2.5em !important;
+            background: #667eea !important;
+            mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath d='M2,3H8V9H2V3M9,3H15V9H9V3M16,3H22V9H16V3M2,10H8V16H2V10M9,10H15V16H9V10M16,10H22V16H16V10M2,17H8V23H2V17M9,17H15V23H9V17M16,17H22V23H16V17Z'/%3E%3C/svg%3E") no-repeat center !important;
+            mask-size: contain !important;
+            vertical-align: middle;
+            font-size: 1em !important;
+        }
+
+        .icon-cloud-provider {
+            display: inline-block;
+            width: 1em;
+            height: 1em;
+            background: currentColor;
+            mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath d='M19.35 10.04C18.67 6.59 15.64 4 12 4 9.11 4 6.6 5.64 5.35 8.04 2.34 8.36 0 10.91 0 14c0 3.31 2.69 6 6 6h13c2.76 0 5-2.24 5-5 0-2.64-2.05-4.78-4.65-4.96z'/%3E%3C/svg%3E") no-repeat center;
+            mask-size: contain;
+            vertical-align: middle;
+        }
+
+        .icon-brain-provider {
+            display: inline-block;
+            width: 1em;
+            height: 1em;
+            background: currentColor;
+            mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath d='M12,2A3,3 0 0,1 15,5V11A3,3 0 0,1 12,14A3,3 0 0,1 9,11V5A3,3 0 0,1 12,2M19,11A3,3 0 0,1 22,14A3,3 0 0,1 19,17H18V22H16V17H13V15H16V13H18A1,1 0 0,0 19,12A1,1 0 0,0 18,11H16V9H18A3,3 0 0,1 19,11M5,11A3,3 0 0,1 8,9H10V11H8A1,1 0 0,0 7,12A1,1 0 0,0 8,13H10V15H8V22H6V17H5A3,3 0 0,1 2,14A3,3 0 0,1 5,11Z'/%3E%3C/svg%3E") no-repeat center;
+            mask-size: contain;
+            vertical-align: middle;
+        }
+
+        .icon-desktop-provider {
+            display: inline-block;
+            width: 1em;
+            height: 1em;
+            background: currentColor;
+            mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath d='M21,16H3V4H21M21,2H3C1.89,2 1,2.89 1,4V16A2,2 0 0,0 3,18H10V20H8V22H16V20H14V18H21A2,2 0 0,0 23,16V4C23,2.89 22.1,2 21,2Z'/%3E%3C/svg%3E") no-repeat center;
+            mask-size: contain;
+            vertical-align: middle;
+        }
+    </style>
+
+</body>
+</html>

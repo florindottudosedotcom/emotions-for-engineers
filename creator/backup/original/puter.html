@@ -1,0 +1,346 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://js.puter.com https://cdnjs.cloudflare.com https://unpkg.com https://cdn.jsdelivr.net https://d3js.org; style-src 'self' 'unsafe-inline'; frame-src 'self'; img-src 'self' data: blob: https://source.unsplash.com https://images.unsplash.com; connect-src 'self' https://js.puter.com https://api.puter.com wss://api.puter.com https://cdnjs.cloudflare.com https://unpkg.com; font-src 'self'; object-src 'none'; base-uri 'self'; form-action 'self'; worker-src 'self' blob:;">
+    <title>Puter AI Slides Creator (Free)</title>
+    <link rel="icon" type="image/svg+xml" href="../favicon.svg">
+    <link rel="stylesheet" href="../assets/minimal-theme.css" />
+    <link rel="stylesheet" href="../assets/course-creator.css" />
+    <script src="../assets/js/theme-manager.js"></script>
+    <style>
+        .slides-container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .slide-preview {
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            margin: 20px 0;
+            padding: 20px;
+            background: white;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+
+        .slide-preview h3 {
+            margin: 0 0 15px 0;
+            color: #333;
+            font-size: 1.4em;
+        }
+
+        .slide-preview ul {
+            margin: 0;
+            padding-left: 20px;
+        }
+
+        .slide-preview li {
+            margin: 8px 0;
+            line-height: 1.4;
+        }
+
+        .visual-design-info {
+            background: #f8f9fa;
+            border-radius: 4px;
+            padding: 10px;
+            margin-top: 15px;
+            font-size: 0.9em;
+            color: #666;
+        }
+
+        .export-options {
+            background: #f8f9fa;
+            border-radius: 8px;
+            padding: 20px;
+            margin: 20px 0;
+            text-align: center;
+        }
+
+        .export-options h3 {
+            margin-top: 0;
+        }
+
+        .export-buttons {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            flex-wrap: wrap;
+        }
+
+        .presentation-preview {
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            padding: 20px;
+            margin: 20px 0;
+            background: white;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            text-align: center;
+        }
+
+        .presentation-preview h2 {
+            margin: 0 0 10px 0;
+            font-size: 1.8em;
+            color: #333;
+        }
+
+        .slide-counter {
+            opacity: 0.8;
+            font-size: 0.9em;
+            color: #666;
+        }
+
+        /* Free provider highlight styles */
+        .free-provider-highlight {
+            background: var(--primary-color);
+            color: white;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+
+        .free-provider-highlight h2 {
+            margin: 0 0 8px 0;
+            font-size: 1.3em;
+        }
+
+        .free-provider-highlight p {
+            margin: 0;
+            opacity: 0.9;
+            font-size: 0.95em;
+        }
+
+        /* Model selection styles */
+        .model-selector {
+            background: #f8f9fa;
+            border-radius: 8px;
+            padding: 15px;
+            margin: 15px 0;
+        }
+
+        .model-selector h4 {
+            margin: 0 0 10px 0;
+            color: #333;
+            font-size: 1em;
+        }
+
+        /* Status indicator styles */
+        .puter-status {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 10px;
+            background: #e8f5e8;
+            border-radius: 6px;
+            border-left: 4px solid #28a745;
+            margin: 15px 0;
+        }
+
+        .puter-status-icon {
+            color: #28a745;
+            font-weight: bold;
+            font-size: 1.2em;
+        }
+
+        .puter-status-text {
+            color: #666;
+            font-size: 0.9em;
+        }
+
+        /* Editable slide styles */
+        .slide-preview.editable-slide {
+            transition: transform 0.2s ease;
+        }
+
+        .slide-preview.editable-slide:hover {
+            transform: translateY(-2px);
+        }
+
+        [contenteditable="true"]:focus {
+            outline: 2px solid var(--accent-color, #60a5fa);
+            background: rgba(255,255,255,0.9) !important;
+            color: #333 !important;
+        }
+
+        /* Visual elements styles */
+        .visual-element {
+            position: relative;
+            transition: all 0.2s ease;
+        }
+
+        .visual-element:hover {
+            outline: 2px dashed rgba(46, 204, 113, 0.5);
+        }
+
+        .visual-element:hover .delete-element-btn {
+            display: block;
+        }
+
+        .delete-element-btn {
+            display: none;
+            position: absolute;
+            top: 8px;
+            right: 8px;
+            width: 20px;
+            height: 20px;
+            background: #e74c3c;
+            color: white;
+            border: none;
+            border-radius: 50%;
+            cursor: pointer;
+            font-size: 11px;
+            font-weight: bold;
+            z-index: 1001;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.4);
+            transition: all 0.2s ease;
+            line-height: 18px;
+            text-align: center;
+            font-family: Arial, sans-serif;
+        }
+
+        .delete-element-btn:hover {
+            background: #c0392b;
+            transform: scale(1.1);
+        }
+
+        .editable-text {
+            cursor: text;
+            border-radius: 4px;
+            padding: 2px 4px;
+            transition: background-color 0.2s ease;
+        }
+
+        .editable-text:hover {
+            background: rgba(255, 255, 255, 0.1);
+        }
+
+        .editable-text:focus {
+            outline: 2px solid #2ecc71;
+            background: rgba(255, 255, 255, 0.2);
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Puter AI Slides Creator (Free)</h1>
+
+        <div class="free-provider-highlight">
+            <h2>🚀 No API Keys Required!</h2>
+            <p>Access 200+ AI models from OpenAI, Anthropic, Google, Meta, and more - completely free with zero setup.</p>
+        </div>
+
+        <div id="ai-status" class="ai-status-initial"></div>
+
+        <!-- Provider-specific section will be injected here -->
+        <div id="provider-section"></div>
+
+        <fieldset>
+            <legend>Presentation Generator</legend>
+
+            <div class="input-group">
+                <label for="presentation-topic">Presentation Topic</label>
+                <textarea id="presentation-topic" placeholder="e.g., 'The Future of Artificial Intelligence in Healthcare'" class="prompt-textarea-large" required></textarea>
+            </div>
+
+            <div class="input-group">
+                <label for="num-slides" class="label-no-shrink-no-margin">Number of Slides:</label>
+                <select id="num-slides" class="select-no-margin">
+                    <option value="1">1</option>
+                    <option value="2">2</option>
+                    <option value="3">3</option>
+                    <option value="4">4</option>
+                    <option value="5">5</option>
+                    <option value="6">6</option>
+                    <option value="8" selected>8</option>
+                    <option value="10">10</option>
+                    <option value="12">12</option>
+                    <option value="15">15</option>
+                </select>
+                <button type="button" id="generate-slides-btn" class="btn btn-primary margin-left-1rem">Generate Presentation</button>
+            </div>
+
+            <div id="generation-status" class="status-display"></div>
+        </fieldset>
+
+        <hr class="hr-margin">
+
+        <!-- Slides Preview Section -->
+        <div id="presentation-section" style="display: block;">
+            <!-- Slides Preview -->
+            <div id="slides-preview" class="slides-container">
+                <!-- Slides will be inserted here -->
+            </div>
+
+            <!-- Export Section (hidden - handled by JavaScript) -->
+            <div class="export-options" style="display: none;">
+                <div id="export-status" class="status-display"></div>
+            </div>
+        </div>
+
+        <!-- Hidden presentation viewer -->
+        <div id="presentation-viewer" style="display: none;">
+            <div style="text-align: center; margin: 20px 0;">
+                <button type="button" id="close-presentation-btn" class="btn btn-secondary">× Close Presentation</button>
+            </div>
+            <div id="reveal-presentation" class="reveal">
+                <div class="slides">
+                    <!-- Reveal.js slides will be inserted here -->
+                </div>
+            </div>
+        </div>
+
+        <!-- Export Modal -->
+        <div id="export-modal" class="modal-overlay" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-color: rgba(0,0,0,0.5); z-index: 1000; justify-content: center; align-items: center;">
+            <div class="modal-content" style="background: white; padding: 30px; border-radius: 8px; box-shadow: 0 4px 20px rgba(0,0,0,0.3); width: 90%; max-width: 500px;">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+                    <h3 style="margin: 0;">Export Presentation</h3>
+                    <button type="button" id="close-export-modal-btn" style="background: none; border: none; font-size: 1.5em; cursor: pointer; padding: 5px;">×</button>
+                </div>
+
+                <!-- Export Options -->
+                <div style="margin-bottom: 20px;">
+                    <label style="display: flex; align-items: center; margin-bottom: 10px;">
+                        <input type="checkbox" id="include-speaker-notes" style="margin-right: 8px;">
+                        Include speaker notes in export
+                    </label>
+                </div>
+
+                <!-- Export Buttons -->
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
+                    <button type="button" id="export-pdf-btn" class="btn btn-primary">⟄ PDF</button>
+                    <button type="button" id="export-pptx-btn" class="btn btn-primary">⟐ PowerPoint</button>
+                    <button type="button" id="export-html-btn" class="btn btn-secondary">◰ HTML</button>
+                    <button type="button" id="export-json-btn" class="btn btn-outline">{} JSON Data</button>
+                </div>
+
+                <div id="export-modal-status" class="status-display" style="margin-top: 15px;"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- JS Libraries -->
+    <script src="../assets/js/jszip/3.10.1/jszip.min.js"></script>
+    <script src="https://unpkg.com/jspdf@latest/dist/jspdf.umd.min.js"></script>
+    <script src="https://unpkg.com/html2canvas@latest/dist/html2canvas.min.js"></script>
+    <script src="https://unpkg.com/pptxgenjs@3.12.0/dist/pptxgen.bundle.js"></script>
+
+    <!-- Enhanced Editing and Export Libraries -->
+    <script src="../assets/js/konva-editor.js"></script>
+    <script src="../assets/js/konva-slide-system.js"></script>
+    <script src="../assets/js/pdfkit-export.js"></script>
+
+    <!-- Advanced Graphics Libraries -->
+    <script src="https://unpkg.com/chart.js@4.4.0/dist/chart.umd.js"></script>
+    <script src="https://d3js.org/d3.v7.min.js"></script>
+    <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.js"></script>
+
+    <!-- Main Application Logic -->
+    <script>
+        // Configure provider type
+        window.COURSE_CREATOR_PROVIDER = 'puter';
+    </script>
+    <script type="module" src="../assets/js/unified_main.js"></script>
+    <script type="module" src="../assets/js/slides_main.js"></script>
+</body>
+</html>

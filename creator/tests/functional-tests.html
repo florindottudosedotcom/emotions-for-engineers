@@ -1,0 +1,384 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Creator Functionality Tests</title>
+    <style>
+        body {
+            font-family: monospace;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            background: #f5f5f5;
+        }
+        .test-suite {
+            background: white;
+            border-radius: 8px;
+            margin: 20px 0;
+            overflow: hidden;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .test-suite h2 {
+            background: #2563EB;
+            color: white;
+            margin: 0;
+            padding: 15px 20px;
+        }
+        .test-case {
+            border-bottom: 1px solid #eee;
+            padding: 15px 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .test-case:last-child {
+            border-bottom: none;
+        }
+        .test-name {
+            font-weight: bold;
+        }
+        .test-description {
+            color: #666;
+            font-size: 0.9em;
+            margin-top: 5px;
+        }
+        .test-status {
+            padding: 5px 12px;
+            border-radius: 4px;
+            font-size: 0.85em;
+            font-weight: bold;
+        }
+        .status-pending {
+            background: #fef3c7;
+            color: #92400e;
+        }
+        .status-running {
+            background: #dbeafe;
+            color: #1d4ed8;
+        }
+        .status-pass {
+            background: #d1fae5;
+            color: #065f46;
+        }
+        .status-fail {
+            background: #fecaca;
+            color: #991b1b;
+        }
+        .controls {
+            margin: 20px 0;
+            text-align: center;
+        }
+        .btn {
+            background: #2563EB;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 6px;
+            cursor: pointer;
+            margin: 0 10px;
+            font-size: 14px;
+        }
+        .btn:hover {
+            background: #1d4ed8;
+        }
+        .btn-secondary {
+            background: #6b7280;
+        }
+        .btn-secondary:hover {
+            background: #4b5563;
+        }
+        .summary {
+            background: white;
+            border-radius: 8px;
+            padding: 20px;
+            margin: 20px 0;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .summary-stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+            gap: 15px;
+            margin-top: 15px;
+        }
+        .stat {
+            text-align: center;
+            padding: 10px;
+            border-radius: 6px;
+        }
+        .stat-total { background: #f3f4f6; }
+        .stat-pass { background: #d1fae5; color: #065f46; }
+        .stat-fail { background: #fecaca; color: #991b1b; }
+        .stat-pending { background: #fef3c7; color: #92400e; }
+        .log {
+            background: #1f2937;
+            color: #f9fafb;
+            padding: 15px;
+            border-radius: 6px;
+            margin: 20px 0;
+            font-family: 'Courier New', monospace;
+            font-size: 12px;
+            max-height: 300px;
+            overflow-y: auto;
+        }
+    </style>
+</head>
+<body>
+    <h1>🧪 Creator Functionality Test Suite</h1>
+    <p>Comprehensive tests to ensure all functionality is preserved after refactoring.</p>
+
+    <div class="summary">
+        <h3>Test Summary</h3>
+        <div class="summary-stats">
+            <div class="stat stat-total">
+                <div><strong id="total-tests">0</strong></div>
+                <div>Total Tests</div>
+            </div>
+            <div class="stat stat-pass">
+                <div><strong id="passed-tests">0</strong></div>
+                <div>Passed</div>
+            </div>
+            <div class="stat stat-fail">
+                <div><strong id="failed-tests">0</strong></div>
+                <div>Failed</div>
+            </div>
+            <div class="stat stat-pending">
+                <div><strong id="pending-tests">0</strong></div>
+                <div>Pending</div>
+            </div>
+        </div>
+    </div>
+
+    <div class="controls">
+        <button class="btn" onclick="runAllTests()">▶️ Run All Tests</button>
+        <button class="btn btn-secondary" onclick="resetTests()">🔄 Reset Tests</button>
+        <button class="btn btn-secondary" onclick="exportResults()">📋 Export Results</button>
+    </div>
+
+    <!-- Core Functionality Tests -->
+    <div class="test-suite">
+        <h2>🎯 Core Application Tests</h2>
+        <div class="test-case" data-test="app-load">
+            <div>
+                <div class="test-name">Application Load</div>
+                <div class="test-description">Index page loads without errors</div>
+            </div>
+            <div class="test-status status-pending">PENDING</div>
+        </div>
+        <div class="test-case" data-test="dom-elements">
+            <div>
+                <div class="test-name">DOM Elements Present</div>
+                <div class="test-description">All required DOM elements exist</div>
+            </div>
+            <div class="test-status status-pending">PENDING</div>
+        </div>
+        <div class="test-case" data-test="theme-manager">
+            <div>
+                <div class="test-name">Theme Manager Initialization</div>
+                <div class="test-description">Theme manager loads and works</div>
+            </div>
+            <div class="test-status status-pending">PENDING</div>
+        </div>
+    </div>
+
+    <!-- Provider Tests -->
+    <div class="test-suite">
+        <h2>🤖 AI Provider Tests</h2>
+        <div class="test-case" data-test="cloud-provider">
+            <div>
+                <div class="test-name">Cloud Provider Loading</div>
+                <div class="test-description">Cloud provider page loads and initializes</div>
+            </div>
+            <div class="test-status status-pending">PENDING</div>
+        </div>
+        <div class="test-case" data-test="webllm-provider">
+            <div>
+                <div class="test-name">WebLLM Provider Loading</div>
+                <div class="test-description">WebLLM provider page loads and initializes</div>
+            </div>
+            <div class="test-status status-pending">PENDING</div>
+        </div>
+        <div class="test-case" data-test="ollama-provider">
+            <div>
+                <div class="test-name">Ollama Provider Loading</div>
+                <div class="test-description">Ollama provider page loads and initializes</div>
+            </div>
+            <div class="test-status status-pending">PENDING</div>
+        </div>
+        <div class="test-case" data-test="puter-provider">
+            <div>
+                <div class="test-name">Puter Provider Loading</div>
+                <div class="test-description">Puter provider page loads and initializes</div>
+            </div>
+            <div class="test-status status-pending">PENDING</div>
+        </div>
+        <div class="test-case" data-test="provider-switching">
+            <div>
+                <div class="test-name">Provider Template Injection</div>
+                <div class="test-description">Provider-specific templates load correctly</div>
+            </div>
+            <div class="test-status status-pending">PENDING</div>
+        </div>
+    </div>
+
+    <!-- Course Creator Tests -->
+    <div class="test-suite">
+        <h2>📚 Course Creator Tests</h2>
+        <div class="test-case" data-test="course-form">
+            <div>
+                <div class="test-name">Course Form Elements</div>
+                <div class="test-description">All course form inputs are functional</div>
+            </div>
+            <div class="test-status status-pending">PENDING</div>
+        </div>
+        <div class="test-case" data-test="chapter-management">
+            <div>
+                <div class="test-name">Chapter Management</div>
+                <div class="test-description">Add, remove, and edit chapters work</div>
+            </div>
+            <div class="test-status status-pending">PENDING</div>
+        </div>
+        <div class="test-case" data-test="tab-navigation">
+            <div>
+                <div class="test-name">Tab Navigation</div>
+                <div class="test-description">Chapter tabs switch correctly</div>
+            </div>
+            <div class="test-status status-pending">PENDING</div>
+        </div>
+        <div class="test-case" data-test="editor-iframes">
+            <div>
+                <div class="test-name">Editor iFrames</div>
+                <div class="test-description">ToastUI editors load and function</div>
+            </div>
+            <div class="test-status status-pending">PENDING</div>
+        </div>
+        <div class="test-case" data-test="language-selection">
+            <div>
+                <div class="test-name">Language Selection</div>
+                <div class="test-description">Multi-language selection works</div>
+            </div>
+            <div class="test-status status-pending">PENDING</div>
+        </div>
+    </div>
+
+    <!-- Slide Creator Tests -->
+    <div class="test-suite">
+        <h2>🎥 Slide Creator Tests</h2>
+        <div class="test-case" data-test="slides-load">
+            <div>
+                <div class="test-name">Slides Pages Load</div>
+                <div class="test-description">All slides creator pages load</div>
+            </div>
+            <div class="test-status status-pending">PENDING</div>
+        </div>
+        <div class="test-case" data-test="slides-functionality">
+            <div>
+                <div class="test-name">Slides Functionality</div>
+                <div class="test-description">Slide creation and editing work</div>
+            </div>
+            <div class="test-status status-pending">PENDING</div>
+        </div>
+    </div>
+
+    <!-- State Management Tests -->
+    <div class="test-suite">
+        <h2>💾 State Management Tests</h2>
+        <div class="test-case" data-test="state-save">
+            <div>
+                <div class="test-name">State Persistence</div>
+                <div class="test-description">State saves to localStorage</div>
+            </div>
+            <div class="test-status status-pending">PENDING</div>
+        </div>
+        <div class="test-case" data-test="state-load">
+            <div>
+                <div class="test-name">State Recovery</div>
+                <div class="test-description">State loads from localStorage</div>
+            </div>
+            <div class="test-status status-pending">PENDING</div>
+        </div>
+        <div class="test-case" data-test="session-storage">
+            <div>
+                <div class="test-name">Session Storage</div>
+                <div class="test-description">API keys save to sessionStorage</div>
+            </div>
+            <div class="test-status status-pending">PENDING</div>
+        </div>
+    </div>
+
+    <!-- Theme Tests -->
+    <div class="test-suite">
+        <h2>🎨 Theme System Tests</h2>
+        <div class="test-case" data-test="theme-detection">
+            <div>
+                <div class="test-name">Theme Detection</div>
+                <div class="test-description">Auto theme detection works</div>
+            </div>
+            <div class="test-status status-pending">PENDING</div>
+        </div>
+        <div class="test-case" data-test="theme-switching">
+            <div>
+                <div class="test-name">Theme Switching</div>
+                <div class="test-description">Manual theme switching works</div>
+            </div>
+            <div class="test-status status-pending">PENDING</div>
+        </div>
+        <div class="test-case" data-test="theme-persistence">
+            <div>
+                <div class="test-name">Theme Persistence</div>
+                <div class="test-description">Theme preference saves</div>
+            </div>
+            <div class="test-status status-pending">PENDING</div>
+        </div>
+    </div>
+
+    <!-- File Operations Tests -->
+    <div class="test-suite">
+        <h2>📁 File Operations Tests</h2>
+        <div class="test-case" data-test="zip-generation">
+            <div>
+                <div class="test-name">ZIP File Generation</div>
+                <div class="test-description">Course files generate as ZIP</div>
+            </div>
+            <div class="test-status status-pending">PENDING</div>
+        </div>
+        <div class="test-case" data-test="download-functionality">
+            <div>
+                <div class="test-name">Download Functionality</div>
+                <div class="test-description">File download triggers correctly</div>
+            </div>
+            <div class="test-status status-pending">PENDING</div>
+        </div>
+    </div>
+
+    <!-- Responsive Design Tests -->
+    <div class="test-suite">
+        <h2>📱 Responsive Design Tests</h2>
+        <div class="test-case" data-test="mobile-layout">
+            <div>
+                <div class="test-name">Mobile Layout</div>
+                <div class="test-description">Layout works on mobile devices</div>
+            </div>
+            <div class="test-status status-pending">PENDING</div>
+        </div>
+        <div class="test-case" data-test="tablet-layout">
+            <div>
+                <div class="test-name">Tablet Layout</div>
+                <div class="test-description">Layout works on tablet devices</div>
+            </div>
+            <div class="test-status status-pending">PENDING</div>
+        </div>
+        <div class="test-case" data-test="desktop-layout">
+            <div>
+                <div class="test-name">Desktop Layout</div>
+                <div class="test-description">Layout works on desktop</div>
+            </div>
+            <div class="test-status status-pending">PENDING</div>
+        </div>
+    </div>
+
+    <div class="log" id="test-log"></div>
+
+    <script src="test-runner.js"></script>
+</body>
+</html>

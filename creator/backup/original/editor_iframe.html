@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="Content-Security-Policy" content="default-src 'none'; style-src 'self' 'unsafe-inline'; script-src 'self' 'unsafe-inline'; img-src 'self' data:;">
+    <title>Editor</title>
+    <link rel="icon" type="image/svg+xml" href="../favicon.svg">
+    <link rel="stylesheet" href="../assets/toastui-editor.min.css" />
+    <link rel="stylesheet" href="../assets/editor_iframe.css" />
+    <script>
+        // Load dark theme CSS if user prefers dark mode
+        if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
+            const darkThemeLink = document.createElement('link');
+            darkThemeLink.rel = 'stylesheet';
+            darkThemeLink.href = '../assets/toastui-editor-dark.css';
+            document.head.appendChild(darkThemeLink);
+        }
+    </script>
+</head>
+<body>
+    <div id="editor"></div>
+
+    <script src="../assets/js/toastui-editor-all.min.js"></script>
+    <script>
+        const urlParams = new URLSearchParams(window.location.search);
+        const chapterId = urlParams.get('id');
+
+        // Detect system dark mode preference
+        const isDarkMode = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
+
+        const editor = new toastui.Editor({
+            el: document.querySelector('#editor'),
+            height: '100%',
+            initialEditType: 'wysiwyg',
+            previewStyle: 'vertical',
+            theme: isDarkMode ? 'dark' : 'light',
+            events: {
+                change: () => {
+                    parent.postMessage({
+                        type: 'content-changed',
+                        content: editor.getMarkdown(),
+                        id: chapterId
+                    }, '*');
+                }
+            }
+        });
+
+        // Listen for system theme changes and update editor accordingly
+        window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', (e) => {
+            // For theme switching, we would need to recreate the editor
+            // For now, we'll just apply the dark class which ToastUI should handle
+            const editorEl = document.querySelector('.toastui-editor-defaultUI');
+            if (editorEl) {
+                if (e.matches) {
+                    editorEl.classList.add('toastui-editor-dark');
+                } else {
+                    editorEl.classList.remove('toastui-editor-dark');
+                }
+            }
+        });
+
+        // Apply initial dark class if needed
+        if (isDarkMode) {
+            // Wait for editor to be fully initialized
+            setTimeout(() => {
+                const editorEl = document.querySelector('.toastui-editor-defaultUI');
+                if (editorEl) {
+                    editorEl.classList.add('toastui-editor-dark');
+                }
+            }, 100);
+        }
+
+        window.addEventListener('message', (event) => {
+            if (event.data.type === 'set-content') {
+                editor.setMarkdown(event.data.content || '');
+            }
+        });
+
+        parent.postMessage({ type: 'editor-ready', id: chapterId }, '*');
+    </script>
+</body>
+</html>

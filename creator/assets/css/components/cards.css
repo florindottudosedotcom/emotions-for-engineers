@@ -1,0 +1,494 @@
+/**
+ * Card Component System - Following CLAUDE.md Guidelines
+ * Comprehensive card styles for content containers
+ */
+
+/* ========================================
+   BASE CARD STYLES - Design Guidelines Compliant
+   ======================================== */
+.card {
+    background-color: var(--surface);
+    border-radius: var(--radius-large);  /* 12px for cards - Guidelines */
+    box-shadow: var(--shadow-small);     /* Subtle shadow */
+    padding: var(--spacing-6);           /* 24px - Guidelines range 20px-32px */
+    margin-bottom: var(--spacing-6);
+    border: 1px solid var(--border-light);
+    transition: box-shadow var(--transition-normal), transform var(--transition-normal);
+    position: relative;
+    overflow: hidden;
+}
+
+.card:hover {
+    box-shadow: var(--shadow-medium);
+    transform: translateY(-1px);
+}
+
+/* ========================================
+   CARD VARIANTS
+   ======================================== */
+
+/* Minimal card - using class from original */
+.card-minimal {
+    background-color: var(--surface);
+    border-radius: var(--radius-large);
+    box-shadow: var(--shadow-small);
+    padding: var(--spacing-6);
+    margin-bottom: var(--spacing-6);
+    border: 1px solid var(--border-light);
+    transition: box-shadow var(--transition-normal);
+}
+
+.card-minimal:hover {
+    box-shadow: var(--shadow-medium);
+}
+
+/* Elevated card */
+.card-elevated {
+    box-shadow: var(--shadow-medium);
+}
+
+.card-elevated:hover {
+    box-shadow: var(--shadow-large);
+    transform: translateY(-2px);
+}
+
+/* Flat card */
+.card-flat {
+    box-shadow: none;
+    border: 1px solid var(--border-light);
+}
+
+.card-flat:hover {
+    box-shadow: var(--shadow-small);
+}
+
+/* Outlined card */
+.card-outlined {
+    box-shadow: none;
+    border: 2px solid var(--border-medium);
+}
+
+.card-outlined:hover {
+    border-color: var(--primary-color);
+    box-shadow: var(--shadow-small);
+}
+
+/* Interactive card */
+.card-interactive {
+    cursor: pointer;
+    transition: all var(--transition-normal);
+}
+
+.card-interactive:hover {
+    transform: translateY(-3px);
+    box-shadow: var(--shadow-large);
+}
+
+.card-interactive:active {
+    transform: translateY(-1px);
+    box-shadow: var(--shadow-medium);
+}
+
+/* ========================================
+   CARD SIZES
+   ======================================== */
+.card-sm {
+    padding: var(--spacing-4);
+    margin-bottom: var(--spacing-4);
+}
+
+.card-lg {
+    padding: var(--spacing-8);
+    margin-bottom: var(--spacing-8);
+}
+
+.card-xl {
+    padding: var(--spacing-12);
+    margin-bottom: var(--spacing-12);
+}
+
+/* ========================================
+   CARD STRUCTURE COMPONENTS
+   ======================================== */
+
+/* Card Header */
+.card-header {
+    margin: calc(-1 * var(--spacing-6)) calc(-1 * var(--spacing-6)) var(--spacing-4) calc(-1 * var(--spacing-6));
+    padding: var(--spacing-4) var(--spacing-6);
+    background-color: var(--background-secondary);
+    border-bottom: 1px solid var(--border-light);
+    border-radius: var(--radius-large) var(--radius-large) 0 0;
+}
+
+.card-header h1,
+.card-header h2,
+.card-header h3,
+.card-header h4,
+.card-header h5,
+.card-header h6 {
+    margin: 0;
+    color: var(--text-primary);
+}
+
+/* Card Body */
+.card-body {
+    padding: 0; /* Card already has padding */
+}
+
+/* Card Footer */
+.card-footer {
+    margin: var(--spacing-4) calc(-1 * var(--spacing-6)) calc(-1 * var(--spacing-6)) calc(-1 * var(--spacing-6));
+    padding: var(--spacing-4) var(--spacing-6);
+    background-color: var(--background-secondary);
+    border-top: 1px solid var(--border-light);
+    border-radius: 0 0 var(--radius-large) var(--radius-large);
+}
+
+/* ========================================
+   SPECIALIZED CARDS
+   ======================================== */
+
+/* Chapter Card */
+.chapter {
+    border: none;
+    padding: var(--spacing-6) 0;
+    border-radius: 0 0 var(--radius-medium) var(--radius-medium);
+    margin-bottom: var(--spacing-4);
+    background-color: var(--surface);
+    box-shadow: var(--shadow-small);
+}
+
+.chapter-content {
+    border-radius: 0 var(--radius-medium) var(--radius-medium) var(--radius-medium);
+    border: none;
+    background-color: var(--surface);
+    padding: var(--spacing-4) 0;
+}
+
+.chapter-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: var(--spacing-4);
+    background-color: transparent;
+    padding: 0;
+    border: none;
+}
+
+.chapter-header h3 {
+    color: var(--text-primary);
+    margin: 0;
+}
+
+/* Help Section Card */
+.help-section {
+    background-color: var(--surface);
+    border: 1px solid var(--border-light);
+    border-radius: var(--radius-medium);
+    padding: var(--spacing-6) 0;
+    margin-top: var(--spacing-8);
+}
+
+/* Container Card */
+.container {
+    background-color: var(--surface);
+    padding: var(--spacing-8) 0;
+    border-radius: var(--radius-medium);
+    box-shadow: var(--shadow-medium);
+    border: none;
+    width: 100%;
+    max-width: 100%;
+    margin: 0;
+    box-sizing: border-box;
+}
+
+/* Main Container */
+.main-container {
+    background-color: var(--background-secondary);
+    min-height: 100vh;
+    padding: var(--spacing-8) var(--spacing-4);
+    max-width: 900px;
+    margin: var(--spacing-8) auto;
+}
+
+/* Status Cards */
+.status-card {
+    border-left: 4px solid;
+    background-color: var(--surface);
+}
+
+.status-card.success {
+    border-left-color: var(--success-color);
+    background-color: var(--success-light);
+}
+
+.status-card.warning {
+    border-left-color: var(--warning-color);
+    background-color: var(--warning-light);
+}
+
+.status-card.error {
+    border-left-color: var(--error-color);
+    background-color: var(--error-light);
+}
+
+.status-card.info {
+    border-left-color: var(--info-color);
+    background-color: var(--info-light);
+}
+
+/* ========================================
+   CARD CONTENT UTILITIES
+   ======================================== */
+
+/* Card title styling */
+.card-title {
+    font-size: var(--font-size-xl);
+    font-weight: var(--font-weight-semibold);
+    color: var(--text-primary);
+    margin-bottom: var(--spacing-2);
+}
+
+.card-subtitle {
+    font-size: var(--font-size-base);
+    font-weight: var(--font-weight-normal);
+    color: var(--text-secondary);
+    margin-bottom: var(--spacing-4);
+}
+
+/* Card text */
+.card-text {
+    color: var(--text-primary);
+    line-height: var(--line-height-relaxed);
+}
+
+.card-text:last-child {
+    margin-bottom: 0;
+}
+
+/* Card actions */
+.card-actions {
+    display: flex;
+    gap: var(--spacing-2);
+    margin-top: var(--spacing-4);
+    padding-top: var(--spacing-4);
+    border-top: 1px solid var(--border-light);
+}
+
+.card-actions.card-actions-center {
+    justify-content: center;
+}
+
+.card-actions.card-actions-end {
+    justify-content: flex-end;
+}
+
+/* ========================================
+   GRID LAYOUTS FOR CARDS
+   ======================================== */
+
+/* Launcher container */
+.launcher-container {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: var(--spacing-6);
+    margin: var(--spacing-8) 0;
+}
+
+.launcher-btn {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: var(--spacing-8) 0;
+    border-radius: var(--radius-medium);
+    text-decoration: none;
+    color: var(--text-primary);
+    font-size: var(--font-size-lg);
+    font-weight: var(--font-weight-semibold);
+    text-align: center;
+    transition: transform var(--transition-normal), box-shadow var(--transition-normal);
+    border: 2px solid var(--primary-color);
+    background-color: var(--background-primary);
+}
+
+.launcher-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-medium);
+    color: var(--primary-color);
+}
+
+.launcher-btn .icon {
+    font-size: 2.5em;
+    margin-bottom: var(--spacing-2);
+}
+
+/* Provider info grid */
+.provider-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: var(--spacing-4);
+    margin: var(--spacing-4) 0;
+}
+
+/* ========================================
+   RESPONSIVE DESIGN
+   ======================================== */
+
+/* Mobile: 320px-767px */
+@media (max-width: 767px) {
+    .card,
+    .card-minimal {
+        padding: var(--spacing-4);          /* 16px on mobile */
+        margin-bottom: var(--spacing-4);
+    }
+
+    .card-sm {
+        padding: var(--spacing-2);
+    }
+
+    .card-lg {
+        padding: var(--spacing-6);
+    }
+
+    .card-xl {
+        padding: var(--spacing-8);
+    }
+
+    /* Container mobile */
+    .container {
+        padding: var(--spacing-2) 0;
+        margin: 0;
+        box-sizing: border-box;
+    }
+
+    .main-container {
+        padding: var(--spacing-4) var(--spacing-2);
+        margin: 0;
+        min-height: 100vh;
+    }
+
+    /* Launcher container mobile */
+    .launcher-container {
+        grid-template-columns: 1fr;
+        gap: var(--spacing-4);
+    }
+
+    .launcher-btn {
+        padding: var(--spacing-6) var(--spacing-4);
+        gap: var(--spacing-4);
+    }
+
+    .launcher-btn .icon {
+        font-size: 2em;
+        margin-bottom: var(--spacing-2);
+    }
+
+    /* Provider grid mobile */
+    .provider-grid {
+        grid-template-columns: 1fr;
+        gap: var(--spacing-4);
+    }
+
+    /* Card header/footer on mobile */
+    .card-header {
+        margin: calc(-1 * var(--spacing-4)) calc(-1 * var(--spacing-4)) var(--spacing-2) calc(-1 * var(--spacing-4));
+        padding: var(--spacing-2) var(--spacing-4);
+    }
+
+    .card-footer {
+        margin: var(--spacing-2) calc(-1 * var(--spacing-4)) calc(-1 * var(--spacing-4)) calc(-1 * var(--spacing-4));
+        padding: var(--spacing-2) var(--spacing-4);
+    }
+
+    /* Card actions stack on mobile */
+    .card-actions {
+        flex-direction: column;
+        gap: var(--spacing-2);
+    }
+
+    /* Chapter mobile layout */
+    .chapter {
+        padding: var(--spacing-4) 0;
+        margin-bottom: var(--spacing-4);
+    }
+
+    .chapter-content {
+        padding: var(--spacing-4) 0;
+    }
+
+    .chapter-header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: var(--spacing-2);
+    }
+
+    /* Help section mobile */
+    .help-section {
+        padding: var(--spacing-4) 0;
+        margin-top: var(--spacing-4);
+    }
+}
+
+/* Tablet: 768px-1023px */
+@media (min-width: 768px) and (max-width: 1023px) {
+    .launcher-container {
+        grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    }
+
+    .provider-grid {
+        grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    }
+
+    .container {
+        padding: var(--spacing-6) 0;
+        max-width: 1024px;
+    }
+}
+
+/* Desktop: 1024px+ */
+@media (min-width: 1024px) {
+    /* Enhanced hover effects on desktop */
+    .card:hover,
+    .card-minimal:hover {
+        transform: translateY(-2px);
+    }
+
+    .card-interactive:hover {
+        transform: translateY(-4px);
+    }
+
+    .launcher-btn:hover {
+        transform: translateY(-3px);
+    }
+
+    .container {
+        max-width: var(--max-width-content);
+        padding: var(--spacing-8) 0;
+    }
+}
+
+/* ========================================
+   UTILITY CLASSES
+   ======================================== */
+.card-borderless {
+    border: none;
+}
+
+.card-no-padding {
+    padding: 0;
+}
+
+.card-no-margin {
+    margin: 0;
+}
+
+.card-fixed-height {
+    height: 200px;
+    overflow: hidden;
+}
+
+.card-scrollable {
+    max-height: 400px;
+    overflow-y: auto;
+}
