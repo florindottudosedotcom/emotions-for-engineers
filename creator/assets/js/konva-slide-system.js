@@ -2319,7 +2319,7 @@ class KonvaSlideSystem {
             y: 0,
             width: this.actualWidth,
             height: this.actualHeight,
-            fill: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+            fill: '#2563EB',
             opacity: 0.8
         });
 
@@ -3438,7 +3438,7 @@ class KonvaSlideSystem {
                     fillLinearGradient: {
                         start: { x: 0, y: 0 },
                         end: { x: textObj.width(), y: 0 },
-                        colorStops: [0, '#667eea', 1, '#764ba2']
+                        colorStops: [0, '#2563EB', 1, '#2563EB']
                     }
                 });
             }

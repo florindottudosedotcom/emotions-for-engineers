@@ -505,6 +505,6 @@ Header (Navigation)
 - [ ] Information hierarchy guides user attention
 - [ ] Content serves user goals effectively
 
----
+## 🎯 GOAL
 
-*Remember: The best minimalistic design doesn't feel minimal to users—it feels effortless and intuitive. Focus on removing friction, not features.*
+Remember: The best minimalistic design doesn't feel minimal to users—it feels effortless and intuitive. Focus on removing friction, not features.

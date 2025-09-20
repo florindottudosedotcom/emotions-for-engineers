@@ -342,7 +342,7 @@ input[type="checkbox"] { margin-right: 0.5rem; }
     left: 0;
     right: 0;
     height: 3px;
-    background: linear-gradient(90deg, #3498db, #2980b9);
+    background: var(--primary-color);
     border-radius: 6px 6px 0 0;
 }
 
