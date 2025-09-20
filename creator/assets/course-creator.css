@@ -22,7 +22,7 @@ body {
     max-width: 100%;
     margin: 0;
     padding: 0 var(--spacing-md, 1rem);
-    background-color: #f8f9fa !important;
+    background-color: #f8f9fa;
 }
 h1, h2, h3 { color: var(--text-primary, #212121); }
 .container {
@@ -204,6 +204,94 @@ input[type="checkbox"] { margin-right: 0.5rem; }
     0% { opacity: 0.6; }
     100% { opacity: 1; }
 }
+
+/* Dark mode for status displays */
+@media (prefers-color-scheme: dark) {
+    .status-display {
+        background-color: var(--surface) !important;
+        border-color: var(--border-light) !important;
+        color: var(--text-primary) !important;
+    }
+
+    .status-display.status-info {
+        background-color: #0f1419 !important;
+        border-color: #2563eb !important;
+        color: #60a5fa !important;
+    }
+
+    .status-display.status-success {
+        background-color: #0f1b0f !important;
+        border-color: #22c55e !important;
+        color: #4ade80 !important;
+    }
+
+    .status-display.status-warning {
+        background-color: #1c1810 !important;
+        border-color: #f59e0b !important;
+        color: #fbbf24 !important;
+    }
+
+    .status-display.status-error {
+        background-color: #1f1415 !important;
+        border-color: #dc2626 !important;
+        color: #f87171 !important;
+    }
+
+    .status-display.status-loading {
+        background-color: #0f1419 !important;
+        border-color: #2563eb !important;
+        color: #60a5fa !important;
+    }
+
+    #ai-status {
+        background-color: #1c1810 !important;
+        border-color: #f59e0b !important;
+        color: #fbbf24 !important;
+    }
+
+    .ai-status-initial {
+        background-color: var(--surface) !important;
+        color: var(--text-primary) !important;
+    }
+
+    /* Text inputs and form elements */
+    input[type="text"],
+    input[type="url"],
+    input[type="email"],
+    input[type="password"],
+    input[type="search"],
+    input[type="number"],
+    textarea,
+    select {
+        background-color: #1E293B !important;
+        color: #F8FAFC !important;
+        border-color: #475569 !important;
+    }
+
+    input[type="text"]:focus,
+    input[type="url"]:focus,
+    input[type="email"]:focus,
+    input[type="password"]:focus,
+    input[type="search"]:focus,
+    input[type="number"]:focus,
+    textarea:focus,
+    select:focus {
+        border-color: #60A5FA !important;
+        outline-color: #60A5FA !important;
+    }
+
+    /* Placeholder text */
+    input::placeholder,
+    textarea::placeholder {
+        color: #94A3B8 !important;
+    }
+
+    /* Select dropdown options */
+    option {
+        background-color: #1E293B !important;
+        color: #F8FAFC !important;
+    }
+}
 .header-container { display: flex; justify-content: space-between; align-items: center; }
 .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-color: rgba(0,0,0,0.5); display: none; justify-content: center; align-items: center; z-index: 1000; }
 .modal-content { background-color: #fff; padding: 2rem; border-radius: 8px; box-shadow: 0 4px 15px rgba(0,0,0,0.2); width: 90%; max-width: 500px; }
@@ -233,6 +321,59 @@ input[type="checkbox"] { margin-right: 0.5rem; }
     color: #2c5282;
     background-color: #e7f3ff;
     border: 1px solid #4a90e2;
+}
+
+/* Dark mode for LLM status indicators */
+@media (prefers-color-scheme: dark) {
+    .ollama-status-style {
+        background-color: var(--surface) !important;
+        color: var(--text-primary) !important;
+        border-color: var(--border-light) !important;
+    }
+
+    .ollama-status-ok {
+        color: #4ade80 !important;
+        background-color: #0f1b0f !important;
+        border-color: #22c55e !important;
+    }
+
+    .ollama-status-error {
+        color: #f87171 !important;
+        background-color: #1f1415 !important;
+        border-color: #dc2626 !important;
+    }
+
+    .ollama-status-info {
+        color: #60a5fa !important;
+        background-color: #0f1419 !important;
+        border-color: #2563eb !important;
+    }
+
+    /* General status indicators */
+    [id*="status"], [class*="status"] {
+        background-color: var(--surface) !important;
+        color: var(--text-primary) !important;
+        border-color: var(--border-light) !important;
+    }
+
+    /* Webllm status */
+    .webllm-status-ok {
+        color: #4ade80 !important;
+        background-color: #0f1b0f !important;
+        border-color: #22c55e !important;
+    }
+
+    .webllm-status-error {
+        color: #f87171 !important;
+        background-color: #1f1415 !important;
+        border-color: #dc2626 !important;
+    }
+
+    .webllm-status-info {
+        color: #60a5fa !important;
+        background-color: #0f1419 !important;
+        border-color: #2563eb !important;
+    }
 }
 
 /* New Launcher Page Styles */
@@ -377,5 +518,796 @@ input[type="checkbox"] { margin-right: 0.5rem; }
 }
 .btn-sm:hover {
     background-color: rgba(108, 117, 125, 0.1);
+}
+
+/* Enhanced Mobile Responsiveness for Course Creator */
+
+/* Mobile: 320px-767px */
+@media (max-width: 767px) {
+    .container {
+        padding: var(--spacing-2, 8px) var(--spacing-2, 8px) !important;
+        margin: 0;
+        box-sizing: border-box;
+    }
+
+    body {
+        padding: 0 var(--spacing-2, 8px);
+        margin: 0;
+    }
+
+    /* Fix tab navigation on mobile */
+    .tab-nav {
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+        scrollbar-width: thin;
+        padding-bottom: 2px;
+    }
+
+    .tab-link {
+        min-width: fit-content;
+        white-space: nowrap;
+        font-size: 0.85rem;
+        padding: 0.5rem 0.75rem;
+    }
+
+    /* Chapter content mobile layout */
+    .chapter-content {
+        padding: var(--spacing-4, 16px);
+    }
+
+    .chapter-header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: var(--spacing-2, 8px);
+    }
+
+    /* Form elements mobile optimization */
+    .input-group {
+        flex-direction: column;
+        gap: var(--spacing-2, 8px);
+        margin-bottom: var(--spacing-4, 16px);
+    }
+
+    .input-group label {
+        margin-bottom: var(--spacing-1, 4px);
+    }
+
+    .input-group input,
+    .input-group textarea,
+    .input-group select {
+        width: 100%;
+        margin-bottom: 0;
+        box-sizing: border-box;
+    }
+
+    /* Button improvements for mobile */
+    .btn {
+        min-height: 48px;
+        padding: var(--spacing-4, 16px);
+        font-size: var(--font-size-base, 1rem);
+        width: 100%;
+        justify-content: center;
+        margin-bottom: var(--spacing-2, 8px);
+        box-sizing: border-box;
+    }
+
+    .btn.btn-sm,
+    .remove-chapter-btn {
+        min-height: 40px;
+        padding: var(--spacing-2, 8px) var(--spacing-4, 16px);
+        width: auto;
+        display: inline-flex;
+        margin-bottom: var(--spacing-2, 8px);
+    }
+
+    /* Status display mobile adjustments */
+    .status-display {
+        font-size: var(--font-size-sm, 0.875rem);
+        padding: var(--spacing-4, 16px);
+        margin: var(--spacing-2, 8px) 0;
+    }
+
+    /* Modal mobile improvements */
+    .modal-content {
+        width: 95%;
+        max-width: none;
+        margin: var(--spacing-4, 16px);
+        padding: var(--spacing-4, 16px);
+        max-height: 90vh;
+        overflow-y: auto;
+        box-sizing: border-box;
+    }
+
+    /* Textarea improvements */
+    .prompt-textarea-large,
+    .prompt-textarea {
+        min-height: 120px;
+        font-size: 16px; /* Prevent zoom on iOS */
+        width: 100%;
+        box-sizing: border-box;
+    }
+
+    /* Chapter tabs mobile scrolling */
+    .chapter-tabs-container {
+        margin: 0 -var(--spacing-2, 8px);
+        padding: 0 var(--spacing-2, 8px);
+    }
+
+    /* Fieldset mobile layout */
+    fieldset {
+        margin: 0 0 var(--spacing-4, 16px) 0;
+        padding: var(--spacing-4, 16px);
+        box-sizing: border-box;
+    }
+
+    legend {
+        font-size: var(--font-size-lg, 1.125rem);
+        padding: 0 var(--spacing-2, 8px);
+    }
+
+    /* Language grid mobile */
+    .lang-grid {
+        grid-template-columns: 1fr;
+        gap: var(--spacing-2, 8px);
+    }
+
+    /* Chapter styling mobile */
+    .chapter {
+        padding: var(--spacing-4, 16px);
+        margin-bottom: var(--spacing-4, 16px);
+        box-sizing: border-box;
+    }
+
+    /* Progress indicators */
+    .generation-progress {
+        padding: var(--spacing-4, 16px);
+        margin: var(--spacing-4, 16px) 0;
+    }
+
+    .progress-item {
+        padding: var(--spacing-2, 8px) 0;
+        font-size: var(--font-size-sm, 0.875rem);
+    }
+
+    /* Download section mobile */
+    #download-section {
+        padding: var(--spacing-4, 16px);
+        margin: var(--spacing-4, 16px) 0;
+    }
+
+    /* AI assistant section mobile */
+    .ai-assistant {
+        padding: var(--spacing-4, 16px);
+        margin: var(--spacing-4, 16px) 0;
+    }
+
+    /* Header container mobile */
+    .header-container {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: var(--spacing-2, 8px);
+    }
+
+    /* Make sure text wraps properly */
+    .instructions {
+        padding: var(--spacing-4, 16px);
+        margin-bottom: var(--spacing-4, 16px);
+    }
+
+    /* Ensure touch targets are large enough */
+    input[type="checkbox"] {
+        min-width: 24px;
+        min-height: 24px;
+    }
+
+    /* Fix horizontal scrolling issues */
+    * {
+        max-width: 100%;
+    }
+
+    pre {
+        overflow-x: auto;
+        white-space: pre-wrap;
+        word-wrap: break-word;
+    }
+}
+
+/* Tablet: 768px-1023px */
+@media (min-width: 768px) and (max-width: 1023px) {
+    .container {
+        padding: 0 var(--spacing-6, 24px);
+        max-width: 1024px;
+    }
+
+    .tab-nav {
+        justify-content: flex-start;
+        overflow-x: auto;
+    }
+
+    .input-group {
+        flex-direction: row;
+        align-items: center;
+        gap: var(--spacing-4, 16px);
+    }
+
+    .btn {
+        width: auto;
+        min-width: 120px;
+    }
+}
+
+/* Dark Mode Specific Overrides for Course Creator */
+@media (prefers-color-scheme: dark) {
+    /* Override any bright backgrounds */
+    .free-provider-highlight {
+        background: var(--background-tertiary) !important;
+        color: var(--text-primary) !important;
+        border: 1px solid var(--border-light) !important;
+    }
+
+    .puter-info {
+        background: var(--background-tertiary) !important;
+        color: var(--text-primary) !important;
+    }
+
+    .puter-status {
+        background: var(--background-tertiary) !important;
+        border-color: var(--border-light) !important;
+        color: var(--text-primary) !important;
+    }
+
+    /* Ensure all text is readable */
+    .puter-status-text,
+    .course-description {
+        color: var(--text-secondary) !important;
+    }
+
+    /* Provider highlight sections */
+    .model-selector {
+        background: var(--background-tertiary) !important;
+        color: var(--text-primary) !important;
+    }
+
+    /* Course preview styling */
+    .course-preview {
+        background: var(--surface) !important;
+        border-color: var(--border-light) !important;
+        color: var(--text-primary) !important;
+    }
+
+    .course-preview .course-description {
+        background: var(--background-tertiary) !important;
+        color: var(--text-secondary) !important;
+    }
+
+    /* Chapter items */
+    .chapter-item {
+        background: var(--background-tertiary) !important;
+        border-color: var(--primary-color) !important;
+        color: var(--text-primary) !important;
+    }
+
+    .chapter-item h4 {
+        color: var(--primary-color) !important;
+    }
+
+    .chapter-item p {
+        color: var(--text-secondary) !important;
+    }
+
+    /* Generation progress */
+    .generation-progress {
+        background: var(--surface) !important;
+        border-color: var(--border-light) !important;
+        color: var(--text-primary) !important;
+    }
+
+    .progress-item {
+        border-color: var(--border-light) !important;
+    }
+
+    .progress-icon {
+        background: var(--background-tertiary) !important;
+        color: var(--text-secondary) !important;
+    }
+
+    .progress-icon.completed {
+        background: var(--success-color) !important;
+        color: white !important;
+    }
+
+    .progress-icon.active {
+        background: var(--primary-color) !important;
+        color: white !important;
+    }
+
+    .progress-text {
+        color: var(--text-secondary) !important;
+    }
+
+    .progress-text.completed {
+        color: var(--success-color) !important;
+    }
+
+    .progress-text.active {
+        color: var(--primary-color) !important;
+    }
+
+    /* Instructions and help sections */
+    .instructions {
+        background: var(--background-tertiary) !important;
+        border-color: var(--border-light) !important;
+        color: var(--text-primary) !important;
+    }
+
+    /* Button enhancements */
+    .btn-ai {
+        background-color: transparent !important;
+        color: var(--primary-color) !important;
+        border-color: var(--primary-color) !important;
+    }
+
+    .btn-ai:hover {
+        background-color: var(--primary-light) !important;
+    }
+
+    /* AI status sections */
+    #ai-status {
+        background-color: var(--background-tertiary) !important;
+        border-color: var(--border-light) !important;
+        color: var(--text-primary) !important;
+    }
+
+    .ai-assistant {
+        background-color: var(--surface) !important;
+        border-color: var(--border-light) !important;
+        color: var(--text-primary) !important;
+    }
+
+    /* Download section styling */
+    #download-section {
+        background-color: var(--background-tertiary) !important;
+        border-color: var(--success-color) !important;
+        color: var(--text-primary) !important;
+    }
+
+    /* Debug area */
+    .debug-container {
+        background-color: var(--surface) !important;
+        border-color: var(--border-light) !important;
+        color: var(--text-primary) !important;
+    }
+
+    .debug-log-area {
+        background-color: var(--background-tertiary) !important;
+        border-color: var(--border-light) !important;
+        color: var(--text-primary) !important;
+    }
+
+    /* Ensure all headings are visible */
+    h1, h2, h3, h4, h5, h6 {
+        color: var(--text-primary) !important;
+    }
+
+    /* Fix any remaining white/light backgrounds */
+    .container {
+        background-color: var(--background-secondary) !important;
+        color: var(--text-primary) !important;
+    }
+
+    /* Provider sections */
+    #provider-section {
+        background-color: transparent !important;
+    }
+
+    /* Course configuration */
+    .course-generation-section {
+        background-color: transparent !important;
+    }
+
+    /* Provider tab styling for dark mode */
+    .provider-tab {
+        background: var(--surface) !important;
+        border-color: var(--border-light) !important;
+        color: var(--text-primary) !important;
+    }
+
+    .provider-tab:hover {
+        border-color: var(--primary-color) !important;
+        background: var(--background-tertiary) !important;
+        color: var(--text-primary) !important;
+    }
+
+    .provider-tab.active {
+        border-color: var(--primary-color) !important;
+        background: var(--primary-color) !important;
+        color: white !important;
+    }
+
+    .provider-tab:last-child {
+        border-color: var(--border-light) !important;
+    }
+
+    .provider-tab.active:last-child {
+        border-color: var(--primary-color) !important;
+    }
+
+    /* Creator frame (iframe) styling */
+    .creator-frame {
+        background: var(--surface) !important;
+        border: 1px solid var(--border-light) !important;
+        border-radius: var(--radius-medium) !important;
+    }
+
+    /* Provider info container */
+    .provider-info-container {
+        background: transparent !important;
+        border-color: var(--border-light) !important;
+        color: var(--text-primary) !important;
+    }
+
+    /* Provider row */
+    .provider-row {
+        color: var(--text-primary) !important;
+    }
+
+    /* Any remaining containers */
+    #creator-container {
+        background: transparent !important;
+    }
+
+    /* Override any inline styles for provider sections */
+    div[style*="background"] {
+        background: var(--surface) !important;
+    }
+
+    div[style*="border"] {
+        border-color: var(--border-light) !important;
+    }
+
+    /* Header text and navigation */
+    .header-container h1,
+    .header-container h2,
+    .header-container h3 {
+        color: var(--text-primary) !important;
+    }
+
+    /* Fix body background override */
+    body {
+        background-color: var(--background-secondary) !important;
+        color: var(--text-primary) !important;
+    }
+
+    /* Fix container backgrounds */
+    .container {
+        background-color: var(--surface) !important;
+        color: var(--text-primary) !important;
+    }
+
+    /* Chapter content container */
+    #chapter-content-container,
+    .chapter-content-container {
+        background-color: transparent !important;
+        color: var(--text-primary) !important;
+    }
+
+    /* Provider info styling */
+    .provider-info,
+    .provider-info-container {
+        background: transparent !important;
+        color: var(--text-primary) !important;
+        border-color: var(--border-light) !important;
+    }
+
+    /* Help section styling */
+    .help-section {
+        background-color: var(--surface) !important;
+        border-color: var(--border-light) !important;
+        color: var(--text-primary) !important;
+    }
+
+    /* AI assistant sections */
+    .ai-assistant {
+        background-color: var(--surface) !important;
+        border-color: var(--border-light) !important;
+        color: var(--text-primary) !important;
+    }
+
+    /* Accordion and collapsible elements */
+    .accordion,
+    .collapsible,
+    details,
+    summary {
+        background-color: var(--surface) !important;
+        border-color: var(--border-light) !important;
+        color: var(--text-primary) !important;
+    }
+
+    /* Slide navigation controls */
+    .slide-nav,
+    .presentation-controls,
+    .reveal .controls,
+    .reveal .progress {
+        background-color: var(--surface) !important;
+        color: var(--text-primary) !important;
+    }
+
+    /* Navigation buttons (undo, redo, previous, next) */
+    .nav-button,
+    .slide-button,
+    .control-button,
+    button[class*="prev"],
+    button[class*="next"],
+    button[class*="undo"],
+    button[class*="redo"],
+    .reveal .controls .navigate-left,
+    .reveal .controls .navigate-right,
+    .reveal .controls .navigate-up,
+    .reveal .controls .navigate-down {
+        background-color: var(--surface) !important;
+        border-color: var(--border-light) !important;
+        color: var(--text-primary) !important;
+    }
+
+    .nav-button:hover,
+    .slide-button:hover,
+    .control-button:hover,
+    button[class*="prev"]:hover,
+    button[class*="next"]:hover,
+    button[class*="undo"]:hover,
+    button[class*="redo"]:hover {
+        background-color: var(--background-tertiary) !important;
+        border-color: var(--primary-color) !important;
+        color: var(--primary-color) !important;
+    }
+
+    /* Reveal.js presentation controls */
+    .reveal .controls {
+        color: var(--text-primary) !important;
+    }
+
+    .reveal .controls .navigate-left,
+    .reveal .controls .navigate-right,
+    .reveal .controls .navigate-up,
+    .reveal .controls .navigate-down {
+        border-color: var(--text-primary) !important;
+    }
+
+    .reveal .controls .navigate-left.enabled:hover,
+    .reveal .controls .navigate-right.enabled:hover,
+    .reveal .controls .navigate-up.enabled:hover,
+    .reveal .controls .navigate-down.enabled:hover {
+        border-color: var(--primary-color) !important;
+    }
+
+    /* Progress bar */
+    .reveal .progress {
+        background: rgba(0,0,0,0.3) !important;
+    }
+
+    .reveal .progress span {
+        background: var(--primary-color) !important;
+    }
+
+    /* Slides themselves */
+    .reveal .slides section {
+        color: var(--text-primary) !important;
+    }
+
+    /* Fix any remaining light backgrounds */
+    div[style*="background-color: #f8f9fa"],
+    div[style*="background: #f8f9fa"],
+    .light-bg {
+        background-color: var(--surface) !important;
+    }
+
+    div[style*="background-color: #ffffff"],
+    div[style*="background: #ffffff"],
+    div[style*="background: white"],
+    .white-bg {
+        background-color: var(--surface) !important;
+    }
+
+    /* Export modal specific styling */
+    #export-modal .modal-content {
+        background: var(--surface) !important;
+        color: var(--text-primary) !important;
+    }
+
+    /* Slides container */
+    .slides-container {
+        background-color: transparent !important;
+        color: var(--text-primary) !important;
+    }
+
+    /* Slide preview elements */
+    .slide-preview {
+        background-color: var(--surface) !important;
+        border-color: var(--border-light) !important;
+        color: var(--text-primary) !important;
+    }
+
+    /* Export options */
+    .export-options {
+        background-color: var(--background-tertiary) !important;
+        color: var(--text-primary) !important;
+    }
+
+    /* Presentation viewer */
+    #presentation-viewer {
+        background-color: var(--background-secondary) !important;
+        color: var(--text-primary) !important;
+    }
+
+    /* Override any remaining inline white backgrounds */
+    *[style*="background: white"],
+    *[style*="background-color: white"],
+    *[style*="background: #ffffff"],
+    *[style*="background-color: #ffffff"],
+    *[style*="background: #fff"],
+    *[style*="background-color: #fff"] {
+        background-color: var(--surface) !important;
+        color: var(--text-primary) !important;
+    }
+
+    /* Override specific modal styles */
+    .modal-content[style*="background: white"] {
+        background: var(--surface) !important;
+    }
+
+    /* Ensure all text in dark areas is visible */
+    div[style*="background"] * {
+        color: inherit !important;
+    }
+
+    /* Specific slides dark mode styles */
+    .reveal {
+        background-color: var(--background-secondary) !important;
+        color: var(--text-primary) !important;
+    }
+
+    .reveal .slides {
+        background-color: transparent !important;
+    }
+
+    /* Comprehensive chapter-content-container children styling */
+    #chapter-content-container * {
+        color: inherit !important;
+    }
+
+    /* Chapter content divs */
+    .chapter-content {
+        background-color: transparent !important;
+        color: var(--text-primary) !important;
+    }
+
+    /* Chapter container */
+    .chapter {
+        background-color: var(--surface) !important;
+        border-color: var(--border-light) !important;
+        color: var(--text-primary) !important;
+    }
+
+    /* Chapter header */
+    .chapter-header {
+        background-color: transparent !important;
+        color: var(--text-primary) !important;
+    }
+
+    .chapter-header h3 {
+        color: var(--text-primary) !important;
+    }
+
+    /* Chapter title input */
+    .chapter-title,
+    input[class*="chapter-title"] {
+        background-color: var(--background-tertiary) !important;
+        color: var(--text-primary) !important;
+        border-color: var(--border-light) !important;
+    }
+
+    .chapter-title:focus,
+    input[class*="chapter-title"]:focus {
+        background-color: var(--surface) !important;
+        border-color: var(--primary-color) !important;
+        color: var(--text-primary) !important;
+    }
+
+    /* Editor label */
+    .editor-label {
+        color: var(--text-primary) !important;
+        background-color: transparent !important;
+    }
+
+    /* Editor iframe */
+    .editor-iframe {
+        background-color: var(--surface) !important;
+        border-color: var(--border-light) !important;
+    }
+
+    /* Remove chapter button styling */
+    .remove-chapter-btn {
+        background-color: transparent !important;
+        color: var(--error-color) !important;
+        border-color: var(--error-color) !important;
+    }
+
+    .remove-chapter-btn:hover {
+        background-color: var(--error-light) !important;
+        color: var(--error-color) !important;
+        border-color: var(--error-color) !important;
+    }
+
+    /* Tab navigation in chapter tabs container */
+    #chapter-tabs-container,
+    .chapter-tabs-container {
+        background-color: var(--background-tertiary) !important;
+        border-color: var(--border-light) !important;
+    }
+
+    .tab-link {
+        background-color: var(--background-tertiary) !important;
+        color: var(--text-secondary) !important;
+        border-color: var(--border-light) !important;
+    }
+
+    .tab-link:hover {
+        background-color: var(--surface) !important;
+        color: var(--text-primary) !important;
+        border-color: var(--primary-color) !important;
+    }
+
+    .tab-link.active {
+        background-color: var(--surface) !important;
+        color: var(--primary-color) !important;
+        border-color: var(--primary-color) !important;
+    }
+
+    /* Any dynamically created labels */
+    label[for*="chapter"] {
+        color: var(--text-primary) !important;
+        background-color: transparent !important;
+    }
+
+    /* Ensure all child elements inherit proper colors */
+    #chapter-content-container label,
+    #chapter-content-container input,
+    #chapter-content-container textarea,
+    #chapter-content-container select,
+    #chapter-content-container button {
+        color: inherit !important;
+    }
+
+    /* Override any forced backgrounds in chapter content */
+    #chapter-content-container div[style*="background"],
+    #chapter-content-container *[style*="background-color"] {
+        background-color: var(--surface) !important;
+    }
+
+    /* Accordion-like structures (if any) */
+    details {
+        background-color: var(--surface) !important;
+        border-color: var(--border-light) !important;
+        color: var(--text-primary) !important;
+    }
+
+    summary {
+        background-color: var(--background-tertiary) !important;
+        color: var(--text-primary) !important;
+        border-color: var(--border-light) !important;
+    }
+
+    summary:hover {
+        background-color: var(--surface) !important;
+        color: var(--primary-color) !important;
+    }
+
+    /* Collapsible content */
+    .collapsible-content,
+    .expandable-content {
+        background-color: var(--surface) !important;
+        color: var(--text-primary) !important;
+        border-color: var(--border-light) !important;
+    }
 }
 

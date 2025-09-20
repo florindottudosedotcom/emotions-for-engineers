@@ -7,6 +7,7 @@
     <link rel="icon" type="image/svg+xml" href="favicon.svg">
     <link rel="stylesheet" href="./assets/minimal-theme.css" />
     <link rel="stylesheet" href="./assets/course-creator.css" />
+    <script src="./assets/js/theme-manager.js"></script>
     <style>
 
         .provider-row {
@@ -86,6 +87,53 @@
             border-radius: 0 8px 8px 8px;
             border-top: none;
             min-height: 600px;
+        }
+
+        /* Dark mode styles for provider tabs and iframe */
+        @media (prefers-color-scheme: dark) {
+            .provider-tab {
+                background: var(--surface, #1E293B) !important;
+                border-color: var(--border-light, #334155) !important;
+                color: var(--text-primary, #F8FAFC) !important;
+            }
+
+            .provider-tab:hover {
+                border-color: var(--primary-color, #3B82F6) !important;
+                background: var(--background-tertiary, #334155) !important;
+                color: var(--text-primary, #F8FAFC) !important;
+            }
+
+            .provider-tab.active {
+                border-color: var(--primary-color, #3B82F6) !important;
+                background: var(--primary-color, #3B82F6) !important;
+                color: white !important;
+            }
+
+            .provider-tab:last-child {
+                border-color: var(--border-light, #334155) !important;
+            }
+
+            .provider-tab.active:last-child {
+                border-color: var(--primary-color, #3B82F6) !important;
+            }
+
+            .creator-frame {
+                background: var(--surface, #1E293B) !important;
+                border-color: var(--border-light, #334155) !important;
+            }
+
+            h1, h2, h3, h4, h5, h6 {
+                color: var(--text-primary, #F8FAFC) !important;
+            }
+
+            body {
+                background-color: var(--background-secondary, #1E293B) !important;
+                color: var(--text-primary, #F8FAFC) !important;
+            }
+
+            .main-container {
+                background-color: var(--background-secondary, #1E293B) !important;
+            }
         }
 
         .main-container {
@@ -256,8 +304,6 @@
             ← Back to Creator Hub
         </a>
 
-        <h1 style="padding-left: 16px;"><span class="icon-book-css"></span> Course Creator</h1>
-        <p style="padding-left: 16px;">Generate complete, multi-chapter courses using AI. Choose your preferred AI provider below:</p>
 
         <div class="provider-selector">
             <div class="provider-row">

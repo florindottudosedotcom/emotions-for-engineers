@@ -98,7 +98,7 @@ function addChapter() {
     const tabButton = document.createElement('button');
     tabButton.type = 'button'; // Explicitly set type to prevent form submission
     tabButton.className = 'tab-link';
-    tabButton.textContent = `Chapter ${chapterId}`;
+    tabButton.textContent = `${chapterId}`;
     tabButton.dataset.chapterId = chapterId;
     tabButton.title = `Switch to Chapter ${chapterId}`; // Add tooltip
     dom.chapterTabsContainer.appendChild(tabButton);
@@ -111,12 +111,9 @@ function addChapter() {
     chapterDiv.innerHTML = `
         <div class="chapter">
             <div class="chapter-header">
-                <h3>Chapter ${chapterId}</h3>
-                <button type="button" class="btn btn-danger remove-chapter-btn" data-chapter-id="${chapterId}">Remove</button>
+                <button type="button" class="btn btn-danger remove-chapter-btn" data-chapter-id="${chapterId}" title="Remove Chapter ${chapterId}">Remove</button>
             </div>
-            <label for="chapter-title-${chapterId}">Chapter Title</label>
-            <input type="text" id="chapter-title-${chapterId}" name="chapter-title-${chapterId}" class="chapter-title" placeholder="e.g., Getting Started" required>
-            <div class="editor-label">Chapter Content</div>
+            <input type="text" id="chapter-title-${chapterId}" name="chapter-title-${chapterId}" class="chapter-title" placeholder="Chapter Title - e.g., Getting Started" title="Chapter Title - Enter the title for this chapter" required>
             <iframe id="editor-iframe-${chapterId}" class="editor-iframe" src="slides/editor_iframe.html?id=${chapterId}" title="Chapter ${chapterId} Content Editor"></iframe>
         </div>
     `;

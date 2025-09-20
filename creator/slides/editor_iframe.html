@@ -16,11 +16,15 @@
         const urlParams = new URLSearchParams(window.location.search);
         const chapterId = urlParams.get('id');
 
+        // Detect system dark mode preference
+        const isDarkMode = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
+
         const editor = new toastui.Editor({
             el: document.querySelector('#editor'),
             height: '100%',
             initialEditType: 'wysiwyg',
             previewStyle: 'vertical',
+            theme: isDarkMode ? 'dark' : 'light',
             events: {
                 change: () => {
                     parent.postMessage({
@@ -31,6 +35,14 @@
                 }
             }
         });
+
+        // Apply dark class manually for better dark mode support
+        if (isDarkMode) {
+            const editorEl = document.querySelector('.toastui-editor-defaultUI');
+            if (editorEl) {
+                editorEl.classList.add('toastui-editor-dark');
+            }
+        }
 
         window.addEventListener('message', (event) => {
             if (event.data.type === 'set-content') {

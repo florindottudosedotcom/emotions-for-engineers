@@ -391,15 +391,15 @@ body {
     padding: 0 var(--spacing-lg, 1.5rem);
 }
 
-/* Force white backgrounds for main containers */
+/* Main container styling */
 .main-container {
-    background-color: #f8f9fa !important;
+    background-color: #f8f9fa;
     min-height: 100vh;
     padding: 2rem 1rem;
 }
 
 .help-section {
-    background-color: #ffffff !important;
+    background-color: #ffffff;
 }
 
 .launcher-container .launcher-btn {
@@ -473,7 +473,7 @@ body {
     border: 1px solid rgba(255, 255, 255, 0.2);
 }
 
-/* Responsive Design - Design Guidelines Compliant */
+/* Enhanced Responsive Design - Design Guidelines Compliant */
 
 /* Mobile: 320px-767px */
 @media (max-width: 767px) {
@@ -481,32 +481,90 @@ body {
         padding: 0 var(--spacing-4);       /* 16px minimum - Guidelines */
     }
 
+    .main-container {
+        padding: var(--spacing-4) var(--spacing-2); /* Reduced padding on mobile */
+        min-height: 100vh;
+    }
+
     .grid-2, .grid-3, .grid-4 {
         grid-template-columns: 1fr;
+        gap: var(--spacing-4);              /* Smaller gaps on mobile */
     }
 
     .flex-minimal {
         flex-direction: column;
+        gap: var(--spacing-2);
     }
 
     .btn-minimal {
         width: 100%;
         justify-content: center;
         min-height: 44px;                   /* Touch-friendly - Guidelines */
+        padding: var(--spacing-4) var(--spacing-4); /* More padding for touch */
     }
 
     /* Typography adjustments for mobile */
     h1 {
         font-size: var(--font-size-3xl);   /* Smaller on mobile */
+        margin-bottom: var(--spacing-4);
+        line-height: 1.1;
+        text-align: center;
     }
 
     h2 {
         font-size: var(--font-size-2xl);
+        margin-bottom: var(--spacing-4);
+        line-height: 1.2;
+    }
+
+    h3 {
+        font-size: var(--font-size-xl);
+        margin-bottom: var(--spacing-2);
     }
 
     /* Spacing adjustments for mobile */
     .card-minimal {
         padding: var(--spacing-4);          /* 16px on mobile */
+        margin-bottom: var(--spacing-4);
+    }
+
+    /* Launcher specific mobile improvements */
+    .launcher-btn {
+        flex-direction: column;
+        text-align: center;
+        padding: var(--spacing-6) var(--spacing-4);
+        gap: var(--spacing-4);
+    }
+
+    .launcher-btn .icon-minimal {
+        font-size: 2em;
+        min-width: 48px;
+        margin-bottom: var(--spacing-2);
+    }
+
+    /* Provider cards mobile layout */
+    .help-section .grid-minimal {
+        grid-template-columns: 1fr;
+        gap: var(--spacing-4);
+    }
+
+    .help-section div[style*="padding"] {
+        padding: var(--spacing-4) !important;
+    }
+
+    /* Input fields mobile optimization */
+    .input-minimal {
+        font-size: 16px;                    /* Prevent zoom on iOS */
+        min-height: 48px;                   /* Larger touch target */
+    }
+
+    /* Modal improvements for mobile */
+    .modal-content {
+        width: 95% !important;
+        max-width: none !important;
+        margin: var(--spacing-4);
+        max-height: 90vh;
+        overflow-y: auto;
     }
 }
 
@@ -555,18 +613,265 @@ body {
     }
 }
 
-/* Dark Mode Support - Disabled for now to force light theme */
-/*
+/* Dark Mode Support - Following Design Guidelines */
 @media (prefers-color-scheme: dark) {
     :root {
-        --background-primary: #121212;
-        --background-secondary: #1e1e1e;
-        --background-tertiary: #2d2d2d;
-        --surface: #1e1e1e;
-        --text-primary: #ffffff;
-        --text-secondary: #b0b0b0;
-        --border-light: #404040;
-        --border-medium: #606060;
+        /* Dark theme backgrounds */
+        --background-primary: #0F172A;      /* Near-black - Guidelines */
+        --background-secondary: #1E293B;    /* Dark slate - Guidelines */
+        --background-tertiary: #334155;     /* Medium slate - Guidelines */
+        --surface: #1E293B;                 /* Card backgrounds */
+
+        /* Dark theme text colors */
+        --text-primary: #F8FAFC;            /* Off-white - Guidelines */
+        --text-secondary: #CBD5E1;          /* Light gray - Guidelines */
+        --text-disabled: #94A3B8;           /* Medium gray - Guidelines */
+
+        /* Dark theme borders */
+        --border-light: #334155;            /* Darker borders */
+        --border-medium: #475569;           /* Medium borders */
+        --border-dark: #64748B;             /* Lighter borders */
+
+        /* Adapted shadows for dark backgrounds */
+        --shadow-small: 0 1px 2px 0 rgba(0, 0, 0, 0.3);
+        --shadow-medium: 0 4px 6px -1px rgba(0, 0, 0, 0.4);
+        --shadow-large: 0 10px 15px -3px rgba(0, 0, 0, 0.5);
+
+        /* Status colors backgrounds for dark theme */
+        --success-light: rgba(16, 185, 129, 0.15);
+        --warning-light: rgba(245, 158, 11, 0.15);
+        --error-light: rgba(239, 68, 68, 0.15);
+        --info-light: rgba(37, 99, 235, 0.15);
+        --primary-light: rgba(37, 99, 235, 0.15);
+        --secondary-light: rgba(99, 102, 241, 0.15);
+
+        /* Darker primary colors for better contrast */
+        --primary-color: #3B82F6;          /* Slightly brighter blue for dark mode */
+        --success-color: #10B981;          /* Keep success green */
+        --warning-color: #F59E0B;          /* Keep warning amber */
+        --error-color: #EF4444;            /* Keep error red */
+    }
+
+    /* Override forced light backgrounds for dark mode */
+    .main-container {
+        background-color: var(--background-secondary) !important;
+    }
+
+    .help-section,
+    .card-minimal {
+        background-color: var(--surface) !important;
+        border-color: var(--border-light);
+    }
+
+    .launcher-container .launcher-btn {
+        background-color: var(--surface) !important;
+        border-color: var(--primary-color) !important;
+    }
+
+    /* Ensure proper contrast for icons in dark mode */
+    .icon-minimal.icon-book-large,
+    .icon-minimal.icon-slides-large {
+        background: var(--primary-color) !important;
+    }
+
+    /* Body background for dark mode */
+    body {
+        background-color: var(--background-secondary) !important;
+        color: var(--text-primary) !important;
+    }
+
+    /* Form inputs dark mode */
+    input[type="text"],
+    input[type="email"],
+    input[type="password"],
+    textarea,
+    select {
+        background-color: var(--background-tertiary) !important;
+        color: var(--text-primary) !important;
+        border-color: var(--border-light) !important;
+    }
+
+    input[type="text"]:focus,
+    input[type="email"]:focus,
+    input[type="password"]:focus,
+    textarea:focus,
+    select:focus {
+        background-color: var(--surface) !important;
+        border-color: var(--primary-color) !important;
+    }
+
+    /* Fieldset and legend styling */
+    fieldset {
+        background-color: var(--surface) !important;
+        border-color: var(--border-light) !important;
+    }
+
+    legend {
+        color: var(--text-primary) !important;
+        background-color: var(--surface) !important;
+    }
+
+    /* Button adjustments for dark mode */
+    .btn-primary {
+        background-color: var(--primary-color) !important;
+        color: white !important;
+        border-color: var(--primary-color) !important;
+    }
+
+    .btn-primary:hover {
+        background-color: #2563EB !important;
+    }
+
+    /* Status display adjustments */
+    .status-display {
+        background-color: var(--surface) !important;
+        border-color: var(--border-light) !important;
+        color: var(--text-primary) !important;
+    }
+
+    .status-display.status-info {
+        background-color: var(--info-light) !important;
+        border-color: var(--info-color) !important;
+        color: var(--info-color) !important;
+    }
+
+    .status-display.status-success {
+        background-color: var(--success-light) !important;
+        border-color: var(--success-color) !important;
+        color: var(--success-color) !important;
+    }
+
+    .status-display.status-warning {
+        background-color: var(--warning-light) !important;
+        border-color: var(--warning-color) !important;
+        color: var(--warning-color) !important;
+    }
+
+    .status-display.status-error {
+        background-color: var(--error-light) !important;
+        border-color: var(--error-color) !important;
+        color: var(--error-color) !important;
+    }
+
+    /* Modal improvements for dark mode */
+    .modal-content {
+        background-color: var(--surface) !important;
+        color: var(--text-primary) !important;
+        border-color: var(--border-light) !important;
+    }
+
+    .modal-overlay {
+        background-color: rgba(0, 0, 0, 0.7) !important;
+    }
+
+    /* Tab navigation dark mode */
+    .tab-nav {
+        background-color: var(--background-tertiary) !important;
+        border-color: var(--border-light) !important;
+    }
+
+    .tab-link {
+        color: var(--text-secondary) !important;
+        background-color: transparent !important;
+    }
+
+    .tab-link:hover {
+        background-color: var(--background-primary) !important;
+        color: var(--text-primary) !important;
+    }
+
+    .tab-link.active {
+        background-color: var(--surface) !important;
+        color: var(--primary-color) !important;
+        border-color: var(--primary-color) !important;
     }
 }
-*/
+
+/* Manual theme override classes for JavaScript control */
+[data-theme="light"] {
+    /* Light theme colors (explicit) */
+    --background-primary: #FFFFFF;
+    --background-secondary: #F8FAFC;
+    --background-tertiary: #F1F5F9;
+    --surface: #FFFFFF;
+    --text-primary: #0F172A;
+    --text-secondary: #64748B;
+    --text-disabled: #94A3B8;
+    --border-light: #E2E8F0;
+    --border-medium: #CBD5E1;
+    --border-dark: #64748B;
+    --shadow-small: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+    --shadow-medium: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+    --shadow-large: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+    --success-light: #d1fae5;
+    --warning-light: #fef3c7;
+    --error-light: #fecaca;
+    --info-light: #dbeafe;
+    --primary-light: #dbeafe;
+    --secondary-light: #e0e7ff;
+}
+
+[data-theme="light"] .main-container {
+    background-color: #f8f9fa !important;
+}
+
+[data-theme="light"] .help-section,
+[data-theme="light"] .card-minimal {
+    background-color: #ffffff !important;
+}
+
+[data-theme="dark"] {
+    /* Dark theme colors (explicit) */
+    --background-primary: #0F172A;
+    --background-secondary: #1E293B;
+    --background-tertiary: #334155;
+    --surface: #1E293B;
+    --text-primary: #F8FAFC;
+    --text-secondary: #CBD5E1;
+    --text-disabled: #94A3B8;
+    --border-light: #334155;
+    --border-medium: #475569;
+    --border-dark: #64748B;
+    --shadow-small: 0 1px 2px 0 rgba(0, 0, 0, 0.3);
+    --shadow-medium: 0 4px 6px -1px rgba(0, 0, 0, 0.4);
+    --shadow-large: 0 10px 15px -3px rgba(0, 0, 0, 0.5);
+    --success-light: rgba(16, 185, 129, 0.2);
+    --warning-light: rgba(245, 158, 11, 0.2);
+    --error-light: rgba(239, 68, 68, 0.2);
+    --info-light: rgba(37, 99, 235, 0.2);
+    --primary-light: rgba(37, 99, 235, 0.2);
+    --secondary-light: rgba(99, 102, 241, 0.2);
+}
+
+[data-theme="dark"] .main-container {
+    background-color: var(--background-secondary) !important;
+}
+
+[data-theme="dark"] .help-section,
+[data-theme="dark"] .card-minimal {
+    background-color: var(--surface) !important;
+    border-color: var(--border-light);
+}
+
+[data-theme="dark"] .launcher-container .launcher-btn {
+    background-color: var(--surface) !important;
+}
+
+[data-theme="dark"] .icon-minimal.icon-book-large,
+[data-theme="dark"] .icon-minimal.icon-slides-large {
+    background: var(--primary-color) !important;
+}
+
+/* Smooth theme transitions */
+* {
+    transition:
+        background-color var(--transition-normal),
+        color var(--transition-normal),
+        border-color var(--transition-normal),
+        box-shadow var(--transition-normal);
+}
+
+/* Disable transitions during theme switching to prevent flashing */
+.theme-transitioning * {
+    transition: none !important;
+}

@@ -7,6 +7,7 @@
     <link rel="icon" type="image/svg+xml" href="favicon.svg">
     <link rel="stylesheet" href="./assets/minimal-theme.css" />
     <link rel="stylesheet" href="./assets/course-creator.css" />
+    <script src="./assets/js/theme-manager.js"></script>
     <style>
 
         .provider-row {
@@ -86,6 +87,53 @@
             border-radius: 0 8px 8px 8px;
             border-top: none;
             min-height: 600px;
+        }
+
+        /* Dark mode styles for provider tabs and iframe */
+        @media (prefers-color-scheme: dark) {
+            .provider-tab {
+                background: var(--surface, #1E293B) !important;
+                border-color: var(--border-light, #334155) !important;
+                color: var(--text-primary, #F8FAFC) !important;
+            }
+
+            .provider-tab:hover {
+                border-color: var(--primary-color, #3B82F6) !important;
+                background: var(--background-tertiary, #334155) !important;
+                color: var(--text-primary, #F8FAFC) !important;
+            }
+
+            .provider-tab.active {
+                border-color: var(--primary-color, #3B82F6) !important;
+                background: var(--primary-color, #3B82F6) !important;
+                color: white !important;
+            }
+
+            .provider-tab:last-child {
+                border-color: var(--border-light, #334155) !important;
+            }
+
+            .provider-tab.active:last-child {
+                border-color: var(--primary-color, #3B82F6) !important;
+            }
+
+            .creator-frame {
+                background: var(--surface, #1E293B) !important;
+                border-color: var(--border-light, #334155) !important;
+            }
+
+            h1, h2, h3, h4, h5, h6 {
+                color: var(--text-primary, #F8FAFC) !important;
+            }
+
+            body {
+                background-color: var(--background-secondary, #1E293B) !important;
+                color: var(--text-primary, #F8FAFC) !important;
+            }
+
+            .main-container {
+                background-color: var(--background-secondary, #1E293B) !important;
+            }
         }
 
         .main-container {
@@ -261,23 +309,19 @@
 
                 <div class="provider-info-container">
                     <div class="provider-info" data-info="puter">
-                        <h3><span class="icon-rocket-css"></span> Free AI Slides</h3>
-                        <p>Access 200+ AI models completely free. No API keys, no setup - just start creating amazing presentations!</p>
+                        <p><span class="icon-rocket-css"></span> <strong>Free AI Slides</strong> - Access 200+ AI models completely free. No API keys, no setup - just start creating amazing presentations!</p>
                     </div>
 
                     <div class="provider-info" data-info="cloud">
-                        <h3><span class="icon-cloud-css"></span> Cloud AI Slides</h3>
-                        <p>Create presentations with OpenAI, Anthropic, or Google AI. Advanced visual generation capabilities with API access.</p>
+                        <p><span class="icon-cloud-css"></span> <strong>Cloud AI Slides</strong> - Create presentations with OpenAI, Anthropic, or Google AI. Advanced visual generation capabilities with API access.</p>
                     </div>
 
                     <div class="provider-info" data-info="webllm">
-                        <h3><span class="icon-brain-css"></span> WebLLM Slides</h3>
-                        <p>Generate slides entirely in your browser. No API keys needed, works offline with local AI models.</p>
+                        <p><span class="icon-brain-css"></span> <strong>WebLLM Slides</strong> - Generate slides entirely in your browser. No API keys needed, works offline with local AI models.</p>
                     </div>
 
                     <div class="provider-info" data-info="ollama">
-                        <h3><span class="icon-desktop-css"></span> Ollama Slides</h3>
-                        <p>Use your local Ollama server for slide generation. Complete privacy with local AI processing.</p>
+                        <p><span class="icon-desktop-css"></span> <strong>Ollama Slides</strong> - Use your local Ollama server for slide generation. Complete privacy with local AI processing.</p>
                     </div>
                 </div>
             </div>
