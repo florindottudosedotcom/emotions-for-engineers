@@ -541,6 +541,22 @@ class KonvaSlideSystem {
                     font-weight: 600;
                     color: #374151;
                 }
+
+                /* Dark mode for navigation buttons */
+                @media (prefers-color-scheme: dark) {
+                    .nav-btn {
+                        background: #334155 !important;
+                        border-color: #475569 !important;
+                        color: #F8FAFC !important;
+                    }
+                    .nav-btn:hover {
+                        background: #475569 !important;
+                        border-color: #60A5FA !important;
+                    }
+                    .slide-counter {
+                        color: #F8FAFC !important;
+                    }
+                }
                 #current-slide-title:focus {
                     border-color: #60a5fa;
                     background: rgba(255, 255, 255, 0.95);
@@ -978,6 +994,86 @@ class KonvaSlideSystem {
                     background: white;
                     margin: 0;
                     padding: 0;
+                }
+
+                /* Dark mode for accordion container */
+                @media (prefers-color-scheme: dark) {
+                    .accordion-container {
+                        border-color: #475569 !important;
+                        background: #1E293B !important;
+                    }
+
+                    .category-header {
+                        background: #334155 !important;
+                        border-color: #475569 !important;
+                        color: #F8FAFC !important;
+                    }
+
+                    .category-header:hover {
+                        background: #475569 !important;
+                    }
+
+                    .accordion-category.expanded .category-header {
+                        background: #1E40AF !important;
+                        border-color: #475569 !important;
+                    }
+
+                    .category-icon {
+                        color: #F8FAFC !important;
+                    }
+
+                    .accordion-category.expanded .category-icon {
+                        color: #BFDBFE !important;
+                    }
+
+                    .color-scheme-tile {
+                        background: #334155 !important;
+                        border-color: #475569 !important;
+                        color: #F8FAFC !important;
+                    }
+
+                    .color-scheme-tile:hover {
+                        border-color: #60A5FA !important;
+                        background: #475569 !important;
+                    }
+
+                    .color-scheme-tile.selected {
+                        border-color: #3B82F6 !important;
+                        background: #1E40AF !important;
+                    }
+
+                    .category-content {
+                        background: #1E293B !important;
+                    }
+
+                    .sidebar-tool-btn {
+                        background: #334155 !important;
+                        border-color: #475569 !important;
+                        color: #F8FAFC !important;
+                    }
+
+                    .sidebar-tool-btn:hover {
+                        background: #475569 !important;
+                        border-color: #60A5FA !important;
+                    }
+
+                    .sidebar-tool-btn.delete-btn:hover {
+                        background: #7F1D1D !important;
+                        border-color: #EF4444 !important;
+                    }
+
+                    .sidebar-tool-btn span {
+                        color: #CBD5E1 !important;
+                    }
+
+                    .scheme-preview {
+                        border-color: rgba(148, 163, 184, 0.3) !important;
+                    }
+
+                    .edit-theme-btn {
+                        background: rgba(30, 41, 59, 0.95) !important;
+                        color: #F8FAFC !important;
+                    }
                 }
 
                 /* Accordion Categories */
@@ -2319,7 +2415,7 @@ class KonvaSlideSystem {
             y: 0,
             width: this.actualWidth,
             height: this.actualHeight,
-            fill: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+            fill: '#2563EB',
             opacity: 0.8
         });
 
@@ -3438,7 +3534,7 @@ class KonvaSlideSystem {
                     fillLinearGradient: {
                         start: { x: 0, y: 0 },
                         end: { x: textObj.width(), y: 0 },
-                        colorStops: [0, '#667eea', 1, '#764ba2']
+                        colorStops: [0, '#2563EB', 1, '#2563EB']
                     }
                 });
             }

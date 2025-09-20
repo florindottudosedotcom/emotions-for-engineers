@@ -4,80 +4,141 @@
  */
 
 :root {
-    /* Primary Colors - Material Design inspired */
-    --primary-color: #1976d2;          /* Primary blue */
-    --primary-dark: #1565c0;           /* Darker blue for hover states */
-    --primary-light: #e3f2fd;          /* Light blue backgrounds */
+    /* Primary Colors - Following Modern Minimalistic Design Guidelines */
+    --primary-color: #2563EB;          /* Primary blue - Design Guidelines */
+    --primary-dark: #1d4ed8;           /* Darker blue for hover states */
+    --primary-light: #dbeafe;          /* Light blue backgrounds */
 
     /* Secondary Colors */
-    --secondary-color: #00acc1;         /* Cyan accent */
-    --secondary-dark: #00838f;          /* Darker cyan */
-    --secondary-light: #e0f7fa;         /* Light cyan backgrounds */
+    --secondary-color: #6366f1;         /* Indigo accent */
+    --secondary-dark: #4f46e5;          /* Darker indigo */
+    --secondary-light: #e0e7ff;         /* Light indigo backgrounds */
 
-    /* Neutral Colors */
-    --background-primary: #ffffff;      /* Main background */
-    --background-secondary: #ffffff;    /* Secondary backgrounds - changed to white */
-    --background-tertiary: #f8f9fa;     /* Tertiary backgrounds - lighter gray */
-    --surface: #ffffff;                 /* Card/surface backgrounds */
+    /* Neutral Colors - Design Guidelines Compliant */
+    --background-primary: #FFFFFF;      /* Pure white - Guidelines */
+    --background-secondary: #F8FAFC;    /* Subtle off-white - Guidelines */
+    --background-tertiary: #F1F5F9;     /* Light gray - Guidelines */
+    --surface: #FFFFFF;                 /* Card/surface backgrounds */
 
-    /* Text Colors */
-    --text-primary: #212121;            /* Primary text */
-    --text-secondary: #757575;          /* Secondary text */
-    --text-disabled: #bdbdbd;           /* Disabled text */
-    --text-on-primary: #ffffff;         /* Text on primary color */
+    /* Text Colors - Design Guidelines */
+    --text-primary: #0F172A;            /* Near-black - Guidelines */
+    --text-secondary: #64748B;          /* Medium gray - Guidelines */
+    --text-disabled: #94A3B8;           /* Light gray - Guidelines */
+    --text-on-primary: #FFFFFF;         /* Text on primary color */
 
-    /* Border Colors */
-    --border-light: #e0e0e0;            /* Light borders */
-    --border-medium: #bdbdbd;           /* Medium borders */
-    --border-dark: #757575;             /* Dark borders */
+    /* Border Colors - Design Guidelines */
+    --border-light: #E2E8F0;            /* Light borders - Guidelines */
+    --border-medium: #CBD5E1;           /* Medium borders - Guidelines */
+    --border-dark: #64748B;             /* Dark borders - Guidelines */
 
     /* Status Colors */
-    --success-color: #4caf50;           /* Success green */
-    --success-light: #e8f5e8;           /* Success background */
-    --warning-color: #ff9800;           /* Warning orange */
-    --warning-light: #fff3e0;           /* Warning background */
-    --error-color: #f44336;             /* Error red */
-    --error-light: #ffebee;             /* Error background */
-    --info-color: #2196f3;              /* Info blue */
-    --info-light: #e3f2fd;              /* Info background */
+    --success-color: #10B981;           /* Success green - Guidelines */
+    --success-light: #d1fae5;           /* Success background */
+    --warning-color: #F59E0B;           /* Warning amber - Guidelines */
+    --warning-light: #fef3c7;           /* Warning background */
+    --error-color: #EF4444;             /* Error red - Guidelines */
+    --error-light: #fecaca;             /* Error background */
+    --info-color: #2563EB;              /* Info blue - same as primary */
+    --info-light: #dbeafe;             /* Info background */
 
-    /* Shadows */
-    --shadow-light: 0 1px 3px rgba(0,0,0,0.12), 0 1px 2px rgba(0,0,0,0.24);
-    --shadow-medium: 0 3px 6px rgba(0,0,0,0.16), 0 3px 6px rgba(0,0,0,0.23);
-    --shadow-heavy: 0 10px 20px rgba(0,0,0,0.19), 0 6px 6px rgba(0,0,0,0.23);
+    /* Shadows - Design Guidelines Compliant */
+    --shadow-small: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+    --shadow-medium: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+    --shadow-large: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
 
-    /* Border Radius */
-    --radius-small: 4px;
-    --radius-medium: 8px;
-    --radius-large: 12px;
+    /* Legacy shadow variables for backward compatibility */
+    --shadow-light: var(--shadow-small);
+    --shadow-heavy: var(--shadow-large);
 
-    /* Spacing */
-    --spacing-xs: 0.25rem;
-    --spacing-sm: 0.5rem;
-    --spacing-md: 1rem;
-    --spacing-lg: 1.5rem;
-    --spacing-xl: 2rem;
-    --spacing-xxl: 3rem;
+    /* Border Radius - Design Guidelines */
+    --radius-small: 4px;     /* Buttons - Guidelines */
+    --radius-medium: 8px;    /* Small components - Guidelines */
+    --radius-large: 12px;    /* Cards - Guidelines */
+    --radius-xl: 16px;       /* Large cards - Guidelines */
 
-    /* Typography */
+    /* Spacing - 8px Grid System (Design Guidelines) */
+    --spacing-1: 4px;     /* 0.25rem - Base spacing unit */
+    --spacing-2: 8px;     /* 0.5rem - Small spacing */
+    --spacing-4: 16px;    /* 1rem - Medium spacing */
+    --spacing-6: 24px;    /* 1.5rem - Large spacing */
+    --spacing-8: 32px;    /* 2rem - Extra large spacing */
+    --spacing-12: 48px;   /* 3rem - Section spacing */
+    --spacing-16: 64px;   /* 4rem - Major spacing */
+    --spacing-24: 96px;   /* 6rem - Hero/banner spacing */
+
+    /* Legacy spacing variables for backward compatibility */
+    --spacing-xs: var(--spacing-1);
+    --spacing-sm: var(--spacing-2);
+    --spacing-md: var(--spacing-4);
+    --spacing-lg: var(--spacing-6);
+    --spacing-xl: var(--spacing-8);
+    --spacing-xxl: var(--spacing-12);
+
+    /* Typography - Design Guidelines Compliant */
     --font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
-    --font-size-xs: 0.75rem;
-    --font-size-sm: 0.875rem;
-    --font-size-base: 1rem;
-    --font-size-lg: 1.125rem;
-    --font-size-xl: 1.25rem;
-    --font-size-2xl: 1.5rem;
-    --font-size-3xl: 2rem;
 
-    /* Transitions */
-    --transition-fast: 0.15s ease;
-    --transition-normal: 0.3s ease;
-    --transition-slow: 0.5s ease;
+    /* Font Sizes - Following Design Guidelines Scale */
+    --font-size-xs: 0.75rem;    /* 12px - Small text */
+    --font-size-sm: 0.875rem;   /* 14px - Secondary text */
+    --font-size-base: 1rem;     /* 16px - Body text */
+    --font-size-lg: 1.125rem;   /* 18px - Large body text */
+    --font-size-xl: 1.25rem;    /* 20px - Subheadings */
+    --font-size-2xl: 1.5rem;    /* 24px - H3 - Guidelines */
+    --font-size-3xl: 2rem;      /* 32px - H2 - Guidelines */
+    --font-size-4xl: 2.5rem;    /* 40px - H1 - Guidelines */
+
+    /* Line Heights - Design Guidelines */
+    --line-height-tight: 1.2;   /* For headings */
+    --line-height-normal: 1.5;  /* For body text */
+    --line-height-relaxed: 1.6; /* For reading content */
+
+    /* Font Weights - Limited as per guidelines */
+    --font-weight-normal: 400;
+    --font-weight-medium: 500;
+    --font-weight-semibold: 600;
+
+    /* Transitions - Design Guidelines (200ms-300ms) */
+    --transition-fast: 200ms ease-out;
+    --transition-normal: 250ms ease-out;
+    --transition-slow: 300ms ease-out;
 }
 
 /* Base Reset */
 * {
     box-sizing: border-box;
+}
+
+/* Typography - Design Guidelines Implementation */
+h1 {
+    font-size: var(--font-size-4xl);
+    line-height: var(--line-height-tight);
+    font-weight: var(--font-weight-semibold);
+    margin: 0 0 var(--spacing-6) 0;
+    color: var(--text-primary);
+}
+
+h2 {
+    font-size: var(--font-size-3xl);
+    line-height: var(--line-height-tight);
+    font-weight: var(--font-weight-semibold);
+    margin: 0 0 var(--spacing-4) 0;
+    color: var(--text-primary);
+}
+
+h3 {
+    font-size: var(--font-size-2xl);
+    line-height: var(--line-height-tight);
+    font-weight: var(--font-weight-medium);
+    margin: 0 0 var(--spacing-4) 0;
+    color: var(--text-primary);
+}
+
+body {
+    font-family: var(--font-family);
+    font-size: var(--font-size-base);
+    line-height: var(--line-height-relaxed);
+    font-weight: var(--font-weight-normal);
+    color: var(--text-primary);
 }
 
 /* Minimal Icon Definitions using CSS - inherit colors from parent */
@@ -139,23 +200,37 @@
 .icon-minimal.geometric.icon-desktop::before { content: '⌂'; }
 .icon-minimal.geometric.icon-slides::before { content: '▤'; }
 
-/* Base Button Styles - Outlined Design */
+/* Base Button Styles - Design Guidelines Compliant */
 .btn-minimal {
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    padding: var(--spacing-sm) var(--spacing-md);
+    min-height: 40px;                    /* Medium size - Guidelines */
+    padding: var(--spacing-2) var(--spacing-6); /* 8px-24px - Guidelines */
     border: 2px solid;
-    border-radius: var(--radius-medium);
+    border-radius: var(--radius-small);   /* 4px for buttons - Guidelines */
     font-family: var(--font-family);
     font-size: var(--font-size-base);
-    font-weight: 500;
+    font-weight: var(--font-weight-medium);
     text-decoration: none;
     cursor: pointer;
     transition: all var(--transition-normal);
     background-color: transparent;
-    gap: var(--spacing-sm);
+    gap: var(--spacing-2);
     box-shadow: none;
+}
+
+/* Button Size Variants - Design Guidelines */
+.btn-minimal.btn-sm {
+    min-height: 32px;                    /* Small - Guidelines */
+    padding: var(--spacing-1) var(--spacing-4); /* 4px-16px */
+    font-size: var(--font-size-sm);
+}
+
+.btn-minimal.btn-lg {
+    min-height: 48px;                    /* Large - Guidelines */
+    padding: var(--spacing-2) var(--spacing-8); /* 8px-32px */
+    font-size: var(--font-size-lg);
 }
 
 .btn-minimal:hover {
@@ -229,10 +304,12 @@
     background-color: var(--primary-light);
 }
 
-/* Input Styles */
+
+/* Input Styles - Design Guidelines Compliant */
 .input-minimal {
     width: 100%;
-    padding: var(--spacing-sm) var(--spacing-md);
+    min-height: 40px;                    /* Minimum touch target - Guidelines */
+    padding: var(--spacing-2) var(--spacing-4); /* 8px-16px - Guidelines */
     border: 1px solid var(--border-light);
     border-radius: var(--radius-medium);
     font-family: var(--font-family);
@@ -245,17 +322,17 @@
 .input-minimal:focus {
     outline: none;
     border-color: var(--primary-color);
-    box-shadow: 0 0 0 2px rgba(25, 118, 210, 0.1);
+    box-shadow: 0 0 0 2px rgba(37, 99, 235, 0.1);  /* Updated for new primary color */
 }
 
-/* Card Styles */
+/* Card Styles - Design Guidelines Compliant */
 .card-minimal {
-    background-color: #ffffff !important;
-    border-radius: var(--radius-medium, 8px);
-    box-shadow: var(--shadow-light, 0 1px 3px rgba(0,0,0,0.12), 0 1px 2px rgba(0,0,0,0.24));
-    padding: var(--spacing-lg, 1.5rem);
-    margin-bottom: var(--spacing-lg, 1.5rem);
-    border: 1px solid var(--border-light, #e0e0e0);
+    background-color: var(--surface);
+    border-radius: var(--radius-large);  /* 12px for cards - Guidelines */
+    box-shadow: var(--shadow-small);     /* Updated shadow */
+    padding: var(--spacing-6);           /* 24px - Guidelines range 20px-32px */
+    margin-bottom: var(--spacing-6);
+    border: 1px solid var(--border-light);
 }
 
 .card-minimal:hover {
@@ -314,15 +391,15 @@
     padding: 0 var(--spacing-lg, 1.5rem);
 }
 
-/* Force white backgrounds for main containers */
+/* Main container styling */
 .main-container {
-    background-color: #f8f9fa !important;
+    background-color: #f8f9fa;
     min-height: 100vh;
     padding: 2rem 1rem;
 }
 
 .help-section {
-    background-color: #ffffff !important;
+    background-color: #ffffff;
 }
 
 .launcher-container .launcher-btn {
@@ -388,38 +465,413 @@
 .p-lg { padding: var(--spacing-lg); }
 .p-xl { padding: var(--spacing-xl); }
 
-/* Responsive Design */
-@media (max-width: 768px) {
+
+/* Glassmorphism Effects - Modern Design Trends */
+.glass-minimal {
+    background: rgba(255, 255, 255, 0.1);
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+/* Enhanced Responsive Design - Design Guidelines Compliant */
+
+/* Mobile: 320px-767px */
+@media (max-width: 767px) {
     .container-minimal {
-        padding: 0 var(--spacing-md);
+        padding: 0 var(--spacing-4);       /* 16px minimum - Guidelines */
+    }
+
+    .main-container {
+        padding: var(--spacing-4) var(--spacing-2); /* Reduced padding on mobile */
+        min-height: 100vh;
     }
 
     .grid-2, .grid-3, .grid-4 {
         grid-template-columns: 1fr;
+        gap: var(--spacing-4);              /* Smaller gaps on mobile */
     }
 
     .flex-minimal {
         flex-direction: column;
+        gap: var(--spacing-2);
     }
 
     .btn-minimal {
         width: 100%;
         justify-content: center;
+        min-height: 44px;                   /* Touch-friendly - Guidelines */
+        padding: var(--spacing-4) var(--spacing-4); /* More padding for touch */
+    }
+
+    /* Typography adjustments for mobile */
+    h1 {
+        font-size: var(--font-size-3xl);   /* Smaller on mobile */
+        margin-bottom: var(--spacing-4);
+        line-height: 1.1;
+        text-align: center;
+    }
+
+    h2 {
+        font-size: var(--font-size-2xl);
+        margin-bottom: var(--spacing-4);
+        line-height: 1.2;
+    }
+
+    h3 {
+        font-size: var(--font-size-xl);
+        margin-bottom: var(--spacing-2);
+    }
+
+    /* Spacing adjustments for mobile */
+    .card-minimal {
+        padding: var(--spacing-4);          /* 16px on mobile */
+        margin-bottom: var(--spacing-4);
+    }
+
+    /* Launcher specific mobile improvements */
+    .launcher-btn {
+        flex-direction: column;
+        text-align: center;
+        padding: var(--spacing-6) var(--spacing-4);
+        gap: var(--spacing-4);
+    }
+
+    .launcher-btn .icon-minimal {
+        font-size: 2em;
+        min-width: 48px;
+        margin-bottom: var(--spacing-2);
+    }
+
+    /* Provider cards mobile layout */
+    .help-section .grid-minimal {
+        grid-template-columns: 1fr;
+        gap: var(--spacing-4);
+    }
+
+    .help-section div[style*="padding"] {
+        padding: var(--spacing-4) !important;
+    }
+
+    /* Input fields mobile optimization */
+    .input-minimal {
+        font-size: 16px;                    /* Prevent zoom on iOS */
+        min-height: 48px;                   /* Larger touch target */
+    }
+
+    /* Modal improvements for mobile */
+    .modal-content {
+        width: 95% !important;
+        max-width: none !important;
+        margin: var(--spacing-4);
+        max-height: 90vh;
+        overflow-y: auto;
     }
 }
 
-/* Dark Mode Support - Disabled for now to force light theme */
-/*
-@media (prefers-color-scheme: dark) {
-    :root {
-        --background-primary: #121212;
-        --background-secondary: #1e1e1e;
-        --background-tertiary: #2d2d2d;
-        --surface: #1e1e1e;
-        --text-primary: #ffffff;
-        --text-secondary: #b0b0b0;
-        --border-light: #404040;
-        --border-medium: #606060;
+/* Tablet: 768px-1023px */
+@media (min-width: 768px) and (max-width: 1023px) {
+    .container-minimal {
+        padding: 0 var(--spacing-6);       /* 24px on tablet */
+        max-width: 1024px;
     }
 }
-*/
+
+/* Desktop: 1024px+ */
+@media (min-width: 1024px) {
+    .container-minimal {
+        max-width: 1200px;                  /* Max width - Guidelines */
+        padding: 0 var(--spacing-8);       /* 32px on desktop */
+    }
+
+    /* Enhanced hover effects on desktop */
+    .btn-minimal:hover, .card-minimal:hover {
+        transform: translateY(-2px);
+    }
+}
+
+/* Reading content width restriction */
+.content-reading {
+    max-width: 600px;                       /* Optimal reading width - Guidelines */
+    margin: 0 auto;
+}
+
+/* High contrast support */
+@media (prefers-contrast: high) {
+    :root {
+        --border-light: #000000;
+        --border-medium: #000000;
+        --text-secondary: #000000;
+    }
+}
+
+/* Reduced motion support */
+@media (prefers-reduced-motion: reduce) {
+    * {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+    }
+}
+
+/* Dark Mode Support - Following Design Guidelines */
+@media (prefers-color-scheme: dark) {
+    :root {
+        /* Dark theme backgrounds */
+        --background-primary: #0F172A;      /* Near-black - Guidelines */
+        --background-secondary: #1E293B;    /* Dark slate - Guidelines */
+        --background-tertiary: #334155;     /* Medium slate - Guidelines */
+        --surface: #1E293B;                 /* Card backgrounds */
+
+        /* Dark theme text colors */
+        --text-primary: #F8FAFC;            /* Off-white - Guidelines */
+        --text-secondary: #CBD5E1;          /* Light gray - Guidelines */
+        --text-disabled: #94A3B8;           /* Medium gray - Guidelines */
+
+        /* Dark theme borders */
+        --border-light: #334155;            /* Darker borders */
+        --border-medium: #475569;           /* Medium borders */
+        --border-dark: #64748B;             /* Lighter borders */
+
+        /* Adapted shadows for dark backgrounds */
+        --shadow-small: 0 1px 2px 0 rgba(0, 0, 0, 0.3);
+        --shadow-medium: 0 4px 6px -1px rgba(0, 0, 0, 0.4);
+        --shadow-large: 0 10px 15px -3px rgba(0, 0, 0, 0.5);
+
+        /* Status colors backgrounds for dark theme */
+        --success-light: rgba(16, 185, 129, 0.15);
+        --warning-light: rgba(245, 158, 11, 0.15);
+        --error-light: rgba(239, 68, 68, 0.15);
+        --info-light: rgba(37, 99, 235, 0.15);
+        --primary-light: rgba(37, 99, 235, 0.15);
+        --secondary-light: rgba(99, 102, 241, 0.15);
+
+        /* Darker primary colors for better contrast */
+        --primary-color: #3B82F6;          /* Slightly brighter blue for dark mode */
+        --success-color: #10B981;          /* Keep success green */
+        --warning-color: #F59E0B;          /* Keep warning amber */
+        --error-color: #EF4444;            /* Keep error red */
+    }
+
+    /* Override forced light backgrounds for dark mode */
+    .main-container {
+        background-color: var(--background-secondary) !important;
+    }
+
+    .help-section,
+    .card-minimal {
+        background-color: var(--surface) !important;
+        border-color: var(--border-light);
+    }
+
+    .launcher-container .launcher-btn {
+        background-color: var(--surface) !important;
+        border-color: var(--primary-color) !important;
+    }
+
+    /* Ensure proper contrast for icons in dark mode */
+    .icon-minimal.icon-book-large,
+    .icon-minimal.icon-slides-large {
+        background: var(--primary-color) !important;
+    }
+
+    /* Body background for dark mode */
+    body {
+        background-color: var(--background-secondary) !important;
+        color: var(--text-primary) !important;
+    }
+
+    /* Form inputs dark mode */
+    input[type="text"],
+    input[type="email"],
+    input[type="password"],
+    textarea,
+    select {
+        background-color: var(--background-tertiary) !important;
+        color: var(--text-primary) !important;
+        border-color: var(--border-light) !important;
+    }
+
+    input[type="text"]:focus,
+    input[type="email"]:focus,
+    input[type="password"]:focus,
+    textarea:focus,
+    select:focus {
+        background-color: var(--surface) !important;
+        border-color: var(--primary-color) !important;
+    }
+
+    /* Fieldset and legend styling */
+    fieldset {
+        background-color: var(--surface) !important;
+        border-color: var(--border-light) !important;
+    }
+
+    legend {
+        color: var(--text-primary) !important;
+        background-color: var(--surface) !important;
+    }
+
+    /* Button adjustments for dark mode */
+    .btn-primary {
+        background-color: var(--primary-color) !important;
+        color: white !important;
+        border-color: var(--primary-color) !important;
+    }
+
+    .btn-primary:hover {
+        background-color: #2563EB !important;
+    }
+
+    /* Status display adjustments */
+    .status-display {
+        background-color: var(--surface) !important;
+        border-color: var(--border-light) !important;
+        color: var(--text-primary) !important;
+    }
+
+    .status-display.status-info {
+        background-color: var(--info-light) !important;
+        border-color: var(--info-color) !important;
+        color: var(--info-color) !important;
+    }
+
+    .status-display.status-success {
+        background-color: var(--success-light) !important;
+        border-color: var(--success-color) !important;
+        color: var(--success-color) !important;
+    }
+
+    .status-display.status-warning {
+        background-color: var(--warning-light) !important;
+        border-color: var(--warning-color) !important;
+        color: var(--warning-color) !important;
+    }
+
+    .status-display.status-error {
+        background-color: var(--error-light) !important;
+        border-color: var(--error-color) !important;
+        color: var(--error-color) !important;
+    }
+
+    /* Modal improvements for dark mode */
+    .modal-content {
+        background-color: var(--surface) !important;
+        color: var(--text-primary) !important;
+        border-color: var(--border-light) !important;
+    }
+
+    .modal-overlay {
+        background-color: rgba(0, 0, 0, 0.7) !important;
+    }
+
+    /* Tab navigation dark mode */
+    .tab-nav {
+        background-color: var(--background-tertiary) !important;
+        border-color: var(--border-light) !important;
+    }
+
+    .tab-link {
+        color: var(--text-secondary) !important;
+        background-color: transparent !important;
+    }
+
+    .tab-link:hover {
+        background-color: var(--background-primary) !important;
+        color: var(--text-primary) !important;
+    }
+
+    .tab-link.active {
+        background-color: var(--surface) !important;
+        color: var(--primary-color) !important;
+        border-color: var(--primary-color) !important;
+    }
+}
+
+/* Manual theme override classes for JavaScript control */
+[data-theme="light"] {
+    /* Light theme colors (explicit) */
+    --background-primary: #FFFFFF;
+    --background-secondary: #F8FAFC;
+    --background-tertiary: #F1F5F9;
+    --surface: #FFFFFF;
+    --text-primary: #0F172A;
+    --text-secondary: #64748B;
+    --text-disabled: #94A3B8;
+    --border-light: #E2E8F0;
+    --border-medium: #CBD5E1;
+    --border-dark: #64748B;
+    --shadow-small: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+    --shadow-medium: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+    --shadow-large: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+    --success-light: #d1fae5;
+    --warning-light: #fef3c7;
+    --error-light: #fecaca;
+    --info-light: #dbeafe;
+    --primary-light: #dbeafe;
+    --secondary-light: #e0e7ff;
+}
+
+[data-theme="light"] .main-container {
+    background-color: #f8f9fa !important;
+}
+
+[data-theme="light"] .help-section,
+[data-theme="light"] .card-minimal {
+    background-color: #ffffff !important;
+}
+
+[data-theme="dark"] {
+    /* Dark theme colors (explicit) */
+    --background-primary: #0F172A;
+    --background-secondary: #1E293B;
+    --background-tertiary: #334155;
+    --surface: #1E293B;
+    --text-primary: #F8FAFC;
+    --text-secondary: #CBD5E1;
+    --text-disabled: #94A3B8;
+    --border-light: #334155;
+    --border-medium: #475569;
+    --border-dark: #64748B;
+    --shadow-small: 0 1px 2px 0 rgba(0, 0, 0, 0.3);
+    --shadow-medium: 0 4px 6px -1px rgba(0, 0, 0, 0.4);
+    --shadow-large: 0 10px 15px -3px rgba(0, 0, 0, 0.5);
+    --success-light: rgba(16, 185, 129, 0.2);
+    --warning-light: rgba(245, 158, 11, 0.2);
+    --error-light: rgba(239, 68, 68, 0.2);
+    --info-light: rgba(37, 99, 235, 0.2);
+    --primary-light: rgba(37, 99, 235, 0.2);
+    --secondary-light: rgba(99, 102, 241, 0.2);
+}
+
+[data-theme="dark"] .main-container {
+    background-color: var(--background-secondary) !important;
+}
+
+[data-theme="dark"] .help-section,
+[data-theme="dark"] .card-minimal {
+    background-color: var(--surface) !important;
+    border-color: var(--border-light);
+}
+
+[data-theme="dark"] .launcher-container .launcher-btn {
+    background-color: var(--surface) !important;
+}
+
+[data-theme="dark"] .icon-minimal.icon-book-large,
+[data-theme="dark"] .icon-minimal.icon-slides-large {
+    background: var(--primary-color) !important;
+}
+
+/* Smooth theme transitions */
+* {
+    transition:
+        background-color var(--transition-normal),
+        color var(--transition-normal),
+        border-color var(--transition-normal),
+        box-shadow var(--transition-normal);
+}
+
+/* Disable transitions during theme switching to prevent flashing */
+.theme-transitioning * {
+    transition: none !important;
+}
