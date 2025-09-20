@@ -162,5 +162,30 @@ export const PuterProvider = {
             console.error('Puter.js streaming error:', error);
             throw new Error(`AI generation failed: ${error.message}`);
         }
+    },
+
+    async generateText(prompt) {
+        if (!window.puter) {
+            throw new Error('Puter.js not loaded');
+        }
+
+        try {
+            // Get the selected model from DOM if available, fallback to default
+            const modelSelect = document.getElementById('puter-model-select');
+            const model = modelSelect ? modelSelect.value : 'openrouter:openai/gpt-4o';
+
+            console.log(`Generating text with Puter.js using model: ${model}`);
+
+            const response = await window.puter.ai.chat(prompt, {
+                model: model,
+                stream: false
+            });
+
+            console.log('Puter.js response:', response);
+            return response;
+        } catch (error) {
+            console.error('Puter.js generation error:', error);
+            throw new Error(`AI generation failed: ${error.message}`);
+        }
     }
 };
