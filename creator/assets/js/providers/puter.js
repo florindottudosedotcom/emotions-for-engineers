@@ -209,6 +209,9 @@ export const PuterProvider = {
             if (typeof response === 'string') {
                 extractedText = response;
                 console.log('Using direct string response');
+            } else if (response && response.message && typeof response.message.content === 'string') {
+                extractedText = response.message.content;
+                console.log('Using response.message.content (OpenAI format)');
             } else if (response && typeof response.text === 'string') {
                 extractedText = response.text;
                 console.log('Using response.text');
