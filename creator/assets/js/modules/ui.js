@@ -85,6 +85,12 @@ function initUI(domElements, stateModuleRef = null) {
 }
 
 function addChapter() {
+    // Only add chapters if we have the required DOM elements (course creator)
+    if (!dom.chapterTabsContainer || !dom.chapterContentContainer) {
+        console.log('Chapter UI elements not available - skipping addChapter (likely in slides creator)');
+        return;
+    }
+
     chapterCount++;
     const chapterId = chapterCount;
 

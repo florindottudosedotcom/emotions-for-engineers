@@ -21,6 +21,10 @@ async function initializeProvider() {
                 providerModule = await import('./providers/cloud.js');
                 currentProvider = providerModule.CloudProvider;
                 break;
+            case 'puter':
+                providerModule = await import('./providers/puter.js');
+                currentProvider = providerModule.PuterProvider;
+                break;
             case 'webllm':
                 providerModule = await import('./providers/webllm.js');
                 currentProvider = providerModule.WebLLMProvider;
@@ -142,10 +146,12 @@ document.addEventListener('DOMContentLoaded', async () => {
         });
     }
 
-    // Initial Load
-    State.loadState();
-    if (dom.chapterContentContainer && dom.chapterContentContainer.children.length === 0) {
-        UI.addChapter();
+    // Initial Load (only for course creator)
+    if (dom.chapterTabsContainer && dom.chapterContentContainer) {
+        State.loadState();
+        if (dom.chapterContentContainer.children.length === 0) {
+            UI.addChapter();
+        }
     }
 });
 

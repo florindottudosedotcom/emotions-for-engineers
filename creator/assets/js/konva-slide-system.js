@@ -1749,6 +1749,19 @@ class KonvaSlideSystem {
         });
     }
 
+    addShapeInteractionHandlers(shapeObj) {
+        shapeObj.on('dragend', () => this.saveSlideState());
+
+        // Add visual feedback
+        shapeObj.on('mouseenter', () => {
+            this.stage.container().style.cursor = 'move';
+        });
+
+        shapeObj.on('mouseleave', () => {
+            this.stage.container().style.cursor = 'default';
+        });
+    }
+
     showSlide(index) {
         console.log(`Showing slide ${index + 1} of ${this.slideObjects.length}`);
         if (index < 0 || index >= this.slideObjects.length) {
@@ -3594,7 +3607,7 @@ class KonvaSlideSystem {
         }
 
         // Add interaction handlers
-        this.addInteractionHandlers(textObj);
+        this.addTextInteractionHandlers(textObj);
 
         // Add to current slide
         if (!this.slideObjects[this.currentSlideIndex]) {
@@ -3709,7 +3722,7 @@ class KonvaSlideSystem {
         }
 
         // Add interaction handlers
-        this.addInteractionHandlers(shape);
+        this.addShapeInteractionHandlers(shape);
 
         // Add to current slide
         if (!this.slideObjects[this.currentSlideIndex]) {

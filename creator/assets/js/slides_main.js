@@ -973,7 +973,11 @@ async function generatePresentation() {
         const slidesPrompt = createSlidesPrompt(topic, slideCount);
         console.log('Calling provider.generateText with slides prompt');
         const aiResponse = await window.currentProvider.generateText(slidesPrompt);
-        console.log('Provider returned raw response:', aiResponse.substring(0, 200) + '...');
+
+        // Check if aiResponse is a string before using substring
+        if (typeof aiResponse !== 'string') {
+            throw new Error(`Expected string response from provider, got ${typeof aiResponse}`);
+        }
 
         // Parse the JSON response
         const slideData = parseSlideResponse(aiResponse);

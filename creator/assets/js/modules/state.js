@@ -6,27 +6,34 @@ const LOCAL_STORAGE_KEY = "courseCreatorState";
 
 function saveState() {
     const chapters = [];
-    // The chapter content divs are now the source of truth for order and ID
-    dom.chapterContentContainer.querySelectorAll('.chapter-content').forEach(contentDiv => {
-        const chapterId = contentDiv.id.replace('chapter-content-', '');
-        const chapterContainer = contentDiv.querySelector('.chapter');
-        if (chapterContainer) {
-            const title = chapterContainer.querySelector(`#chapter-title-${chapterId}`).value;
-            const content = ui.editorInstances[chapterId] ? ui.editorInstances[chapterId].content : '';
-            chapters.push({ title, content });
-        }
-    });
 
-    // Find active tab
-    const activeTab = dom.chapterTabsContainer.querySelector('.tab-link.active');
-    const activeTabIndex = activeTab ? Array.from(dom.chapterTabsContainer.querySelectorAll('.tab-link')).indexOf(activeTab) : 0;
+    // Only process chapters if chapter containers exist (course creator)
+    if (dom.chapterContentContainer) {
+        dom.chapterContentContainer.querySelectorAll('.chapter-content').forEach(contentDiv => {
+            const chapterId = contentDiv.id.replace('chapter-content-', '');
+            const chapterContainer = contentDiv.querySelector('.chapter');
+            if (chapterContainer) {
+                const titleElement = chapterContainer.querySelector(`#chapter-title-${chapterId}`);
+                const title = titleElement ? titleElement.value : '';
+                const content = ui.editorInstances && ui.editorInstances[chapterId] ? ui.editorInstances[chapterId].content : '';
+                chapters.push({ title, content });
+            }
+        });
+    }
+
+    // Find active tab (only if tab container exists)
+    let activeTabIndex = 0;
+    if (dom.chapterTabsContainer) {
+        const activeTab = dom.chapterTabsContainer.querySelector('.tab-link.active');
+        activeTabIndex = activeTab ? Array.from(dom.chapterTabsContainer.querySelectorAll('.tab-link')).indexOf(activeTab) : 0;
+    }
 
     let appState = {
-        courseName: dom.courseNameInput.value,
-        courseDesc: dom.courseDescTextarea.value,
+        courseName: dom.courseNameInput ? dom.courseNameInput.value : '',
+        courseDesc: dom.courseDescTextarea ? dom.courseDescTextarea.value : '',
         chapters: chapters,
-        masterPrompt: dom.masterPromptTextarea.value,
-        numChapters: dom.numChaptersSelect.value,
+        masterPrompt: dom.masterPromptTextarea ? dom.masterPromptTextarea.value : '',
+        numChapters: dom.numChaptersSelect ? dom.numChaptersSelect.value : '5',
         activeTabIndex: activeTabIndex
     };
 
@@ -46,23 +53,46 @@ function loadState() {
     console.log("Found saved state, loading...");
     const loadedState = JSON.parse(savedState);
 
-    dom.courseNameInput.value = loadedState.courseName || '';
-    dom.courseDescTextarea.value = loadedState.courseDesc || '';
-    dom.masterPromptTextarea.value = loadedState.masterPrompt || '';
-    dom.numChaptersSelect.value = loadedState.numChapters || '5';
+    // If we don't have course-specific DOM elements, only load basic state
+    const hasChapterElements = dom.chapterTabsContainer && dom.chapterContentContainer;
+
+    // Only load course-specific fields if they exist (course creator)
+    if (dom.courseNameInput) {
+        dom.courseNameInput.value = loadedState.courseName || '';
+    }
+    if (dom.courseDescTextarea) {
+        dom.courseDescTextarea.value = loadedState.courseDesc || '';
+    }
+    if (dom.masterPromptTextarea) {
+        dom.masterPromptTextarea.value = loadedState.masterPrompt || '';
+    }
+    if (dom.numChaptersSelect) {
+        dom.numChaptersSelect.value = loadedState.numChapters || '5';
+    }
 
     // Load provider-specific state extensions
     if (window.currentProvider && window.currentProvider.loadStateExtensions) {
         window.currentProvider.loadStateExtensions(loadedState);
     }
 
-    // Clear existing chapter UI
-    dom.chapterTabsContainer.innerHTML = '';
-    dom.chapterContentContainer.innerHTML = '';
-    Object.keys(ui.editorInstances).forEach(key => delete ui.editorInstances[key]);
-    ui.resetChapterCount(); // Reset the counter in UI module
+    // Clear existing chapter UI (only if they exist - course creator)
+    if (hasChapterElements) {
+        if (dom.chapterTabsContainer) {
+            dom.chapterTabsContainer.innerHTML = '';
+        }
+        if (dom.chapterContentContainer) {
+            dom.chapterContentContainer.innerHTML = '';
+        }
+        if (ui.editorInstances) {
+            Object.keys(ui.editorInstances).forEach(key => delete ui.editorInstances[key]);
+        }
+        if (ui.resetChapterCount) {
+            ui.resetChapterCount(); // Reset the counter in UI module
+        }
+    }
 
-    if (loadedState.chapters && loadedState.chapters.length > 0) {
+    // Only restore chapters if we have the necessary UI components (course creator)
+    if (hasChapterElements && loadedState.chapters && loadedState.chapters.length > 0 && ui.addChapter && ui.editorInstances) {
         loadedState.chapters.forEach(chapterData => {
             ui.addChapter(); // This creates the tab and content pane with correct event listeners
 
@@ -73,10 +103,12 @@ function loadState() {
             if (titleInput) {
                 titleInput.value = chapterData.title;
                 // Update tab tooltip but keep text as "Chapter X"
-                const tabButton = dom.chapterTabsContainer.querySelector(`[data-chapter-id="${newChapterId}"]`);
-                if (tabButton) {
-                    tabButton.textContent = `Chapter ${newChapterId}`;
-                    tabButton.title = chapterData.title.trim() ? `Chapter ${newChapterId}: ${chapterData.title.trim()}` : `Chapter ${newChapterId}`;
+                if (dom.chapterTabsContainer) {
+                    const tabButton = dom.chapterTabsContainer.querySelector(`[data-chapter-id="${newChapterId}"]`);
+                    if (tabButton) {
+                        tabButton.textContent = `Chapter ${newChapterId}`;
+                        tabButton.title = chapterData.title.trim() ? `Chapter ${newChapterId}: ${chapterData.title.trim()}` : `Chapter ${newChapterId}`;
+                    }
                 }
             }
 
