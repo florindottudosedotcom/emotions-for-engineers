@@ -973,7 +973,16 @@ async function generatePresentation() {
         const slidesPrompt = createSlidesPrompt(topic, slideCount);
         console.log('Calling provider.generateText with slides prompt');
         const aiResponse = await window.currentProvider.generateText(slidesPrompt);
-        console.log('Provider returned raw response:', aiResponse.substring(0, 200) + '...');
+        console.log('Provider returned response type:', typeof aiResponse);
+        console.log('Provider returned response:', aiResponse);
+
+        // Check if aiResponse is a string before using substring
+        if (typeof aiResponse === 'string') {
+            console.log('Provider returned raw response:', aiResponse.substring(0, 200) + '...');
+        } else {
+            console.log('Provider returned non-string response:', aiResponse);
+            throw new Error(`Expected string response from provider, got ${typeof aiResponse}: ${JSON.stringify(aiResponse)}`);
+        }
 
         // Parse the JSON response
         const slideData = parseSlideResponse(aiResponse);
