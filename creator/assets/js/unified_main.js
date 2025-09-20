@@ -21,6 +21,10 @@ async function initializeProvider() {
                 providerModule = await import('./providers/cloud.js');
                 currentProvider = providerModule.CloudProvider;
                 break;
+            case 'puter':
+                providerModule = await import('./providers/puter.js');
+                currentProvider = providerModule.PuterProvider;
+                break;
             case 'webllm':
                 providerModule = await import('./providers/webllm.js');
                 currentProvider = providerModule.WebLLMProvider;
