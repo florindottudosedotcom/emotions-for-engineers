@@ -36,12 +36,29 @@
             }
         });
 
-        // Apply dark class manually for better dark mode support
-        if (isDarkMode) {
+        // Listen for system theme changes and update editor accordingly
+        window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', (e) => {
+            // For theme switching, we would need to recreate the editor
+            // For now, we'll just apply the dark class which ToastUI should handle
             const editorEl = document.querySelector('.toastui-editor-defaultUI');
             if (editorEl) {
-                editorEl.classList.add('toastui-editor-dark');
+                if (e.matches) {
+                    editorEl.classList.add('toastui-editor-dark');
+                } else {
+                    editorEl.classList.remove('toastui-editor-dark');
+                }
             }
+        });
+
+        // Apply initial dark class if needed
+        if (isDarkMode) {
+            // Wait for editor to be fully initialized
+            setTimeout(() => {
+                const editorEl = document.querySelector('.toastui-editor-defaultUI');
+                if (editorEl) {
+                    editorEl.classList.add('toastui-editor-dark');
+                }
+            }, 100);
         }
 
         window.addEventListener('message', (event) => {

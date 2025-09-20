@@ -1,5 +1,5 @@
 // WebLLM Provider (In-browser AI)
-import * as webllm from "../webllm.js";
+import * as webllm from "https://esm.run/@mlc-ai/web-llm@0.2.46";
 
 export const WebLLMProvider = {
     name: 'WebLLM',
