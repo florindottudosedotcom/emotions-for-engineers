@@ -481,6 +481,15 @@ export const perf = {
 };
 
 /**
+ * Performance utilities (browser performance API)
+ */
+export const performance = window.performance || {
+    now: () => Date.now(),
+    mark: () => {},
+    measure: () => {}
+};
+
+/**
  * Error handling utilities
  */
 export const errorHandler = {
