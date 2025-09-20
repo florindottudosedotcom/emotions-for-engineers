@@ -28,7 +28,7 @@ export const PuterProvider = {
                 <div class="puter-status" style="background: #f8f9fa; border-radius: 6px; padding: 12px; border-left: 4px solid #28a745;">
                     <div style="display: flex; align-items: center; gap: 8px;">
                         <span style="color: #28a745; font-weight: bold;">●</span>
-                        <span style="color: #666; font-size: 0.9em;">Ready to generate content - no configuration needed!</span>
+                        <span style="color: #666; font-size: 0.9em;">Ready to generate content!</span>
                     </div>
                 </div>
 
