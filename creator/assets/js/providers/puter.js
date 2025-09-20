@@ -9,6 +9,7 @@ export const PuterProvider = {
                 <div class="puter-info" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 15px; border-radius: 8px; margin-bottom: 15px;">
                     <h3 style="margin: 0 0 8px 0; font-size: 1.1em;">✨ No Setup Required!</h3>
                     <p style="margin: 0; font-size: 0.9em; opacity: 0.9;">Access 200+ AI models from OpenAI, Anthropic, Google, Meta, and more - completely free with no API keys needed.</p>
+                    <p style="margin: 8px 0 0 0; font-size: 0.85em; opacity: 0.8;"><strong>Note:</strong> First-time users may see a Puter.js authentication popup - this is normal and only happens once for free access setup.</p>
                 </div>
 
                 <div class="input-group">
@@ -176,15 +177,51 @@ export const PuterProvider = {
 
             console.log(`Generating text with Puter.js using model: ${model}`);
 
+            // Check if user is already signed in to avoid unnecessary popup
+            let isSignedIn = false;
+            try {
+                isSignedIn = await window.puter.auth.isSignedIn();
+                console.log('Puter.js auth status:', isSignedIn);
+            } catch (authError) {
+                console.log('Auth check failed, proceeding with AI call:', authError);
+            }
+
+            // If not signed in, show a user-friendly message
+            if (!isSignedIn) {
+                if (window.UI && window.UI.updateGenerationStatus) {
+                    window.UI.updateGenerationStatus('🔐 First-time setup: Puter.js will open an authentication window...', 'info');
+                }
+            }
+
             const response = await window.puter.ai.chat(prompt, {
                 model: model,
                 stream: false
             });
 
             console.log('Puter.js response:', response);
-            return response;
+            console.log('Response type:', typeof response);
+
+            // Handle different response formats from Puter.js
+            if (typeof response === 'string') {
+                return response;
+            } else if (response && response.text) {
+                return response.text;
+            } else if (response && response.content) {
+                return response.content;
+            } else if (response && response.message) {
+                return response.message;
+            } else {
+                console.warn('Unexpected response format from Puter.js:', response);
+                return JSON.stringify(response);
+            }
         } catch (error) {
             console.error('Puter.js generation error:', error);
+
+            // Provide user-friendly error message for auth issues
+            if (error.message && error.message.includes('auth')) {
+                throw new Error('Authentication required. Please allow the Puter.js popup to complete setup for free AI access.');
+            }
+
             throw new Error(`AI generation failed: ${error.message}`);
         }
     }

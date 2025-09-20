@@ -72,13 +72,22 @@ function loadState() {
         window.currentProvider.loadStateExtensions(loadedState);
     }
 
-    // Clear existing chapter UI
-    dom.chapterTabsContainer.innerHTML = '';
-    dom.chapterContentContainer.innerHTML = '';
-    Object.keys(ui.editorInstances).forEach(key => delete ui.editorInstances[key]);
-    ui.resetChapterCount(); // Reset the counter in UI module
+    // Clear existing chapter UI (only if they exist - course creator)
+    if (dom.chapterTabsContainer) {
+        dom.chapterTabsContainer.innerHTML = '';
+    }
+    if (dom.chapterContentContainer) {
+        dom.chapterContentContainer.innerHTML = '';
+    }
+    if (ui.editorInstances) {
+        Object.keys(ui.editorInstances).forEach(key => delete ui.editorInstances[key]);
+    }
+    if (ui.resetChapterCount) {
+        ui.resetChapterCount(); // Reset the counter in UI module
+    }
 
-    if (loadedState.chapters && loadedState.chapters.length > 0) {
+    // Only restore chapters if we have the necessary UI components (course creator)
+    if (loadedState.chapters && loadedState.chapters.length > 0 && ui.addChapter && ui.editorInstances) {
         loadedState.chapters.forEach(chapterData => {
             ui.addChapter(); // This creates the tab and content pane with correct event listeners
 
@@ -89,10 +98,12 @@ function loadState() {
             if (titleInput) {
                 titleInput.value = chapterData.title;
                 // Update tab tooltip but keep text as "Chapter X"
-                const tabButton = dom.chapterTabsContainer.querySelector(`[data-chapter-id="${newChapterId}"]`);
-                if (tabButton) {
-                    tabButton.textContent = `Chapter ${newChapterId}`;
-                    tabButton.title = chapterData.title.trim() ? `Chapter ${newChapterId}: ${chapterData.title.trim()}` : `Chapter ${newChapterId}`;
+                if (dom.chapterTabsContainer) {
+                    const tabButton = dom.chapterTabsContainer.querySelector(`[data-chapter-id="${newChapterId}"]`);
+                    if (tabButton) {
+                        tabButton.textContent = `Chapter ${newChapterId}`;
+                        tabButton.title = chapterData.title.trim() ? `Chapter ${newChapterId}: ${chapterData.title.trim()}` : `Chapter ${newChapterId}`;
+                    }
                 }
             }
 
