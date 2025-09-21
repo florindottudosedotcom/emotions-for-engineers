@@ -399,6 +399,33 @@ export class UIManager {
         });
     }
 
+    clearAllChapters() {
+        // Remove all chapter tabs
+        const tabs = DOM.queryAll('.chapter-tab');
+        tabs.forEach(tab => tab.remove());
+
+        // Remove all chapter content
+        if (this.dom.chapterContentContainer) {
+            this.dom.chapterContentContainer.innerHTML = '';
+        }
+
+        // Clear editor instances
+        Object.values(this.editorInstances).forEach(instance => {
+            if (instance.iframe) {
+                instance.iframe.remove();
+            }
+        });
+        this.editorInstances = {};
+
+        // Reset active chapter
+        this.activeChapter = 0;
+
+        // Re-create the add chapter button
+        this.createAddChapterTab();
+
+        logger.debug('All chapters cleared');
+    }
+
     destroy() {
         Object.values(this.editorInstances).forEach(instance => {
             if (instance.iframe) {

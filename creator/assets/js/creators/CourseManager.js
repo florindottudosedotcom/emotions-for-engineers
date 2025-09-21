@@ -88,8 +88,18 @@ Please provide an enhanced version that maintains the original intent but adds e
     }
 
     async generateCourse() {
-        if (!this.validateCourseInputs()) {
+        if (!this.validateRequiredInputs()) {
             return;
+        }
+
+        // Check if there are existing chapters and show overwrite modal
+        if (!this.isCourseEmpty()) {
+            const shouldOverwrite = await this.showOverwriteModal();
+            if (!shouldOverwrite) {
+                return;
+            }
+            // Clear existing chapters if user confirmed
+            this.ui.clearAllChapters();
         }
 
         if (this.isGenerating) {
@@ -116,20 +126,13 @@ Please provide an enhanced version that maintains the original intent but adds e
         }
     }
 
-    validateCourseInputs() {
+    validateRequiredInputs() {
         if (!this.provider || !this.provider.validateConfiguration()) {
             this.ui.showMessage('Please configure your AI provider first', 'warning');
             return false;
         }
 
-        const courseName = this.dom.courseNameInput?.value?.trim();
         const masterPrompt = this.dom.masterPromptTextarea?.value?.trim();
-
-        if (!courseName) {
-            this.ui.showMessage('Please enter a course name', 'warning');
-            DOM.focus(this.dom.courseNameInput);
-            return false;
-        }
 
         if (!masterPrompt) {
             this.ui.showMessage('Please enter a master prompt', 'warning');
@@ -508,6 +511,70 @@ Generated with [Emotions for Engineers Course Creator](https://github.com/user/e
 
     delay(ms) {
         return new Promise(resolve => setTimeout(resolve, ms));
+    }
+
+    isCourseEmpty() {
+        // Check if any chapter titles have content
+        const titleInputs = DOM.queryAll('.chapter-title');
+        for (const input of titleInputs) {
+            if (input.value.trim() !== '') return false;
+        }
+
+        // Check if any editor instances have content
+        for (const key in this.ui.editorInstances) {
+            if (this.ui.editorInstances[key].content && this.ui.editorInstances[key].content.trim() !== '') {
+                return false;
+            }
+        }
+
+        return true;
+    }
+
+    async showOverwriteModal() {
+        return new Promise((resolve) => {
+            const modal = DOM.query('#overwrite-modal');
+            const yesBtn = DOM.query('#overwrite-yes-btn');
+            const cancelBtn = DOM.query('#overwrite-cancel-btn');
+
+            if (!modal || !yesBtn || !cancelBtn) {
+                resolve(true); // Failsafe: if modal doesn't exist, act as if user confirmed.
+                return;
+            }
+
+            const cleanup = () => {
+                // Remove event listeners and hide modal
+                yesBtn.replaceWith(yesBtn.cloneNode(true));
+                cancelBtn.replaceWith(cancelBtn.cloneNode(true));
+                DOM.removeClass(modal, 'visible');
+            };
+
+            // Show modal
+            DOM.addClass(modal, 'visible');
+
+            // Add event listeners to the fresh buttons
+            const newYesBtn = DOM.query('#overwrite-yes-btn');
+            const newCancelBtn = DOM.query('#overwrite-cancel-btn');
+
+            Events.on(newYesBtn, 'click', () => {
+                cleanup();
+                resolve(true);
+            });
+
+            Events.on(newCancelBtn, 'click', () => {
+                cleanup();
+                resolve(false);
+            });
+
+            // Close modal on escape key
+            const handleEscape = (e) => {
+                if (e.key === 'Escape') {
+                    cleanup();
+                    document.removeEventListener('keydown', handleEscape);
+                    resolve(false);
+                }
+            };
+            document.addEventListener('keydown', handleEscape);
+        });
     }
 
     destroy() {
