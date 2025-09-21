@@ -68,14 +68,14 @@ export class OllamaProvider extends BaseProvider {
             this.appState.set('ollamaModel', this.currentModel);
         }
 
-        this.updateConnectionStatus();
+        this.updateProviderStatus();
 
         if (this.appState && typeof this.appState.save === 'function') {
             this.appState.save();
         }
     }
 
-    updateConnectionStatus() {
+    updateProviderStatus() {
         if (this.currentModel && this.isConnected) {
             this.updateConnectionStatus(
                 `✅ Ready with ${this.currentModel}`,
@@ -239,7 +239,7 @@ export class OllamaProvider extends BaseProvider {
                 this.dom.aiModelSelect.value = modelName;
             }
             this.emit('modelChanged', modelName);
-            this.updateConnectionStatus();
+            this.updateProviderStatus();
         }
     }
 
