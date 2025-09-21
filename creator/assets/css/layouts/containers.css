@@ -503,6 +503,15 @@
 
 .toastui-editor-defaultUI {
     margin: 0 !important;
+    min-height: 600px !important;
+}
+
+/* Creator iframe styling */
+.creator-frame {
+    width: 100% !important;
+    min-height: 800px !important;
+    border: none;
+    background: transparent;
 }
 
 /* Chapter tabs should be visible */

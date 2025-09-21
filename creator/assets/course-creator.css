@@ -68,7 +68,7 @@ textarea { min-height: 100px; resize: vertical; }
 fieldset { border: none; border-radius: 4px; padding: 1rem 0; margin-bottom: 1rem; }
 legend { font-weight: bold; padding: 0; }
 .lang-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 1rem; }
-.lang-item { display: flex; align-items: center; }
+.lang-item { display: flex; align-items: center; background-color: transparent !important; min-height: 44px; height: 44px; }
 input[type="checkbox"] { margin-right: 0.5rem; }
 .chapter { border: none; padding: 1.5rem 0; border-radius: 0 0 8px 8px; margin-bottom: 1rem; background-color: #fff; box-shadow: 0 2px 4px rgba(0,0,0,0.05); }
 

@@ -398,8 +398,10 @@ input[class*="chapter-title"],
 
 .lang-item,
 [data-theme="light"] .lang-item {
-    background-color: var(--background-tertiary);
+    background-color: transparent !important;
     border-color: var(--border-light);
+    min-height: 44px;
+    height: 44px;
 }
 
 .lang-item:hover,
