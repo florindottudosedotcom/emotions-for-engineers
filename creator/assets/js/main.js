@@ -6,6 +6,7 @@
 import { logger, debounce } from './core/utils.js';
 import { DOM, Events } from './core/dom.js';
 import { appState, saveState, loadState, clearState } from './core/state.js';
+import { loadingManager } from './utils/loading-manager.js';
 
 /**
  * Main Application Class
@@ -26,25 +27,41 @@ class CreatorApp {
      * Initialize the application
      */
     async init() {
+        const initOperations = [
+            {
+                message: 'Loading AI provider...',
+                fn: () => this.initializeProvider()
+            },
+            {
+                message: 'Setting up interface...',
+                fn: () => this.cacheDOMElements()
+            },
+            {
+                message: 'Loading components...',
+                fn: () => this.initializeModules()
+            },
+            {
+                message: 'Finalizing setup...',
+                fn: () => {
+                    this.setupEventListeners();
+                    return Promise.resolve();
+                }
+            }
+        ];
+
         try {
             logger.info('Initializing Creator Application...');
 
-            // Initialize provider first
-            await this.initializeProvider();
-
-            // Cache DOM elements
-            this.cacheDOMElements();
-
-            // Initialize modules
-            await this.initializeModules();
-
-            // Set up event listeners
-            this.setupEventListeners();
+            // Show loading with progress tracking
+            await loadingManager.trackMultipleOperations('app-init', initOperations, {
+                message: 'Starting application...',
+                showOverlay: true
+            });
 
             // Load saved state after DOM is ready
             setTimeout(() => {
                 this.loadApplicationState();
-            }, 500);
+            }, 100);
 
             // Mark as initialized
             this.isInitialized = true;
@@ -52,6 +69,7 @@ class CreatorApp {
             logger.info('Creator Application initialized successfully');
         } catch (error) {
             logger.error('Failed to initialize application:', error);
+            loadingManager.hideAllLoading();
             this.showError('Failed to initialize application. Please refresh and try again.');
         }
     }
@@ -174,15 +192,33 @@ class CreatorApp {
                 await this.currentProvider.init(this.dom, appState);
             }
 
-            // Initialize UI module
-            const { UIManager } = await import('./components/UIManager.js');
-            this.modules.ui = new UIManager(this.dom);
-            await this.modules.ui.init();
+            // Initialize modules with lazy loading
+            const moduleOperations = [
+                {
+                    name: 'ui',
+                    load: async () => {
+                        const { UIManager } = await import('./components/UIManager.js');
+                        this.modules.ui = new UIManager(this.dom);
+                        await this.modules.ui.init();
+                        return this.modules.ui;
+                    }
+                },
+                {
+                    name: 'course',
+                    load: async () => {
+                        const { CourseManager } = await import('./creators/CourseManager.js');
+                        this.modules.course = new CourseManager(this.dom, this.modules.ui, this.currentProvider);
+                        await this.modules.course.init();
+                        return this.modules.course;
+                    }
+                }
+            ];
 
-            // Initialize Course module
-            const { CourseManager } = await import('./creators/CourseManager.js');
-            this.modules.course = new CourseManager(this.dom, this.modules.ui, this.currentProvider);
-            await this.modules.course.init();
+            // Load modules sequentially to handle dependencies
+            for (const moduleConfig of moduleOperations) {
+                await moduleConfig.load();
+                logger.debug(`${moduleConfig.name} module loaded`);
+            }
 
             // Make modules globally available for legacy compatibility
             window.UI = this.modules.ui;

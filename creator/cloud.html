@@ -6,8 +6,14 @@
     <meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; frame-src 'self'; img-src 'self' data:; connect-src 'self' https://api.openai.com https://api.anthropic.com https://generativelanguage.googleapis.com; font-src 'self'; object-src 'none'; base-uri 'self'; form-action 'self'; worker-src 'self' blob:;">
     <title>Course Creator</title>
     <link rel="icon" type="image/svg+xml" href="favicon.svg">
-    <link rel="stylesheet" href="./assets/css/main.css" />
-    <link rel="stylesheet" href="./assets/toastui-editor.min.css" />
+    <!-- Preload critical assets -->
+    <link rel="preload" href="./assets/js/main.js" as="script">
+    <link rel="preload" href="./assets/js/core/utils.js" as="script">
+    <link rel="preload" href="./assets/js/core/dom.js" as="script">
+    <link rel="preload" href="./assets/js/core/state.js" as="script">
+
+    <!-- Load CSS bundle -->
+    <link rel="stylesheet" href="./assets/css/bundle.min.css" />
 </head>
 <body>
     <div id="overwrite-modal" class="modal-overlay">
@@ -96,7 +102,6 @@
     <!-- JS Libraries -->
     <script src="./assets/js/jszip/3.10.1/jszip.min.js"></script>
     <script src="./assets/js/js-yaml/4.1.0/js-yaml.min.js"></script>
-    <script src="./assets/js/toastui-editor-all.min.js"></script>
 
     <!-- Main Application Logic -->
     <script>

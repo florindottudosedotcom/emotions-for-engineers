@@ -5,6 +5,7 @@
 
 import { DOM, Events } from '../core/dom.js';
 import { logger } from '../core/utils.js';
+import { loadingManager } from '../utils/loading-manager.js';
 
 export class UIManager {
     constructor(dom) {
@@ -64,13 +65,13 @@ export class UIManager {
         };
     }
 
-    addChapter() {
+    async addChapter() {
         const chapterIndex = this.getChapterCount();
         const chapterId = `chapter-${chapterIndex}`;
 
         this.createChapterTab(chapterIndex);
         this.createChapterContent(chapterIndex, chapterId);
-        this.createChapterEditor(chapterId);
+        await this.createChapterEditor(chapterId);
         this.switchToChapter(chapterIndex);
         this.updateRemoveButtonsVisibility();
         this.createAddChapterTab(); // Ensure + button is always at the end
@@ -128,34 +129,56 @@ export class UIManager {
         this.dom.chapterContentContainer.appendChild(chapterDiv);
     }
 
-    createChapterEditor(chapterId) {
+    async createChapterEditor(chapterId) {
         const editorContainer = DOM.query(`#editor-${chapterId}`);
         if (!editorContainer) return;
 
-        const iframe = DOM.create('iframe', {
-            src: `./editor.html?id=${chapterId}`,
-            className: 'chapter-editor',
-            'data-chapter-id': chapterId
+        // Show loading state while creating editor
+        const loadingController = loadingManager.showLoading(`editor-${chapterId}`, 'Loading editor...', {
+            container: editorContainer
         });
 
-        editorContainer.appendChild(iframe);
+        try {
+            // Create iframe with loading state
+            const iframe = DOM.create('iframe', {
+                src: `./editor.html?id=${chapterId}`,
+                className: 'chapter-editor',
+                'data-chapter-id': chapterId,
+                style: 'opacity: 0; transition: opacity 0.3s ease;'
+            });
 
-        this.editorInstances[chapterId] = {
-            iframe: iframe,
-            content: '',
-            isReady: false,
-            pendingContent: null
-        };
+            editorContainer.appendChild(iframe);
 
-        Events.on(iframe, 'load', () => {
-            const instance = this.editorInstances[chapterId];
-            if (instance && iframe.contentWindow) {
-                iframe.contentWindow.postMessage({
-                    type: 'init',
-                    id: chapterId
-                }, '*');
-            }
-        });
+            this.editorInstances[chapterId] = {
+                iframe: iframe,
+                content: '',
+                isReady: false,
+                pendingContent: null
+            };
+
+            // Handle iframe load with fade-in effect and initialization
+            Events.on(iframe, 'load', () => {
+                const instance = this.editorInstances[chapterId];
+                if (instance) {
+                    // Initialize editor communication
+                    if (iframe.contentWindow) {
+                        iframe.contentWindow.postMessage({
+                            type: 'init',
+                            id: chapterId
+                        }, '*');
+                    }
+
+                    // Fade in the iframe
+                    setTimeout(() => {
+                        iframe.style.opacity = '1';
+                        loadingController.finish();
+                    }, 100);
+                }
+            });
+        } catch (error) {
+            logger.error(`Failed to create editor for ${chapterId}:`, error);
+            loadingController.finish();
+        }
     }
 
     switchToChapter(index) {
@@ -274,32 +297,33 @@ export class UIManager {
         return chapters;
     }
 
-    setChapterData(chapters) {
+    async setChapterData(chapters) {
         this.clearAllChapters();
 
-        chapters.forEach((chapter, index) => {
-            this.addChapter();
+        for (let index = 0; index < chapters.length; index++) {
+            const chapter = chapters[index];
+
+            await this.addChapter();
+
             const titleInput = DOM.query(`#chapter-${index} .chapter-title`);
             if (titleInput) {
                 titleInput.value = chapter.title;
             }
 
-            setTimeout(() => {
-                const chapterId = `chapter-${index}`;
-                const editorInstance = this.editorInstances[chapterId];
-                if (editorInstance && chapter.content) {
-                    editorInstance.content = chapter.content;
-                    if (editorInstance.isReady) {
-                        editorInstance.iframe.contentWindow.postMessage({
-                            type: 'set-content',
-                            content: chapter.content
-                        }, '*');
-                    } else {
-                        editorInstance.pendingContent = chapter.content;
-                    }
+            const chapterId = `chapter-${index}`;
+            const editorInstance = this.editorInstances[chapterId];
+            if (editorInstance && chapter.content) {
+                editorInstance.content = chapter.content;
+                if (editorInstance.isReady) {
+                    editorInstance.iframe.contentWindow.postMessage({
+                        type: 'set-content',
+                        content: chapter.content
+                    }, '*');
+                } else {
+                    editorInstance.pendingContent = chapter.content;
                 }
-            }, 100 * index);
-        });
+            }
+        }
     }
 
 
