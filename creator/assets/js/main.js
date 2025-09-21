@@ -232,11 +232,12 @@ class CreatorApp {
             });
         }
 
-        if (this.dom.addChapterBtn) {
-            Events.on(this.dom.addChapterBtn, 'click', () => {
-                this.modules.ui?.addChapter();
-            });
-        }
+        // Chapter button management is handled by UIManager
+        // if (this.dom.addChapterBtn) {
+        //     Events.on(this.dom.addChapterBtn, 'click', () => {
+        //         this.modules.ui?.addChapter();
+        //     });
+        // }
 
         if (this.dom.clearFormBtn) {
             Events.on(this.dom.clearFormBtn, 'click', clearState);
@@ -278,11 +279,11 @@ class CreatorApp {
             // Load persisted state
             loadState();
 
-            // Initialize with default chapter if none exist
-            if (this.dom.chapterContentContainer &&
-                this.dom.chapterContentContainer.children.length === 0) {
-                this.modules.ui?.addChapter();
-            }
+            // Initialize with default chapter if none exist - handled by UIManager
+            // if (this.dom.chapterContentContainer &&
+            //     this.dom.chapterContentContainer.children.length === 0) {
+            //     this.modules.ui?.addChapter();
+            // }
 
             logger.debug('Application state loaded');
         } catch (error) {

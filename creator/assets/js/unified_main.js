@@ -147,9 +147,10 @@ document.addEventListener('DOMContentLoaded', async () => {
     // Initial Load (only for course creator)
     if (dom.chapterTabsContainer && dom.chapterContentContainer) {
         State.loadState();
-        if (dom.chapterContentContainer.children.length === 0) {
-            UI.addChapter();
-        }
+        // Initial chapter creation handled by UIManager
+        // if (dom.chapterContentContainer.children.length === 0) {
+        //     UI.addChapter();
+        // }
     }
 });
 
