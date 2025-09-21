@@ -223,7 +223,7 @@
 .tab-nav {
     display: flex;
     border-bottom: 1px solid var(--border-light);
-    margin-bottom: var(--spacing-4);
+    margin-bottom: 0;
     background-color: var(--background-tertiary);
     border-radius: var(--radius-medium) var(--radius-medium) 0 0;
     overflow-x: auto;

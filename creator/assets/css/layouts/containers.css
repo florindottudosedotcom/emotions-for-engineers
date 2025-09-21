@@ -172,14 +172,16 @@
 /* ========================================
    CHAPTER CONTAINERS (Specific to App)
    ======================================== */
+#chapter-tabs-container,
 .chapter-tabs-container {
-    width: auto;
-    margin-top: var(--spacing-4);
-    margin-bottom: 0;
+    width: auto !important;
+    margin-top: var(--spacing-4) !important;
+    margin-bottom: 0 !important;
     background-color: var(--background-tertiary);
     border-radius: var(--radius-medium) var(--radius-medium) 0 0;
     border: 1px solid var(--border-light);
     border-bottom: none;
+    justify-content: flex-start;
 }
 
 .chapter-content-container {

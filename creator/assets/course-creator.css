@@ -437,11 +437,14 @@ input[type="checkbox"] { margin-right: 0.5rem; }
 .tab-nav {
     display: flex;
     border-bottom: none;
-    margin-bottom: 1rem;
+    margin-bottom: 0;
+    margin-top: var(--spacing-4);
     background-color: #f8f9fa;
     border-radius: 8px 8px 0 0;
     overflow-x: auto; /* Allow horizontal scrolling for many tabs */
     scrollbar-width: thin;
+    width: auto;
+    justify-content: flex-start;
 }
 
 .tab-link {
