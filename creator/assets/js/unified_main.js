@@ -111,9 +111,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     if (dom.enhancePromptBtn) {
         dom.enhancePromptBtn.addEventListener('click', Course.enhancePrompt);
     }
-    if (dom.addChapterBtn) {
-        dom.addChapterBtn.addEventListener('click', UI.addChapter);
-    }
+    // Chapter button management is handled by UIManager
     if (dom.clearFormBtn) {
         dom.clearFormBtn.addEventListener('click', State.clearState);
     }

@@ -521,7 +521,7 @@
     display: flex !important;
     background-color: var(--background-tertiary);
     border-bottom: 1px solid var(--border-light);
-    margin-bottom: var(--spacing-4);
+    margin-bottom: 0;
     padding: 0;
     border-radius: var(--radius-medium) var(--radius-medium) 0 0;
     justify-content: flex-start;
@@ -591,6 +591,21 @@
 
 .chapter-tab .remove-chapter:hover {
     opacity: 1;
+}
+
+/* Add gap between tabs and course description */
+.course-description,
+.chapter-tabs-container + * {
+    margin-top: var(--spacing-4);
+}
+
+/* Chapter content visibility - only show active chapter */
+.chapter-content {
+    display: none;
+}
+
+.chapter-content.active {
+    display: block;
 }
 
 /* ========================================
