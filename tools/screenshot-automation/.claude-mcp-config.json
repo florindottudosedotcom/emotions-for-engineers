@@ -1,0 +1,10 @@
+{
+  "mcpServers": {
+    "puppeteer-screenshots": {
+      "command": "node",
+      "args": ["mcp-server.js"],
+      "cwd": "/home/florin/repos/emotions-for-engineers",
+      "env": {}
+    }
+  }
+}
