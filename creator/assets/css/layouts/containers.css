@@ -507,7 +507,8 @@
 }
 
 /* Creator iframe styling */
-.creator-frame {
+.creator-frame,
+.chapter-editor {
     width: 100% !important;
     min-height: 800px !important;
     border: none;

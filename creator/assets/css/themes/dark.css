@@ -559,9 +559,11 @@
 [data-theme="dark"] {
     .lang-item {
         background-color: transparent !important;
-        border-color: var(--border-light);
+        border: none;
         min-height: 44px;
         height: 44px;
+        min-width: 120px;
+        padding: var(--spacing-2) var(--spacing-4);
     }
 
     .lang-item:hover {

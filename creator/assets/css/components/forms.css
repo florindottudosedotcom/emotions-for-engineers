@@ -409,13 +409,14 @@ input[type="radio"]:focus {
 .lang-item {
     display: flex;
     align-items: center;
-    padding: var(--spacing-2);
+    padding: var(--spacing-2) var(--spacing-4);
     border-radius: var(--radius-small);
     background-color: transparent !important;
     transition: background-color var(--transition-fast);
     min-height: 44px;
     height: 44px;
-    border: 1px solid var(--border-light);
+    border: none;
+    min-width: 120px;
 }
 
 .lang-item:hover {
