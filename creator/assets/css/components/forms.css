@@ -411,12 +411,14 @@ input[type="radio"]:focus {
     align-items: center;
     padding: var(--spacing-2);
     border-radius: var(--radius-small);
-    background-color: var(--background-tertiary);
+    background-color: transparent;
     transition: background-color var(--transition-fast);
+    min-height: 44px;
+    border: 1px solid var(--border-light);
 }
 
 .lang-item:hover {
-    background-color: var(--background-secondary);
+    background-color: var(--background-tertiary);
 }
 
 .lang-item input[type="checkbox"] {

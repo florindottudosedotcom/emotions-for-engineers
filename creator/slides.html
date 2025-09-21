@@ -27,10 +27,6 @@
             flex-wrap: wrap;
         }
 
-        .provider-info-container {
-            flex: 1;
-            min-width: 300px;
-        }
 
         .provider-tab {
             padding: 12px 24px;
@@ -162,29 +158,6 @@
             gap: 1rem;
         }
 
-        .provider-info {
-            text-align: right;
-            margin-bottom: 1rem;
-            padding: 0 1.5rem;
-            background: #f8f9ff;
-            border-radius: 8px;
-            display: none;
-        }
-
-        .provider-info.active {
-            display: block;
-        }
-
-        .provider-info h3 {
-            margin: 0 0 0.5rem 0;
-            color: #667eea;
-        }
-
-        .provider-info p {
-            margin: 0;
-            color: #666;
-            font-size: 0.9em;
-        }
 
         .back-button {
             display: inline-flex;
@@ -307,23 +280,6 @@
                     </div>
                 </div>
 
-                <div class="provider-info-container">
-                    <div class="provider-info" data-info="puter">
-                        <p><span class="icon-rocket-css"></span> <strong>Free AI Slides</strong> - Access 200+ AI models completely free. No API keys, no setup - just start creating amazing presentations!</p>
-                    </div>
-
-                    <div class="provider-info" data-info="cloud">
-                        <p><span class="icon-cloud-css"></span> <strong>Cloud AI Slides</strong> - Create presentations with OpenAI, Anthropic, or Google AI. Advanced visual generation capabilities with API access.</p>
-                    </div>
-
-                    <div class="provider-info" data-info="webllm">
-                        <p><span class="icon-brain-css"></span> <strong>WebLLM Slides</strong> - Generate slides entirely in your browser. No API keys needed, works offline with local AI models.</p>
-                    </div>
-
-                    <div class="provider-info" data-info="ollama">
-                        <p><span class="icon-desktop-css"></span> <strong>Ollama Slides</strong> - Use your local Ollama server for slide generation. Complete privacy with local AI processing.</p>
-                    </div>
-                </div>
             </div>
         </div>
 
@@ -337,7 +293,6 @@
 
     <script>
         const providerTabs = document.querySelectorAll('.provider-tab');
-        const providerInfos = document.querySelectorAll('.provider-info');
         const creatorContainer = document.getElementById('creator-container');
 
         const providerUrls = {
@@ -401,10 +356,6 @@
                 tab.classList.toggle('active', tab.dataset.provider === provider);
             });
 
-            // Update info states
-            providerInfos.forEach(info => {
-                info.classList.toggle('active', info.dataset.info === provider);
-            });
 
             // Load provider in iframe
             const iframe = document.createElement('iframe');

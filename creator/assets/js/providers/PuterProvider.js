@@ -101,10 +101,6 @@ export class PuterProvider extends BaseProvider {
             this.appState.set('puterModel', this.currentModel);
         }
 
-        this.updateConnectionStatus(
-            `✅ Ready with ${modelName}`,
-            'success'
-        );
 
         // Save state if available
         if (this.appState && typeof this.appState.save === 'function') {
@@ -114,10 +110,6 @@ export class PuterProvider extends BaseProvider {
 
     updateProviderStatus() {
         const modelName = this.getModelDisplayName(this.currentModel);
-        this.updateConnectionStatus(
-            `✅ Ready with ${modelName}`,
-            'success'
-        );
         this.isConnected = true;
     }
 

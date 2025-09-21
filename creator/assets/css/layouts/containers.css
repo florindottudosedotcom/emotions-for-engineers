@@ -8,6 +8,7 @@
    ======================================== */
 .container {
     width: 100%;
+    max-width: none;
     margin: 0 auto;
     padding: 0 var(--spacing-4);
     box-sizing: border-box;
@@ -69,8 +70,9 @@
     background-color: var(--background-secondary);
     min-height: 100vh;
     padding: var(--spacing-8) var(--spacing-4);
-    max-width: 900px;
-    margin: var(--spacing-8) auto;
+    max-width: none;
+    width: 100%;
+    margin: 0;
     box-sizing: border-box;
 }
 
@@ -483,6 +485,56 @@
         max-width: 600px;
         padding: var(--spacing-8);
     }
+}
+
+/* ========================================
+   EDITOR SPECIFIC STYLES
+   ======================================== */
+
+/* Toastui Editor Full Width */
+.toastui-editor,
+.toastui-editor-contents,
+.toastui-editor-main,
+.toastui-editor-defaultUI,
+.ProseMirror {
+    width: 100% !important;
+    max-width: none !important;
+}
+
+.toastui-editor-defaultUI {
+    margin: 0 !important;
+}
+
+/* Chapter tabs should be visible */
+.tab-nav,
+.chapter-tabs-container .tab-nav {
+    display: flex !important;
+    background-color: var(--background-tertiary);
+    border-bottom: 1px solid var(--border-light);
+    margin-bottom: var(--spacing-4);
+    padding: 0;
+    border-radius: var(--radius-medium) var(--radius-medium) 0 0;
+}
+
+.tab-nav .tab {
+    padding: var(--spacing-2) var(--spacing-4);
+    background-color: var(--surface);
+    border: 1px solid var(--border-light);
+    border-bottom: none;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    margin-right: 2px;
+    border-radius: var(--radius-small) var(--radius-small) 0 0;
+}
+
+.tab-nav .tab.active {
+    background-color: var(--primary-color);
+    color: white;
+    border-color: var(--primary-color);
+}
+
+.tab-nav .tab:hover:not(.active) {
+    background-color: var(--background-tertiary);
 }
 
 /* ========================================

@@ -77,10 +77,6 @@ export class OllamaProvider extends BaseProvider {
 
     updateProviderStatus() {
         if (this.currentModel && this.isConnected) {
-            this.updateConnectionStatus(
-                `✅ Ready with ${this.currentModel}`,
-                'success'
-            );
         } else if (this.availableModels.length === 0) {
             this.updateConnectionStatus(
                 '⚠ No Ollama models found. Please install some models first.',

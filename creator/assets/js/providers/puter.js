@@ -59,7 +59,6 @@ export const PuterProvider = {
             const modelName = this.getModelDisplayName(appState.PUTER_MODEL);
 
             if (window.UI && window.UI.updateConnectionStatus) {
-                window.UI.updateConnectionStatus(`✅ Ready with ${modelName}`, 'success');
             }
 
             if (window.stateModule && window.stateModule.saveState) {
@@ -109,7 +108,6 @@ export const PuterProvider = {
         const modelName = this.getModelDisplayName(appState.PUTER_MODEL);
 
         if (window.UI && window.UI.updateConnectionStatus) {
-            window.UI.updateConnectionStatus(`✅ Ready with ${modelName}`, 'success');
         }
     },
 

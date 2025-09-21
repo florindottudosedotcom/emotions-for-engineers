@@ -25,10 +25,6 @@
             flex-wrap: wrap;
         }
 
-        .provider-info-container {
-            flex: 1;
-            min-width: 300px;
-        }
 
         .provider-tab {
             padding: 12px 24px;
@@ -160,29 +156,6 @@
             gap: 1rem;
         }
 
-        .provider-info {
-            text-align: right;
-            margin-bottom: 1rem;
-            padding: 0 1.5rem;
-            background: #f8f9ff;
-            border-radius: 8px;
-            display: none;
-        }
-
-        .provider-info.active {
-            display: block;
-        }
-
-        .provider-info h3 {
-            margin: 0 0 0.5rem 0;
-            color: #667eea;
-        }
-
-        .provider-info p {
-            margin: 0;
-            color: #666;
-            font-size: 0.9em;
-        }
 
         .back-button {
             display: inline-flex;
@@ -324,27 +297,6 @@
                     </div>
                 </div>
 
-                <div class="provider-info-container">
-                    <div class="provider-info" data-info="puter">
-                        <h3><span class="icon-rocket-css"></span> Free AI Courses</h3>
-                        <p>Access 200+ AI models completely free. No API keys, no setup - just start creating amazing courses!</p>
-                    </div>
-
-                    <div class="provider-info" data-info="cloud">
-                        <h3><span class="icon-cloud-css"></span> Cloud AI</h3>
-                        <p>Use OpenAI, Anthropic, or Google AI APIs. Requires API keys but offers the most advanced models.</p>
-                    </div>
-
-                    <div class="provider-info" data-info="webllm">
-                        <h3><span class="icon-brain-css"></span> WebLLM</h3>
-                        <p>Run AI models directly in your browser. No API keys needed, but requires modern browser and good hardware.</p>
-                    </div>
-
-                    <div class="provider-info" data-info="ollama">
-                        <h3><span class="icon-desktop-css"></span> Ollama</h3>
-                        <p>Use local Ollama server. Requires Ollama installation but offers complete privacy and control.</p>
-                    </div>
-                </div>
             </div>
         </div>
 
@@ -358,7 +310,6 @@
 
     <script>
         const providerTabs = document.querySelectorAll('.provider-tab');
-        const providerInfos = document.querySelectorAll('.provider-info');
         const creatorContainer = document.getElementById('creator-container');
 
         const providerUrls = {
@@ -422,10 +373,6 @@
                 tab.classList.toggle('active', tab.dataset.provider === provider);
             });
 
-            // Update info states
-            providerInfos.forEach(info => {
-                info.classList.toggle('active', info.dataset.info === provider);
-            });
 
             // Load provider in iframe
             const iframe = document.createElement('iframe');
