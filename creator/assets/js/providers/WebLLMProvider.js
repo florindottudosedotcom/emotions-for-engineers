@@ -50,12 +50,36 @@ export class WebLLMProvider extends BaseProvider {
     }
 
     async onInit() {
-        // Load WebLLM module
-        try {
-            this.webllm = await import("https://esm.run/@mlc-ai/web-llm@0.2.46");
-        } catch (error) {
-            logger.error('Failed to load WebLLM module:', error);
-            throw new Error('Failed to load WebLLM module');
+        // Show loading message
+        this.updateConnectionStatus('Loading WebLLM library...', 'info');
+
+        // Load WebLLM module with fallbacks
+        const webllmUrls = [
+            "https://cdn.jsdelivr.net/npm/@mlc-ai/web-llm@0.2.46/+esm",
+            "https://unpkg.com/@mlc-ai/web-llm@0.2.46/dist/index.js",
+            "https://esm.run/@mlc-ai/web-llm@0.2.46"
+        ];
+
+        let lastError;
+        for (const url of webllmUrls) {
+            try {
+                logger.info(`Attempting to load WebLLM from: ${url}`);
+                this.updateConnectionStatus(`Loading WebLLM from ${url.split('/')[2]}...`, 'info');
+                this.webllm = await import(url);
+                logger.info('WebLLM module loaded successfully');
+                break;
+            } catch (error) {
+                logger.warn(`Failed to load WebLLM from ${url}:`, error.message);
+                lastError = error;
+                continue;
+            }
+        }
+
+        if (!this.webllm) {
+            const errorMsg = 'Failed to load WebLLM library. This may be due to network restrictions or CSP policies. Try refreshing or use a different provider.';
+            this.updateConnectionStatus(errorMsg, 'error');
+            logger.error('Failed to load WebLLM module from all sources:', lastError);
+            throw new Error('Failed to load WebLLM module from any CDN source');
         }
 
         // Cache DOM elements

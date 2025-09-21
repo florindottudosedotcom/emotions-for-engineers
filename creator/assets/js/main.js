@@ -94,9 +94,19 @@ class CreatorApp {
             // Fallback to cloud provider
             if (providerType !== 'cloud') {
                 logger.info('Falling back to cloud provider');
-                const cloudModule = await import('./providers/CloudProvider.js');
-                this.currentProvider = new cloudModule.CloudProvider();
-                appState.set('currentProvider', 'cloud');
+                try {
+                    const cloudModule = await import('./providers/CloudProvider.js');
+                    this.currentProvider = new cloudModule.CloudProvider();
+                    appState.set('currentProvider', 'cloud');
+
+                    // Show user-friendly message about fallback
+                    setTimeout(() => {
+                        this.showError(`${providerType} provider failed to load. Switched to Cloud AI provider. You can try refreshing to retry ${providerType}.`);
+                    }, 1000);
+                } catch (fallbackError) {
+                    logger.error('Fallback to cloud provider also failed:', fallbackError);
+                    throw new Error(`Both ${providerType} and cloud providers failed to load`);
+                }
             } else {
                 throw error;
             }
