@@ -438,12 +438,13 @@ input[type="checkbox"] { margin-right: 0.5rem; }
     display: flex;
     border-bottom: none;
     margin-bottom: 0;
-    margin-top: var(--spacing-4);
+    margin-top: 0;
     background-color: #f8f9fa;
     border-radius: 8px 8px 0 0;
     overflow-x: auto; /* Allow horizontal scrolling for many tabs */
     scrollbar-width: thin;
-    width: auto;
+    width: auto !important;
+    max-width: fit-content !important;
     justify-content: flex-start;
 }
 
