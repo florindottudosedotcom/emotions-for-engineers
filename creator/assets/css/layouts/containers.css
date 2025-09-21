@@ -510,7 +510,7 @@
 .creator-frame,
 .chapter-editor {
     width: 100% !important;
-    min-height: 800px !important;
+    min-height: 500px !important;
     border: none;
     background: transparent;
 }
@@ -524,6 +524,8 @@
     margin-bottom: var(--spacing-4);
     padding: 0;
     border-radius: var(--radius-medium) var(--radius-medium) 0 0;
+    justify-content: flex-start;
+    align-items: stretch;
 }
 
 .tab-nav .tab {
@@ -545,6 +547,50 @@
 
 .tab-nav .tab:hover:not(.active) {
     background-color: var(--background-tertiary);
+}
+
+/* Chapter tab specific styling */
+.chapter-tab {
+    display: inline-flex;
+    align-items: center;
+    padding: var(--spacing-2) var(--spacing-4);
+    background-color: var(--surface);
+    border: 1px solid var(--border-light);
+    border-bottom: none;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    margin-right: 2px;
+    border-radius: var(--radius-small) var(--radius-small) 0 0;
+    font-size: var(--font-size-sm);
+    font-weight: var(--font-weight-medium);
+    white-space: nowrap;
+    position: relative;
+    width: auto;
+    min-width: fit-content;
+}
+
+.chapter-tab.active {
+    background-color: var(--text-primary);
+    color: var(--surface);
+    border-color: var(--text-primary);
+    z-index: 1;
+}
+
+.chapter-tab:hover:not(.active) {
+    background-color: var(--background-tertiary);
+}
+
+.chapter-tab .remove-chapter {
+    margin-left: var(--spacing-2);
+    color: inherit;
+    font-weight: bold;
+    cursor: pointer;
+    opacity: 0.7;
+    transition: opacity 0.2s ease;
+}
+
+.chapter-tab .remove-chapter:hover {
+    opacity: 1;
 }
 
 /* ========================================
