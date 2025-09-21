@@ -401,7 +401,7 @@ input[type="radio"]:focus {
    ======================================== */
 .lang-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+    grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
     gap: var(--spacing-4);
     margin: var(--spacing-4) 0;
 }
@@ -416,7 +416,7 @@ input[type="radio"]:focus {
     min-height: 44px;
     height: 44px;
     border: none;
-    min-width: 120px;
+    min-width: 140px;
 }
 
 .lang-item:hover {

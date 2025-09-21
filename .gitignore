@@ -5,4 +5,29 @@ site/
 venv/
 __pycache__/
 *.pyc
+
+# Node.js
+node_modules/
+npm-debug.log*
+package-lock.json
+
+# Screenshot automation
+screenshots/
+temp-screenshot-script.cjs
+
+# Logs
+*.log
+
+# OS generated files
 .DS_Store
+._*
+Thumbs.db
+
+# IDE files
+.vscode/
+.idea/
+*.swp
+*~
+
+# Environment variables
+.env
