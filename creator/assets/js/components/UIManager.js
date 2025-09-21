@@ -417,13 +417,21 @@ export class UIManager {
         });
         this.editorInstances = {};
 
+        // Clear course name and description fields since they'll be auto-generated
+        if (this.dom.courseNameInput) {
+            this.dom.courseNameInput.value = '';
+        }
+        if (this.dom.courseDescTextarea) {
+            this.dom.courseDescTextarea.value = '';
+        }
+
         // Reset active chapter
         this.activeChapter = 0;
 
         // Re-create the add chapter button
         this.createAddChapterTab();
 
-        logger.debug('All chapters cleared');
+        logger.debug('All chapters and course details cleared');
     }
 
     destroy() {

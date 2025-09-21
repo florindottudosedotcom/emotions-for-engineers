@@ -158,9 +158,30 @@ Please provide an enhanced version that maintains the original intent but adds e
         const startTime = performance.now();
         this.updateProgress(0, 'Initializing course generation...');
 
+        // Generate course name and description if not provided
+        if (!courseData.name || !courseData.description) {
+            this.updateProgress(5, 'Generating course name and description...');
+
+            if (!courseData.name) {
+                courseData.name = await this.generateCourseName(courseData.masterPrompt);
+                // Update the input field
+                if (this.dom.courseNameInput) {
+                    this.dom.courseNameInput.value = courseData.name;
+                }
+            }
+
+            if (!courseData.description) {
+                courseData.description = await this.generateCourseDescription(courseData.masterPrompt, courseData.name);
+                // Update the textarea
+                if (this.dom.courseDescTextarea) {
+                    this.dom.courseDescTextarea.value = courseData.description;
+                }
+            }
+        }
+
         const chapters = [];
-        const totalSteps = courseData.numChapters * 2; // Title + Content for each chapter
-        let currentStep = 0;
+        const totalSteps = courseData.numChapters * 2 + 1; // Name/Desc + Title + Content for each chapter
+        let currentStep = 1; // Start at 1 since we've done the name/description step
 
         for (let i = 0; i < courseData.numChapters; i++) {
             this.updateProgress(
@@ -511,6 +532,29 @@ Generated with [Emotions for Engineers Course Creator](https://github.com/user/e
 
     delay(ms) {
         return new Promise(resolve => setTimeout(resolve, ms));
+    }
+
+    async generateCourseName(masterPrompt) {
+        const prompt = `Based on this course prompt, generate a clear, concise course title (maximum 10 words):
+
+Course Prompt: ${masterPrompt}
+
+Generate only the course title, no additional text:`;
+
+        const name = await this.provider.generateText(prompt, { maxTokens: 50 });
+        return name.trim().replace(/^["']|["']$/g, ''); // Remove quotes if present
+    }
+
+    async generateCourseDescription(masterPrompt, courseName) {
+        const prompt = `Create a brief, engaging course description (2-3 sentences) for this course:
+
+Course Title: ${courseName}
+Course Prompt: ${masterPrompt}
+
+Write a description that explains what students will learn and the main topics covered. Generate only the description, no additional text:`;
+
+        const description = await this.provider.generateText(prompt, { maxTokens: 200 });
+        return description.trim().replace(/^["']|["']$/g, ''); // Remove quotes if present
     }
 
     isCourseEmpty() {
