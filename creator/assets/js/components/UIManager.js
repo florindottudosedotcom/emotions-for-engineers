@@ -20,6 +20,13 @@ export class UIManager {
             this.setupChapterManagement();
             this.setupTabSwitching();
             this.setupStatusDisplays();
+
+            // Automatically add a chapter if none exist
+            if (this.getChapterCount() === 0) {
+                this.addChapter();
+                logger.debug('Automatically added first chapter on initialization');
+            }
+
             this.isInitialized = true;
             logger.info('UI Manager initialized');
         } catch (error) {
@@ -29,11 +36,8 @@ export class UIManager {
     }
 
     setupChapterManagement() {
-        if (this.dom.addChapterBtn) {
-            Events.on(this.dom.addChapterBtn, 'click', () => {
-                this.addChapter();
-            });
-        }
+        // Create modern + button in tab bar
+        this.createAddChapterTab();
     }
 
     setupTabSwitching() {
@@ -64,6 +68,8 @@ export class UIManager {
         this.createChapterContent(chapterIndex, chapterId);
         this.createChapterEditor(chapterId);
         this.switchToChapter(chapterIndex);
+        this.updateRemoveButtonsVisibility();
+        this.createAddChapterTab(); // Ensure + button is always at the end
 
         logger.debug(`Added chapter ${chapterIndex}`);
     }
@@ -203,6 +209,8 @@ export class UIManager {
             this.switchToChapter(0);
         }
 
+        this.updateRemoveButtonsVisibility();
+        this.createAddChapterTab(); // Ensure + button is always at the end
         logger.debug(`Removed chapter ${index}`);
     }
 
@@ -354,6 +362,41 @@ export class UIManager {
             this.dom.downloadZipLink.download = '';
             DOM.addClass(this.dom.downloadSection, 'hidden');
         }
+    }
+
+    createAddChapterTab() {
+        if (!this.dom.chapterTabsContainer) return;
+
+        // Remove existing add button if it exists
+        const existingAddBtn = DOM.query('.add-chapter-tab');
+        if (existingAddBtn) {
+            existingAddBtn.remove();
+        }
+
+        const addTab = DOM.create('button', {
+            className: 'add-chapter-tab',
+            type: 'button',
+            title: 'Add New Chapter'
+        }, '+');
+
+        Events.on(addTab, 'click', () => {
+            this.addChapter();
+        });
+
+        this.dom.chapterTabsContainer.appendChild(addTab);
+    }
+
+    updateRemoveButtonsVisibility() {
+        const chapterCount = this.getChapterCount();
+        const removeButtons = DOM.queryAll('.remove-chapter');
+
+        removeButtons.forEach(button => {
+            if (chapterCount <= 1) {
+                button.style.display = 'none';
+            } else {
+                button.style.display = '';
+            }
+        });
     }
 
     destroy() {

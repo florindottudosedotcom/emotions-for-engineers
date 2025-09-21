@@ -162,7 +162,7 @@
     border-radius: 0 var(--radius-medium) var(--radius-medium) var(--radius-medium);
     border: none;
     background-color: var(--surface);
-    padding: var(--spacing-4) 0;
+    padding: 0 0 var(--spacing-4) 0;
 }
 
 .chapter-header {
@@ -414,7 +414,7 @@
     }
 
     .chapter-content {
-        padding: var(--spacing-4) 0;
+        padding: 0 0 var(--spacing-4) 0;
     }
 
     .chapter-header {

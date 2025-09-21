@@ -121,7 +121,6 @@ class CreatorApp {
         this.dom.courseForm = DOM.query('#course-form');
         this.dom.chapterTabsContainer = DOM.query('#chapter-tabs-container');
         this.dom.chapterContentContainer = DOM.query('#chapter-content-container');
-        this.dom.addChapterBtn = DOM.query('#add-chapter');
         this.dom.downloadSection = DOM.query('#download-section');
         this.dom.downloadZipLink = DOM.query('#download-zip');
 
@@ -232,12 +231,7 @@ class CreatorApp {
             });
         }
 
-        // Chapter button management is handled by UIManager
-        // if (this.dom.addChapterBtn) {
-        //     Events.on(this.dom.addChapterBtn, 'click', () => {
-        //         this.modules.ui?.addChapter();
-        //     });
-        // }
+        // Chapter management is handled by UIManager
 
         if (this.dom.clearFormBtn) {
             Events.on(this.dom.clearFormBtn, 'click', clearState);

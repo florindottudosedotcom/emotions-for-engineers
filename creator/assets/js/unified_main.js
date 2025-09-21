@@ -76,7 +76,6 @@ document.addEventListener('DOMContentLoaded', async () => {
     dom.courseForm = document.getElementById('course-form');
     dom.chapterTabsContainer = document.getElementById('chapter-tabs-container');
     dom.chapterContentContainer = document.getElementById('chapter-content-container');
-    dom.addChapterBtn = document.getElementById('add-chapter');
     dom.downloadSection = document.getElementById('download-section');
     dom.downloadZipLink = document.getElementById('download-zip');
     dom.aiStatus = document.getElementById('ai-status');

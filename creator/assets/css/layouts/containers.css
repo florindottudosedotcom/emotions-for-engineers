@@ -599,10 +599,49 @@
     opacity: 1;
 }
 
+/* Add chapter tab (+ button) styling */
+.add-chapter-tab {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: var(--spacing-2) var(--spacing-3);
+    background-color: transparent;
+    border: 1px dashed var(--border-light);
+    border-bottom: none;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    margin-right: 2px;
+    border-radius: var(--radius-small) var(--radius-small) 0 0;
+    font-size: var(--font-size-lg);
+    font-weight: var(--font-weight-bold);
+    color: var(--text-tertiary);
+    min-width: 40px;
+    width: 40px;
+    height: 36px;
+}
+
+.add-chapter-tab:hover {
+    background-color: var(--surface);
+    border-color: var(--border-primary);
+    color: var(--text-secondary);
+    border-style: solid;
+}
+
+.add-chapter-tab:focus {
+    outline: 2px solid var(--color-primary);
+    outline-offset: 2px;
+}
+
 /* Add gap between tabs and course description */
 .course-description,
-.chapter-tabs-container + * {
+.chapter-tabs-container + *:not(h1):not(h2):not(h3):not(h4):not(h5):not(h6) {
     margin-top: var(--spacing-4);
+}
+
+/* Remove gap between "Chapters" heading and tab navigation */
+h2 + .chapter-tabs-container,
+h2 + #chapter-tabs-container {
+    margin-top: 0;
 }
 
 /* Chapter content visibility - only show active chapter */
