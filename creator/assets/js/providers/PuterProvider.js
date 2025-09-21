@@ -184,6 +184,26 @@ export class PuterProvider extends BaseProvider {
                 ...options
             });
 
+            // Check if Puter.js returned an error response
+            if (response && response.success === false) {
+                logger.warn('Puter.js API returned error response:', response);
+                let errorMsg = 'Unknown Puter.js error';
+
+                if (response.error) {
+                    if (typeof response.error === 'string') {
+                        errorMsg = response.error;
+                    } else if (response.error.message) {
+                        errorMsg = response.error.message;
+                    } else {
+                        errorMsg = JSON.stringify(response.error);
+                    }
+                } else if (response.message) {
+                    errorMsg = response.message;
+                }
+
+                throw new Error(`Puter.js API error: ${errorMsg}`);
+            }
+
             // Handle different response formats from Puter.js
             let extractedText = '';
 
@@ -202,20 +222,67 @@ export class PuterProvider extends BaseProvider {
             } else if (response && typeof response.data === 'string') {
                 extractedText = response.data;
             } else {
-                logger.warn('Unexpected response format from Puter.js, using fallback');
-                extractedText = JSON.stringify(response);
+                logger.warn('Unexpected response format from Puter.js:', response);
+                throw new Error('Invalid response format from Puter.js API');
+            }
+
+            // Validate that we got actual content
+            if (!extractedText || extractedText.trim().length === 0) {
+                throw new Error('Received empty response from Puter.js API');
             }
 
             return extractedText;
         } catch (error) {
             logger.error('Puter.js generation error:', error);
 
+            // Extract error message safely
+            let errorMessage = 'Unknown error';
+            if (error && typeof error.message === 'string') {
+                errorMessage = error.message;
+            } else if (error && typeof error === 'string') {
+                errorMessage = error;
+            } else if (error && error.error) {
+                // Handle nested error objects
+                if (typeof error.error === 'string') {
+                    errorMessage = error.error;
+                } else if (error.error.message) {
+                    errorMessage = error.error.message;
+                } else {
+                    errorMessage = JSON.stringify(error.error);
+                }
+            } else if (error && typeof error === 'object') {
+                // Try to extract meaningful info from error object
+                if (error.code) {
+                    errorMessage = `Error ${error.code}: ${error.message || 'Unknown'}`;
+                } else if (error.status) {
+                    errorMessage = `HTTP ${error.status}: ${error.statusText || 'Request failed'}`;
+                } else {
+                    // Fallback to JSON representation
+                    try {
+                        errorMessage = JSON.stringify(error, null, 2);
+                    } catch (e) {
+                        errorMessage = 'Complex error object (cannot stringify)';
+                    }
+                }
+            } else if (error && error.toString && error.toString !== Object.prototype.toString) {
+                errorMessage = error.toString();
+            }
+
             // Provide user-friendly error message for auth issues
-            if (error.message && error.message.includes('auth')) {
+            if (errorMessage.toLowerCase().includes('auth')) {
                 throw new Error('Authentication required. Please allow the Puter.js popup to complete setup for free AI access.');
             }
 
-            throw new Error(`AI generation failed: ${error.message}`);
+            // Check for specific Puter.js error conditions
+            if (errorMessage.toLowerCase().includes('network')) {
+                throw new Error('Network connection error. Please check your internet connection and try again.');
+            }
+
+            if (errorMessage.toLowerCase().includes('quota') || errorMessage.toLowerCase().includes('limit')) {
+                throw new Error('API quota exceeded. Please try again later or check your Puter.js account limits.');
+            }
+
+            throw new Error(`AI generation failed: ${errorMessage}`);
         }
     }
 
@@ -246,7 +313,34 @@ export class PuterProvider extends BaseProvider {
             return fullContent;
         } catch (error) {
             logger.error('Puter.js streaming error:', error);
-            throw new Error(`AI generation failed: ${error.message}`);
+
+            // Extract error message safely
+            let errorMessage = 'Unknown error';
+            if (error && typeof error.message === 'string') {
+                errorMessage = error.message;
+            } else if (error && typeof error === 'string') {
+                errorMessage = error;
+            } else if (error && error.error) {
+                // Handle nested error objects
+                if (typeof error.error === 'string') {
+                    errorMessage = error.error;
+                } else if (error.error.message) {
+                    errorMessage = error.error.message;
+                } else {
+                    errorMessage = JSON.stringify(error.error);
+                }
+            } else if (error && typeof error === 'object') {
+                // Try to extract meaningful info from error object
+                try {
+                    errorMessage = JSON.stringify(error, null, 2);
+                } catch (e) {
+                    errorMessage = 'Complex error object (cannot stringify)';
+                }
+            } else if (error && error.toString && error.toString !== Object.prototype.toString) {
+                errorMessage = error.toString();
+            }
+
+            throw new Error(`AI streaming failed: ${errorMessage}`);
         }
     }
 

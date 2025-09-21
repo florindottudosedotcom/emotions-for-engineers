@@ -15,7 +15,7 @@ export class StateManager extends EventEmitter {
         this.watchers = new Map();
         this.persistenceKey = 'creator_app_state';
         this.autoSave = true;
-        this.saveDelay = 500; // Debounce save operations
+        this.saveDelay = 100; // Debounce save operations (reduced for better responsiveness)
         this.saveTimeout = null;
 
         // Load initial state
@@ -253,10 +253,15 @@ export class StateManager extends EventEmitter {
  */
 export class AppState extends StateManager {
     constructor() {
+        // Set the correct persistence key BEFORE calling super()
+        // This ensures loadPersistedState() uses the right key
         super();
         this.persistenceKey = 'course_creator_state';
 
-        // Initialize default state
+        // Re-load from the correct key now that persistenceKey is set
+        this.loadPersistedState();
+
+        // Initialize default state AFTER loading persisted data
         this.initializeDefaults();
     }
 
@@ -501,6 +506,16 @@ export function saveState() {
         appState.set('numChapters', parseInt(dom.numChaptersSelect.value));
     }
 
+    // Force immediate save after updating all form fields
+    appState.saveToStorage();
+
+    // Save selected languages
+    const languageCheckboxes = document.querySelectorAll('input[name="languages"]:checked');
+    const selectedLanguages = Array.from(languageCheckboxes).map(cb => cb.value);
+    if (selectedLanguages.length > 0) {
+        appState.set('selectedLanguages', selectedLanguages);
+    }
+
     // Save chapters data
     const chapters = [];
     const chapterElements = dom.chapterContentContainer?.children || [];
@@ -515,6 +530,10 @@ export function saveState() {
     }
     appState.set('chapters', chapters);
 
+    // Save provider-specific configurations
+    saveProviderConfiguration();
+
+
     logger.debug('State saved');
 }
 
@@ -523,7 +542,8 @@ export function loadState() {
 
     // Load form data from state
     if (dom.courseNameInput) {
-        dom.courseNameInput.value = appState.get('courseName', '');
+        const courseName = appState.get('courseName', '');
+        dom.courseNameInput.value = courseName;
     }
     if (dom.courseDescTextarea) {
         dom.courseDescTextarea.value = appState.get('courseDescription', '');
@@ -534,6 +554,21 @@ export function loadState() {
     if (dom.numChaptersSelect) {
         dom.numChaptersSelect.value = appState.get('numChapters', 5);
     }
+
+    // Load selected languages
+    const selectedLanguages = appState.get('selectedLanguages', ['en']);
+
+    // First, uncheck all language checkboxes
+    const allLanguageCheckboxes = document.querySelectorAll('input[name="languages"]');
+    allLanguageCheckboxes.forEach(cb => cb.checked = false);
+
+    // Then check the selected ones
+    selectedLanguages.forEach(lang => {
+        const checkbox = document.querySelector(`input[name="languages"][value="${lang}"]`);
+        if (checkbox) {
+            checkbox.checked = true;
+        }
+    });
 
     // Load chapters
     const chapters = appState.get('chapters', []);
@@ -569,7 +604,110 @@ export function loadState() {
         });
     }
 
+    // Load provider-specific configurations with a delay to ensure DOM is ready
+    setTimeout(() => {
+        loadProviderConfiguration();
+    }, 200);
+
     logger.debug('State loaded');
+}
+
+/**
+ * Save provider-specific configuration data
+ */
+function saveProviderConfiguration() {
+    const currentProvider = appState.get('currentProvider', 'cloud');
+
+    // Save provider-specific form data
+    const providerConfig = {};
+
+    // Save model selection if available
+    const modelSelect = document.querySelector('#model-select, select[name="model"], #model');
+    if (modelSelect && modelSelect.value) {
+        providerConfig.selectedModel = modelSelect.value;
+    }
+
+    // Save temperature setting if available
+    const temperatureInput = document.querySelector('#temperature, input[name="temperature"]');
+    if (temperatureInput && temperatureInput.value) {
+        providerConfig.temperature = parseFloat(temperatureInput.value);
+    }
+
+    // Save max tokens setting if available
+    const maxTokensInput = document.querySelector('#max-tokens, input[name="maxTokens"], input[name="max_tokens"]');
+    if (maxTokensInput && maxTokensInput.value) {
+        providerConfig.maxTokens = parseInt(maxTokensInput.value);
+    }
+
+    // Save other provider-specific inputs
+    const providerInputs = document.querySelectorAll('#provider-section input, #provider-section select, #provider-section textarea');
+    providerInputs.forEach(input => {
+        if (input.type === 'checkbox') {
+            providerConfig[input.name || input.id] = input.checked;
+        } else if (input.type === 'radio') {
+            if (input.checked) {
+                providerConfig[input.name || input.id] = input.value;
+            }
+        } else if (input.value && input.name !== 'api-key' && !input.classList.contains('api-key')) {
+            // Don't save API keys here (handled separately for security)
+            providerConfig[input.name || input.id] = input.value;
+        }
+    });
+
+    // Save provider configuration
+    if (Object.keys(providerConfig).length > 0) {
+        appState.setProviderConfig(currentProvider, providerConfig);
+    }
+}
+
+/**
+ * Load provider-specific configuration data
+ */
+function loadProviderConfiguration() {
+    const currentProvider = appState.get('currentProvider', 'cloud');
+    const providerConfig = appState.getProviderConfig(currentProvider);
+
+    if (Object.keys(providerConfig).length === 0) return;
+
+    // Restore model selection
+    if (providerConfig.selectedModel) {
+        const modelSelect = document.querySelector('#model-select, select[name="model"], #model');
+        if (modelSelect) {
+            modelSelect.value = providerConfig.selectedModel;
+        }
+    }
+
+    // Restore temperature setting
+    if (providerConfig.temperature !== undefined) {
+        const temperatureInput = document.querySelector('#temperature, input[name="temperature"]');
+        if (temperatureInput) {
+            temperatureInput.value = providerConfig.temperature;
+        }
+    }
+
+    // Restore max tokens setting
+    if (providerConfig.maxTokens !== undefined) {
+        const maxTokensInput = document.querySelector('#max-tokens, input[name="maxTokens"], input[name="max_tokens"]');
+        if (maxTokensInput) {
+            maxTokensInput.value = providerConfig.maxTokens;
+        }
+    }
+
+    // Restore other provider-specific settings
+    Object.entries(providerConfig).forEach(([key, value]) => {
+        const input = document.querySelector(`#${key}, [name="${key}"]`);
+        if (input) {
+            if (input.type === 'checkbox') {
+                input.checked = value;
+            } else if (input.type === 'radio') {
+                if (input.value === value) {
+                    input.checked = true;
+                }
+            } else if (typeof value === 'string' || typeof value === 'number') {
+                input.value = value;
+            }
+        }
+    });
 }
 
 export function clearState() {

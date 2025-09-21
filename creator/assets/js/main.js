@@ -41,8 +41,10 @@ class CreatorApp {
             // Set up event listeners
             this.setupEventListeners();
 
-            // Load saved state
-            this.loadApplicationState();
+            // Load saved state after DOM is ready
+            setTimeout(() => {
+                this.loadApplicationState();
+            }, 500);
 
             // Mark as initialized
             this.isInitialized = true;
@@ -155,6 +157,8 @@ class CreatorApp {
         // Make DOM available globally for legacy compatibility
         window.courseCreatorDom = this.dom;
 
+        console.log('🏗️ DOM caching complete. Elements found:', Object.keys(this.dom).filter(key => this.dom[key]).length);
+        console.log('📦 Cached DOM elements:', this.dom);
         logger.debug('DOM elements cached');
     }
 
@@ -184,6 +188,12 @@ class CreatorApp {
             window.UI = this.modules.ui;
             window.Course = this.modules.course;
             window.currentProvider = this.currentProvider;
+            window.saveState = saveState;
+            window.loadState = loadState;
+            window.debugState = () => {
+                console.log('Current state:', appState.getAll());
+                console.log('DOM cache:', this.dom);
+            };
 
             logger.debug('Modules initialized');
         } catch (error) {
@@ -244,6 +254,13 @@ class CreatorApp {
                 this.modules.course?.generateCourseFiles();
             });
         }
+
+        // Language selection changes
+        Events.on(document, 'change', 'input[name="languages"]', debouncedSave);
+
+        // Provider configuration changes
+        Events.on(document, 'change', '#provider-section input, #provider-section select', debouncedSave);
+        Events.on(document, 'input', '#provider-section input[type="text"], #provider-section input[type="number"], #provider-section textarea', debouncedSave);
 
         // State change listeners
         appState.on('stateChange', this.handleStateChange);
