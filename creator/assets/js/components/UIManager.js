@@ -21,10 +21,14 @@ export class UIManager {
             this.setupTabSwitching();
             this.setupStatusDisplays();
 
-            // Automatically add a chapter if none exist
+            // Automatically add a chapter if none exist and no saved state
             if (this.getChapterCount() === 0) {
-                this.addChapter();
-                logger.debug('Automatically added first chapter on initialization');
+                // Check if there's saved state with chapters
+                const savedChapters = window.appState?.get('chapters', []);
+                if (!savedChapters || savedChapters.length === 0) {
+                    this.addChapter();
+                    logger.debug('Automatically added first chapter on initialization');
+                }
             }
 
             this.isInitialized = true;
@@ -298,16 +302,6 @@ export class UIManager {
         });
     }
 
-    clearAllChapters() {
-        if (this.dom.chapterTabsContainer) {
-            this.dom.chapterTabsContainer.innerHTML = '';
-        }
-        if (this.dom.chapterContentContainer) {
-            this.dom.chapterContentContainer.innerHTML = '';
-        }
-        this.editorInstances = {};
-        this.activeChapter = 0;
-    }
 
     showMessage(message, type = 'info', duration = 3000) {
         const messageDiv = DOM.create('div', {
@@ -400,9 +394,10 @@ export class UIManager {
     }
 
     clearAllChapters() {
-        // Remove all chapter tabs
-        const tabs = DOM.queryAll('.chapter-tab');
-        tabs.forEach(tab => tab.remove());
+        // Remove all chapter tabs (including the + button)
+        if (this.dom.chapterTabsContainer) {
+            this.dom.chapterTabsContainer.innerHTML = '';
+        }
 
         // Remove all chapter content
         if (this.dom.chapterContentContainer) {

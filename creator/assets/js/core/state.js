@@ -573,35 +573,8 @@ export function loadState() {
     // Load chapters
     const chapters = appState.get('chapters', []);
     if (chapters.length > 0 && window.UI) {
-        // Clear existing chapters
-        if (dom.chapterContentContainer) {
-            dom.chapterContentContainer.innerHTML = '';
-        }
-
-        // Add chapters
-        chapters.forEach((chapter, index) => {
-            window.UI.addChapter();
-            const titleInput = dom.chapterContentContainer?.querySelector(`#chapter-${index} .chapter-title`);
-            if (titleInput) {
-                titleInput.value = chapter.title || '';
-            }
-
-            // Set editor content after a delay to ensure editor is ready
-            setTimeout(() => {
-                const editorInstance = window.UI.editorInstances?.[`chapter-${index}`];
-                if (editorInstance && chapter.content) {
-                    editorInstance.content = chapter.content;
-                    if (editorInstance.isReady) {
-                        editorInstance.iframe.contentWindow.postMessage({
-                            type: 'set-content',
-                            content: chapter.content
-                        }, '*');
-                    } else {
-                        editorInstance.pendingContent = chapter.content;
-                    }
-                }
-            }, 100);
-        });
+        // Use UIManager's setChapterData method to properly handle chapter loading
+        window.UI.setChapterData(chapters);
     }
 
     // Load provider-specific configurations with a delay to ensure DOM is ready
@@ -720,16 +693,10 @@ export function clearState() {
             dom.courseForm.reset();
         }
 
-        // Clear chapters
-        if (dom.chapterContentContainer) {
-            dom.chapterContentContainer.innerHTML = '';
-        }
-        if (dom.chapterTabsContainer) {
-            dom.chapterTabsContainer.innerHTML = '';
-        }
-
-        // Add default chapter
+        // Clear all chapters using UIManager's method
         if (window.UI) {
+            window.UI.clearAllChapters();
+            // clearAllChapters() already adds the + button, but we need at least one chapter
             window.UI.addChapter();
         }
 
