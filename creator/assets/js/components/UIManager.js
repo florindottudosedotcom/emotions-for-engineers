@@ -133,7 +133,7 @@ export class UIManager {
         if (!editorContainer) return;
 
         const iframe = DOM.create('iframe', {
-            src: './editor.html',
+            src: `./editor.html?id=${chapterId}`,
             className: 'chapter-editor',
             'data-chapter-id': chapterId
         });

@@ -23,7 +23,13 @@
     <script src="assets/js/toastui-editor-all.min.js"></script>
     <script>
         const urlParams = new URLSearchParams(window.location.search);
-        const chapterId = urlParams.get('id');
+        let chapterId = urlParams.get('id');
+
+        // Fallback if no ID provided
+        if (!chapterId) {
+            chapterId = 'unknown-chapter';
+            console.warn('Editor: No chapter ID provided in URL parameters');
+        }
 
         // Detect system dark mode preference
         const isDarkMode = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
@@ -36,9 +42,10 @@
             theme: isDarkMode ? 'dark' : 'light',
             events: {
                 change: () => {
+                    const content = editor.getMarkdown();
                     parent.postMessage({
                         type: 'content-changed',
-                        content: editor.getMarkdown(),
+                        content: content,
                         id: chapterId
                     }, '*');
                 }
@@ -73,9 +80,15 @@
         window.addEventListener('message', (event) => {
             if (event.data.type === 'set-content') {
                 editor.setMarkdown(event.data.content || '');
+            } else if (event.data.type === 'init') {
+                // Allow parent to override the chapter ID
+                if (event.data.id) {
+                    chapterId = event.data.id;
+                }
             }
         });
 
+        // Send ready message with chapter ID
         parent.postMessage({ type: 'editor-ready', id: chapterId }, '*');
     </script>
 </body>
