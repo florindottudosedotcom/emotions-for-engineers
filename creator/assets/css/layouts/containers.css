@@ -704,3 +704,55 @@ h2 + #chapter-tabs-container {
 .overflow-y-hidden { overflow-y: hidden; }
 .overflow-y-auto { overflow-y: auto; }
 .overflow-y-scroll { overflow-y: scroll; }
+
+/* ========================================
+   USAGE WARNING COMPONENT
+   ======================================== */
+
+/* Usage warning styling for API limit notifications */
+.usage-warning {
+    position: relative;
+    transition: opacity var(--transition-fast);
+    z-index: var(--z-overlay);
+    font-family: var(--font-primary);
+    font-weight: var(--font-weight-medium);
+    display: flex;
+    align-items: flex-start;
+    gap: var(--spacing-2);
+}
+
+.usage-warning::before {
+    content: '';
+    flex-shrink: 0;
+    width: 4px;
+    height: 100%;
+    background: rgba(255, 255, 255, 0.5);
+    border-radius: 2px;
+    margin-right: var(--spacing-2);
+}
+
+/* Warning animation on insert */
+@keyframes warningSlideIn {
+    from {
+        opacity: 0;
+        transform: translateY(-10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.usage-warning {
+    animation: warningSlideIn var(--transition-normal) ease-out;
+}
+
+/* Mobile responsive adjustments */
+@media (max-width: 767px) {
+    .usage-warning {
+        font-size: 0.85em;
+        padding: var(--spacing-3) var(--spacing-4) !important;
+        margin: var(--spacing-2) 0 !important;
+        border-radius: var(--radius-medium) !important;
+    }
+}

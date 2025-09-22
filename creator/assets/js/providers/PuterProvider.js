@@ -25,6 +25,12 @@ export class PuterProvider extends BaseProvider {
 
         this.currentModel = this.config.defaultModel;
         this.puterLoaded = false;
+
+        // Usage tracking and limits
+        this.usageTracker = this.initializeUsageTracking();
+        this.dailyRequestLimit = 50; // Conservative estimate based on free tier
+        this.lastLimitCheck = null;
+        this.limitWarningShown = false;
     }
 
     async getTemplate() {
@@ -108,9 +114,156 @@ export class PuterProvider extends BaseProvider {
         }
     }
 
+    initializeUsageTracking() {
+        const today = new Date().toDateString();
+        const storedData = localStorage.getItem('puterUsageTracker');
+
+        if (storedData) {
+            try {
+                const parsed = JSON.parse(storedData);
+                if (parsed.date === today) {
+                    return parsed;
+                }
+            } catch (e) {
+                logger.warn('Failed to parse stored usage data:', e);
+            }
+        }
+
+        // Reset for new day or first time
+        const newTracker = {
+            date: today,
+            requestCount: 0,
+            lastRequest: null,
+            errors: []
+        };
+        this.saveUsageData(newTracker);
+        return newTracker;
+    }
+
+    saveUsageData(data) {
+        try {
+            localStorage.setItem('puterUsageTracker', JSON.stringify(data));
+        } catch (e) {
+            logger.warn('Failed to save usage data:', e);
+        }
+    }
+
+    async checkUsageLimits() {
+        const usage = this.usageTracker;
+        const warningsShown = {
+            approaching: usage.requestCount >= (this.dailyRequestLimit * 0.8), // 80% warning
+            nearLimit: usage.requestCount >= (this.dailyRequestLimit * 0.9),   // 90% warning
+            atLimit: usage.requestCount >= this.dailyRequestLimit
+        };
+
+        if (warningsShown.atLimit) {
+            const error = new Error(`Daily limit reached (${this.dailyRequestLimit} requests). Puter.js has free usage limits. Try again tomorrow or consider using a different AI provider.`);
+            error.code = 'DAILY_LIMIT_EXCEEDED';
+            throw error;
+        }
+
+        if (warningsShown.nearLimit && !this.limitWarningShown) {
+            this.showLimitWarning(usage.requestCount, this.dailyRequestLimit, 'near');
+            this.limitWarningShown = true;
+        } else if (warningsShown.approaching && !this.limitWarningShown) {
+            this.showLimitWarning(usage.requestCount, this.dailyRequestLimit, 'approaching');
+        }
+
+        return {
+            canProceed: !warningsShown.atLimit,
+            warningLevel: warningsShown.nearLimit ? 'critical' : warningsShown.approaching ? 'warning' : 'ok',
+            usage: usage.requestCount,
+            limit: this.dailyRequestLimit
+        };
+    }
+
+    showLimitWarning(current, limit, level) {
+        const percentage = Math.round((current / limit) * 100);
+        const remaining = limit - current;
+
+        let message, bgColor;
+        if (level === 'near') {
+            message = `⚠️ Usage Warning: You've used ${current}/${limit} requests (${percentage}%) today. Only ${remaining} requests remaining before hitting daily limits.`;
+            bgColor = '#f59e0b'; // amber
+        } else {
+            message = `📊 Usage Notice: You've used ${current}/${limit} requests (${percentage}%) today. ${remaining} requests remaining.`;
+            bgColor = '#3b82f6'; // blue
+        }
+
+        // Show warning in UI
+        this.displayUsageWarning(message, bgColor);
+
+        // Log for debugging
+        logger.warn(`Puter usage ${level}:`, { current, limit, percentage, remaining });
+    }
+
+    displayUsageWarning(message, bgColor) {
+        // Create or update warning element
+        let warningEl = document.getElementById('puter-usage-warning');
+        if (!warningEl) {
+            warningEl = DOM.create('div', {
+                id: 'puter-usage-warning',
+                className: 'usage-warning'
+            });
+
+            // Insert after provider section
+            const providerSection = DOM.query('#provider-section');
+            if (providerSection && providerSection.parentNode) {
+                providerSection.parentNode.insertBefore(warningEl, providerSection.nextSibling);
+            }
+        }
+
+        warningEl.style.cssText = `
+            background: ${bgColor};
+            color: white;
+            padding: 12px 16px;
+            margin: 10px 0;
+            border-radius: 8px;
+            font-size: 0.9em;
+            line-height: 1.4;
+            border-left: 4px solid rgba(255,255,255,0.3);
+        `;
+        warningEl.textContent = message;
+
+        // Auto-hide after 10 seconds
+        setTimeout(() => {
+            if (warningEl && warningEl.parentNode) {
+                warningEl.style.opacity = '0';
+                setTimeout(() => {
+                    if (warningEl && warningEl.parentNode) {
+                        warningEl.parentNode.removeChild(warningEl);
+                    }
+                }, 500);
+            }
+        }, 10000);
+    }
+
+    recordRequest() {
+        this.usageTracker.requestCount++;
+        this.usageTracker.lastRequest = new Date().toISOString();
+        this.saveUsageData(this.usageTracker);
+    }
+
+    recordError(error) {
+        this.usageTracker.errors.push({
+            timestamp: new Date().toISOString(),
+            error: error.message || error.toString(),
+            code: error.code || 'unknown'
+        });
+        this.saveUsageData(this.usageTracker);
+    }
+
     updateProviderStatus() {
         const modelName = this.getModelDisplayName(this.currentModel);
+        const usage = this.usageTracker;
+        const percentage = Math.round((usage.requestCount / this.dailyRequestLimit) * 100);
+
         this.isConnected = true;
+
+        // Update status with usage info
+        if (usage.requestCount > 0) {
+            logger.info(`Puter usage today: ${usage.requestCount}/${this.dailyRequestLimit} (${percentage}%)`);
+        }
     }
 
     async loadPuterJS() {
@@ -153,6 +306,15 @@ export class PuterProvider extends BaseProvider {
     async generateText(prompt, options = {}) {
         if (!window.puter) {
             throw new Error('Puter.js not loaded');
+        }
+
+        // Check usage limits before making request
+        try {
+            await this.checkUsageLimits();
+        } catch (limitError) {
+            // Log the limit error and show user-friendly message
+            this.recordError(limitError);
+            throw limitError;
         }
 
         try {
@@ -231,9 +393,15 @@ export class PuterProvider extends BaseProvider {
                 throw new Error('Received empty response from Puter.js API');
             }
 
+            // Record successful request
+            this.recordRequest();
+
             return extractedText;
         } catch (error) {
             logger.error('Puter.js generation error:', error);
+
+            // Record the error for tracking
+            this.recordError(error);
 
             // Extract error message safely
             let errorMessage = 'Unknown error';
@@ -291,6 +459,15 @@ export class PuterProvider extends BaseProvider {
             throw new Error('Puter.js not loaded');
         }
 
+        // Check usage limits before making request
+        try {
+            await this.checkUsageLimits();
+        } catch (limitError) {
+            // Log the limit error and show user-friendly message
+            this.recordError(limitError);
+            throw limitError;
+        }
+
         try {
             const model = options.model || this.currentModel || this.config.defaultModel;
 
@@ -310,9 +487,15 @@ export class PuterProvider extends BaseProvider {
                 }
             }
 
+            // Record successful request
+            this.recordRequest();
+
             return fullContent;
         } catch (error) {
             logger.error('Puter.js streaming error:', error);
+
+            // Record the error for tracking
+            this.recordError(error);
 
             // Extract error message safely
             let errorMessage = 'Unknown error';
