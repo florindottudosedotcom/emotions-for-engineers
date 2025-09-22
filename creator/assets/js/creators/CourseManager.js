@@ -3,7 +3,7 @@
  * Manages course generation and content creation workflow
  */
 
-import { DOM } from '../core/dom.js';
+import { DOM, Events } from '../core/dom.js';
 import { logger, performance } from '../core/utils.js';
 import { appState } from '../core/state.js';
 
