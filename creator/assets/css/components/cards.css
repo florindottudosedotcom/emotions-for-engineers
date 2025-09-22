@@ -462,10 +462,6 @@
         transform: translateY(-3px);
     }
 
-    .container {
-        max-width: var(--max-width-content);
-        padding: var(--spacing-8) 0;
-    }
 }
 
 /* ========================================

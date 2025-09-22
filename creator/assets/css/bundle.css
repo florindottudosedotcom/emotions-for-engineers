@@ -1,6 +1,6 @@
 /**
- * CSS Bundle - Auto-generated 2025-09-21T20:55:48.118Z
- * Consolidated from 14 CSS files for optimal performance
+ * CSS Bundle - Auto-generated 2025-09-22T04:41:55.798Z
+ * Consolidated from 15 CSS files for optimal performance
  * DO NOT EDIT MANUALLY - regenerate using build-css.js
  */
 
@@ -682,7 +682,7 @@ a:focus {
     width: 100%;
     max-width: none;
     margin: 0 auto;
-    padding: 0 var(--spacing-4);
+    padding: 0;
     box-sizing: border-box;
 }
 
@@ -690,7 +690,7 @@ a:focus {
     max-width: 100%;
     width: 100%;
     margin: 0 auto;
-    padding: 0 var(--spacing-6);
+    padding: 0;
 }
 
 /* ========================================
@@ -741,7 +741,7 @@ a:focus {
 .main-container {
     background-color: var(--background-secondary);
     min-height: 100vh;
-    padding: var(--spacing-8) var(--spacing-4);
+    padding: var(--spacing-2) var(--spacing-2);
     max-width: none;
     width: 100%;
     margin: 0;
@@ -751,7 +751,7 @@ a:focus {
 /* Content Container */
 .content-container {
     background-color: var(--surface);
-    padding: var(--spacing-8) 0;
+    padding: 0;
     border-radius: var(--radius-medium);
     box-shadow: var(--shadow-medium);
     border: none;
@@ -1049,7 +1049,7 @@ a:focus {
     }
 
     .content-container {
-        padding: var(--spacing-2) 0;
+        padding: 0;
         margin: 0;
         box-sizing: border-box;
     }
@@ -1154,7 +1154,7 @@ a:focus {
 
     .content-container {
         max-width: var(--max-width-content);
-        padding: var(--spacing-8) 0;
+        padding: 0;
     }
 
     .form-container {
@@ -3267,10 +3267,6 @@ input[type="radio"]:focus {
         transform: translateY(-3px);
     }
 
-    .container {
-        max-width: var(--max-width-content);
-        padding: var(--spacing-8) 0;
-    }
 }
 
 /* ========================================
@@ -4479,6 +4475,588 @@ body.modal-open {
 
 [data-theme="dark"] .model-selector {
     background: var(--bg-tertiary);
+}
+
+/* ===== mobile.css ===== */
+/**
+ * Mobile-First Responsive Design
+ * Comprehensive mobile optimizations for course creator
+ */
+
+/* ========================================
+   MOBILE PROVIDER TABS OPTIMIZATION
+   ======================================== */
+
+/* Mobile: Stack provider tabs vertically */
+@media (max-width: 767px) {
+    .provider-row {
+        padding-left: 0;
+        gap: 1rem;
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    .provider-tabs {
+        flex-direction: column;
+        width: 100%;
+        gap: 0.5rem;
+    }
+
+    .provider-tab {
+        min-width: unset;
+        width: 100%;
+        margin-bottom: 0;
+        padding: 16px 20px; /* 44px+ touch target */
+        border-radius: var(--radius-medium);
+        border: 2px solid var(--border-light);
+        justify-content: flex-start;
+        font-size: var(--font-size-base);
+        min-height: 44px; /* Accessibility requirement */
+        box-sizing: border-box;
+    }
+
+    .provider-tab:first-child {
+        border-radius: var(--radius-medium);
+    }
+
+    .provider-tab:last-child {
+        border-radius: var(--radius-medium);
+        border: 2px solid var(--border-light);
+    }
+
+    .provider-tab.active {
+        border-color: var(--primary-color);
+        background: var(--primary-color);
+    }
+
+    .provider-tab.active:last-child {
+        border-color: var(--primary-color);
+    }
+
+    /* Full width iframe */
+    .creator-frame {
+        height: auto;
+        min-height: 60vh;
+        max-height: 80vh;
+        border-radius: var(--radius-medium);
+    }
+
+    /* Adjust main container for mobile */
+    .main-container {
+        padding: 0.5rem;
+    }
+}
+
+/* Small Mobile: Ultra-compact layout */
+@media (max-width: 479px) {
+    .provider-tab {
+        padding: 12px 16px;
+        font-size: var(--font-size-sm);
+    }
+
+    .provider-tab .icon-rocket-css,
+    .provider-tab .icon-cloud-css,
+    .provider-tab .icon-brain-css,
+    .provider-tab .icon-desktop-css {
+        width: 1em;
+        height: 1em;
+    }
+
+    .main-container {
+        padding: 0.25rem;
+    }
+}
+
+/* Tablet: Horizontal scrollable tabs */
+@media (min-width: 768px) and (max-width: 1023px) {
+    .provider-row {
+        padding-left: 8px;
+    }
+
+    .provider-tabs {
+        overflow-x: auto;
+        scrollbar-width: thin;
+        gap: 0;
+        flex-wrap: nowrap;
+        padding-bottom: 4px;
+    }
+
+    .provider-tab {
+        min-width: 120px;
+        flex-shrink: 0;
+        white-space: nowrap;
+        padding: 12px 20px;
+    }
+
+    .creator-frame {
+        min-height: 70vh;
+    }
+}
+
+/* ========================================
+   MOBILE LANGUAGE GRID OPTIMIZATION
+   ======================================== */
+
+@media (max-width: 767px) {
+    .lang-grid {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 0.75rem;
+        margin: 0;
+        padding: 0;
+    }
+
+    .lang-item {
+        min-height: 44px;
+        padding: 0.75rem;
+        border-radius: var(--radius-small);
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        border: 1px solid var(--border-light);
+        background: var(--surface);
+        transition: all var(--transition-fast);
+    }
+
+    .lang-item:hover {
+        border-color: var(--primary-color);
+        background: var(--primary-light);
+    }
+
+    .lang-item input[type="checkbox"] {
+        min-width: 18px;
+        min-height: 18px;
+    }
+
+    .flag-icon {
+        width: 20px;
+        height: 15px;
+        flex-shrink: 0;
+    }
+
+    .label-flex-grow {
+        font-size: var(--font-size-sm);
+        font-weight: var(--font-weight-medium);
+    }
+}
+
+/* Ultra-small screens: Single column */
+@media (max-width: 359px) {
+    .lang-grid {
+        grid-template-columns: 1fr;
+    }
+}
+
+/* ========================================
+   MOBILE FORM OPTIMIZATION
+   ======================================== */
+
+@media (max-width: 767px) {
+    /* Course generation section */
+    .course-generation-section {
+        flex-direction: column;
+        gap: 1rem;
+        align-items: stretch;
+    }
+
+    .course-generation-section .select-no-margin {
+        width: 100%;
+        min-height: 44px;
+        padding: 12px 16px;
+        font-size: var(--font-size-base);
+        border-radius: var(--radius-medium);
+    }
+
+    .course-generation-section .btn {
+        width: 100%;
+        min-height: 44px;
+        padding: 12px 20px;
+        font-size: var(--font-size-base);
+        margin-left: 0;
+    }
+
+    /* Prompt textarea */
+    .prompt-textarea-large {
+        min-height: 120px;
+        padding: 16px;
+        font-size: var(--font-size-base);
+        line-height: 1.5;
+        border-radius: var(--radius-medium);
+    }
+
+    /* Course form inputs */
+    #course-name,
+    #course-desc {
+        min-height: 44px;
+        padding: 12px 16px;
+        font-size: var(--font-size-base);
+        border-radius: var(--radius-medium);
+    }
+
+    #course-desc {
+        min-height: 100px;
+    }
+
+    /* Button groups */
+    .input-group {
+        flex-direction: column;
+        gap: 0.75rem;
+        align-items: stretch;
+    }
+
+    .input-group .btn {
+        width: 100%;
+        margin-left: 0;
+        margin-right: 0;
+    }
+
+    /* Status displays */
+    .status-display {
+        padding: 12px 16px;
+        font-size: var(--font-size-sm);
+        border-radius: var(--radius-medium);
+        margin: 0.5rem 0;
+    }
+}
+
+/* ========================================
+   MOBILE MODAL OPTIMIZATION
+   ======================================== */
+
+@media (max-width: 767px) {
+    .modal-overlay {
+        padding: var(--spacing-2);
+        align-items: flex-start;
+        padding-top: var(--spacing-4);
+    }
+
+    .modal-content {
+        width: 95%;
+        max-width: none;
+        margin: var(--spacing-2);
+        border-radius: var(--radius-medium);
+    }
+
+    .modal-header {
+        padding: var(--spacing-4);
+        flex-direction: column;
+        align-items: flex-start;
+        gap: var(--spacing-2);
+    }
+
+    .modal-body {
+        padding: var(--spacing-4);
+        font-size: var(--font-size-base);
+    }
+
+    .modal-footer {
+        padding: var(--spacing-4);
+        flex-direction: column;
+        gap: var(--spacing-2);
+    }
+
+    .modal-footer .btn {
+        width: 100%;
+        min-height: 44px;
+    }
+}
+
+/* ========================================
+   MOBILE CHAPTER TABS OPTIMIZATION
+   ======================================== */
+
+@media (max-width: 767px) {
+    .chapter-tabs-container {
+        margin: 0;
+        padding: 0;
+        background: transparent;
+        border: none;
+        border-radius: 0;
+    }
+
+    .tab-nav {
+        overflow-x: auto;
+        scrollbar-width: thin;
+        padding-bottom: 4px;
+        background: transparent;
+        border: none;
+        justify-content: flex-start;
+        gap: 4px;
+    }
+
+    .chapter-tab {
+        min-width: fit-content;
+        padding: 12px 16px;
+        font-size: var(--font-size-sm);
+        border-radius: var(--radius-small);
+        white-space: nowrap;
+        flex-shrink: 0;
+        min-height: 44px;
+        display: flex;
+        align-items: center;
+    }
+
+    .add-chapter-tab {
+        min-width: 44px;
+        width: 44px;
+        height: 44px;
+        border-radius: var(--radius-small);
+        flex-shrink: 0;
+    }
+
+    /* Chapter content */
+    .chapter-content {
+        padding: var(--spacing-2) 0;
+    }
+
+    .chapter-title {
+        width: 100%;
+        min-height: 44px;
+        padding: 12px 16px;
+        font-size: var(--font-size-base);
+        border-radius: var(--radius-medium);
+        margin-bottom: var(--spacing-4);
+    }
+
+    .editor-container {
+        min-height: 300px;
+        border-radius: var(--radius-medium);
+        overflow: hidden;
+    }
+
+    .chapter-editor {
+        min-height: 300px;
+        border-radius: var(--radius-medium);
+    }
+}
+
+/* ========================================
+   MOBILE NAVIGATION OPTIMIZATION
+   ======================================== */
+
+@media (max-width: 767px) {
+    .back-button {
+        padding: 12px 16px;
+        margin-bottom: 1rem;
+        border-radius: var(--radius-medium);
+        font-size: var(--font-size-base);
+        min-height: 44px;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+
+    .back-button:hover {
+        background-color: var(--background-tertiary);
+    }
+}
+
+/* ========================================
+   MOBILE TYPOGRAPHY SCALING
+   ======================================== */
+
+@media (max-width: 767px) {
+    h1 {
+        font-size: var(--font-size-2xl);
+        line-height: 1.2;
+        margin-bottom: var(--spacing-4);
+    }
+
+    h2 {
+        font-size: var(--font-size-xl);
+        line-height: 1.3;
+        margin-bottom: var(--spacing-4);
+    }
+
+    h3 {
+        font-size: var(--font-size-lg);
+        line-height: 1.4;
+        margin-bottom: var(--spacing-2);
+    }
+
+    p {
+        font-size: var(--font-size-base);
+        line-height: 1.5;
+        margin-bottom: var(--spacing-4);
+    }
+
+    /* Ensure readable text in all contexts */
+    label {
+        font-size: var(--font-size-base);
+        font-weight: var(--font-weight-medium);
+    }
+
+    .prompt-header {
+        margin-bottom: var(--spacing-2);
+    }
+
+    .prompt-header .btn {
+        min-height: 44px;
+        padding: 12px 20px;
+        font-size: var(--font-size-base);
+    }
+}
+
+/* ========================================
+   TOUCH TARGET OPTIMIZATION
+   ======================================== */
+
+@media (max-width: 767px) {
+    /* Ensure all interactive elements meet 44px minimum */
+    button,
+    input[type="button"],
+    input[type="submit"],
+    input[type="reset"],
+    .btn,
+    a.btn,
+    select,
+    input[type="checkbox"],
+    input[type="radio"] {
+        min-height: 44px;
+    }
+
+    /* Checkbox and radio specific sizing */
+    input[type="checkbox"],
+    input[type="radio"] {
+        min-width: 18px;
+        min-height: 18px;
+        margin: 0 8px 0 0;
+    }
+
+    /* Link buttons */
+    a {
+        min-height: 44px;
+        display: inline-flex;
+        align-items: center;
+        padding: 8px 12px;
+        text-decoration: none;
+        border-radius: var(--radius-small);
+    }
+
+    /* Improve tap target spacing */
+    .btn + .btn {
+        margin-top: 0.5rem;
+    }
+
+    .input-group > * {
+        margin-bottom: 0.5rem;
+    }
+
+    .input-group > *:last-child {
+        margin-bottom: 0;
+    }
+}
+
+/* ========================================
+   MOBILE LAYOUT IMPROVEMENTS
+   ======================================== */
+
+@media (max-width: 767px) {
+    /* Remove unnecessary margins */
+    .container,
+    .main-container {
+        margin: 0;
+    }
+
+    /* Optimize iframe sizing for mobile */
+    .creator-frame {
+        border-radius: var(--radius-medium);
+        border: 1px solid var(--border-light);
+        box-shadow: var(--shadow-small);
+    }
+
+    /* Loading states */
+    .loading-state {
+        height: 50vh;
+        padding: var(--spacing-4);
+        text-align: center;
+    }
+
+    .loading-state p {
+        font-size: var(--font-size-sm);
+        color: var(--text-secondary);
+    }
+
+    /* Download section */
+    #download-section {
+        padding: var(--spacing-4);
+        border-radius: var(--radius-medium);
+        background: var(--surface);
+        border: 1px solid var(--border-light);
+        margin-top: var(--spacing-4);
+    }
+
+    #download-section h3 {
+        margin-bottom: var(--spacing-2);
+    }
+
+    #download-section .btn {
+        width: 100%;
+        min-height: 44px;
+    }
+}
+
+/* ========================================
+   LANDSCAPE MOBILE OPTIMIZATION
+   ======================================== */
+
+@media (max-width: 767px) and (orientation: landscape) {
+    .creator-frame {
+        min-height: 50vh;
+        max-height: 70vh;
+    }
+
+    .modal-content {
+        max-height: 85vh;
+        overflow-y: auto;
+    }
+
+    .provider-tabs {
+        flex-direction: row;
+        overflow-x: auto;
+        gap: 0;
+    }
+
+    .provider-tab {
+        flex-shrink: 0;
+        min-width: 140px;
+        width: auto;
+    }
+}
+
+/* ========================================
+   ACCESSIBILITY & INTERACTION IMPROVEMENTS
+   ======================================== */
+
+@media (max-width: 767px) {
+    /* Improve focus visibility on mobile */
+    *:focus {
+        outline: 2px solid var(--primary-color);
+        outline-offset: 2px;
+    }
+
+    /* Reduce motion for users who prefer it */
+    @media (prefers-reduced-motion: reduce) {
+        * {
+            animation-duration: 0.01ms !important;
+            animation-iteration-count: 1 !important;
+            transition-duration: 0.01ms !important;
+        }
+    }
+
+    /* High contrast mode support */
+    @media (prefers-contrast: high) {
+        .provider-tab,
+        .btn,
+        .lang-item {
+            border: 2px solid;
+        }
+
+        .provider-tab.active,
+        .btn:hover {
+            background: var(--text-primary);
+            color: var(--surface);
+        }
+    }
 }
 
 /* ===== light.css ===== */

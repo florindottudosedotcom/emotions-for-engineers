@@ -10,7 +10,7 @@
     width: 100%;
     max-width: none;
     margin: 0 auto;
-    padding: 0 var(--spacing-4);
+    padding: 0;
     box-sizing: border-box;
 }
 
@@ -18,7 +18,7 @@
     max-width: 100%;
     width: 100%;
     margin: 0 auto;
-    padding: 0 var(--spacing-6);
+    padding: 0;
 }
 
 /* ========================================
@@ -69,7 +69,7 @@
 .main-container {
     background-color: var(--background-secondary);
     min-height: 100vh;
-    padding: var(--spacing-8) var(--spacing-4);
+    padding: var(--spacing-2) var(--spacing-2);
     max-width: none;
     width: 100%;
     margin: 0;
@@ -79,7 +79,7 @@
 /* Content Container */
 .content-container {
     background-color: var(--surface);
-    padding: var(--spacing-8) 0;
+    padding: 0;
     border-radius: var(--radius-medium);
     box-shadow: var(--shadow-medium);
     border: none;
@@ -377,7 +377,7 @@
     }
 
     .content-container {
-        padding: var(--spacing-2) 0;
+        padding: 0;
         margin: 0;
         box-sizing: border-box;
     }
@@ -482,7 +482,7 @@
 
     .content-container {
         max-width: var(--max-width-content);
-        padding: var(--spacing-8) 0;
+        padding: 0;
     }
 
     .form-container {

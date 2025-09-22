@@ -22,6 +22,7 @@ const cssFiles = [
     'assets/css/components/status.css',
     'assets/css/components/launcher.css',
     'assets/css/components/puter.css',
+    'assets/css/responsive/mobile.css',
     'assets/css/themes/light.css',
     'assets/css/themes/dark.css'
 ];
