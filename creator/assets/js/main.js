@@ -190,6 +190,11 @@ class CreatorApp {
                 const template = await this.currentProvider.getTemplate();
                 this.dom.providerSection.innerHTML = template;
                 await this.currentProvider.init(this.dom, appState);
+
+                // Update provider status (including usage display for Puter)
+                if (typeof this.currentProvider.updateProviderStatus === 'function') {
+                    this.currentProvider.updateProviderStatus();
+                }
             }
 
             // Initialize modules with lazy loading

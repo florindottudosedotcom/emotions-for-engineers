@@ -31,6 +31,9 @@ export class PuterProvider extends BaseProvider {
         this.dailyRequestLimit = 50; // Conservative estimate based on free tier
         this.lastLimitCheck = null;
         this.limitWarningShown = false;
+
+        // Log initialization for debugging
+        logger.info(`Puter provider initialized with usage tracking - Current usage: ${this.usageTracker.requestCount}/${this.dailyRequestLimit}`);
     }
 
     async getTemplate() {
@@ -242,6 +245,18 @@ export class PuterProvider extends BaseProvider {
         this.usageTracker.requestCount++;
         this.usageTracker.lastRequest = new Date().toISOString();
         this.saveUsageData(this.usageTracker);
+
+        // Update the display immediately
+        this.updateProviderStatus();
+    }
+
+    // Debug method to test usage warnings - can be called from browser console
+    testUsageWarning(targetCount = 40) {
+        console.log(`Setting usage count to ${targetCount} for testing...`);
+        this.usageTracker.requestCount = targetCount;
+        this.saveUsageData(this.usageTracker);
+        this.updateProviderStatus();
+        return `Usage set to ${targetCount}/${this.dailyRequestLimit}`;
     }
 
     recordError(error) {
@@ -260,10 +275,56 @@ export class PuterProvider extends BaseProvider {
 
         this.isConnected = true;
 
-        // Update status with usage info
-        if (usage.requestCount > 0) {
-            logger.info(`Puter usage today: ${usage.requestCount}/${this.dailyRequestLimit} (${percentage}%)`);
+        // Always show usage info in console for debugging
+        logger.info(`Puter usage today: ${usage.requestCount}/${this.dailyRequestLimit} (${percentage}%)`);
+
+        // Update the status display in UI
+        this.updateUsageDisplay(usage.requestCount, this.dailyRequestLimit, percentage);
+    }
+
+    updateUsageDisplay(used, limit, percentage) {
+        // Find or create usage display element
+        let usageDisplay = document.getElementById('puter-usage-display');
+        if (!usageDisplay) {
+            usageDisplay = DOM.create('div', {
+                id: 'puter-usage-display',
+                className: 'usage-display'
+            });
+
+            // Insert after the puter status section
+            const statusEl = document.querySelector('.puter-status');
+            if (statusEl && statusEl.parentNode) {
+                statusEl.parentNode.insertBefore(usageDisplay, statusEl.nextSibling);
+            }
         }
+
+        // Determine color based on usage percentage
+        let statusColor = '#28a745'; // green
+        let statusIcon = '✅';
+        if (percentage >= 90) {
+            statusColor = '#f59e0b'; // amber
+            statusIcon = '⚠️';
+        } else if (percentage >= 80) {
+            statusColor = '#3b82f6'; // blue
+            statusIcon = '📊';
+        }
+
+        usageDisplay.style.cssText = `
+            background: ${statusColor};
+            color: white;
+            padding: 8px 12px;
+            margin: 8px 0;
+            border-radius: 6px;
+            font-size: 0.85em;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        `;
+
+        usageDisplay.innerHTML = `
+            <span>${statusIcon}</span>
+            <span>Daily usage: ${used}/${limit} requests (${percentage}%)</span>
+        `;
     }
 
     async loadPuterJS() {
