@@ -3785,7 +3785,7 @@ body.modal-open {
    ======================================== */
 .status-display {
     margin-top: 0.75rem;
-    padding: var(--spacing-4) 0;
+    padding: var(--spacing-4) var(--spacing-6);
     border-radius: var(--radius-medium);
     white-space: pre-wrap;
     display: none;
@@ -4169,9 +4169,10 @@ body.modal-open {
 /* Mobile: 320px-767px */
 @media (max-width: 767px) {
     .status-display {
+        padding: var(--spacing-4) var(--spacing-4);
+        margin-top: var(--spacing-2);
         font-size: var(--font-size-sm);
-        padding: var(--spacing-4) 0;
-        margin: var(--spacing-2) 0;
+        border-radius: var(--radius-small);
     }
 
     .progress-indicator {
