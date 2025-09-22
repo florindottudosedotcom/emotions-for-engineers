@@ -8,7 +8,7 @@
    ======================================== */
 .status-display {
     margin-top: 0.75rem;
-    padding: var(--spacing-4) 0;
+    padding: var(--spacing-4) var(--spacing-6);
     border-radius: var(--radius-medium);
     white-space: pre-wrap;
     display: none;
@@ -435,6 +435,20 @@
     .ai-assistant {
         padding: var(--spacing-4) 0;
         margin: var(--spacing-4) 0;
+    }
+}
+
+/* ========================================
+   RESPONSIVE DESIGN - Mobile Adjustments
+   ======================================== */
+
+/* Mobile: 320px-767px */
+@media (max-width: 767px) {
+    .status-display {
+        padding: var(--spacing-4) var(--spacing-4);
+        margin-top: var(--spacing-2);
+        font-size: var(--font-size-sm);
+        border-radius: var(--radius-small);
     }
 }
 
