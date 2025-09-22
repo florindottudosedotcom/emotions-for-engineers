@@ -69,15 +69,14 @@ class ScreenshotTaker {
             await page.setViewport(viewport);
 
             // Wait a bit for any animations or layout shifts
-            await page.waitForTimeout(500);
+            await new Promise(resolve => setTimeout(resolve, 500));
 
             // Wait for network to be mostly idle
-            await page.waitForTimeout(2000);
+            await new Promise(resolve => setTimeout(resolve, 2000));
 
             await page.screenshot({
                 path: filepath,
-                fullPage: true,
-                quality: 90
+                fullPage: true
             });
 
             console.log(`📸 Screenshot saved: ${filename}`);
@@ -105,7 +104,7 @@ class ScreenshotTaker {
             });
 
             // Wait for page to be fully loaded
-            await page.waitForTimeout(1000);
+            await new Promise(resolve => setTimeout(resolve, 1000));
 
             // Take screenshots at different viewports
             const screenshots = [];
