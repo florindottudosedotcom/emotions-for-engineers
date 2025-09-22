@@ -350,6 +350,22 @@ export class UIManager {
         }
     }
 
+    clearStatus(statusType) {
+        const statusElement = this.statusDisplays[statusType];
+        if (statusElement) {
+            statusElement.textContent = '';
+            statusElement.className = 'status-display';
+        }
+    }
+
+    setErrorStatus(statusType, errorMessage) {
+        const statusElement = this.statusDisplays[statusType];
+        if (statusElement) {
+            statusElement.textContent = `❌ ${errorMessage}`;
+            statusElement.className = 'status-display status-error show';
+        }
+    }
+
     showLoading(element, text = 'Loading...') {
         if (element) {
             element.disabled = true;

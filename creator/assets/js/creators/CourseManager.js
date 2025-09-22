@@ -136,6 +136,19 @@ Please provide an enhanced version that maintains the original intent but adds e
                 errorMessage = error.message || error.toString() || 'Course generation failed with an unknown error';
             }
 
+            // Clear any stuck generation status and show specific error status
+            this.ui.clearStatus('generation');
+
+            // Provide specific error context based on error message
+            let errorStatusMessage = 'Course generation failed';
+            if (errorMessage.includes('Chapter')) {
+                errorStatusMessage = errorMessage.split(':')[0]; // e.g., "Failed at Chapter 1"
+            } else if (errorMessage.toLowerCase().includes('quota') || errorMessage.toLowerCase().includes('limit')) {
+                errorStatusMessage = 'Generation stopped - quota exceeded';
+            }
+
+            this.ui.setErrorStatus('generation', errorStatusMessage);
+
             // Always show user-friendly error message with longer duration for errors
             this.ui.showMessage(`❌ ${errorMessage}`, 'error', 8000);
 
@@ -176,6 +189,9 @@ Please provide an enhanced version that maintains the original intent but adds e
                     // Also clear any loading state from the UI manager
                     this.ui.hideLoading(this.dom.generateCourseBtn);
                 }
+
+                // Force clear any stuck status displays
+                this.ui.clearStatus('generation');
             }
 
             // Double-check button state - ensure it's never stuck in generating state
@@ -249,28 +265,47 @@ Please provide an enhanced version that maintains the original intent but adds e
         let currentStep = 1; // Start at 1 since we've done the name/description step
 
         for (let i = 0; i < courseData.numChapters; i++) {
-            this.updateProgress(
-                (currentStep / totalSteps) * 100,
-                `Generating Chapter ${i + 1} outline...`
-            );
+            try {
+                this.updateProgress(
+                    (currentStep / totalSteps) * 100,
+                    `Generating Chapter ${i + 1} outline...`
+                );
 
-            const chapterTitle = await this.generateChapterTitle(courseData, i);
-            currentStep++;
+                const chapterTitle = await this.generateChapterTitle(courseData, i);
+                currentStep++;
 
-            this.updateProgress(
-                (currentStep / totalSteps) * 100,
-                `Generating Chapter ${i + 1} content...`
-            );
+                this.updateProgress(
+                    (currentStep / totalSteps) * 100,
+                    `Generating Chapter ${i + 1} content...`
+                );
 
-            const chapterContent = await this.generateChapterContent(courseData, chapterTitle, i);
-            currentStep++;
+                const chapterContent = await this.generateChapterContent(courseData, chapterTitle, i);
+                currentStep++;
 
-            chapters.push({
-                title: chapterTitle,
-                content: chapterContent
-            });
+                chapters.push({
+                    title: chapterTitle,
+                    content: chapterContent
+                });
 
-            await this.delay(100);
+                await this.delay(100);
+            } catch (chapterError) {
+                logger.error(`Failed to generate Chapter ${i + 1}:`, chapterError);
+
+                // For chapter-specific errors, provide more context
+                let chapterErrorMessage = 'Unknown error';
+                try {
+                    if (this.provider && typeof this.provider.formatError === 'function') {
+                        chapterErrorMessage = this.provider.formatError(chapterError);
+                    } else {
+                        chapterErrorMessage = chapterError.message || chapterError.toString();
+                    }
+                } catch (formatError) {
+                    chapterErrorMessage = chapterError.message || 'Error generating chapter';
+                }
+
+                // Throw with enhanced context for main error handler
+                throw new Error(`Failed at Chapter ${i + 1}: ${chapterErrorMessage}`);
+            }
         }
 
         this.updateProgress(100, 'Course generation complete!');
@@ -568,6 +603,9 @@ Generated with [Emotions for Engineers Course Creator](https://github.com/user/e
         this.generationProgress = 0;
         appState.set('isGenerating', true);
         appState.set('generationProgress', 0);
+
+        // Clear any previous error status to start fresh
+        this.ui.clearStatus('generation');
     }
 
     endGeneration() {
