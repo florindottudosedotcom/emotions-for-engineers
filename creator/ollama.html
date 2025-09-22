@@ -13,13 +13,17 @@
     <link rel="stylesheet" href="./assets/css/bundle.min.css" />
 </head>
 <body>
-    <div id="overwrite-modal" class="modal-overlay">
+    <div id="overwrite-modal" class="modal-overlay" style="display: none;">
         <div class="modal-content">
-            <h2>Overwrite Existing Content?</h2>
-            <p>There are chapters with content present. Do you want to remove them before generating new content?</p>
-            <div class="input-group margin-top-1-5rem">
+            <div class="modal-header">
+                <h2 class="modal-title">Overwrite Existing Content?</h2>
+            </div>
+            <div class="modal-body">
+                <p>There are chapters with content present. Do you want to remove them before generating new content?</p>
+            </div>
+            <div class="modal-footer">
                 <button type="button" id="overwrite-yes-btn" class="btn btn-primary">✓ Yes, Overwrite</button>
-                <button type="button" id="overwrite-cancel-btn" class="btn btn-danger margin-left-auto">× Cancel</button>
+                <button type="button" id="overwrite-cancel-btn" class="btn btn-secondary ml-auto">× Cancel</button>
             </div>
         </div>
     </div>

@@ -283,6 +283,71 @@
 }
 
 /* ========================================
+   ADDITIONAL MODAL UTILITIES
+   ======================================== */
+
+/* Export buttons grid for slides modals */
+.export-buttons-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: var(--spacing-4);
+    margin: var(--spacing-4) 0;
+}
+
+/* Close button alternative style */
+.btn-close {
+    background: none;
+    border: none;
+    font-size: 1.5em;
+    cursor: pointer;
+    padding: var(--spacing-1);
+    color: var(--text-secondary);
+    border-radius: var(--radius-small);
+    transition: all var(--transition-fast);
+    line-height: 1;
+    width: 32px;
+    height: 32px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.btn-close:hover {
+    background-color: var(--background-tertiary);
+    color: var(--text-primary);
+}
+
+.btn-close:focus {
+    outline: 2px solid var(--primary-color);
+    outline-offset: 2px;
+}
+
+/* Checkbox label styling for modals */
+.checkbox-label {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-2);
+    cursor: pointer;
+    font-size: var(--font-size-base);
+    color: var(--text-primary);
+}
+
+.form-checkbox {
+    margin: 0;
+    width: 16px;
+    height: 16px;
+}
+
+/* Spacing utilities for modals */
+.mb-md {
+    margin-bottom: var(--spacing-6);
+}
+
+.mt-md {
+    margin-top: var(--spacing-6);
+}
+
+/* ========================================
    RESPONSIVE DESIGN
    ======================================== */
 
@@ -327,6 +392,12 @@
 
     .modal-footer .btn {
         width: 100%;
+    }
+
+    /* Export buttons single column on mobile */
+    .export-buttons-grid {
+        grid-template-columns: 1fr;
+        gap: var(--spacing-2);
     }
 
     /* Full height on mobile for large modals */
