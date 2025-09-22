@@ -751,4 +751,51 @@ export class PuterProvider extends BaseProvider {
         super.refresh();
         this.updateProviderStatus();
     }
+
+    formatError(error) {
+        // Extract user-friendly error message from Puter.js errors
+        let errorMessage = 'Unknown error occurred';
+
+        if (error && error.message) {
+            errorMessage = error.message;
+        } else if (error && typeof error === 'string') {
+            errorMessage = error;
+        } else if (error && typeof error === 'object') {
+            try {
+                errorMessage = JSON.stringify(error);
+            } catch (e) {
+                errorMessage = 'Complex error occurred';
+            }
+        }
+
+        // Clean up technical error messages for users
+        if (errorMessage.includes('Puter.js API error:')) {
+            errorMessage = errorMessage.replace('Puter.js API error: ', '');
+        }
+
+        // Handle quota/limit errors with clear guidance
+        const quotaKeywords = ['quota', 'limit', 'rate', 'usage', 'exceeded', 'too many'];
+        const isQuotaError = quotaKeywords.some(keyword =>
+            errorMessage.toLowerCase().includes(keyword)
+        );
+
+        if (isQuotaError) {
+            return `Puter.js usage limit exceeded. The free service has daily limits that have been reached. Please try again later or switch to a different AI provider.`;
+        }
+
+        // Handle authentication errors
+        if (errorMessage.toLowerCase().includes('auth')) {
+            return `Puter.js authentication required. Please allow the popup window to complete free account setup.`;
+        }
+
+        // Handle network errors
+        if (errorMessage.toLowerCase().includes('network') || errorMessage.toLowerCase().includes('connection')) {
+            return `Network connection error. Please check your internet connection and try again.`;
+        }
+
+        // Return cleaned error message
+        return errorMessage.length > 200
+            ? errorMessage.substring(0, 200) + '...'
+            : errorMessage;
+    }
 }

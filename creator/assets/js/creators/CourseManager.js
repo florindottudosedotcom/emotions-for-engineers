@@ -120,9 +120,74 @@ Please provide an enhanced version that maintains the original intent but adds e
             logger.info('Course generation completed successfully');
         } catch (error) {
             logger.error('Course generation failed:', error);
-            this.ui.showMessage(`Generation failed: ${this.provider.formatError(error)}`, 'error');
+
+            // Enhanced error handling with fallback
+            let errorMessage = 'Course generation failed';
+            try {
+                // Try to format the error using provider's formatError method
+                if (this.provider && typeof this.provider.formatError === 'function') {
+                    errorMessage = this.provider.formatError(error);
+                } else {
+                    // Fallback error formatting
+                    errorMessage = error.message || error.toString() || 'Unknown error occurred';
+                }
+            } catch (formatError) {
+                logger.warn('Error formatting failed, using fallback:', formatError);
+                errorMessage = error.message || error.toString() || 'Course generation failed with an unknown error';
+            }
+
+            // Always show user-friendly error message with longer duration for errors
+            this.ui.showMessage(`❌ ${errorMessage}`, 'error', 8000);
+
+            // Ensure button loading state is cleared
+            if (this.dom.generateCourseBtn) {
+                this.ui.hideLoading(this.dom.generateCourseBtn);
+            }
+
+            // For Puter quota errors, provide additional guidance
+            if (errorMessage.toLowerCase().includes('quota') || errorMessage.toLowerCase().includes('limit')) {
+                setTimeout(() => {
+                    this.ui.showMessage('💡 Tip: Try Cloud AI, WebLLM, or Ollama providers if quota issues persist.', 'info', 6000);
+                }, 2000);
+            }
+
+            // Log detailed error for debugging
+            logger.error('Detailed error information:', {
+                error: error,
+                message: errorMessage,
+                stack: error.stack,
+                provider: this.provider?.name || 'unknown'
+            });
         } finally {
-            this.endGeneration();
+            // Ensure generation state is ALWAYS reset, even if there are errors above
+            try {
+                this.endGeneration();
+            } catch (endError) {
+                logger.error('Error ending generation (forcing state reset):', endError);
+                // Force reset generation state if endGeneration fails
+                this.isGenerating = false;
+                appState.set('isGenerating', false);
+                appState.set('generationProgress', 100);
+
+                // Force UI update
+                if (this.dom.generateCourseBtn) {
+                    this.dom.generateCourseBtn.disabled = false;
+                    this.dom.generateCourseBtn.textContent = '⚡ Generate Entire Course';
+                    // Also clear any loading state from the UI manager
+                    this.ui.hideLoading(this.dom.generateCourseBtn);
+                }
+            }
+
+            // Double-check button state - ensure it's never stuck in generating state
+            if (this.dom.generateCourseBtn) {
+                const currentText = this.dom.generateCourseBtn.textContent;
+                if (currentText.includes('Generating') || this.dom.generateCourseBtn.disabled) {
+                    logger.warn('Button was stuck in generating state, forcing reset');
+                    this.dom.generateCourseBtn.disabled = false;
+                    this.dom.generateCourseBtn.textContent = '⚡ Generate Entire Course';
+                    this.ui.hideLoading(this.dom.generateCourseBtn);
+                }
+            }
         }
     }
 
