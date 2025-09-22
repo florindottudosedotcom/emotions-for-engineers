@@ -260,12 +260,101 @@ export class PuterProvider extends BaseProvider {
     }
 
     recordError(error) {
-        this.usageTracker.errors.push({
+        const errorRecord = {
             timestamp: new Date().toISOString(),
             error: error.message || error.toString(),
             code: error.code || 'unknown'
-        });
+        };
+
+        this.usageTracker.errors.push(errorRecord);
         this.saveUsageData(this.usageTracker);
+
+        // Check if this is a server-side quota error
+        const quotaKeywords = ['quota', 'limit', 'rate', 'usage', 'exceeded', 'too many'];
+        const isServerQuotaError = quotaKeywords.some(keyword =>
+            errorRecord.error.toLowerCase().includes(keyword)
+        );
+
+        if (isServerQuotaError) {
+            this.handleServerQuotaError(errorRecord);
+        }
+    }
+
+    handleServerQuotaError(errorRecord) {
+        // Display a prominent warning about server-side limits
+        const warningMessage = `🚫 Puter.js Server Quota Exceeded\n\nThe server reports quota limits independent of our local tracking. This means:\n• Puter.js has daily/hourly limits per user or IP\n• Your account may have hit usage restrictions\n• The service may be temporarily rate-limited\n\nSuggested actions:\n1. Wait 1-24 hours before trying again\n2. Switch to a different AI provider\n3. Check your Puter.js account status`;
+
+        // Show in UI with distinct styling
+        this.displayServerQuotaWarning(warningMessage);
+
+        // Log for debugging
+        logger.warn('Server-side quota error detected:', errorRecord);
+    }
+
+    displayServerQuotaWarning(message) {
+        // Create or update server quota warning element
+        let warningEl = document.getElementById('puter-server-quota-warning');
+        if (!warningEl) {
+            warningEl = DOM.create('div', {
+                id: 'puter-server-quota-warning',
+                className: 'server-quota-warning'
+            });
+
+            // Insert at the top of provider section for visibility
+            const providerSection = DOM.query('#provider-section');
+            if (providerSection) {
+                providerSection.insertBefore(warningEl, providerSection.firstChild);
+            }
+        }
+
+        warningEl.style.cssText = `
+            background: #dc2626;
+            color: white;
+            padding: 16px;
+            margin: 0 0 16px 0;
+            border-radius: 8px;
+            font-size: 0.9em;
+            line-height: 1.5;
+            border-left: 4px solid #991b1b;
+            white-space: pre-line;
+        `;
+
+        warningEl.textContent = message;
+
+        // Add a retry button
+        const retryButton = DOM.create('button', {
+            className: 'retry-button',
+            textContent: '🔄 Try Different Provider'
+        });
+
+        retryButton.style.cssText = `
+            background: rgba(255,255,255,0.2);
+            color: white;
+            border: 1px solid rgba(255,255,255,0.3);
+            padding: 8px 16px;
+            margin-top: 12px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 0.85em;
+        `;
+
+        retryButton.onclick = () => {
+            // Suggest switching to cloud provider
+            if (confirm('Switch to Cloud AI provider? This will reload the page with a different AI service.')) {
+                window.location.href = window.location.href.replace('puter.html', 'cloud.html');
+            }
+        };
+
+        warningEl.appendChild(retryButton);
+    }
+
+    // Method to clear server quota warnings (for testing)
+    clearServerQuotaWarning() {
+        const warningEl = document.getElementById('puter-server-quota-warning');
+        if (warningEl && warningEl.parentNode) {
+            warningEl.parentNode.removeChild(warningEl);
+        }
+        return 'Server quota warning cleared';
     }
 
     updateProviderStatus() {
@@ -411,20 +500,42 @@ export class PuterProvider extends BaseProvider {
             if (response && response.success === false) {
                 logger.warn('Puter.js API returned error response:', response);
                 let errorMsg = 'Unknown Puter.js error';
+                let isQuotaError = false;
 
                 if (response.error) {
                     if (typeof response.error === 'string') {
                         errorMsg = response.error;
                     } else if (response.error.message) {
                         errorMsg = response.error.message;
+                    } else if (response.error.error) {
+                        // Handle nested error structure
+                        errorMsg = response.error.error;
                     } else {
-                        errorMsg = JSON.stringify(response.error);
+                        errorMsg = JSON.stringify(response.error, null, 2);
                     }
                 } else if (response.message) {
                     errorMsg = response.message;
                 }
 
-                throw new Error(`Puter.js API error: ${errorMsg}`);
+                // Check if this is a quota/limit error
+                const quotaKeywords = ['quota', 'limit', 'rate', 'usage', 'exceeded', 'too many'];
+                isQuotaError = quotaKeywords.some(keyword =>
+                    errorMsg.toLowerCase().includes(keyword)
+                );
+
+                // Show detailed error information for debugging
+                logger.error(`Puter.js detailed error:`, {
+                    fullResponse: response,
+                    extractedMessage: errorMsg,
+                    isQuotaError: isQuotaError
+                });
+
+                if (isQuotaError) {
+                    // Show a user-friendly quota error with more context
+                    throw new Error(`Puter.js quota exceeded: ${errorMsg}\n\nThis appears to be a server-side limit from Puter.js. You may need to:\n1. Wait and try again later\n2. Try a different AI provider (Cloud, WebLLM, or Ollama)\n3. Check your Puter.js account at https://puter.com for quota details`);
+                } else {
+                    throw new Error(`Puter.js API error: ${errorMsg}`);
+                }
             }
 
             // Handle different response formats from Puter.js
