@@ -6,6 +6,7 @@
 import { DOM, Events } from '../core/dom.js';
 import { logger } from '../core/utils.js';
 import { loadingManager } from '../utils/loading-manager.js';
+import { showSettingsModal, hideSettingsModal, showHelpModal, hideHelpModal } from '../modules/ui.js';
 
 export class UIManager {
     constructor(dom) {
@@ -467,6 +468,23 @@ export class UIManager {
         this.createAddChapterTab();
 
         logger.debug('All chapters and course details cleared');
+    }
+
+    // Modal management methods
+    showSettingsModal() {
+        return showSettingsModal();
+    }
+
+    hideSettingsModal() {
+        return hideSettingsModal();
+    }
+
+    showHelpModal() {
+        return showHelpModal();
+    }
+
+    hideHelpModal() {
+        return hideHelpModal();
     }
 
     destroy() {

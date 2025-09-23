@@ -53,25 +53,25 @@ export class OpenRouterProvider extends BaseProvider {
             <fieldset>
                 <legend>🌐 Professional Cloud AI</legend>
 
-                <div class="openrouter-info" style="background: linear-gradient(135deg, #2563eb 0%, #7c3aed 100%); color: white; padding: 16px; border-radius: 8px; margin-bottom: 16px;">
-                    <h3 style="margin: 0 0 8px 0; font-size: 1.1em;">🚀 200+ Premium AI Models</h3>
-                    <p style="margin: 0 0 8px 0; font-size: 0.9em; opacity: 0.95;">Access GPT-4o, Claude 3.5 Sonnet, Gemini Pro, LLaMA, and 200+ more models with transparent pricing.</p>
-                    <div style="display: flex; gap: 16px; margin-top: 8px; flex-wrap: wrap;">
-                        <div style="font-size: 0.8em; opacity: 0.9;">✨ <strong>Transparent Billing</strong></div>
-                        <div style="font-size: 0.8em; opacity: 0.9;">📊 <strong>Usage Analytics</strong></div>
-                        <div style="font-size: 0.8em; opacity: 0.9;">⚡ <strong>Real-time Balance</strong></div>
+                <div class="openrouter-info card" style="background: var(--color-primary); color: white; padding: var(--spacing-4); border-radius: 8px; margin-bottom: var(--spacing-4); border: 1px solid var(--color-primary);">
+                    <h3 style="margin: 0 0 var(--spacing-2) 0; font-size: var(--font-size-lg);">🚀 200+ Premium AI Models</h3>
+                    <p style="margin: 0 0 var(--spacing-2) 0; font-size: var(--font-size-sm); opacity: 0.95;">Access GPT-4o, Claude 3.5 Sonnet, Gemini Pro, LLaMA, and 200+ more models with transparent pricing.</p>
+                    <div style="display: flex; gap: var(--spacing-4); margin-top: var(--spacing-2); flex-wrap: wrap;">
+                        <div style="font-size: var(--font-size-sm); opacity: 0.9;">✨ <strong>Transparent Billing</strong></div>
+                        <div style="font-size: var(--font-size-sm); opacity: 0.9;">📊 <strong>Usage Analytics</strong></div>
+                        <div style="font-size: var(--font-size-sm); opacity: 0.9;">⚡ <strong>Real-time Balance</strong></div>
                     </div>
                 </div>
 
                 <div class="auth-section" id="openrouter-auth">
                     <div class="auth-option" style="display: block;" id="auth-login">
-                        <h4 style="margin: 0 0 12px 0; color: #374151;">🔐 Connect Your OpenRouter Account</h4>
+                        <h4 style="margin: 0 0 var(--spacing-3) 0; color: var(--text-primary);">🔐 Connect Your OpenRouter Account</h4>
 
-                        <div style="background: #f0f9ff; border: 1px solid #0ea5e9; border-radius: 6px; padding: 12px; margin-bottom: 12px;">
-                            <div style="font-weight: 600; margin-bottom: 8px; color: #0c4a6e;">📋 Quick Setup</div>
-                            <div style="font-size: 0.9em; color: #0c4a6e; margin-bottom: 8px;">
-                                1. Visit <a href="https://openrouter.ai" target="_blank" style="color: #0369a1; font-weight: 600;">OpenRouter.ai</a> and create a free account<br>
-                                2. Go to <a href="https://openrouter.ai/keys" target="_blank" style="color: #0369a1; font-weight: 600;">API Keys</a> and generate a new key<br>
+                        <div class="setup-info card" style="background: var(--bg-secondary); border: 1px solid var(--border-primary); border-radius: 6px; padding: var(--spacing-3); margin-bottom: var(--spacing-3);">
+                            <div style="font-weight: 600; margin-bottom: var(--spacing-2); color: var(--text-primary);">📋 Quick Setup</div>
+                            <div style="font-size: var(--font-size-sm); color: var(--text-secondary); margin-bottom: var(--spacing-2);">
+                                1. Visit <a href="https://openrouter.ai" target="_blank" style="color: var(--color-primary); font-weight: 600;">OpenRouter.ai</a> and create a free account<br>
+                                2. Go to <a href="https://openrouter.ai/keys" target="_blank" style="color: var(--color-primary); font-weight: 600;">API Keys</a> and generate a new key<br>
                                 3. Add credits to your account for usage<br>
                                 4. Enter your API key below
                             </div>
@@ -82,20 +82,20 @@ export class OpenRouterProvider extends BaseProvider {
                             <input type="password" id="openrouter-api-key" placeholder="sk-or-v1-..." class="input-flex-grow">
                             <button id="openrouter-connect-btn" class="btn btn-primary">Connect</button>
                         </div>
-                        <div style="font-size: 0.8em; color: #6b7280; margin-top: 4px;">
+                        <div style="font-size: var(--font-size-sm); color: var(--text-tertiary); margin-top: var(--spacing-1);">
                             Your API key is stored locally and never leaves your browser
                         </div>
                     </div>
                 </div>
 
                 <div id="openrouter-authenticated" style="display: none;">
-                    <div class="account-info" style="background: #f0f9ff; border: 1px solid #0ea5e9; border-radius: 6px; padding: 12px; margin-bottom: 16px;">
-                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
-                            <h4 style="margin: 0; color: #0c4a6e;">✅ Connected to OpenRouter</h4>
-                            <button id="openrouter-disconnect-btn" class="btn btn-sm" style="font-size: 0.8em;">Disconnect</button>
+                    <div class="account-info card" style="background: var(--bg-secondary); border: 1px solid var(--border-primary); border-radius: 6px; padding: var(--spacing-3); margin-bottom: var(--spacing-4);">
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: var(--spacing-2);">
+                            <h4 style="margin: 0; color: var(--text-primary);">✅ Connected to OpenRouter</h4>
+                            <button id="openrouter-disconnect-btn" class="btn btn-sm" style="font-size: var(--font-size-sm);">Disconnect</button>
                         </div>
-                        <div id="account-balance" style="font-size: 0.9em; color: #0c4a6e;"></div>
-                        <div id="session-usage" style="font-size: 0.8em; color: #0369a1; margin-top: 4px;"></div>
+                        <div id="account-balance" style="font-size: var(--font-size-sm); color: var(--text-secondary);"></div>
+                        <div id="session-usage" style="font-size: var(--font-size-sm); color: var(--text-tertiary); margin-top: var(--spacing-1);"></div>
                     </div>
 
                     <div class="input-group">
@@ -123,7 +123,7 @@ export class OpenRouterProvider extends BaseProvider {
                         </select>
                     </div>
 
-                    <div id="cost-estimation" style="background: #fefce8; border: 1px solid #facc15; border-radius: 6px; padding: 10px; margin: 8px 0; font-size: 0.85em; display: none;">
+                    <div id="cost-estimation" class="card" style="background: var(--bg-tertiary); border: 1px solid var(--color-warning); border-radius: 6px; padding: var(--spacing-2); margin: var(--spacing-2) 0; font-size: var(--font-size-sm); display: none; color: var(--text-primary);">
                         <strong>💰 Cost Estimation:</strong> <span id="estimated-cost"></span>
                     </div>
                 </div>

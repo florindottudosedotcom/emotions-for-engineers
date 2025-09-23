@@ -232,6 +232,14 @@ class CreatorApp {
                 console.log('DOM cache:', this.dom);
             };
 
+            // Expose UI modal functions globally for HTML onclick handlers
+            if (this.modules.ui) {
+                window.showSettingsModal = this.modules.ui.showSettingsModal;
+                window.showHelpModal = this.modules.ui.showHelpModal;
+                window.hideSettingsModal = this.modules.ui.hideSettingsModal;
+                window.hideHelpModal = this.modules.ui.hideHelpModal;
+            }
+
             logger.debug('Modules initialized');
         } catch (error) {
             logger.error('Failed to initialize modules:', error);

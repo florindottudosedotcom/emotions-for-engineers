@@ -2,5 +2,41 @@ html, body {
     margin: 0;
     padding: 0;
     height: 100%;
+    min-height: 650px;
     overflow: hidden;
+}
+
+#editor {
+    width: 100%;
+    height: 100%;
+    min-height: 650px;
+}
+
+/* ToastUI Editor height fixes */
+.toastui-editor,
+.toastui-editor-contents,
+.toastui-editor-main,
+.toastui-editor-defaultUI {
+    width: 100% !important;
+    min-height: 580px !important;
+}
+
+.toastui-editor-defaultUI {
+    height: 580px !important;
+}
+
+/* ProseMirror editor area */
+.ProseMirror {
+    min-height: 400px !important;
+}
+
+/* Markdown editor area */
+.toastui-editor-md-container .toastui-editor .te-md-container .te-editor {
+    min-height: 400px !important;
+}
+
+/* Preview area */
+.toastui-editor-md-preview,
+.toastui-editor-md-splitter ~ .toastui-editor-md-preview {
+    min-height: 400px !important;
 }

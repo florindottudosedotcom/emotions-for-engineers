@@ -79,6 +79,233 @@ python build_site.py
 git push origin main
 ```
 
+## Screenshot System & Visual Verification
+
+This project includes a comprehensive Puppeteer-based screenshot automation system for visual testing and verification. **Use screenshots before and after every UI fix** to ensure visual quality and consistency.
+
+### 🚀 Quick Start Commands
+
+**Start development server with screenshot tools:**
+```bash
+# Start server and load screenshot functions
+source dev-with-screenshots.sh --start-server
+
+# Or start server separately
+./start_course_creator.sh
+```
+
+**Basic Screenshots:**
+```bash
+# Navigate to screenshot tools directory
+cd tools/screenshot-automation
+
+# Take screenshot of default page (cloud.html)
+node screenshot-simple.js
+
+# Take screenshot of specific page
+node screenshot-simple.js --url http://localhost:8000/creator/puter.html --filename puter-ui.png
+
+# Take screenshot with custom viewport
+node screenshot-simple.js --width 1440 --height 900 --filename desktop-ui.png
+```
+
+### 📸 Essential Screenshot Workflow
+
+#### 1. **Before Making Changes**
+```bash
+# Take before screenshots of all provider pages
+cd tools/screenshot-automation
+node screenshot-simple.js --url http://localhost:8000/creator/openrouter.html --filename before-openrouter.png
+node screenshot-simple.js --url http://localhost:8000/creator/webllm.html --filename before-webllm.png
+node screenshot-simple.js --url http://localhost:8000/creator/ollama.html --filename before-ollama.png
+
+# Or use npm script for all pages at once
+npm run screenshot-all
+```
+
+#### 2. **After Making Changes**
+```bash
+# Take after screenshots with same names for comparison
+node screenshot-simple.js --url http://localhost:8000/creator/openrouter.html --filename after-openrouter.png
+node screenshot-simple.js --url http://localhost:8000/creator/webllm.html --filename after-webllm.png
+node screenshot-simple.js --url http://localhost:8000/creator/ollama.html --filename after-ollama.png
+```
+
+#### 3. **Element-Specific Screenshots**
+```bash
+# Screenshot specific UI components
+node screenshot-simple.js --element "#chapter-tabs-container" --filename tabs-component.png
+node screenshot-simple.js --element ".lang-grid" --filename language-selector.png
+node screenshot-simple.js --element ".editor-container" --filename editor-area.png
+node screenshot-simple.js --element "#provider-section" --filename provider-config.png
+```
+
+### 🔍 Provider Consistency Verification
+
+**Critical for UI fixes:** Always verify all provider pages look identical after layout changes.
+
+```bash
+# Take consistent screenshots across all providers
+cd tools/screenshot-automation
+
+# All provider pages with same settings
+node screenshot-simple.js --url http://localhost:8000/creator/openrouter.html --filename openrouter-layout.png --delay 3000
+node screenshot-simple.js --url http://localhost:8000/creator/webllm.html --filename webllm-layout.png --delay 3000
+node screenshot-simple.js --url http://localhost:8000/creator/ollama.html --filename ollama-layout.png --delay 3000
+node screenshot-simple.js --url http://localhost:8000/creator/puter.html --filename puter-layout.png --delay 3000
+
+# Compare chapter tabs consistency
+node screenshot-simple.js --element "#chapter-tabs-container" --url http://localhost:8000/creator/openrouter.html --filename openrouter-tabs.png
+node screenshot-simple.js --element "#chapter-tabs-container" --url http://localhost:8000/creator/webllm.html --filename webllm-tabs.png
+node screenshot-simple.js --element "#chapter-tabs-container" --url http://localhost:8000/creator/ollama.html --filename ollama-tabs.png
+```
+
+### 📱 Responsive Design Testing
+
+**Use for responsive fixes and mobile optimization:**
+
+```bash
+# Test different viewport sizes
+cd creator/tools/screenshot-automation
+
+# Mobile portrait
+node ../../../tools/screenshot-automation/screenshot-simple.js --width 375 --height 667 --filename mobile-portrait.png
+
+# Mobile landscape
+node ../../../tools/screenshot-automation/screenshot-simple.js --width 667 --height 375 --filename mobile-landscape.png
+
+# Tablet
+node ../../../tools/screenshot-automation/screenshot-simple.js --width 768 --height 1024 --filename tablet.png
+
+# Desktop
+node ../../../tools/screenshot-automation/screenshot-simple.js --width 1920 --height 1080 --filename desktop.png
+
+# Complete responsive test suite
+npm run screenshots
+```
+
+### 🐛 Debugging Visual Issues
+
+#### Container Width Analysis
+```bash
+# Run comprehensive responsive analysis
+cd creator/tools/screenshot-automation
+node take-responsive-screenshots.js
+
+# This generates:
+# - Screenshots at all viewport sizes
+# - Container width analysis report
+# - Full-width issue detection
+# - Analysis report at screenshots/analysis-report.json
+```
+
+#### ToastUI Editor Height Verification
+```bash
+# Screenshot editor areas specifically
+node screenshot-simple.js --element ".toastui-editor" --url http://localhost:8000/creator/webllm.html --filename editor-webllm.png
+node screenshot-simple.js --element ".toastui-editor" --url http://localhost:8000/creator/ollama.html --filename editor-ollama.png
+
+# Screenshot editor iframes
+node screenshot-simple.js --element ".chapter-editor" --url http://localhost:8000/creator/webllm.html --filename iframe-webllm.png
+```
+
+#### Component Positioning Debug
+```bash
+# Screenshot specific problematic elements
+node screenshot-simple.js --element ".status-display" --filename status-displays.png
+node screenshot-simple.js --element ".card" --filename card-layouts.png
+node screenshot-simple.js --element ".form-group" --filename form-elements.png
+```
+
+### 🎯 Development Workflow Integration
+
+#### For Every UI Fix:
+
+1. **Before coding:**
+   ```bash
+   # Take baseline screenshots
+   npm run screenshot-all
+   ```
+
+2. **During development:**
+   ```bash
+   # Test specific component changes
+   node screenshot-simple.js --element "[your-changed-element]" --filename during-fix.png
+   ```
+
+3. **After coding:**
+   ```bash
+   # Verify fix across all providers
+   node screenshot-simple.js --url http://localhost:8000/creator/openrouter.html --filename fixed-openrouter.png
+   node screenshot-simple.js --url http://localhost:8000/creator/webllm.html --filename fixed-webllm.png
+   node screenshot-simple.js --url http://localhost:8000/creator/ollama.html --filename fixed-ollama.png
+   ```
+
+4. **Final verification:**
+   ```bash
+   # Run complete responsive test
+   cd creator/tools/screenshot-automation
+   node take-responsive-screenshots.js
+   ```
+
+### 📋 Screenshot Organization
+
+**File Naming Convention:**
+- `before-[provider]-[feature].png` - Before changes
+- `after-[provider]-[feature].png` - After changes
+- `[provider]-[component].png` - Component-specific
+- `mobile-[provider].png` - Mobile viewport
+- `desktop-[provider].png` - Desktop viewport
+- `error-[issue].png` - Error state documentation
+
+**Storage Location:**
+- Screenshots saved to: `tools/screenshot-automation/screenshots/`
+- Analysis reports: `creator/tools/screenshot-automation/screenshots/`
+
+### ⚡ Quick Reference
+
+**Most Common Commands:**
+```bash
+# All provider pages
+npm run screenshot-all
+
+# Single page with delay
+node screenshot-simple.js --url http://localhost:8000/creator/[provider].html --delay 3000
+
+# Specific element
+node screenshot-simple.js --element "#your-element" --filename element.png
+
+# Mobile viewport
+node screenshot-simple.js --width 375 --height 667
+
+# Complete analysis
+cd creator/tools/screenshot-automation && node take-responsive-screenshots.js
+```
+
+**Development Server:**
+- Start: `./start_course_creator.sh`
+- URLs: `http://localhost:8000/creator/[provider].html`
+- Providers: `openrouter`, `webllm`, `ollama`, `puter`
+
+### 🚨 Critical Checkpoints
+
+**Always screenshot these after UI changes:**
+1. **Provider Consistency** - All provider pages should look identical
+2. **Chapter Tabs** - Tab navigation and styling
+3. **Editor Areas** - ToastUI editor height and styling
+4. **Language Grid** - Multi-language selector layout
+5. **Form Elements** - Input fields, buttons, dropdowns
+6. **Modal Dialogs** - Settings and help modals
+7. **Status Displays** - Error, loading, and success states
+
+**Red Flags to Screenshot:**
+- Layout differences between providers
+- Editor height inconsistencies
+- Responsive breakpoint issues
+- Text overflow or clipping
+- Color/theme inconsistencies
+- Button sizing problems
+
 # MCP servers rules
 
 ## Context7 rules
