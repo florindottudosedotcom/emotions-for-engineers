@@ -343,7 +343,84 @@ function validateInput(input) {
 }
 ```
 
-### 2. **Component-Based Architecture**
+### 2. **Third-Party Integration & CSS Philosophy**
+
+#### The "Don't Fight the Framework" Rule
+**CRITICAL LESSON**: When integrating third-party libraries (ToastUI Editor, Chart.js, etc.), **always start simple and respect the library's natural behavior** before adding customizations.
+
+#### Anti-Patterns to Avoid
+```css
+/* ❌ DON'T: Heavy overrides that fight the library */
+.toastui-editor-defaultUI {
+    height: 480px !important;
+    border: 1px solid var(--custom-border) !important;
+    min-height: 420px !important;
+}
+
+/* ❌ DON'T: Complex wrapper systems that interfere with library layout */
+const editorWrapper = document.createElement('div');
+editorWrapper.style.height = '500px';
+editorWrapper.style.border = '1px solid #ddd';
+// Library now can't manage its own sizing and layout
+```
+
+#### Correct Approach
+```javascript
+// ✅ DO: Start with library defaults and minimal configuration
+const editor = new toastui.Editor({
+    el: document.querySelector('#editor'),
+    height: '100%', // Let the library manage its own sizing
+    initialEditType: 'wysiwyg',
+    // Minimal configuration - let the library handle the rest
+});
+```
+
+```css
+/* ✅ DO: Minimal CSS that works with the library */
+html, body {
+    margin: 0;
+    padding: 0;
+    height: 100%;
+}
+
+#editor {
+    width: 100%;
+    height: 100%;
+}
+/* Let the library handle its internal styling */
+```
+
+#### Development Process for Third-Party Integrations
+1. **Research First**: Check git history, documentation, working examples
+2. **Start Simple**: Use library defaults with minimal configuration
+3. **Test Early**: Verify basic functionality before adding customizations
+4. **Incremental Changes**: Add customizations one at a time, testing each
+5. **Respect Boundaries**: Don't override internal library classes unless absolutely necessary
+
+#### When Customization is Needed
+```css
+/* ✅ DO: Add complementary styling that doesn't interfere */
+.toastui-editor-mode-switch {
+    border-bottom: 1px solid #e1e5e9; /* Adds missing visual boundary */
+}
+
+/* ✅ DO: Style the container, not the library internals */
+.editor-container {
+    background: var(--surface);
+    border-radius: 8px;
+    overflow: hidden;
+}
+```
+
+#### Red Flags That Indicate Over-Engineering
+- Using `!important` to force CSS overrides
+- Creating complex wrapper divs to "fix" library behavior
+- Fighting with library's natural dimensions or layout
+- Breaking core library functionality to achieve visual tweaks
+
+**Remember**: Third-party libraries are designed by experts who understand their internal architecture. Trust their defaults and work with them, not against them.
+
+### 3. **Component-Based Architecture**
 
 #### Architecture Principles
 - **Modularity**: Create reusable, self-contained components
@@ -387,7 +464,7 @@ class UniversalComponent {
 }
 ```
 
-### 3. **Performance Optimization Standards**
+### 4. **Performance Optimization Standards**
 
 #### Core Optimizations
 - **Lazy Loading**: Load resources only when needed
@@ -429,7 +506,7 @@ class ComponentWithCleanup {
 }
 ```
 
-### 4. **Error Handling & User Feedback**
+### 5. **Error Handling & User Feedback**
 
 #### Comprehensive Error Strategy
 - **Graceful Degradation**: Provide fallbacks for failed features
@@ -456,7 +533,7 @@ async function performOperation() {
 }
 ```
 
-### 5. **Responsive Design & Accessibility**
+### 6. **Responsive Design & Accessibility**
 
 #### Universal Design Principles
 - **Mobile-First**: Start with mobile constraints, enhance for larger screens
