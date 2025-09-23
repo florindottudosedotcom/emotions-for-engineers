@@ -48,6 +48,13 @@
                 <textarea id="master-prompt" name="master-prompt" placeholder="Course Prompt - e.g., 'Create a comprehensive course about the history of ancient Rome, from its founding to the fall of the Western Empire.'" title="Course Prompt - Describe the course you want to create" class="prompt-textarea-large mb-4"></textarea>
 
                 <div class="input-group course-generation-section">
+                    <select id="course-depth" name="course-depth" class="select-no-margin" title="Course Depth - Control content length and detail level">
+                        <option value="outline">📋 Outline Only (50-100 words/chapter)</option>
+                        <option value="brief">📝 Brief (200-400 words/chapter)</option>
+                        <option value="standard" selected>📚 Standard (500-800 words/chapter)</option>
+                        <option value="detailed">📖 Detailed (1000-1500 words/chapter)</option>
+                        <option value="comprehensive">📚📚 Comprehensive (2000+ words/chapter)</option>
+                    </select>
                     <select id="num-chapters" name="num-chapters" class="select-no-margin" title="Number of Chapters - Select how many chapters your course should have">
                         <option value="1">1 Chapter</option>
                         <option value="2">2 Chapters</option>

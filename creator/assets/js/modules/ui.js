@@ -223,6 +223,111 @@ function updateOllamaStatus(message, type = 'info') {
 }
 
 
+// Cost preview and quota management UI
+function updateCostPreview(courseData, provider = null) {
+    // Find or create cost preview element
+    let costPreviewEl = document.getElementById('cost-preview');
+    if (!costPreviewEl) {
+        costPreviewEl = document.createElement('div');
+        costPreviewEl.id = 'cost-preview';
+        costPreviewEl.className = 'cost-preview-display';
+
+        // Insert after the course generation section
+        const generationSection = document.querySelector('.course-generation-section');
+        if (generationSection && generationSection.parentNode) {
+            generationSection.parentNode.insertBefore(costPreviewEl, generationSection.nextSibling);
+        }
+    }
+
+    if (!courseData || !courseData.numChapters) {
+        costPreviewEl.style.display = 'none';
+        return;
+    }
+
+    // Calculate basic cost estimate
+    const baseRequests = 2; // Course name + description
+    const chapterRequests = courseData.numChapters * 2; // Title + content per chapter
+    const totalRequests = baseRequests + chapterRequests;
+
+    // Get depth information
+    const depthConfig = {
+        outline: { name: 'Outline', color: '#10b981' },
+        brief: { name: 'Brief', color: '#3b82f6' },
+        standard: { name: 'Standard', color: '#6366f1' },
+        detailed: { name: 'Detailed', color: '#f59e0b' },
+        comprehensive: { name: 'Comprehensive', color: '#ef4444' }
+    };
+
+    const selectedDepth = courseData.courseDepth || 'standard';
+    const depth = depthConfig[selectedDepth] || depthConfig.standard;
+
+    // Provider-specific information
+    let providerInfo = '';
+    if (provider && provider.name && provider.name.includes('Puter')) {
+        const sessionRequests = provider.requestCount || 0;
+        const statusColor = '#3b82f6'; // blue
+        const statusIcon = '💳';
+
+        providerInfo = `
+            <div style="color: ${statusColor}; font-weight: 500; margin-top: 8px;">
+                ${statusIcon} User Pays Model: Quota managed by your Puter account
+            </div>
+            <div style="color: #6b7280; font-size: 0.85em; margin-top: 4px;">
+                Session: ${sessionRequests} requests made | Actual limits depend on your account
+            </div>
+        `;
+
+        // Show depth benefits for optimization
+        if (selectedDepth === 'outline' || selectedDepth === 'brief') {
+            providerInfo += `
+                <div style="color: #10b981; font-size: 0.85em; margin-top: 4px;">
+                    ✨ Optimized: Using ${selectedDepth} depth saves account quota
+                </div>
+            `;
+        }
+    }
+
+    costPreviewEl.innerHTML = `
+        <div style="
+            background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
+            border: 1px solid #cbd5e1;
+            border-radius: 8px;
+            padding: 12px 16px;
+            margin: 8px 0;
+            font-size: 0.9em;
+            line-height: 1.4;
+        ">
+            <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 6px;">
+                <span style="font-weight: 600; color: #1f2937;">📊 Generation Preview</span>
+                <span style="
+                    background: ${depth.color};
+                    color: white;
+                    padding: 2px 8px;
+                    border-radius: 12px;
+                    font-size: 0.8em;
+                    font-weight: 500;
+                ">${depth.name}</span>
+            </div>
+            <div style="color: #4b5563;">
+                <div>📝 <strong>${courseData.numChapters}</strong> chapters × <strong>${selectedDepth}</strong> depth = <strong>~${totalRequests} requests</strong></div>
+                <div style="font-size: 0.85em; color: #6b7280; margin-top: 4px;">
+                    Breakdown: Course info (2) + Chapter titles (${courseData.numChapters}) + Content (${courseData.numChapters})
+                </div>
+            </div>
+            ${providerInfo}
+        </div>
+    `;
+
+    costPreviewEl.style.display = 'block';
+}
+
+function hideCostPreview() {
+    const costPreviewEl = document.getElementById('cost-preview');
+    if (costPreviewEl) {
+        costPreviewEl.style.display = 'none';
+    }
+}
+
 function resetChapterCount() {
     chapterCount = 0;
 }
@@ -239,6 +344,8 @@ export {
     updateGenerationStatus,
     updateFileGenerationStatus,
     updateOllamaStatus,
+    updateCostPreview,
+    hideCostPreview,
     logDebug,
     initUI,
     editorInstances,

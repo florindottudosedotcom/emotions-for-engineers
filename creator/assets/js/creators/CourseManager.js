@@ -7,6 +7,35 @@ import { DOM, Events } from '../core/dom.js';
 import { logger, performance } from '../core/utils.js';
 import { appState } from '../core/state.js';
 
+// Course depth configuration for token allocation
+const DEPTH_CONFIG = {
+    outline: {
+        tokens: 300,
+        description: "Key points and structure only",
+        wordRange: "50-100 words"
+    },
+    brief: {
+        tokens: 600,
+        description: "Concise explanations with examples",
+        wordRange: "200-400 words"
+    },
+    standard: {
+        tokens: 1200,
+        description: "Balanced content with exercises",
+        wordRange: "500-800 words"
+    },
+    detailed: {
+        tokens: 1800,
+        description: "Comprehensive with activities",
+        wordRange: "1000-1500 words"
+    },
+    comprehensive: {
+        tokens: 2400,
+        description: "Full coverage with deep examples",
+        wordRange: "2000+ words"
+    }
+};
+
 export class CourseManager {
     constructor(dom, ui, provider) {
         this.dom = dom;
@@ -111,7 +140,29 @@ Please provide an enhanced version that maintains the original intent but adds e
 
         try {
             const courseData = this.collectCourseData();
-            const generatedCourse = await this.generateCourseContent(courseData);
+
+            // Show estimated cost for Puter provider (no pre-validation)
+            if (this.provider && this.provider.name && this.provider.name.includes('Puter') &&
+                typeof this.provider.getEstimatedCourseRequests === 'function') {
+
+                const estimate = this.provider.getEstimatedCourseRequests(courseData);
+                this.updateProgress(0, `Estimated: ${estimate.estimatedRequests} requests | Quota managed by your Puter account`);
+            }
+
+            // Use Puter provider's optimized generation if available
+            let generatedCourse;
+            if (this.provider && this.provider.name && this.provider.name.includes('Puter') &&
+                typeof this.provider.generateOptimizedCourseContent === 'function') {
+
+                logger.info('Using Puter optimized course generation');
+                generatedCourse = await this.provider.generateOptimizedCourseContent(
+                    courseData,
+                    (progress, message) => this.updateProgress(progress, message)
+                );
+            } else {
+                // Fallback to standard generation
+                generatedCourse = await this.generateCourseContent(courseData);
+            }
 
             this.ui.setChapterData(generatedCourse.chapters);
             this.generatedContent = generatedCourse;
@@ -225,11 +276,16 @@ Please provide an enhanced version that maintains the original intent but adds e
     }
 
     collectCourseData() {
+        const courseDepthSelect = DOM.query('#course-depth');
+        const selectedDepth = courseDepthSelect?.value || 'standard';
+
         return {
             name: this.dom.courseNameInput?.value?.trim() || '',
             description: this.dom.courseDescTextarea?.value?.trim() || '',
             masterPrompt: this.dom.masterPromptTextarea?.value?.trim() || '',
             numChapters: parseInt(this.dom.numChaptersSelect?.value) || 5,
+            courseDepth: selectedDepth,
+            depthConfig: DEPTH_CONFIG[selectedDepth] || DEPTH_CONFIG.standard,
             languages: appState.get('selectedLanguages', ['en']),
             chapters: this.ui.getChapterData()
         };
@@ -335,24 +391,94 @@ This should be chapter ${chapterIndex + 1} of ${courseData.numChapters}. Provide
     }
 
     async generateChapterContent(courseData, chapterTitle, chapterIndex) {
-        const prompt = `Generate comprehensive content for this chapter of an educational course:
+        const depth = courseData.depthConfig || DEPTH_CONFIG.standard;
+        const maxTokens = depth.tokens;
+
+        // Customize prompt based on depth level
+        let contentInstructions = '';
+        switch (courseData.courseDepth) {
+            case 'outline':
+                contentInstructions = `Create a concise outline-style content (${depth.wordRange}). Include:
+- Brief learning objectives
+- Key concepts (bullet points)
+- Essential takeaways
+Keep it structured but concise.`;
+                break;
+            case 'brief':
+                contentInstructions = `Create brief, focused content (${depth.wordRange}). Include:
+- Learning objectives
+- Key concepts with short explanations
+- One practical example
+- Summary of main points`;
+                break;
+            case 'standard':
+                contentInstructions = `Create balanced, educational content (${depth.wordRange}). Include:
+- Learning objectives
+- Key concepts and explanations
+- Practical examples
+- Activities or exercises
+- Summary and key takeaways`;
+                break;
+            case 'detailed':
+                contentInstructions = `Create comprehensive, detailed content (${depth.wordRange}). Include:
+- Detailed learning objectives
+- In-depth key concepts and explanations
+- Multiple practical examples
+- Hands-on exercises and activities
+- Detailed summary and key takeaways
+- Additional resources or further reading`;
+                break;
+            case 'comprehensive':
+                contentInstructions = `Create thorough, comprehensive content (${depth.wordRange}). Include:
+- Comprehensive learning objectives
+- Detailed key concepts with thorough explanations
+- Multiple real-world examples and case studies
+- Varied exercises, activities, and assessments
+- Comprehensive summary and detailed key takeaways
+- Additional resources, further reading, and related topics`;
+                break;
+            default:
+                contentInstructions = `Create educational content. Include learning objectives, key concepts, examples, and summary.`;
+        }
+
+        const prompt = `Generate educational content for this chapter of a course:
 
 Course Name: ${courseData.name}
 Course Description: ${courseData.description || 'No description provided'}
 Master Prompt: ${courseData.masterPrompt}
 Chapter Title: ${chapterTitle}
 Chapter Number: ${chapterIndex + 1} of ${courseData.numChapters}
+Content Depth: ${courseData.courseDepth} (${depth.description})
 
-Create detailed, educational content in Markdown format. Include:
-- Learning objectives
-- Key concepts and explanations
-- Practical examples
-- Exercises or activities
-- Summary and key takeaways
+${contentInstructions}
 
-The content should be comprehensive but focused, suitable for a chapter in a professional course:`;
+Format the content in Markdown. Make it engaging and educational for the target audience:`;
 
-        return await this.provider.generateText(prompt, { maxTokens: 2000 });
+        return await this.provider.generateText(prompt, { maxTokens });
+    }
+
+    // Helper method to estimate quota cost for course generation
+    getQuotaEstimate(courseData) {
+        const baseRequests = 2; // Course name + description (if empty)
+        const chapterTitleRequests = courseData.numChapters; // One per chapter
+        const chapterContentRequests = courseData.numChapters; // One per chapter
+        const totalRequests = baseRequests + chapterTitleRequests + chapterContentRequests;
+
+        const depth = courseData.depthConfig || DEPTH_CONFIG.standard;
+        const estimatedTokensPerChapter = depth.tokens;
+        const totalEstimatedTokens = estimatedTokensPerChapter * courseData.numChapters + 400; // +400 for name/desc/titles
+
+        return {
+            totalRequests,
+            totalEstimatedTokens,
+            breakdown: {
+                courseInfo: baseRequests,
+                chapterTitles: chapterTitleRequests,
+                chapterContent: chapterContentRequests
+            },
+            depth: courseData.courseDepth,
+            depthInfo: depth
+        };
     }
 
     async generateCourseFiles() {
