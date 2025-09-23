@@ -9,9 +9,9 @@ import { logger } from '../core/utils.js';
 
 export class OllamaProvider extends BaseProvider {
     constructor() {
-        super('Ollama', {
+        super('Ollama - Private AI', {
             apiUrl: 'http://localhost:11434',
-            maxTokens: 4000,
+            maxTokens: 8000,
             models: [] // Will be populated from server
         });
 
@@ -22,13 +22,45 @@ export class OllamaProvider extends BaseProvider {
     async getTemplate() {
         return `
             <fieldset>
-                <legend>AI Provider</legend>
-                <p>Ollama (Local)</p>
-                <div class="input-group" id="ai-model-selection-group">
-                    <label for="ai-model-select" class="label-no-shrink-no-margin">Model:</label>
-                    <select id="ai-model-select" class="select-no-margin"></select>
-                    <button type="button" id="refresh-models-btn" class="btn btn-secondary">Refresh List</button>
+                <legend>🏠 Private AI</legend>
+
+                <div class="ollama-info" style="background: linear-gradient(135deg, #7c3aed 0%, #5b21b6 100%); color: white; padding: 16px; border-radius: 8px; margin-bottom: 16px;">
+                    <h3 style="margin: 0 0 8px 0; font-size: 1.1em;">🔒 Your Own AI Models, Your Own Hardware</h3>
+                    <p style="margin: 0 0 8px 0; font-size: 0.9em; opacity: 0.95;">Run powerful AI models locally with Ollama. Complete privacy and control over your data.</p>
+                    <div style="display: flex; gap: 16px; margin-top: 8px; flex-wrap: wrap;">
+                        <div style="font-size: 0.8em; opacity: 0.9;">🛡️ <strong>100% Private</strong></div>
+                        <div style="font-size: 0.8em; opacity: 0.9;">⚡ <strong>No Usage Limits</strong></div>
+                        <div style="font-size: 0.8em; opacity: 0.9;">💰 <strong>Free to Use</strong></div>
+                    </div>
                 </div>
+
+                <div id="ollama-setup" style="background: #fef3c7; border: 1px solid #f59e0b; border-radius: 6px; padding: 12px; margin-bottom: 16px; display: none;">
+                    <div style="font-weight: 600; margin-bottom: 8px;">📋 Quick Setup</div>
+                    <div style="font-size: 0.9em; margin-bottom: 8px;">
+                        1. Install Ollama: <a href="https://ollama.ai" target="_blank" style="color: #d97706;">https://ollama.ai</a><br>
+                        2. Download a model: <code style="background: rgba(0,0,0,0.1); padding: 2px 4px; border-radius: 3px;">ollama pull llama3.1</code><br>
+                        3. Start Ollama server (it runs automatically on install)
+                    </div>
+                </div>
+
+                <div class="input-group" id="ai-model-selection-group">
+                    <label for="ai-model-select" class="label-no-shrink-no-margin">AI Model:</label>
+                    <select id="ai-model-select" class="select-no-margin">
+                        <option value="">Loading models...</option>
+                    </select>
+                    <button type="button" id="refresh-models-btn" class="btn btn-secondary">🔄 Refresh</button>
+                </div>
+
+                <div id="model-recommendations" style="background: #f0f9ff; border: 1px solid #0ea5e9; border-radius: 6px; padding: 12px; margin: 8px 0; font-size: 0.85em; display: none;">
+                    <div style="font-weight: 600; margin-bottom: 8px;">💡 Recommended Models</div>
+                    <div style="margin-bottom: 4px;"><strong>Beginner:</strong> llama3.1:8b (Fast, 4.7GB)</div>
+                    <div style="margin-bottom: 4px;"><strong>Balanced:</strong> llama3.1:70b (High quality, 40GB)</div>
+                    <div style="margin-bottom: 4px;"><strong>Coding:</strong> codellama:13b (Code specialist, 7.4GB)</div>
+                    <div style="margin-top: 8px; font-size: 0.9em; color: #0369a1;">
+                        Download with: <code style="background: rgba(0,0,0,0.1); padding: 2px 4px; border-radius: 3px;">ollama pull &lt;model-name&gt;</code>
+                    </div>
+                </div>
+
                 <div id="connection-status" class="status-display"></div>
             </fieldset>
         `;

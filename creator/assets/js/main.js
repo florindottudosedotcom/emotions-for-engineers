@@ -78,19 +78,15 @@ class CreatorApp {
      * Initialize AI provider
      */
     async initializeProvider() {
-        const providerType = window.COURSE_CREATOR_PROVIDER || 'cloud';
+        const providerType = window.COURSE_CREATOR_PROVIDER || 'openrouter';
         logger.info(`Initializing provider: ${providerType}`);
 
         try {
             let providerModule;
             switch (providerType) {
-                case 'cloud':
-                    providerModule = await import('./providers/CloudProvider.js');
-                    this.currentProvider = new providerModule.CloudProvider();
-                    break;
-                case 'puter':
-                    providerModule = await import('./providers/PuterProvider.js');
-                    this.currentProvider = new providerModule.PuterProvider();
+                case 'openrouter':
+                    providerModule = await import('./providers/OpenRouterProvider.js');
+                    this.currentProvider = new providerModule.OpenRouterProvider();
                     break;
                 case 'webllm':
                     providerModule = await import('./providers/WebLLMProvider.js');
@@ -101,7 +97,7 @@ class CreatorApp {
                     this.currentProvider = new providerModule.OllamaProvider();
                     break;
                 default:
-                    throw new Error(`Unknown provider type: ${providerType}`);
+                    throw new Error(`Unknown provider type: ${providerType}. Supported: openrouter, webllm, ollama`);
             }
 
             // Store provider type in state
@@ -111,21 +107,21 @@ class CreatorApp {
         } catch (error) {
             logger.error(`Failed to load ${providerType} provider:`, error);
 
-            // Fallback to cloud provider
-            if (providerType !== 'cloud') {
-                logger.info('Falling back to cloud provider');
+            // Fallback to openrouter provider
+            if (providerType !== 'openrouter') {
+                logger.info('Falling back to OpenRouter provider');
                 try {
-                    const cloudModule = await import('./providers/CloudProvider.js');
-                    this.currentProvider = new cloudModule.CloudProvider();
-                    appState.set('currentProvider', 'cloud');
+                    const openrouterModule = await import('./providers/OpenRouterProvider.js');
+                    this.currentProvider = new openrouterModule.OpenRouterProvider();
+                    appState.set('currentProvider', 'openrouter');
 
                     // Show user-friendly message about fallback
                     setTimeout(() => {
-                        this.showError(`${providerType} provider failed to load. Switched to Cloud AI provider. You can try refreshing to retry ${providerType}.`);
+                        this.showError(`${providerType} provider failed to load. Switched to OpenRouter provider. You can try refreshing to retry ${providerType}.`);
                     }, 1000);
                 } catch (fallbackError) {
-                    logger.error('Fallback to cloud provider also failed:', fallbackError);
-                    throw new Error(`Both ${providerType} and cloud providers failed to load`);
+                    logger.error('Fallback to OpenRouter provider also failed:', fallbackError);
+                    throw new Error(`Both ${providerType} and OpenRouter providers failed to load`);
                 }
             } else {
                 throw error;

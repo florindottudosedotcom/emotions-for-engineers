@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; frame-src 'self'; img-src 'self' data:; connect-src 'self' https://openrouter.ai https://api.openrouter.ai; font-src 'self'; object-src 'none'; base-uri 'self'; form-action 'self'; worker-src 'self' blob:;">
+    <title>Course Creator - OpenRouter</title>
+    <link rel="icon" type="image/svg+xml" href="favicon.svg">
+    <!-- Preload only immediately used assets -->
+    <link rel="preload" href="./assets/js/main.js" as="script">
+
+    <!-- Load CSS bundle -->
+    <link rel="stylesheet" href="./assets/css/bundle.min.css" />
+</head>
+<body>
+    <div id="overwrite-modal" class="modal-overlay">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 class="modal-title">Overwrite Existing Content?</h2>
+            </div>
+            <div class="modal-body">
+                <p>There are chapters with content present. Do you want to remove them before generating new content?</p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" id="overwrite-yes-btn" class="btn btn-primary">✓ Yes, Overwrite</button>
+                <button type="button" id="overwrite-cancel-btn" class="btn btn-secondary ml-auto">× Cancel</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="container p-6">
+        <div id="ai-status" class="ai-status-initial"></div>
+
+        <!-- Provider-specific section will be injected here -->
+        <div id="provider-section" class="card mb-6"></div>
+
+        <!-- Course Generation Section -->
+        <div class="card mb-6">
+            <div class="card-header">
+                <h3>Course Generation</h3>
+                <p class="text-secondary">Describe your course and let AI create the structure</p>
+            </div>
+            <div class="card-body">
+                <div class="prompt-header mb-4">
+                    <button type="button" id="enhance-prompt-btn" class="btn btn-ai" title="Enhance and expand your prompt with AI assistance">✦ Enhance Prompt</button>
+                </div>
+                <textarea id="master-prompt" name="master-prompt" placeholder="Course Prompt - e.g., 'Create a comprehensive course about the history of ancient Rome, from its founding to the fall of the Western Empire.'" title="Course Prompt - Describe the course you want to create" class="prompt-textarea-large mb-4"></textarea>
+
+                <div class="input-group course-generation-section">
+                    <select id="course-depth" name="course-depth" class="select-no-margin" title="Course Depth - Control content length and detail level">
+                        <option value="outline">📋 Outline Only (50-100 words/chapter)</option>
+                        <option value="brief">📝 Brief (200-400 words/chapter)</option>
+                        <option value="standard" selected>📚 Standard (500-800 words/chapter)</option>
+                        <option value="detailed">📖 Detailed (1000-1500 words/chapter)</option>
+                        <option value="comprehensive">📚📚 Comprehensive (2000+ words/chapter)</option>
+                    </select>
+                    <select id="num-chapters" name="num-chapters" class="select-no-margin" title="Number of Chapters - Select how many chapters your course should have">
+                        <option value="1">1 Chapter</option>
+                        <option value="2">2 Chapters</option>
+                        <option value="3">3 Chapters</option>
+                        <option value="4">4 Chapters</option>
+                        <option value="5" selected>5 Chapters</option>
+                        <option value="6">6 Chapters</option>
+                        <option value="7">7 Chapters</option>
+                        <option value="8">8 Chapters</option>
+                        <option value="9">9 Chapters</option>
+                        <option value="10">10 Chapters</option>
+                        <option value="12">12 Chapters</option>
+                        <option value="15">15 Chapters</option>
+                        <option value="20">20 Chapters</option>
+                    </select>
+                    <button type="button" id="generate-course-btn" class="btn btn-primary" title="Generate the entire course structure and content">⚡ Generate Entire Course</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Chapters Section -->
+        <div class="card mb-6">
+            <div class="card-header">
+                <h3>Course Structure</h3>
+                <p class="text-secondary">Review and edit your course content</p>
+            </div>
+            <div class="card-body">
+                <!-- Chapter Tabs -->
+                <div id="chapter-tabs-container" class="tabs-container"></div>
+
+                <!-- Chapter Content -->
+                <div id="chapter-content-container" class="chapter-content"></div>
+            </div>
+        </div>
+
+        <!-- Download Section -->
+        <div id="download-section" class="card mb-6" style="display: none;">
+            <div class="card-header">
+                <h3>Download Course</h3>
+                <p class="text-secondary">Export your course files</p>
+            </div>
+            <div class="card-body">
+                <div id="file-generation-status" class="mb-4"></div>
+                <a id="download-zip" href="#" download style="display: none;" class="btn btn-success">📦 Download Course ZIP</a>
+            </div>
+        </div>
+
+        <!-- Generation Status -->
+        <div id="generation-status" class="status-area"></div>
+
+        <!-- Action Buttons -->
+        <div class="button-group mt-6">
+            <button type="button" id="clear-form-btn" class="btn btn-secondary">🗑️ Clear All</button>
+        </div>
+    </div>
+
+    <!-- Settings Modal -->
+    <div id="settings-modal" class="modal-overlay">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 class="modal-title">Settings</h2>
+                <button type="button" class="modal-close-btn" onclick="hideSettingsModal()">×</button>
+            </div>
+            <div class="modal-body">
+                <h3>AI Provider Switching</h3>
+                <div class="provider-links">
+                    <a href="openrouter.html" class="provider-link current">🌐 OpenRouter (Professional Cloud AI)</a>
+                    <a href="webllm.html" class="provider-link">🖥️ WebLLM (Browser AI)</a>
+                    <a href="ollama.html" class="provider-link">🏠 Ollama (Private AI)</a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Help Modal -->
+    <div id="help-modal" class="modal-overlay">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 class="modal-title">How to Use</h2>
+                <button type="button" class="modal-close-btn" onclick="hideHelpModal()">×</button>
+            </div>
+            <div class="modal-body">
+                <h3>OpenRouter Course Creator</h3>
+                <ol>
+                    <li><strong>Connect:</strong> Authenticate with your OpenRouter account or use an API key</li>
+                    <li><strong>Choose Model:</strong> Select from 200+ AI models with transparent pricing</li>
+                    <li><strong>Describe:</strong> Enter a description of the course you want to create</li>
+                    <li><strong>Configure:</strong> Set the depth and number of chapters</li>
+                    <li><strong>Generate:</strong> Click "Generate Entire Course" to create your course</li>
+                    <li><strong>Review:</strong> Edit the generated content as needed</li>
+                    <li><strong>Download:</strong> Export your course as a ZIP file</li>
+                </ol>
+
+                <h4>OpenRouter Benefits</h4>
+                <ul>
+                    <li>Access to premium models (GPT-4o, Claude 3.5, Gemini Pro)</li>
+                    <li>Transparent pricing with real-time usage tracking</li>
+                    <li>Professional-grade analytics and billing</li>
+                    <li>No markup - same pricing as going direct to providers</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+
+    <!-- Debug Panel -->
+    <fieldset id="debug-fieldset" style="display: none; margin-top: 20px; border: 1px solid #ccc; padding: 10px;">
+        <legend>Debug Information</legend>
+        <button type="button" id="clear-log-btn" class="btn btn-secondary btn-sm">Clear Log</button>
+        <div id="debug-log" style="height: 200px; overflow-y: scroll; border: 1px solid #ddd; padding: 10px; background: #f9f9f9; font-family: monospace; font-size: 12px; margin-top: 10px;"></div>
+    </fieldset>
+
+    <!-- Fixed Action Bar -->
+    <div class="action-bar">
+        <button type="button" onclick="showSettingsModal()" class="action-btn" title="Switch AI Provider">⚙️</button>
+        <button type="button" onclick="showHelpModal()" class="action-btn" title="Help & Instructions">❓</button>
+        <button type="button" id="toggle-debug-btn" class="action-btn" title="Toggle Debug Panel">🐛</button>
+    </div>
+
+    <!-- Provider Configuration -->
+    <script>
+        window.COURSE_CREATOR_PROVIDER = 'openrouter';
+    </script>
+
+    <!-- Main Application -->
+    <script type="module" src="./assets/js/main.js"></script>
+</body>
+</html>
