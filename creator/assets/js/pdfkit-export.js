@@ -9,12 +9,12 @@ async function loadPDFKit() {
     if (typeof PDFDocument !== 'undefined') return true;
 
     try {
-        // Load PDFKit and blob-stream
+        // Load PDFKit and blob-stream from local vendor directory
         const pdfkitScript = document.createElement('script');
-        pdfkitScript.src = 'https://unpkg.com/pdfkit@0.13.0/js/pdfkit.standalone.js';
+        pdfkitScript.src = './assets/js/vendor/pdfkit/0.13.0/pdfkit.standalone.js';
 
         const blobStreamScript = document.createElement('script');
-        blobStreamScript.src = 'https://unpkg.com/blob-stream@0.1.3/blob-stream.js';
+        blobStreamScript.src = './assets/js/vendor/blob-stream/0.1.3/blob-stream.js';
 
         await Promise.all([
             new Promise((resolve, reject) => {

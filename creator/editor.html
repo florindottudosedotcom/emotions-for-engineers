@@ -86,29 +86,75 @@
                 // Detect system dark mode preference
                 const isDarkMode = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
 
-                // Initialize ToastUI Editor with simple approach
-                const editor = new toastui.Editor({
-                    el: document.querySelector('#editor'),
-                    height: '100%',
-                    initialEditType: 'wysiwyg',
-                    previewStyle: 'vertical',
-                    theme: isDarkMode ? 'dark' : 'light',
-                    initialValue: 'Start writing your chapter content here...',
-                    events: {
-                        change: () => {
-                            try {
-                                const content = editor.getMarkdown();
-                                parent.postMessage({
-                                    type: 'content-changed',
-                                    content: content,
-                                    id: chapterId
-                                }, '*');
-                            } catch (changeError) {
-                                console.warn('Editor change event error:', changeError);
+                // Initialize ToastUI Editor with safer approach
+                let editor;
+                try {
+                    editor = new toastui.Editor({
+                        el: document.querySelector('#editor'),
+                        height: '100%',
+                        initialEditType: 'wysiwyg',
+                        previewStyle: 'vertical',
+                        theme: isDarkMode ? 'dark' : 'light',
+                        initialValue: ' ',  // Single space to avoid DOM selection issues
+                        events: {
+                            change: () => {
+                                try {
+                                    if (editor && editor.getMarkdown) {
+                                        const content = editor.getMarkdown();
+                                        parent.postMessage({
+                                            type: 'content-changed',
+                                            content: content,
+                                            id: chapterId
+                                        }, '*');
+                                    }
+                                } catch (changeError) {
+                                    console.warn('Editor change event error:', changeError);
+                                }
                             }
                         }
-                    }
-                });
+                    });
+
+                    // Wait for editor to be fully rendered before setting content
+                    const setInitialContent = async () => {
+                        // Wait for editor to be fully ready
+                        let attempts = 0;
+                        while (attempts < 10) {
+                            try {
+                                if (editor && editor.setMarkdown && editor.getMarkdown) {
+                                    // Test if editor is really ready by trying to get content
+                                    editor.getMarkdown();
+                                    // If successful, set the initial content
+                                    editor.setMarkdown('Start writing your chapter content here...');
+                                    break;
+                                }
+                            } catch (testError) {
+                                attempts++;
+                                await new Promise(resolve => setTimeout(resolve, 100));
+                                continue;
+                            }
+                            attempts++;
+                            await new Promise(resolve => setTimeout(resolve, 100));
+                        }
+
+                        if (attempts >= 10) {
+                            console.warn('Editor took too long to initialize, using fallback');
+                        }
+                    };
+
+                    // Start setting initial content after a brief delay
+                    setTimeout(setInitialContent, 200);
+
+                } catch (editorInitError) {
+                    console.error('Editor initialization failed:', editorInitError);
+                    // Create a fallback textarea if ToastUI fails
+                    const editorContainer = document.querySelector('#editor');
+                    editorContainer.innerHTML = `
+                        <textarea
+                            style="width: 100%; height: 100%; border: 1px solid #ccc; padding: 10px; font-family: monospace;"
+                            placeholder="Start writing your chapter content here..."
+                        ></textarea>
+                    `;
+                }
 
                 console.log(`ToastUI Editor initialized successfully for chapter: ${chapterId}`);
 
@@ -136,9 +182,11 @@
 
                 // Listen for content updates from parent
                 window.addEventListener('message', (event) => {
-                    if (event.data.type === 'set-content' && editor) {
+                    if (event.data.type === 'set-content') {
                         try {
-                            editor.setMarkdown(event.data.content || 'Start writing your chapter content here...');
+                            if (editor && editor.setMarkdown) {
+                                editor.setMarkdown(event.data.content || 'Start writing your chapter content here...');
+                            }
                         } catch (setContentError) {
                             console.warn('Failed to set editor content:', setContentError);
                         }
@@ -149,11 +197,13 @@
                     }
                 });
 
-                // Notify parent that editor is ready
-                parent.postMessage({
-                    type: 'editor-ready',
-                    id: chapterId
-                }, '*');
+                // Notify parent that editor is ready (even if there were initialization issues)
+                setTimeout(() => {
+                    parent.postMessage({
+                        type: 'editor-ready',
+                        id: chapterId
+                    }, '*');
+                }, 300);
 
                 console.log(`Editor initialized successfully for chapter: ${chapterId}`);
 

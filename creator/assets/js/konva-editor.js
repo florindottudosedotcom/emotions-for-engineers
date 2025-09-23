@@ -8,8 +8,9 @@ async function loadKonvaJS() {
     if (typeof Konva !== 'undefined') return true;
 
     try {
-        // Try multiple CDN options for Konva.js
+        // Try local library first, then CDN fallbacks
         const cdnUrls = [
+            './assets/js/vendor/konva/9.2.0/konva.min.js',
             'https://unpkg.com/konva@9.2.0/konva.min.js',
             'https://unpkg.com/konva@9.2.0/lib/index.js',
             'https://cdn.jsdelivr.net/npm/konva@9.2.0/konva.min.js'

@@ -1,5 +1,12 @@
 // WebLLM Provider (In-browser AI)
-import * as webllm from "https://esm.run/@mlc-ai/web-llm@0.2.46";
+// Try to import from local first, with CDN fallback handled dynamically
+let webllm;
+try {
+    webllm = await import("./assets/js/vendor/webllm/0.2.46/index.js");
+} catch (error) {
+    console.warn('Failed to load local WebLLM, falling back to CDN:', error);
+    webllm = await import("https://esm.run/@mlc-ai/web-llm@0.2.46");
+}
 
 export const WebLLMProvider = {
     name: 'WebLLM',

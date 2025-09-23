@@ -311,20 +311,41 @@ export class UIManager {
                 titleInput.value = chapter.title;
             }
 
+            // Wait for editor to be fully created before setting content
             const chapterId = `chapter-${index}`;
+            await this.waitForEditorReady(chapterId);
+
             const editorInstance = this.editorInstances[chapterId];
             if (editorInstance && chapter.content) {
                 editorInstance.content = chapter.content;
-                if (editorInstance.isReady) {
-                    editorInstance.iframe.contentWindow.postMessage({
-                        type: 'set-content',
-                        content: chapter.content
-                    }, '*');
+                if (editorInstance.isReady && editorInstance.iframe && editorInstance.iframe.contentWindow) {
+                    try {
+                        editorInstance.iframe.contentWindow.postMessage({
+                            type: 'set-content',
+                            content: chapter.content
+                        }, '*');
+                    } catch (postMessageError) {
+                        logger.warn(`Failed to set content for ${chapterId}:`, postMessageError);
+                        editorInstance.pendingContent = chapter.content;
+                    }
                 } else {
                     editorInstance.pendingContent = chapter.content;
                 }
             }
         }
+    }
+
+    async waitForEditorReady(chapterId, timeout = 10000) {
+        const startTime = Date.now();
+        while (Date.now() - startTime < timeout) {
+            const editorInstance = this.editorInstances[chapterId];
+            if (editorInstance && editorInstance.isReady) {
+                return editorInstance;
+            }
+            await new Promise(resolve => setTimeout(resolve, 200));
+        }
+        logger.warn(`Timeout waiting for editor ${chapterId} to be ready`);
+        return null;
     }
 
 
@@ -453,21 +474,13 @@ export class UIManager {
         });
         this.editorInstances = {};
 
-        // Clear course name and description fields since they'll be auto-generated
-        if (this.dom.courseNameInput) {
-            this.dom.courseNameInput.value = '';
-        }
-        if (this.dom.courseDescTextarea) {
-            this.dom.courseDescTextarea.value = '';
-        }
-
         // Reset active chapter
         this.activeChapter = 0;
 
         // Re-create the add chapter button
         this.createAddChapterTab();
 
-        logger.debug('All chapters and course details cleared');
+        logger.debug('All chapters cleared');
     }
 
     // Modal management methods

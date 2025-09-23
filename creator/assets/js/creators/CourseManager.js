@@ -164,6 +164,14 @@ Please provide an enhanced version that maintains the original intent but adds e
                 generatedCourse = await this.generateCourseContent(courseData);
             }
 
+            // Update form fields with generated course data
+            if (generatedCourse.name && this.dom.courseNameInput) {
+                this.dom.courseNameInput.value = generatedCourse.name;
+            }
+            if (generatedCourse.description && this.dom.courseDescTextarea) {
+                this.dom.courseDescTextarea.value = generatedCourse.description;
+            }
+
             this.ui.setChapterData(generatedCourse.chapters);
             this.generatedContent = generatedCourse;
 
@@ -660,8 +668,11 @@ Generated with [Emotions for Engineers Course Creator](https://github.com/user/e
     }
 
     async createZipFile(files) {
-        const JSZip = await import('https://cdn.skypack.dev/jszip');
-        const zip = new JSZip.default();
+        // Use local JSZip instead of CDN to comply with CSP
+        if (typeof JSZip === 'undefined') {
+            throw new Error('JSZip library not loaded. Please ensure jszip.min.js is included.');
+        }
+        const zip = new JSZip();
 
         Object.entries(files).forEach(([path, content]) => {
             zip.file(path, content);
@@ -814,11 +825,35 @@ Write a description that explains what students will learn and the main topics c
                 return;
             }
 
+            // Position modal near the Generate Course button
+            const generateBtn = DOM.query('#generate-course-btn');
+            if (generateBtn) {
+                const btnRect = generateBtn.getBoundingClientRect();
+                const modalContent = modal.querySelector('.modal-content');
+                if (modalContent) {
+                    modalContent.style.position = 'fixed';
+                    modalContent.style.top = `${Math.max(20, btnRect.top - 150)}px`;
+                    modalContent.style.left = '50%';
+                    modalContent.style.transform = 'translateX(-50%)';
+                    modalContent.style.margin = '0';
+                }
+            }
+
             const cleanup = () => {
                 // Remove event listeners and hide modal
                 yesBtn.replaceWith(yesBtn.cloneNode(true));
                 cancelBtn.replaceWith(cancelBtn.cloneNode(true));
                 DOM.removeClass(modal, 'visible');
+
+                // Reset modal positioning
+                const modalContent = modal.querySelector('.modal-content');
+                if (modalContent) {
+                    modalContent.style.position = '';
+                    modalContent.style.top = '';
+                    modalContent.style.left = '';
+                    modalContent.style.transform = '';
+                    modalContent.style.margin = '';
+                }
             };
 
             // Show modal

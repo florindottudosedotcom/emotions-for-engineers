@@ -93,8 +93,9 @@ export class WebLLMProvider extends BaseProvider {
         // Show loading message
         this.updateConnectionStatus('Loading WebLLM library...', 'info');
 
-        // Load WebLLM module with fallbacks
+        // Load WebLLM module with local first, then CDN fallbacks
         const webllmUrls = [
+            "./assets/js/vendor/webllm/0.2.46/index.js",
             "https://cdn.jsdelivr.net/npm/@mlc-ai/web-llm@0.2.46/+esm",
             "https://unpkg.com/@mlc-ai/web-llm@0.2.46/dist/index.js",
             "https://esm.run/@mlc-ai/web-llm@0.2.46"
