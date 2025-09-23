@@ -69,25 +69,9 @@
                 // Add small delay to ensure DOM is stable
                 await new Promise(resolve => setTimeout(resolve, 100));
 
-                // Clear loading state and prepare container
+                // Clear loading state
                 const editorContainer = document.querySelector('#editor');
                 editorContainer.innerHTML = '';
-
-                // Create a wrapper div for better DOM stability
-                const editorWrapper = document.createElement('div');
-                editorWrapper.style.height = '600px';  // Increased from 100% to fixed height
-                editorWrapper.style.minHeight = '600px'; // Increased from 300px
-                editorWrapper.style.width = '100%';
-                editorWrapper.style.border = '1px solid var(--border-primary, #ddd)';
-                editorWrapper.style.borderRadius = '8px';
-                editorWrapper.style.overflow = 'hidden';
-                editorContainer.appendChild(editorWrapper);
-
-                // Ensure container is visible and has dimensions
-                if (editorContainer.offsetHeight === 0) {
-                    editorContainer.style.height = '650px';
-                    editorWrapper.style.height = '600px';
-                }
 
                 // Set iframe-specific document properties for better compatibility
                 if (window.parent !== window) {
@@ -102,74 +86,16 @@
                 // Detect system dark mode preference
                 const isDarkMode = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
 
-                // Try multiple initialization approaches for ToastUI Editor
-                let editor;
-                let editorInitialized = false;
-
-                // Approach 1: Standard initialization
-                try {
-                    // Force focus away from any existing selection to clear DOM state
-                    if (document.activeElement) {
-                        document.activeElement.blur();
-                    }
-
-                    // Clear any existing selection (safe iframe check)
-                    try {
-                        if (window.getSelection && window.getSelection()) {
-                            window.getSelection().removeAllRanges();
-                        }
-                    } catch (selectionError) {
-                        // Ignore selection errors in iframe context
-                        console.debug('Selection clearing failed (iframe context):', selectionError);
-                    }
-
-                    // Add another delay for iframe context stability
-                    await new Promise(resolve => setTimeout(resolve, 200));
-
-                    editor = new toastui.Editor({
-                        el: editorWrapper,
-                        height: '580px', // Fixed height instead of percentage
-                        initialEditType: 'markdown', // Start with markdown to avoid wysiwyg selection issues
-                        previewStyle: 'vertical',
-                        theme: isDarkMode ? 'dark' : 'light',
-                        initialValue: '# Chapter Title\n\nStart writing your chapter content here...',
-                        autofocus: false, // Prevent focus issues in iframe
-                        events: {
-                            change: () => {
-                                try {
-                                    const content = editor.getMarkdown();
-                                    parent.postMessage({
-                                        type: 'content-changed',
-                                        content: content,
-                                        id: chapterId
-                                    }, '*');
-                                } catch (changeError) {
-                                    console.warn('Editor change event error:', changeError);
-                                }
-                            }
-                        }
-                    });
-                    editorInitialized = true;
-                } catch (editorError1) {
-                    console.warn('Approach 1 failed:', editorError1);
-
-                    // Approach 2: Minimal configuration
-                    try {
-                        // Clear wrapper and recreate
-                        editorWrapper.innerHTML = '';
-                        await new Promise(resolve => setTimeout(resolve, 100));
-
-                        editor = new toastui.Editor({
-                            el: editorWrapper,
-                            height: '580px', // Consistent height with approach 1
-                            initialEditType: 'markdown',
-                            previewStyle: 'tab',
-                            initialValue: '# Chapter Title\n\nStart writing your chapter content here...',
-                            autofocus: false
-                        });
-
-                        // Add change listener separately
-                        editor.on('change', () => {
+                // Initialize ToastUI Editor with simple approach
+                const editor = new toastui.Editor({
+                    el: document.querySelector('#editor'),
+                    height: '100%',
+                    initialEditType: 'wysiwyg',
+                    previewStyle: 'vertical',
+                    theme: isDarkMode ? 'dark' : 'light',
+                    initialValue: 'Start writing your chapter content here...',
+                    events: {
+                        change: () => {
                             try {
                                 const content = editor.getMarkdown();
                                 parent.postMessage({
@@ -180,73 +106,10 @@
                             } catch (changeError) {
                                 console.warn('Editor change event error:', changeError);
                             }
-                        });
-
-                        editorInitialized = true;
-                    } catch (editorError2) {
-                        console.warn('Approach 2 failed:', editorError2);
-                        editorInitialized = false;
-                    }
-                }
-
-                if (!editorInitialized) {
-                    console.error('All ToastUI Editor initialization approaches failed');
-
-                    // Enhanced fallback editor with basic markdown support
-                    editorWrapper.innerHTML = `
-                        <div style="padding: 16px; background: var(--bg-secondary, #f5f5f5); border-radius: 4px; margin-bottom: 8px; border: 1px solid var(--border-primary, #ddd);">
-                            <strong>🔄 Enhanced Text Editor</strong><br>
-                            <small>Using enhanced text mode with markdown support. All features available!</small>
-                        </div>
-                        <div style="border: 1px solid var(--border-primary, #ddd); border-radius: 4px; overflow: hidden;">
-                            <div style="background: var(--bg-tertiary, #f8f9fa); padding: 8px 12px; border-bottom: 1px solid var(--border-primary, #ddd); font-size: 12px; color: var(--text-secondary, #666);">
-                                <strong>Markdown Shortcuts:</strong> **bold** *italic* # Heading ## Subheading - List • Bullet [Link](url)
-                            </div>
-                            <textarea id="fallback-editor" style="width: 100%; height: 550px; border: none; padding: 16px; font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace; font-size: 14px; line-height: 1.5; resize: vertical; background: var(--bg-primary, white); color: var(--text-primary, #333);">
-# Chapter Title
-
-Start writing your chapter content here...
-
-## Section 1
-
-Your content here. You can use **bold**, *italic*, and other markdown formatting.
-
-- List item 1
-- List item 2
-
-## Section 2
-
-More content here.
-                            </textarea>
-                        </div>
-                    `;
-
-                    const fallbackEditor = document.getElementById('fallback-editor');
-                    fallbackEditor.addEventListener('input', () => {
-                        parent.postMessage({
-                            type: 'content-changed',
-                            content: fallbackEditor.value,
-                            id: chapterId
-                        }, '*');
-                    });
-
-                    // Set up message listener for fallback
-                    window.addEventListener('message', (event) => {
-                        if (event.data.type === 'set-content') {
-                            fallbackEditor.value = event.data.content || '# Chapter Title\n\nStart writing your chapter content here...';
                         }
-                    });
+                    }
+                });
 
-                    parent.postMessage({
-                        type: 'editor-ready',
-                        id: chapterId,
-                        fallback: true
-                    }, '*');
-
-                    return;
-                }
-
-                // Editor successfully initialized
                 console.log(`ToastUI Editor initialized successfully for chapter: ${chapterId}`);
 
                 // Listen for system theme changes and update editor accordingly
@@ -275,7 +138,7 @@ More content here.
                 window.addEventListener('message', (event) => {
                     if (event.data.type === 'set-content' && editor) {
                         try {
-                            editor.setMarkdown(event.data.content || '# Chapter Title\n\nStart writing your chapter content here...');
+                            editor.setMarkdown(event.data.content || 'Start writing your chapter content here...');
                         } catch (setContentError) {
                             console.warn('Failed to set editor content:', setContentError);
                         }
