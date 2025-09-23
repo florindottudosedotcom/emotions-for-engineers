@@ -2,6 +2,32 @@
 
 This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
+## Session Management
+
+### Before Starting Work
+1. **Always read SESSION_HISTORY.md first** to understand recent activities and current project status
+2. Check the current git branch and modified files for context
+3. Review any blocking issues or next steps from previous sessions
+4. Understand the current phase of work and ongoing objectives
+
+### During Development
+- Use TodoWrite tool for complex multi-step tasks to track progress
+- Update SESSION_HISTORY.md when plans change significantly or when major milestones are reached
+- Track important decisions and architectural choices for future reference
+- Note any blockers or dependencies that might affect future sessions
+
+### Session Closure Workflow
+- Update SESSION_HISTORY.md with completed work and current status
+- Note any blocking issues, dependencies, or unresolved questions
+- Identify clear next steps and priorities for the following session
+- Ensure all important context is preserved for continuity
+
+### Session History File Management
+- Keep detailed records of the last 10 sessions
+- Archive older entries to prevent file bloat
+- Maintain clear session boundaries with dates and summaries
+- Include both planned work and actual outcomes
+
 ## Project Overview
 
 This is a Universal Course Platform with dual functionality:
