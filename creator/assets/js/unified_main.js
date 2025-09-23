@@ -18,19 +18,19 @@ async function initializeProvider() {
     try {
         switch (PROVIDER_TYPE) {
             case 'cloud':
-                providerModule = await import('./providers/cloud.js');
+                providerModule = await import('./providers/CloudProvider.js');
                 currentProvider = providerModule.CloudProvider;
                 break;
             case 'puter':
-                providerModule = await import('./providers/puter.js');
+                providerModule = await import('./providers/PuterProvider.js');
                 currentProvider = providerModule.PuterProvider;
                 break;
             case 'webllm':
-                providerModule = await import('./providers/webllm.js');
+                providerModule = await import('./providers/WebLLMProvider.js');
                 currentProvider = providerModule.WebLLMProvider;
                 break;
             case 'ollama':
-                providerModule = await import('./providers/ollama.js');
+                providerModule = await import('./providers/OllamaProvider.js');
                 currentProvider = providerModule.OllamaProvider;
                 break;
             default:
@@ -44,7 +44,7 @@ async function initializeProvider() {
         // Only fallback to cloud if it's not already the intended provider
         if (PROVIDER_TYPE !== 'cloud') {
             console.log('Falling back to cloud provider');
-            const cloudModule = await import('./providers/cloud.js');
+            const cloudModule = await import('./providers/CloudProvider.js');
             currentProvider = cloudModule.CloudProvider;
         } else {
             // If cloud provider itself failed, throw the error
@@ -142,6 +142,35 @@ document.addEventListener('DOMContentLoaded', async () => {
             }
         });
     }
+
+    // Cost preview event listeners
+    function updateCostPreviewFromUI() {
+        const courseDepthSelect = document.getElementById('course-depth');
+        const numChaptersSelect = document.getElementById('num-chapters');
+
+        if (courseDepthSelect && numChaptersSelect) {
+            const courseData = {
+                courseDepth: courseDepthSelect.value || 'standard',
+                numChapters: parseInt(numChaptersSelect.value) || 5
+            };
+
+            UI.updateCostPreview(courseData, currentProvider);
+        }
+    }
+
+    // Add event listeners for cost preview updates
+    const courseDepthSelect = document.getElementById('course-depth');
+    const numChaptersSelect = document.getElementById('num-chapters');
+
+    if (courseDepthSelect) {
+        courseDepthSelect.addEventListener('change', updateCostPreviewFromUI);
+    }
+    if (numChaptersSelect) {
+        numChaptersSelect.addEventListener('change', updateCostPreviewFromUI);
+    }
+
+    // Initial cost preview update
+    setTimeout(updateCostPreviewFromUI, 100); // Small delay to ensure provider is loaded
 
     // Initial Load (only for course creator)
     if (dom.chapterTabsContainer && dom.chapterContentContainer) {
