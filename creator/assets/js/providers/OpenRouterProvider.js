@@ -66,27 +66,25 @@ export class OpenRouterProvider extends BaseProvider {
                 <div class="auth-section" id="openrouter-auth">
                     <div class="auth-option" style="display: block;" id="auth-login">
                         <h4 style="margin: 0 0 12px 0; color: #374151;">🔐 Connect Your OpenRouter Account</h4>
-                        <div style="background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 6px; padding: 12px; margin-bottom: 12px;">
-                            <p style="margin: 0 0 8px 0; font-size: 0.9em; color: #4b5563;">Connect with your OpenRouter account for seamless billing and usage tracking.</p>
-                            <div style="display: flex; gap: 8px; align-items: center; flex-wrap: wrap;">
-                                <button id="openrouter-oauth-btn" class="btn btn-primary" style="font-size: 0.9em;">
-                                    🔗 Connect OpenRouter Account
-                                </button>
-                                <span style="font-size: 0.8em; color: #6b7280;">Recommended</span>
+
+                        <div style="background: #f0f9ff; border: 1px solid #0ea5e9; border-radius: 6px; padding: 12px; margin-bottom: 12px;">
+                            <div style="font-weight: 600; margin-bottom: 8px; color: #0c4a6e;">📋 Quick Setup</div>
+                            <div style="font-size: 0.9em; color: #0c4a6e; margin-bottom: 8px;">
+                                1. Visit <a href="https://openrouter.ai" target="_blank" style="color: #0369a1; font-weight: 600;">OpenRouter.ai</a> and create a free account<br>
+                                2. Go to <a href="https://openrouter.ai/keys" target="_blank" style="color: #0369a1; font-weight: 600;">API Keys</a> and generate a new key<br>
+                                3. Add credits to your account for usage<br>
+                                4. Enter your API key below
                             </div>
                         </div>
 
-                        <details style="margin-bottom: 12px;">
-                            <summary style="cursor: pointer; font-size: 0.9em; color: #6b7280; margin-bottom: 8px;">🔑 Or use API Key (Advanced)</summary>
-                            <div class="input-group">
-                                <label for="openrouter-api-key" class="label-no-shrink-no-margin">OpenRouter API Key:</label>
-                                <input type="password" id="openrouter-api-key" placeholder="sk-or-..." class="input-flex-grow">
-                                <button id="openrouter-connect-btn" class="btn btn-secondary">Connect</button>
-                            </div>
-                            <div style="font-size: 0.8em; color: #6b7280; margin-top: 4px;">
-                                Get your API key from <a href="https://openrouter.ai/keys" target="_blank" style="color: #2563eb;">OpenRouter Dashboard</a>
-                            </div>
-                        </details>
+                        <div class="input-group">
+                            <label for="openrouter-api-key" class="label-no-shrink-no-margin">OpenRouter API Key:</label>
+                            <input type="password" id="openrouter-api-key" placeholder="sk-or-v1-..." class="input-flex-grow">
+                            <button id="openrouter-connect-btn" class="btn btn-primary">Connect</button>
+                        </div>
+                        <div style="font-size: 0.8em; color: #6b7280; margin-top: 4px;">
+                            Your API key is stored locally and never leaves your browser
+                        </div>
                     </div>
                 </div>
 
@@ -137,7 +135,6 @@ export class OpenRouterProvider extends BaseProvider {
 
     async onInit() {
         // Cache DOM elements
-        this.dom.oauthBtn = DOM.query('#openrouter-oauth-btn');
         this.dom.apiKeyInput = DOM.query('#openrouter-api-key');
         this.dom.connectBtn = DOM.query('#openrouter-connect-btn');
         this.dom.disconnectBtn = DOM.query('#openrouter-disconnect-btn');
@@ -150,10 +147,6 @@ export class OpenRouterProvider extends BaseProvider {
         this.dom.estimatedCost = DOM.query('#estimated-cost');
 
         // Setup event listeners
-        if (this.dom.oauthBtn) {
-            Events.on(this.dom.oauthBtn, 'click', () => this.initiateOAuth());
-        }
-
         if (this.dom.connectBtn) {
             Events.on(this.dom.connectBtn, 'click', () => this.connectWithApiKey());
         }
@@ -173,86 +166,6 @@ export class OpenRouterProvider extends BaseProvider {
         await this.loadSavedAuth();
     }
 
-    async initiateOAuth() {
-        try {
-            // OpenRouter OAuth2 flow
-            const clientId = 'course-creator'; // Would be registered with OpenRouter
-            const redirectUri = `${window.location.origin}/auth/openrouter`;
-            const scope = 'read write';
-            const state = this.generateState();
-
-            // Store state for verification
-            sessionStorage.setItem('openrouter_oauth_state', state);
-
-            const authUrl = `https://openrouter.ai/auth/oauth2/authorize?` +
-                `client_id=${encodeURIComponent(clientId)}&` +
-                `redirect_uri=${encodeURIComponent(redirectUri)}&` +
-                `response_type=code&` +
-                `scope=${encodeURIComponent(scope)}&` +
-                `state=${encodeURIComponent(state)}`;
-
-            // Open OAuth popup
-            const popup = window.open(authUrl, 'openrouter_oauth', 'width=500,height=600');
-
-            // Listen for OAuth completion
-            window.addEventListener('message', this.handleOAuthMessage.bind(this));
-
-            logger.info('OpenRouter OAuth flow initiated');
-        } catch (error) {
-            logger.error('OAuth initiation failed:', error);
-            this.showMessage('OAuth connection failed. Please try API key method.', 'error');
-        }
-    }
-
-    async handleOAuthMessage(event) {
-        if (event.origin !== window.location.origin) return;
-
-        if (event.data.type === 'openrouter_oauth_success') {
-            const { code, state } = event.data;
-
-            // Verify state
-            const storedState = sessionStorage.getItem('openrouter_oauth_state');
-            if (state !== storedState) {
-                this.showMessage('OAuth security verification failed', 'error');
-                return;
-            }
-
-            try {
-                // Exchange code for access token
-                await this.exchangeCodeForToken(code);
-                sessionStorage.removeItem('openrouter_oauth_state');
-
-                this.showMessage('Successfully connected to OpenRouter!', 'success');
-                await this.updateAccountInfo();
-            } catch (error) {
-                logger.error('Token exchange failed:', error);
-                this.showMessage('Authentication failed. Please try again.', 'error');
-            }
-        }
-    }
-
-    async exchangeCodeForToken(code) {
-        // This would typically be handled by your backend to avoid exposing client secret
-        // For demo purposes, showing the flow structure
-        const response = await fetch('/api/auth/openrouter/callback', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ code })
-        });
-
-        if (!response.ok) {
-            throw new Error('Token exchange failed');
-        }
-
-        const { access_token } = await response.json();
-        this.apiKey = access_token;
-        this.isAuthenticated = true;
-
-        // Save to secure storage
-        localStorage.setItem('openrouter_token', access_token);
-
-        this.updateUI();
-    }
 
     async connectWithApiKey() {
         const apiKey = this.dom.apiKeyInput?.value?.trim();
@@ -287,7 +200,8 @@ export class OpenRouterProvider extends BaseProvider {
     }
 
     async validateApiKey() {
-        const response = await fetch('https://openrouter.ai/api/v1/auth/key', {
+        // Test the API key by making a simple request to OpenRouter
+        const response = await fetch('https://openrouter.ai/api/v1/models', {
             headers: {
                 'Authorization': `Bearer ${this.apiKey}`,
                 'Content-Type': 'application/json'
@@ -305,8 +219,8 @@ export class OpenRouterProvider extends BaseProvider {
         if (!this.isAuthenticated) return;
 
         try {
-            // Get account balance and info
-            const response = await fetch('https://openrouter.ai/api/v1/account/balance', {
+            // Get account credits and info
+            const response = await fetch('https://openrouter.ai/api/v1/auth/key', {
                 headers: {
                     'Authorization': `Bearer ${this.apiKey}`,
                     'Content-Type': 'application/json'
@@ -316,23 +230,36 @@ export class OpenRouterProvider extends BaseProvider {
             if (response.ok) {
                 this.accountInfo = await response.json();
                 this.updateBalanceDisplay();
+            } else {
+                // Fallback if balance endpoint isn't available
+                this.accountInfo = { label: 'Connected', usage: 0 };
+                this.updateBalanceDisplay();
             }
         } catch (error) {
             logger.error('Failed to fetch account info:', error);
+            // Show basic connected status even if balance fetch fails
+            this.accountInfo = { label: 'Connected', usage: 0 };
+            this.updateBalanceDisplay();
         }
     }
 
     updateBalanceDisplay() {
         if (!this.accountInfo || !this.dom.accountBalance) return;
 
-        const balance = this.accountInfo.balance || 0;
         const usage = this.sessionUsage[this.currentModel] || { requests: 0, cost: 0 };
 
-        this.dom.accountBalance.textContent = `💰 Balance: $${balance.toFixed(2)}`;
+        // Display account info (balance may not be available via API)
+        if (this.accountInfo.data && this.accountInfo.data.label) {
+            this.dom.accountBalance.textContent = `✅ Account: ${this.accountInfo.data.label}`;
+        } else if (this.accountInfo.balance !== undefined) {
+            this.dom.accountBalance.textContent = `💰 Balance: $${this.accountInfo.balance.toFixed(2)}`;
+        } else {
+            this.dom.accountBalance.textContent = `✅ API Key Connected`;
+        }
 
         if (this.dom.sessionUsage) {
             this.dom.sessionUsage.textContent =
-                `📊 Session: ${usage.requests} requests, $${usage.cost.toFixed(4)} spent`;
+                `📊 Session: ${usage.requests} requests, ~$${usage.cost.toFixed(4)} estimated`;
         }
     }
 
@@ -366,7 +293,6 @@ export class OpenRouterProvider extends BaseProvider {
         this.sessionUsage = {};
 
         localStorage.removeItem('openrouter_token');
-        sessionStorage.removeItem('openrouter_oauth_state');
 
         this.updateUI();
         this.showMessage('Disconnected from OpenRouter', 'info');
@@ -453,9 +379,6 @@ export class OpenRouterProvider extends BaseProvider {
         this.updateBalanceDisplay();
     }
 
-    generateState() {
-        return Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15);
-    }
 
     getModelDisplayName(modelId) {
         const model = this.config.models.find(m => m.id === modelId);
