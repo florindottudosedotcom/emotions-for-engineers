@@ -3,12 +3,12 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; frame-src 'self'; img-src 'self' data:; connect-src 'self' http://localhost:11434 http://127.0.0.1:11434; font-src 'self'; object-src 'none'; base-uri 'self'; form-action 'self'; worker-src 'self' blob:;">
-    <title>Slides Creator - Ollama</title>
+    <meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://cdn.jsdelivr.net https://unpkg.com; style-src 'self' 'unsafe-inline'; frame-src 'self'; img-src 'self' data: blob:; connect-src 'self' https://huggingface.co https://cdn.jsdelivr.net https://unpkg.com; font-src 'self'; object-src 'none'; base-uri 'self'; form-action 'self'; worker-src 'self' blob:;">
+    <title>Slides Creator - WebLLM</title>
     <link rel="icon" type="image/svg+xml" href="../favicon.svg">
 
     <!-- Load CSS bundle -->
-    <link rel="stylesheet" href="../assets/css/bundle.min.css" />
+    <link rel="stylesheet" href="./assets/css/bundle.min.css" />
 
     <style>
         .slides-container {
@@ -97,53 +97,31 @@
             max-width: 200px;
         }
 
-        /* Ollama specific styles */
-        .ollama-info {
-            background: var(--success-bg, #ecfdf5);
-            border: 1px solid var(--success-border, #10b981);
+        /* WebLLM specific styles */
+        .webllm-info {
+            background: var(--info-bg, #e6f3ff);
+            border: 1px solid var(--info-border, #3b82f6);
             border-radius: var(--radius-medium);
             padding: var(--spacing-4);
             margin-bottom: var(--spacing-4);
         }
 
-        .connection-indicator {
-            display: inline-flex;
-            align-items: center;
-            gap: var(--spacing-2);
-            padding: var(--spacing-2) var(--spacing-3);
-            border-radius: var(--radius-small);
-            font-size: 0.9em;
-            font-weight: var(--font-weight-medium);
+        .model-loading-progress {
+            margin-top: var(--spacing-3);
         }
 
-        .connection-indicator.connected {
-            background: var(--success-bg, #ecfdf5);
-            color: var(--success-text, #065f46);
+        .progress-bar {
+            width: 100%;
+            height: 6px;
+            background: var(--border-light);
+            border-radius: 3px;
+            overflow: hidden;
         }
 
-        .connection-indicator.disconnected {
-            background: var(--error-bg, #fef2f2);
-            color: var(--error-text, #991b1b);
-        }
-
-        .status-dot {
-            width: 8px;
-            height: 8px;
-            border-radius: 50%;
-            animation: pulse 2s infinite;
-        }
-
-        .status-dot.connected {
-            background: var(--success-color, #10b981);
-        }
-
-        .status-dot.disconnected {
-            background: var(--error-color, #ef4444);
-        }
-
-        @keyframes pulse {
-            0%, 100% { opacity: 1; }
-            50% { opacity: 0.5; }
+        .progress-fill {
+            height: 100%;
+            background: var(--primary-color);
+            transition: width 0.3s ease;
         }
     </style>
 </head>
@@ -158,15 +136,17 @@
         <div class="card mb-6">
             <div class="card-header">
                 <h3>Presentation Generator</h3>
-                <p class="text-secondary">Create visual presentations with your local Ollama AI</p>
+                <p class="text-secondary">Create visual presentations with browser-based AI</p>
             </div>
             <div class="card-body">
-                <div class="ollama-info">
-                    <h4>🏠 Local AI (Ollama)</h4>
-                    <p>Connect to your local Ollama installation for private, unlimited AI generation.</p>
-                    <div id="ollama-connection-status" class="connection-indicator disconnected">
-                        <span class="status-dot disconnected"></span>
-                        <span>Checking connection...</span>
+                <div class="webllm-info">
+                    <h4>🖥️ Browser AI (WebLLM)</h4>
+                    <p>AI models run directly in your browser for maximum privacy. First-time use requires downloading model files (~1-4GB).</p>
+                    <div id="model-status" class="model-loading-progress" style="display: none;">
+                        <div class="progress-bar">
+                            <div class="progress-fill" style="width: 0%"></div>
+                        </div>
+                        <p class="mt-2 text-sm">Loading model...</p>
                     </div>
                 </div>
 
@@ -229,16 +209,16 @@
     </div>
 
     <!-- JS Libraries -->
-    <script src="../assets/js/jszip/3.10.1/jszip.min.js"></script>
-    <script src="../assets/js/js-yaml/4.1.0/js-yaml.min.js"></script>
+    <script src="./assets/js/jszip/3.10.1/jszip.min.js"></script>
+    <script src="./assets/js/js-yaml/4.1.0/js-yaml.min.js"></script>
 
     <!-- Provider Configuration -->
     <script>
-        window.COURSE_CREATOR_PROVIDER = 'ollama';
+        window.COURSE_CREATOR_PROVIDER = 'webllm';
         window.CREATOR_TYPE = 'slides';
     </script>
 
     <!-- Main Application -->
-    <script type="module" src="../assets/js/slides-main.js"></script>
+    <script type="module" src="./assets/js/slides-main.js"></script>
 </body>
 </html>

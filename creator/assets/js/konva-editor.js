@@ -12,7 +12,6 @@ async function loadKonvaJS() {
         const cdnUrls = [
             './assets/js/vendor/konva/9.2.0/konva.min.js',
             'https://unpkg.com/konva@9.2.0/konva.min.js',
-            'https://unpkg.com/konva@9.2.0/lib/index.js',
             'https://cdn.jsdelivr.net/npm/konva@9.2.0/konva.min.js'
         ];
 

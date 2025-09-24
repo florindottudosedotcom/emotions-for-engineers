@@ -3,12 +3,12 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://cdn.jsdelivr.net https://unpkg.com; style-src 'self' 'unsafe-inline'; frame-src 'self'; img-src 'self' data: blob:; connect-src 'self' https://huggingface.co https://cdn.jsdelivr.net https://unpkg.com; font-src 'self'; object-src 'none'; base-uri 'self'; form-action 'self'; worker-src 'self' blob:;">
-    <title>Slides Creator - WebLLM</title>
+    <meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://cdn.jsdelivr.net https://unpkg.com; style-src 'self' 'unsafe-inline'; frame-src 'self'; img-src 'self' data: blob:; connect-src 'self' https://openrouter.ai https://api.openrouter.ai https://cdn.jsdelivr.net https://unpkg.com; font-src 'self'; object-src 'none'; base-uri 'self'; form-action 'self'; worker-src 'self' blob:;">
+    <title>Slides Creator - OpenRouter</title>
     <link rel="icon" type="image/svg+xml" href="../favicon.svg">
 
     <!-- Load CSS bundle -->
-    <link rel="stylesheet" href="../assets/css/bundle.min.css" />
+    <link rel="stylesheet" href="./assets/css/bundle.min.css" />
 
     <style>
         .slides-container {
@@ -96,33 +96,6 @@
             width: 100%;
             max-width: 200px;
         }
-
-        /* WebLLM specific styles */
-        .webllm-info {
-            background: var(--info-bg, #e6f3ff);
-            border: 1px solid var(--info-border, #3b82f6);
-            border-radius: var(--radius-medium);
-            padding: var(--spacing-4);
-            margin-bottom: var(--spacing-4);
-        }
-
-        .model-loading-progress {
-            margin-top: var(--spacing-3);
-        }
-
-        .progress-bar {
-            width: 100%;
-            height: 6px;
-            background: var(--border-light);
-            border-radius: 3px;
-            overflow: hidden;
-        }
-
-        .progress-fill {
-            height: 100%;
-            background: var(--primary-color);
-            transition: width 0.3s ease;
-        }
     </style>
 </head>
 <body>
@@ -136,20 +109,9 @@
         <div class="card mb-6">
             <div class="card-header">
                 <h3>Presentation Generator</h3>
-                <p class="text-secondary">Create visual presentations with browser-based AI</p>
+                <p class="text-secondary">Create visual presentations with AI</p>
             </div>
             <div class="card-body">
-                <div class="webllm-info">
-                    <h4>🖥️ Browser AI (WebLLM)</h4>
-                    <p>AI models run directly in your browser for maximum privacy. First-time use requires downloading model files (~1-4GB).</p>
-                    <div id="model-status" class="model-loading-progress" style="display: none;">
-                        <div class="progress-bar">
-                            <div class="progress-fill" style="width: 0%"></div>
-                        </div>
-                        <p class="mt-2 text-sm">Loading model...</p>
-                    </div>
-                </div>
-
                 <div class="prompt-header mb-4">
                     <button type="button" id="enhance-prompt-btn" class="btn btn-ai" title="Enhance and expand your prompt with AI assistance">✦ Enhance Prompt</button>
                 </div>
@@ -209,16 +171,16 @@
     </div>
 
     <!-- JS Libraries -->
-    <script src="../assets/js/jszip/3.10.1/jszip.min.js"></script>
-    <script src="../assets/js/js-yaml/4.1.0/js-yaml.min.js"></script>
+    <script src="./assets/js/jszip/3.10.1/jszip.min.js"></script>
+    <script src="./assets/js/js-yaml/4.1.0/js-yaml.min.js"></script>
 
     <!-- Provider Configuration -->
     <script>
-        window.COURSE_CREATOR_PROVIDER = 'webllm';
+        window.COURSE_CREATOR_PROVIDER = 'openrouter';
         window.CREATOR_TYPE = 'slides';
     </script>
 
     <!-- Main Application -->
-    <script type="module" src="../assets/js/slides-main.js"></script>
+    <script type="module" src="./assets/js/slides-main.js"></script>
 </body>
 </html>

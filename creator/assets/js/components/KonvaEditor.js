@@ -75,7 +75,7 @@ export class KonvaEditor {
         if (!konvaScript) {
             konvaScript = DOM.create('script', {
                 id: 'konva-script',
-                src: 'https://unpkg.com/konva@9/konva.min.js'
+                src: './assets/js/vendor/konva/9.2.0/konva.min.js'
             });
             document.head.appendChild(konvaScript);
         }

@@ -3,12 +3,12 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; frame-src 'self'; img-src 'self' data:; connect-src 'self' https://openrouter.ai https://api.openrouter.ai; font-src 'self'; object-src 'none'; base-uri 'self'; form-action 'self'; worker-src 'self' blob:;">
-    <title>Slides Creator - OpenRouter</title>
+    <meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://cdn.jsdelivr.net https://unpkg.com; style-src 'self' 'unsafe-inline'; frame-src 'self'; img-src 'self' data: blob:; connect-src 'self' http://localhost:11434 http://127.0.0.1:11434 https://cdn.jsdelivr.net https://unpkg.com; font-src 'self'; object-src 'none'; base-uri 'self'; form-action 'self'; worker-src 'self' blob:;">
+    <title>Slides Creator - Ollama</title>
     <link rel="icon" type="image/svg+xml" href="../favicon.svg">
 
     <!-- Load CSS bundle -->
-    <link rel="stylesheet" href="../assets/css/bundle.min.css" />
+    <link rel="stylesheet" href="./assets/css/bundle.min.css" />
 
     <style>
         .slides-container {
@@ -96,6 +96,55 @@
             width: 100%;
             max-width: 200px;
         }
+
+        /* Ollama specific styles */
+        .ollama-info {
+            background: var(--success-bg, #ecfdf5);
+            border: 1px solid var(--success-border, #10b981);
+            border-radius: var(--radius-medium);
+            padding: var(--spacing-4);
+            margin-bottom: var(--spacing-4);
+        }
+
+        .connection-indicator {
+            display: inline-flex;
+            align-items: center;
+            gap: var(--spacing-2);
+            padding: var(--spacing-2) var(--spacing-3);
+            border-radius: var(--radius-small);
+            font-size: 0.9em;
+            font-weight: var(--font-weight-medium);
+        }
+
+        .connection-indicator.connected {
+            background: var(--success-bg, #ecfdf5);
+            color: var(--success-text, #065f46);
+        }
+
+        .connection-indicator.disconnected {
+            background: var(--error-bg, #fef2f2);
+            color: var(--error-text, #991b1b);
+        }
+
+        .status-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            animation: pulse 2s infinite;
+        }
+
+        .status-dot.connected {
+            background: var(--success-color, #10b981);
+        }
+
+        .status-dot.disconnected {
+            background: var(--error-color, #ef4444);
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
     </style>
 </head>
 <body>
@@ -109,9 +158,18 @@
         <div class="card mb-6">
             <div class="card-header">
                 <h3>Presentation Generator</h3>
-                <p class="text-secondary">Create visual presentations with AI</p>
+                <p class="text-secondary">Create visual presentations with your local Ollama AI</p>
             </div>
             <div class="card-body">
+                <div class="ollama-info">
+                    <h4>🏠 Local AI (Ollama)</h4>
+                    <p>Connect to your local Ollama installation for private, unlimited AI generation.</p>
+                    <div id="ollama-connection-status" class="connection-indicator disconnected">
+                        <span class="status-dot disconnected"></span>
+                        <span>Checking connection...</span>
+                    </div>
+                </div>
+
                 <div class="prompt-header mb-4">
                     <button type="button" id="enhance-prompt-btn" class="btn btn-ai" title="Enhance and expand your prompt with AI assistance">✦ Enhance Prompt</button>
                 </div>
@@ -171,16 +229,16 @@
     </div>
 
     <!-- JS Libraries -->
-    <script src="../assets/js/jszip/3.10.1/jszip.min.js"></script>
-    <script src="../assets/js/js-yaml/4.1.0/js-yaml.min.js"></script>
+    <script src="./assets/js/jszip/3.10.1/jszip.min.js"></script>
+    <script src="./assets/js/js-yaml/4.1.0/js-yaml.min.js"></script>
 
     <!-- Provider Configuration -->
     <script>
-        window.COURSE_CREATOR_PROVIDER = 'openrouter';
+        window.COURSE_CREATOR_PROVIDER = 'ollama';
         window.CREATOR_TYPE = 'slides';
     </script>
 
     <!-- Main Application -->
-    <script type="module" src="../assets/js/slides-main.js"></script>
+    <script type="module" src="./assets/js/slides-main.js"></script>
 </body>
 </html>
