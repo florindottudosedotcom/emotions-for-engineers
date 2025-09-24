@@ -312,6 +312,7 @@ class KonvaSlideSystem {
         this.layer = null;
         this.currentSlideIndex = 0;
         this.slides = [];
+        this.isInitialized = false;
         this.slideObjects = []; // Store Konva objects for each slide
 
         // Canvas dimensions
@@ -345,8 +346,21 @@ class KonvaSlideSystem {
     }
 
     init() {
-        // Clear container
+        // Prevent double initialization
+        if (this.isInitialized) {
+            return;
+        }
+
+        // Force clear container and remove any existing accordions
         this.container.innerHTML = '';
+
+        // Remove any existing accordion containers that might be floating around
+        const existingAccordions = document.querySelectorAll('.accordion-container, .konva-editor-layout, .konva-slide-sidebar');
+        existingAccordions.forEach(el => {
+            if (el.parentNode) {
+                el.parentNode.removeChild(el);
+            }
+        });
 
         // Create navigation controls
         this.createNavigationControls();
@@ -421,6 +435,12 @@ class KonvaSlideSystem {
 
         // Create toolbar for adding content
         this.createContentToolbar();
+
+        // Create initial demo slide if no slides exist
+        this.createInitialSlide();
+
+        // Mark as initialized to prevent double initialization
+        this.isInitialized = true;
     }
 
     calculateResponsiveDimensions(container) {
@@ -2779,23 +2799,34 @@ class KonvaSlideSystem {
     }
 
     updateSelectedColor(color) {
-        const selected = this.stage.getIntersection(this.stage.getPointerPosition());
-        if (selected && selected.getClassName() === 'Text') {
-            selected.fill(color);
+        if (this.selectedObject) {
+            if (this.selectedObject.getClassName() === 'Text') {
+                this.selectedObject.fill(color);
+            } else if (this.selectedObject.fill) {
+                this.selectedObject.fill(color);
+            } else if (this.selectedObject.stroke) {
+                this.selectedObject.stroke(color);
+            }
             this.layer.draw();
             this.saveSlideState();
+        } else {
+            console.log('No object selected. Click an element first to change its color.');
         }
     }
 
     updateSelectedFontSize(size) {
-        const selected = this.stage.getIntersection(this.stage.getPointerPosition());
-        if (selected && selected.getClassName() === 'Text') {
-            selected.fontSize(parseInt(size));
+        if (this.selectedObject && this.selectedObject.getClassName() === 'Text') {
+            this.selectedObject.fontSize(parseInt(size));
             this.layer.draw();
             this.saveSlideState();
+        } else {
+            console.log('No text object selected. Click a text element first to change its font size.');
         }
 
-        document.getElementById('font-size-display').textContent = `${size}px`;
+        const display = document.getElementById('font-size-display');
+        if (display) {
+            display.textContent = `${size}px`;
+        }
     }
 
     deleteSelected() {
@@ -3993,12 +4024,8 @@ class KonvaSlideSystem {
                     const scheme = tile.dataset.scheme;
                     console.log('Edit button clicked for scheme:', scheme);
                     if (colorSchemes[scheme]) {
-                        if (window.openColorEditor) {
-                            console.log('Opening color editor for:', scheme, colorSchemes[scheme]);
-                            window.openColorEditor(scheme, colorSchemes[scheme]);
-                        } else {
-                            console.error('window.openColorEditor function not available');
-                        }
+                        console.log('Opening color editor for:', scheme, colorSchemes[scheme]);
+                        this.openColorEditor(scheme, colorSchemes[scheme]);
                     } else {
                         console.error('Color scheme not found:', scheme);
                     }
@@ -4113,6 +4140,188 @@ class KonvaSlideSystem {
 
         // Clear container
         this.container.innerHTML = '';
+    }
+
+    /**
+     * Create initial demo slide with default color scheme
+     */
+    createInitialSlide() {
+        // Only create if no slides exist
+        if (this.slides.length > 0) {
+            return;
+        }
+
+        // Create a sample slide with default lavender theme
+        const initialSlide = {
+            title: "Welcome to your presentation",
+            content: [
+                "Click any element to edit",
+                "Use the sidebar tools to add content",
+                "Choose colors, shapes, and layouts",
+                "Export when ready"
+            ],
+            visualSuggestions: {
+                backgroundColor: "#f0f9ff",
+                accentColor: "#8b5cf6",
+                layout: "hero"
+            },
+            isTitle: true,
+            slideNumber: 1
+        };
+
+        // Add the slide
+        this.slides.push(initialSlide);
+
+        // Create visual objects for the slide
+        const slideObjects = this.createSlideFromData(initialSlide, 0);
+        this.slideObjects.push(slideObjects);
+
+        // Show the slide
+        this.showSlide(0);
+        this.updateNavigation();
+
+        console.log('Created initial demo slide with default theme');
+    }
+
+    /**
+     * Open color editor modal for editing color schemes
+     */
+    openColorEditor(schemeKey, currentScheme) {
+        const modal = document.createElement('div');
+        modal.className = 'color-editor-modal';
+        modal.style.cssText = `
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0,0,0,0.7);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 10000;
+        `;
+
+        modal.innerHTML = `
+            <div class="color-editor-content" style="
+                background: white;
+                border-radius: 12px;
+                padding: 30px;
+                max-width: 500px;
+                width: 90%;
+                box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+            ">
+                <h3 style="margin-top: 0; margin-bottom: 20px;">Edit ${schemeKey.charAt(0).toUpperCase() + schemeKey.slice(1)} Color Scheme</h3>
+
+                <div class="color-inputs" style="display: flex; flex-direction: column; gap: 15px;">
+                    <div class="input-group">
+                        <label style="display: block; margin-bottom: 5px; font-weight: 500;">Text Color:</label>
+                        <input type="color" id="edit-text-color" value="${currentScheme.textColor}" style="width: 100%; height: 40px; border-radius: 6px; border: 1px solid #ddd;">
+                    </div>
+                    <div class="input-group">
+                        <label style="display: block; margin-bottom: 5px; font-weight: 500;">Border Color:</label>
+                        <input type="color" id="edit-border-color" value="${currentScheme.borderColor}" style="width: 100%; height: 40px; border-radius: 6px; border: 1px solid #ddd;">
+                    </div>
+                    <div class="input-group">
+                        <label style="display: block; margin-bottom: 5px; font-weight: 500;">Fill Color:</label>
+                        <input type="color" id="edit-fill-color" value="${currentScheme.fillColor}" style="width: 100%; height: 40px; border-radius: 6px; border: 1px solid #ddd;">
+                    </div>
+                </div>
+
+                <div class="color-preview" style="
+                    margin: 20px 0;
+                    padding: 15px;
+                    border-radius: 8px;
+                    border: 2px solid var(--border-color, ${currentScheme.borderColor});
+                    background-color: var(--fill-color, ${currentScheme.fillColor});
+                    color: var(--text-color, ${currentScheme.textColor});
+                    text-align: center;
+                    font-weight: 500;
+                ">Preview: Sample Text</div>
+
+                <div class="modal-buttons" style="display: flex; gap: 10px; justify-content: flex-end; margin-top: 25px;">
+                    <button type="button" class="btn-cancel" style="
+                        padding: 8px 16px;
+                        border: 1px solid #ddd;
+                        background: white;
+                        border-radius: 6px;
+                        cursor: pointer;
+                    ">Cancel</button>
+                    <button type="button" class="btn-save" style="
+                        padding: 8px 16px;
+                        border: none;
+                        background: #3b82f6;
+                        color: white;
+                        border-radius: 6px;
+                        cursor: pointer;
+                    ">Save Changes</button>
+                </div>
+            </div>
+        `;
+
+        // Add event listeners
+        const textColorInput = modal.querySelector('#edit-text-color');
+        const borderColorInput = modal.querySelector('#edit-border-color');
+        const fillColorInput = modal.querySelector('#edit-fill-color');
+        const preview = modal.querySelector('.color-preview');
+
+        const updatePreview = () => {
+            preview.style.color = textColorInput.value;
+            preview.style.borderColor = borderColorInput.value;
+            preview.style.backgroundColor = fillColorInput.value;
+        };
+
+        textColorInput.addEventListener('input', updatePreview);
+        borderColorInput.addEventListener('input', updatePreview);
+        fillColorInput.addEventListener('input', updatePreview);
+
+        // Save button
+        modal.querySelector('.btn-save').addEventListener('click', () => {
+            const updatedScheme = {
+                textColor: textColorInput.value,
+                borderColor: borderColorInput.value,
+                fillColor: fillColorInput.value
+            };
+
+            this.updateColorScheme(schemeKey, updatedScheme);
+            document.body.removeChild(modal);
+        });
+
+        // Cancel button
+        modal.querySelector('.btn-cancel').addEventListener('click', () => {
+            document.body.removeChild(modal);
+        });
+
+        // Close on backdrop click
+        modal.addEventListener('click', (e) => {
+            if (e.target === modal) {
+                document.body.removeChild(modal);
+            }
+        });
+
+        document.body.appendChild(modal);
+    }
+
+    /**
+     * Update color scheme and refresh UI
+     */
+    updateColorScheme(schemeKey, newScheme) {
+        // Update the color schemes object (assuming it exists globally)
+        if (window.colorSchemes) {
+            window.colorSchemes[schemeKey] = newScheme;
+        }
+
+        // Update the visual tile in the sidebar
+        this.updateColorSchemeTile(schemeKey, newScheme);
+
+        // Apply to current theme if this scheme is selected
+        const selectedTile = this.sidebar.querySelector('.color-scheme-tile.selected');
+        if (selectedTile && selectedTile.dataset.scheme === schemeKey) {
+            this.currentTheme = newScheme;
+            this.applyThemeToCurrentSlide();
+        }
+
+        console.log(`Updated color scheme '${schemeKey}':`, newScheme);
     }
 }
 
