@@ -8,6 +8,11 @@ import { DOM, Events } from './core/dom.js';
 import { appState, saveState, loadState, clearState } from './core/state.js';
 import { loadingManager } from './utils/loading-manager.js';
 
+// Import modular components
+import { LanguageSelector } from './components/LanguageSelector.js';
+import { ProviderSelector } from './components/ProviderSelector.js';
+import { StatusDisplay } from './components/StatusDisplay.js';
+
 /**
  * Main Application Class
  */
@@ -177,10 +182,74 @@ class CreatorApp {
     }
 
     /**
+     * Initialize modular components
+     */
+    async initializeComponents() {
+        try {
+            // Initialize LanguageSelector component
+            this.modules.languageSelector = new LanguageSelector('language-section', {
+                title: 'Course Languages',
+                description: 'Select languages for translation'
+            });
+            await this.modules.languageSelector.init();
+
+            // Initialize ProviderSelector component (if not already handled by provider)
+            if (this.dom.providerSection && !this.dom.providerSection.innerHTML.trim()) {
+                this.modules.providerSelector = new ProviderSelector('provider-section', {
+                    title: 'AI Provider',
+                    description: 'Choose your AI provider',
+                    showSettingsModal: true,
+                    showHelpModal: true
+                });
+                await this.modules.providerSelector.init();
+            }
+
+            // Initialize StatusDisplay components
+            if (this.dom.generationStatus) {
+                this.modules.generationStatus = new StatusDisplay('generation-status');
+                await this.modules.generationStatus.init();
+            }
+
+            if (this.dom.fileGenerationStatus) {
+                this.modules.fileGenerationStatus = new StatusDisplay('file-generation-status');
+                await this.modules.fileGenerationStatus.init();
+            }
+
+            // Setup component event listeners
+            this.setupComponentEventListeners();
+
+            logger.debug('Modular components initialized');
+        } catch (error) {
+            logger.error('Failed to initialize modular components:', error);
+            throw error;
+        }
+    }
+
+    /**
+     * Setup component-specific event listeners
+     */
+    setupComponentEventListeners() {
+        // Language selection changes
+        Events.on(document, 'languageSelector:languageSelectionChanged', (e) => {
+            logger.debug('Language selection changed:', e.detail);
+            saveState();
+        });
+
+        // Provider changes
+        Events.on(document, 'providerSelector:providerChanged', (e) => {
+            logger.debug('Provider changed:', e.detail);
+            this.handleProviderChange(e.detail.provider);
+        });
+    }
+
+    /**
      * Initialize application modules
      */
     async initializeModules() {
         try {
+            // Initialize modular components first
+            await this.initializeComponents();
+
             // Initialize provider-specific UI
             if (this.currentProvider && this.dom.providerSection) {
                 const template = await this.currentProvider.getTemplate();

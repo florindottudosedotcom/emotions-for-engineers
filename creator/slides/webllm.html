@@ -3,11 +3,13 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self' 'unsafe-inline' 'unsafe-eval' blob: https://cdnjs.cloudflare.com https://unpkg.com https://cdn.jsdelivr.net https://d3js.org https://esm.run; style-src 'self' 'unsafe-inline'; frame-src 'self'; img-src 'self' data: blob: https://source.unsplash.com https://images.unsplash.com https://cdn.openai.com https://oaidalleapiprodscus.blob.core.windows.net https://api.stability.ai; connect-src 'self' https://huggingface.co https://raw.githubusercontent.com https://cdn-lfs-us-1.hf.co; font-src 'self'; object-src 'none'; base-uri 'self'; form-action 'self'; worker-src 'self' blob:;">
-    <title>Slides Creator</title>
+    <meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://cdn.jsdelivr.net https://unpkg.com; style-src 'self' 'unsafe-inline'; frame-src 'self'; img-src 'self' data: blob:; connect-src 'self' https://huggingface.co https://cdn.jsdelivr.net https://unpkg.com; font-src 'self'; object-src 'none'; base-uri 'self'; form-action 'self'; worker-src 'self' blob:;">
+    <title>Slides Creator - WebLLM</title>
     <link rel="icon" type="image/svg+xml" href="../favicon.svg">
-    <link rel="stylesheet" href="../assets/minimal-theme.css" />
-    <link rel="stylesheet" href="../assets/course-creator.css" />
+
+    <!-- Load CSS bundle -->
+    <link rel="stylesheet" href="../assets/css/bundle.min.css" />
+
     <style>
         .slides-container {
             max-width: 1200px;
@@ -23,323 +25,200 @@
             box-shadow: 0 2px 4px rgba(0,0,0,0.1);
         }
 
-        .slide-preview h3 {
-            margin: 0 0 15px 0;
-            color: #333;
-            font-size: 1.4em;
+        .konva-editor-container {
+            border: 1px solid var(--border-light);
+            border-radius: var(--radius-medium);
+            background: var(--surface);
+            margin: var(--spacing-4) 0;
         }
 
-        .slide-preview ul {
-            margin: 0;
-            padding-left: 20px;
-        }
-
-        .slide-preview li {
-            margin: 8px 0;
-            line-height: 1.4;
-        }
-
-        .visual-design-info {
-            background: #f8f9fa;
-            border-radius: 4px;
-            padding: 10px;
-            margin-top: 15px;
-            font-size: 0.9em;
-            color: #666;
-        }
-
-
-        .export-options {
-            background: #f8f9fa;
-            border-radius: 8px;
-            padding: 20px;
-            margin: 20px 0;
-            text-align: center;
-        }
-
-        .export-options h3 {
-            margin-top: 0;
-        }
-
-        .export-buttons {
+        .konva-toolbar {
             display: flex;
-            justify-content: center;
-            gap: 15px;
+            gap: var(--spacing-2);
+            padding: var(--spacing-3);
+            border-bottom: 1px solid var(--border-light);
+            background: var(--surface-secondary);
             flex-wrap: wrap;
         }
 
-        .presentation-preview {
-            border: 1px solid #ddd;
-            border-radius: 8px;
-            padding: 20px;
-            margin: 20px 0;
-            background: white;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-            text-align: center;
-        }
-
-        .presentation-preview h2 {
-            margin: 0 0 10px 0;
-            font-size: 1.8em;
-            color: #333;
-        }
-
-        .slide-counter {
-            opacity: 0.8;
-            font-size: 0.9em;
-            color: #666;
-        }
-
-        /* Theme selector styles */
-        .theme-selector-container {
-            margin: 20px 0;
-        }
-
-        .theme-selector h3 {
-            margin: 0 0 15px 0;
-            color: #333;
-        }
-
-        .theme-tiles {
-            display: flex;
-            gap: 15px;
-            flex-wrap: wrap;
-            justify-content: center;
-        }
-
-        .theme-tile {
+        .tool-btn, .action-btn {
+            padding: var(--spacing-2) var(--spacing-3);
+            border: 1px solid var(--border-medium);
+            background: var(--surface);
+            border-radius: var(--radius-small);
             cursor: pointer;
-            border: 3px solid #ddd;
-            border-radius: 8px;
-            padding: 10px;
-            background: white;
             transition: all 0.2s ease;
-            text-align: center;
-            min-width: 120px;
+            font-size: 16px;
         }
 
-        .theme-tile:hover {
-            border-color: #2ecc71;
-            transform: translateY(-2px);
-            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+        .tool-btn:hover, .action-btn:hover {
+            background: var(--surface-hover);
+            border-color: var(--primary-color);
         }
 
-        .theme-tile.selected {
-            border-color: #2ecc71;
-            background: #f0fff4;
-            box-shadow: 0 4px 8px rgba(46,204,113,0.2);
+        .tool-btn.active {
+            background: var(--primary-color);
+            color: var(--primary-text);
+            border-color: var(--primary-color);
         }
 
-        .theme-colors {
+        .toolbar-separator {
+            width: 1px;
+            background: var(--border-medium);
+            margin: 0 var(--spacing-2);
+        }
+
+        .konva-canvas {
+            background: var(--surface);
             display: flex;
-            gap: 3px;
-            margin-bottom: 8px;
             justify-content: center;
+            padding: var(--spacing-4);
         }
 
-        .theme-color {
-            width: 20px;
-            height: 20px;
-            border-radius: 50%;
-            border: 1px solid rgba(255,255,255,0.3);
+        .konva-properties {
+            border-top: 1px solid var(--border-light);
+            background: var(--surface-secondary);
+            padding: var(--spacing-4);
         }
 
-        .theme-name {
-            font-size: 0.85em;
-            font-weight: 500;
-            color: #666;
+        .property-group {
+            margin-bottom: var(--spacing-3);
         }
 
-        /* Editable slide styles */
-        .slide-preview.editable-slide {
-            transition: transform 0.2s ease;
-        }
-
-        .slide-preview.editable-slide:hover {
-            transform: translateY(-2px);
-        }
-
-
-        [contenteditable="true"]:focus {
-            outline: 2px solid var(--accent-color, #60a5fa);
-            background: rgba(255,255,255,0.9) !important;
-            color: #333 !important;
-        }
-
-        /* Editable visual elements styles */
-        .visual-element {
-            position: relative;
-            transition: all 0.2s ease;
-        }
-
-        .visual-element:hover {
-            outline: 2px dashed rgba(46, 204, 113, 0.5);
-        }
-
-        .visual-element:hover .delete-element-btn {
+        .property-group label {
             display: block;
+            margin-bottom: var(--spacing-1);
+            font-weight: var(--font-weight-medium);
+            color: var(--text-primary);
         }
 
-        .delete-element-btn {
-            display: none;
-            position: absolute;
-            top: 8px;
-            right: 8px;
-            width: 20px;
-            height: 20px;
-            background: #e74c3c;
-            color: white;
-            border: none;
-            border-radius: 50%;
-            cursor: pointer;
-            font-size: 11px;
-            font-weight: bold;
-            z-index: 1001;
-            box-shadow: 0 2px 6px rgba(0,0,0,0.4);
-            transition: all 0.2s ease;
-            line-height: 18px;
-            text-align: center;
-            font-family: Arial, sans-serif;
+        .property-group input {
+            width: 100%;
+            max-width: 200px;
         }
 
-        .delete-element-btn:hover {
-            background: #c0392b;
-            transform: scale(1.1);
+        /* WebLLM specific styles */
+        .webllm-info {
+            background: var(--info-bg, #e6f3ff);
+            border: 1px solid var(--info-border, #3b82f6);
+            border-radius: var(--radius-medium);
+            padding: var(--spacing-4);
+            margin-bottom: var(--spacing-4);
         }
 
-        .editable-text {
-            cursor: text;
-            border-radius: 4px;
-            padding: 2px 4px;
-            transition: background-color 0.2s ease;
+        .model-loading-progress {
+            margin-top: var(--spacing-3);
         }
 
-        .editable-text:hover {
-            background: rgba(255, 255, 255, 0.1);
+        .progress-bar {
+            width: 100%;
+            height: 6px;
+            background: var(--border-light);
+            border-radius: 3px;
+            overflow: hidden;
         }
 
-        .editable-text:focus {
-            outline: 2px solid #2ecc71;
-            background: rgba(255, 255, 255, 0.2);
+        .progress-fill {
+            height: 100%;
+            background: var(--primary-color);
+            transition: width 0.3s ease;
         }
     </style>
 </head>
 <body>
-    <div class="container">
-        <h1>WebLLM Slides Creator</h1>
+    <div class="container p-6">
         <div id="ai-status" class="ai-status-initial"></div>
 
-        <!-- Provider-specific section will be injected here -->
-        <div id="provider-section"></div>
+        <!-- Provider Section (will be injected by ProviderSelector component) -->
+        <div id="provider-section" class="mb-6"></div>
 
-        <fieldset>
-            <legend>Presentation Generator</legend>
-
-            <div class="input-group">
-                <label for="presentation-topic">Presentation Topic</label>
-                <textarea id="presentation-topic" placeholder="e.g., 'The Future of Artificial Intelligence in Healthcare'" class="prompt-textarea-large" required></textarea>
+        <!-- Presentation Generator -->
+        <div class="card mb-6">
+            <div class="card-header">
+                <h3>Presentation Generator</h3>
+                <p class="text-secondary">Create visual presentations with browser-based AI</p>
             </div>
+            <div class="card-body">
+                <div class="webllm-info">
+                    <h4>🖥️ Browser AI (WebLLM)</h4>
+                    <p>AI models run directly in your browser for maximum privacy. First-time use requires downloading model files (~1-4GB).</p>
+                    <div id="model-status" class="model-loading-progress" style="display: none;">
+                        <div class="progress-bar">
+                            <div class="progress-fill" style="width: 0%"></div>
+                        </div>
+                        <p class="mt-2 text-sm">Loading model...</p>
+                    </div>
+                </div>
 
-            <div class="input-group">
-                <label for="num-slides" class="label-no-shrink-no-margin">Number of Slides:</label>
-                <select id="num-slides" class="select-no-margin">
-                    <option value="1">1</option>
-                    <option value="2">2</option>
-                    <option value="3">3</option>
-                    <option value="4">4</option>
-                    <option value="5">5</option>
-                    <option value="6">6</option>
-                    <option value="8" selected>8</option>
-                    <option value="10">10</option>
-                    <option value="12">12</option>
-                    <option value="15">15</option>
-                </select>
-                <button type="button" id="generate-slides-btn" class="btn btn-primary margin-left-1rem">Generate Presentation</button>
-            </div>
+                <div class="prompt-header mb-4">
+                    <button type="button" id="enhance-prompt-btn" class="btn btn-ai" title="Enhance and expand your prompt with AI assistance">✦ Enhance Prompt</button>
+                </div>
+                <textarea id="presentation-topic" name="presentation-topic" placeholder="Presentation Topic - e.g., 'The Future of Artificial Intelligence in Healthcare'" title="Presentation Topic - Describe the presentation you want to create" class="prompt-textarea-large mb-4" required></textarea>
 
-            <div id="generation-status" class="status-display"></div>
-        </fieldset>
-
-        <hr class="hr-margin">
-
-        <!-- Slides Preview Section -->
-        <div id="presentation-section" style="display: block;">
-            <!-- Slides Preview -->
-            <div id="slides-preview" class="slides-container">
-                <!-- Slides will be inserted here -->
-            </div>
-
-            <!-- Export Section (hidden - handled by JavaScript) -->
-            <div class="export-options" style="display: none;">
-                <div id="export-status" class="status-display"></div>
+                <div class="input-group course-generation-section">
+                    <select id="num-slides" name="num-slides" class="select-no-margin" title="Number of Slides - Select how many slides your presentation should have">
+                        <option value="1">1 Slide</option>
+                        <option value="2">2 Slides</option>
+                        <option value="3">3 Slides</option>
+                        <option value="4">4 Slides</option>
+                        <option value="5">5 Slides</option>
+                        <option value="6">6 Slides</option>
+                        <option value="8" selected>8 Slides</option>
+                        <option value="10">10 Slides</option>
+                        <option value="12">12 Slides</option>
+                        <option value="15">15 Slides</option>
+                    </select>
+                    <button type="button" id="generate-slides-btn" class="btn btn-secondary ml-4">⚡ Generate Presentation</button>
+                </div>
+                <div id="generation-status" class="status-display mt-4"></div>
             </div>
         </div>
 
-        <!-- Hidden presentation viewer -->
-        <div id="presentation-viewer" style="display: none;">
-            <div style="text-align: center; margin: 20px 0;">
-                <button type="button" id="close-presentation-btn" class="btn btn-secondary">× Close Presentation</button>
+        <!-- Language Selection (will be injected by LanguageSelector component) -->
+        <div id="language-section"></div>
+
+        <!-- Slides Editor -->
+        <div class="card mb-6">
+            <div class="card-header">
+                <h3>Visual Editor</h3>
+                <p class="text-secondary">Edit your slides with visual tools</p>
             </div>
-            <div id="reveal-presentation" class="reveal">
-                <div class="slides">
-                    <!-- Reveal.js slides will be inserted here -->
+            <div class="card-body">
+                <div id="slides-editor-container">
+                    <!-- Konva editor will be initialized here -->
                 </div>
             </div>
         </div>
 
-        <!-- Export Modal -->
-        <div id="export-modal" class="modal-overlay" style="display: none;">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h3 class="modal-title">Export Presentation</h3>
-                    <button type="button" id="close-export-modal-btn" class="btn-close">×</button>
+        <!-- Export Section -->
+        <div class="card">
+            <div class="card-header">
+                <h3>Export & Download</h3>
+                <p class="text-secondary">Export your presentation in various formats</p>
+            </div>
+            <div class="card-body">
+                <div class="export-buttons-grid">
+                    <button type="button" id="export-pdf-btn" class="btn btn-primary">⟄ Export as PDF</button>
+                    <button type="button" id="export-pptx-btn" class="btn btn-primary">⟐ Export as PowerPoint</button>
+                    <button type="button" id="export-html-btn" class="btn btn-secondary">◰ Export as HTML</button>
+                    <button type="button" id="export-json-btn" class="btn btn-outline">{} Export Data</button>
                 </div>
-
-                <div class="modal-body">
-                    <!-- Export Options -->
-                    <div class="mb-md">
-                        <label class="input-group">
-                            <input type="checkbox" id="include-speaker-notes">
-                            Include speaker notes in export
-                        </label>
-                    </div>
-
-                    <!-- Export Buttons -->
-                    <div class="export-buttons-grid">
-                        <button type="button" id="export-pdf-btn" class="btn btn-primary">⟄ PDF</button>
-                        <button type="button" id="export-pptx-btn" class="btn btn-primary">⟐ PowerPoint</button>
-                        <button type="button" id="export-html-btn" class="btn btn-secondary">◰ HTML</button>
-                        <button type="button" id="export-json-btn" class="btn btn-outline">{} JSON Data</button>
-                    </div>
-
-                    <div id="export-modal-status" class="status-display mt-md"></div>
-                </div>
+                <div id="export-status" class="status-display mt-4"></div>
             </div>
         </div>
     </div>
 
     <!-- JS Libraries -->
     <script src="../assets/js/jszip/3.10.1/jszip.min.js"></script>
-    <script src="https://unpkg.com/jspdf@latest/dist/jspdf.umd.min.js"></script>
-    <script src="https://unpkg.com/html2canvas@latest/dist/html2canvas.min.js"></script>
-    <script src="https://unpkg.com/pptxgenjs@3.12.0/dist/pptxgen.bundle.js"></script>
+    <script src="../assets/js/js-yaml/4.1.0/js-yaml.min.js"></script>
 
-    <!-- Enhanced Editing and Export Libraries -->
-    <script src="../assets/js/konva-editor.js"></script>
-    <script src="../assets/js/konva-slide-system.js"></script>
-    <script src="../assets/js/pdfkit-export.js"></script>
-
-    <!-- Advanced Graphics Libraries -->
-    <script src="https://unpkg.com/chart.js@4.4.0/dist/chart.umd.js"></script>
-    <script src="https://d3js.org/d3.v7.min.js"></script>
-    <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.js"></script>
-
-    <!-- Main Application Logic -->
+    <!-- Provider Configuration -->
     <script>
-        // Configure provider type
         window.COURSE_CREATOR_PROVIDER = 'webllm';
+        window.CREATOR_TYPE = 'slides';
     </script>
-    <script type="module" src="../assets/js/unified_main.js"></script>
-    <script type="module" src="../assets/js/slides_main.js"></script>
+
+    <!-- Main Application -->
+    <script type="module" src="../assets/js/slides-main.js"></script>
 </body>
 </html>
