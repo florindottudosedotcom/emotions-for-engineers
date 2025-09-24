@@ -6,7 +6,7 @@
 import { DOM, Events } from '../core/dom.js';
 import { logger } from '../core/utils.js';
 import { loadingManager } from '../utils/loading-manager.js';
-import { showSettingsModal, hideSettingsModal, showHelpModal, hideHelpModal } from '../modules/ui.js';
+import { showSettingsModal, hideSettingsModal, showHelpModal, hideHelpModal } from '../utils/modal-utils.js';
 
 export class UIManager {
     constructor(dom) {

@@ -48,6 +48,10 @@ class SlidesCreatorApp {
                 fn: () => this.initializeComponents()
             },
             {
+                message: 'Setting up provider UI...',
+                fn: () => this.initializeProviderUI()
+            },
+            {
                 message: 'Finalizing setup...',
                 fn: () => {
                     this.setupEventListeners();
@@ -157,21 +161,23 @@ class SlidesCreatorApp {
      */
     async initializeComponents() {
         try {
-            // Initialize ProviderSelector component
-            this.components.providerSelector = new ProviderSelector('provider-section', {
-                title: 'AI Provider',
-                description: 'Choose your AI provider for slide generation',
-                showSettingsModal: true,
-                showHelpModal: true
-            });
-            await this.components.providerSelector.init();
-
             // Initialize LanguageSelector component
             this.components.languageSelector = new LanguageSelector('language-section', {
                 title: 'Presentation Languages',
                 description: 'Select languages for your presentation'
             });
             await this.components.languageSelector.init();
+
+            // Initialize ProviderSelector component (if not already handled by provider)
+            if (this.dom.providerSection && !this.dom.providerSection.innerHTML.trim()) {
+                this.components.providerSelector = new ProviderSelector('provider-section', {
+                    title: 'AI Provider',
+                    description: 'Choose your AI provider for slide generation',
+                    showSettingsModal: true,
+                    showHelpModal: true
+                });
+                await this.components.providerSelector.init();
+            }
 
             // Initialize StatusDisplay components
             this.components.generationStatus = new StatusDisplay('generation-status');
@@ -190,24 +196,44 @@ class SlidesCreatorApp {
             });
             await this.components.slidesEditor.init();
 
-            // Initialize provider-specific UI if provider is loaded
-            if (this.currentProvider && this.dom.providerSection) {
-                // The ProviderSelector component handles provider UI injection
-                await this.currentProvider.init(this.dom, appState);
-            }
-
             // Setup component event listeners
             this.setupComponentEventListeners();
 
             // Make components globally available for compatibility
             window.slidesComponents = this.components;
-            window.currentProvider = this.currentProvider;
-            window.saveState = saveState;
-            window.loadState = loadState;
 
             logger.debug('Slides creator components initialized');
         } catch (error) {
             logger.error('Failed to initialize slides creator components:', error);
+            throw error;
+        }
+    }
+
+    /**
+     * Initialize provider-specific UI
+     */
+    async initializeProviderUI() {
+        try {
+            // Initialize provider-specific UI if provider is loaded
+            if (this.currentProvider && this.dom.providerSection) {
+                const template = await this.currentProvider.getTemplate();
+                this.dom.providerSection.innerHTML = template;
+                await this.currentProvider.init(this.dom, appState);
+
+                // Update provider status if available
+                if (typeof this.currentProvider.updateProviderStatus === 'function') {
+                    this.currentProvider.updateProviderStatus();
+                }
+
+                // Make provider globally available for compatibility
+                window.currentProvider = this.currentProvider;
+                window.saveState = saveState;
+                window.loadState = loadState;
+            }
+
+            logger.debug('Provider UI initialized');
+        } catch (error) {
+            logger.error('Failed to initialize provider UI:', error);
             throw error;
         }
     }
