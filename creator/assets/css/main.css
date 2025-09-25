@@ -385,9 +385,9 @@
 }
 
 /* ========================================
-   HIGH CONTRAST MODE SUPPORT (Additional)
+   HIGH CONTRAST MODE SUPPORT (Alternative approach)
    ======================================== */
-@media (prefers-contrast: high) {
+@media (forced-colors: active) {
     .btn {
         border-width: 2px;
     }

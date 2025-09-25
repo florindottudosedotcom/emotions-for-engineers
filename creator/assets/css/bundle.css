@@ -1,5 +1,5 @@
 /**
- * CSS Bundle - Auto-generated 2025-09-22T05:16:51.266Z
+ * CSS Bundle - Auto-generated 2025-09-25T04:35:18.339Z
  * Consolidated from 15 CSS files for optimal performance
  * DO NOT EDIT MANUALLY - regenerate using build-css.js
  */
@@ -335,9 +335,9 @@ label[for] {
 }
 
 /* ========================================
-   HIGH CONTRAST SUPPORT
+   HIGH CONTRAST SUPPORT (Alternative approach)
    ======================================== */
-@media (prefers-contrast: high) {
+@media (forced-colors: active) {
     :root {
         --border-light: #000000;
         --border-medium: #000000;
@@ -1376,6 +1376,58 @@ h2 + #chapter-tabs-container {
 .overflow-y-hidden { overflow-y: hidden; }
 .overflow-y-auto { overflow-y: auto; }
 .overflow-y-scroll { overflow-y: scroll; }
+
+/* ========================================
+   USAGE WARNING COMPONENT
+   ======================================== */
+
+/* Usage warning styling for API limit notifications */
+.usage-warning {
+    position: relative;
+    transition: opacity var(--transition-fast);
+    z-index: var(--z-overlay);
+    font-family: var(--font-primary);
+    font-weight: var(--font-weight-medium);
+    display: flex;
+    align-items: flex-start;
+    gap: var(--spacing-2);
+}
+
+.usage-warning::before {
+    content: '';
+    flex-shrink: 0;
+    width: 4px;
+    height: 100%;
+    background: rgba(255, 255, 255, 0.5);
+    border-radius: 2px;
+    margin-right: var(--spacing-2);
+}
+
+/* Warning animation on insert */
+@keyframes warningSlideIn {
+    from {
+        opacity: 0;
+        transform: translateY(-10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.usage-warning {
+    animation: warningSlideIn var(--transition-normal) ease-out;
+}
+
+/* Mobile responsive adjustments */
+@media (max-width: 767px) {
+    .usage-warning {
+        font-size: 0.85em;
+        padding: var(--spacing-3) var(--spacing-4) !important;
+        margin: var(--spacing-2) 0 !important;
+        border-radius: var(--radius-medium) !important;
+    }
+}
 
 /* ===== grid.css ===== */
 /**
@@ -4169,10 +4221,9 @@ body.modal-open {
 /* Mobile: 320px-767px */
 @media (max-width: 767px) {
     .status-display {
-        padding: var(--spacing-4) var(--spacing-4);
-        margin-top: var(--spacing-2);
         font-size: var(--font-size-sm);
-        border-radius: var(--radius-small);
+        padding: var(--spacing-4) 0;
+        margin: var(--spacing-2) 0;
     }
 
     .progress-indicator {
@@ -4213,6 +4264,20 @@ body.modal-open {
     .ai-assistant {
         padding: var(--spacing-4) 0;
         margin: var(--spacing-4) 0;
+    }
+}
+
+/* ========================================
+   RESPONSIVE DESIGN - Mobile Adjustments
+   ======================================== */
+
+/* Mobile: 320px-767px */
+@media (max-width: 767px) {
+    .status-display {
+        padding: var(--spacing-4) var(--spacing-4);
+        margin-top: var(--spacing-2);
+        font-size: var(--font-size-sm);
+        border-radius: var(--radius-small);
     }
 }
 
@@ -5115,8 +5180,8 @@ body.modal-open {
         }
     }
 
-    /* High contrast mode support */
-    @media (prefers-contrast: high) {
+    /* High contrast mode support (Alternative approach) */
+    @media (forced-colors: active) {
         .provider-tab,
         .btn,
         .lang-item {

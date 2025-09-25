@@ -199,9 +199,9 @@ label[for] {
 }
 
 /* ========================================
-   HIGH CONTRAST SUPPORT
+   HIGH CONTRAST SUPPORT (Alternative approach)
    ======================================== */
-@media (prefers-contrast: high) {
+@media (forced-colors: active) {
     :root {
         --border-light: #000000;
         --border-medium: #000000;
