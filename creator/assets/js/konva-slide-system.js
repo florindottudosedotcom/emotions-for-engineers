@@ -380,7 +380,19 @@ class KonvaSlideSystem {
             overflow: hidden;
             box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
             border-radius: 8px;
+            touch-action: manipulation;
+            user-select: none;
+            -webkit-user-select: none;
+            -webkit-touch-callout: none;
+            -webkit-tap-highlight-color: transparent;
         `;
+
+        // Add mobile-specific responsive behavior
+        if (window.innerWidth <= 767) {
+            canvasContainer.style.margin = '10px auto';
+            canvasContainer.style.maxWidth = '100%';
+            canvasContainer.style.borderRadius = '6px';
+        }
 
         this.container.appendChild(canvasContainer);
 
@@ -4439,7 +4451,46 @@ class KonvaSlideSystem {
 
         console.log(`Updated color scheme '${schemeKey}':`, newScheme);
     }
+
+    /**
+     * Handle window resize for mobile responsiveness
+     */
+    handleWindowResize() {
+        if (this.canvasContainer && this.stage) {
+            // Update container styles for mobile
+            if (window.innerWidth <= 767) {
+                this.canvasContainer.style.margin = '10px auto';
+                this.canvasContainer.style.maxWidth = '100%';
+                this.canvasContainer.style.borderRadius = '6px';
+            } else {
+                this.canvasContainer.style.margin = '20px auto';
+                this.canvasContainer.style.maxWidth = `${this.slideWidth}px`;
+                this.canvasContainer.style.borderRadius = '8px';
+            }
+
+            // Recalculate responsive dimensions
+            this.calculateResponsiveDimensions(this.canvasContainer);
+
+            // Update stage size
+            if (this.stage) {
+                this.stage.width(this.containerWidth);
+                this.stage.height(this.containerHeight);
+                this.stage.draw();
+            }
+        }
+    }
 }
 
 // Export for global use
 window.KonvaSlideSystem = KonvaSlideSystem;
+
+// Add global resize handler for mobile responsiveness
+let resizeTimeout;
+window.addEventListener('resize', () => {
+    clearTimeout(resizeTimeout);
+    resizeTimeout = setTimeout(() => {
+        if (window.konvaSlideSystem && typeof window.konvaSlideSystem.handleWindowResize === 'function') {
+            window.konvaSlideSystem.handleWindowResize();
+        }
+    }, 250);
+});

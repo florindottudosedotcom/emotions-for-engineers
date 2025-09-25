@@ -544,6 +544,227 @@
 }
 
 /* ========================================
+   SLIDES CREATOR MOBILE OPTIMIZATION
+   ======================================== */
+
+/* Mobile: Slides provider tabs */
+@media (max-width: 767px) {
+    /* Override slides.html inline styles for mobile */
+    .slides-provider-row {
+        padding-left: 0 !important;
+        gap: 1rem !important;
+        flex-direction: column !important;
+        align-items: stretch !important;
+        margin-bottom: 1rem !important;
+    }
+
+    .slides-provider-tabs {
+        flex-direction: column !important;
+        width: 100% !important;
+        gap: 0.5rem !important;
+    }
+
+    .slides-provider-tab {
+        min-width: unset !important;
+        width: 100% !important;
+        margin-bottom: 0 !important;
+        padding: 16px 20px !important;
+        border-radius: var(--border-radius) !important;
+        border: 2px solid var(--border-light) !important;
+        justify-content: flex-start !important;
+        font-size: var(--font-size-base) !important;
+        min-height: 44px !important;
+        box-sizing: border-box !important;
+    }
+
+    .slides-provider-tab:first-child,
+    .slides-provider-tab:last-child {
+        border-radius: var(--border-radius) !important;
+        border: 2px solid var(--border-light) !important;
+    }
+
+    .slides-provider-tab.active {
+        border-color: var(--primary-color) !important;
+        background: var(--primary-color) !important;
+        color: white !important;
+    }
+
+    .slides-provider-tab.active:last-child {
+        border-color: var(--primary-color) !important;
+    }
+
+    /* Slides creator frame */
+    .slides-creator-frame {
+        height: auto !important;
+        min-height: 60vh !important;
+        max-height: 80vh !important;
+        border-radius: var(--border-radius) !important;
+        border-top: 1px solid var(--border-light) !important;
+    }
+
+    /* Slides main container mobile adjustments */
+    .slides-main-container {
+        padding: 0.5rem !important;
+        max-width: none !important;
+        width: 100% !important;
+    }
+}
+
+/* Mobile: Slides editor container optimization */
+@media (max-width: 767px) {
+    #slides-editor-container {
+        padding: var(--spacing-2);
+        border-radius: var(--border-radius);
+        overflow: hidden;
+    }
+
+    /* Konva canvas mobile optimization */
+    #konva-slide-stage {
+        width: 100% !important;
+        max-width: none !important;
+        height: auto !important;
+        border-radius: var(--border-radius);
+        touch-action: manipulation;
+    }
+
+    #konva-slide-stage canvas {
+        width: 100% !important;
+        height: auto !important;
+        max-width: 100% !important;
+        border-radius: var(--border-radius);
+    }
+
+    /* Slides generation form mobile */
+    #presentation-topic {
+        min-height: 120px !important;
+        padding: 16px !important;
+        font-size: var(--font-size-base) !important;
+        line-height: 1.5 !important;
+        border-radius: var(--border-radius) !important;
+        width: 100% !important;
+        box-sizing: border-box !important;
+    }
+
+    #num-slides {
+        min-height: 44px !important;
+        padding: 12px 16px !important;
+        font-size: var(--font-size-base) !important;
+        border-radius: var(--border-radius) !important;
+        width: 100% !important;
+    }
+
+    #enhance-prompt-btn,
+    #generate-slides-btn {
+        width: 100% !important;
+        min-height: 44px !important;
+        padding: 12px 20px !important;
+        font-size: var(--font-size-base) !important;
+        margin: 0.5rem 0 !important;
+    }
+
+    /* Slides export buttons mobile */
+    #export-pdf-btn,
+    #export-pptx-btn,
+    #export-html-btn,
+    #export-json-btn {
+        width: 100% !important;
+        min-height: 44px !important;
+        padding: 12px 20px !important;
+        font-size: var(--font-size-base) !important;
+        margin: 0.5rem 0 !important;
+    }
+
+    /* Slides status displays mobile */
+    #ai-status,
+    #generation-status,
+    #export-status {
+        padding: 12px 16px !important;
+        font-size: var(--font-size-sm) !important;
+        border-radius: var(--border-radius) !important;
+        margin: 0.5rem 0 !important;
+    }
+}
+
+/* Small Mobile: Ultra-compact slides layout */
+@media (max-width: 479px) {
+    .slides-provider-tab {
+        padding: 12px 16px !important;
+        font-size: var(--font-size-sm) !important;
+    }
+
+    .slides-provider-tab .icon-rocket-css,
+    .slides-provider-tab .icon-cloud-css,
+    .slides-provider-tab .icon-brain-css,
+    .slides-provider-tab .icon-desktop-css,
+    .slides-provider-tab .icon-slides-css {
+        width: 1em !important;
+        height: 1em !important;
+    }
+
+    .slides-main-container {
+        padding: 0.25rem !important;
+    }
+
+    #slides-editor-container {
+        padding: var(--spacing-1) !important;
+    }
+}
+
+/* Tablet: Horizontal scrollable slides tabs */
+@media (min-width: 768px) and (max-width: 1023px) {
+    .slides-provider-row {
+        padding-left: 8px !important;
+    }
+
+    .slides-provider-tabs {
+        overflow-x: auto !important;
+        scrollbar-width: thin !important;
+        gap: 0 !important;
+        flex-wrap: nowrap !important;
+        padding-bottom: 4px !important;
+    }
+
+    .slides-provider-tab {
+        min-width: 120px !important;
+        flex-shrink: 0 !important;
+        white-space: nowrap !important;
+        padding: 12px 20px !important;
+    }
+
+    .slides-creator-frame {
+        min-height: 70vh !important;
+    }
+
+    #slides-editor-container {
+        min-height: 500px !important;
+    }
+}
+
+/* Landscape Mobile: Slides optimization */
+@media (max-width: 767px) and (orientation: landscape) {
+    .slides-creator-frame {
+        min-height: 50vh !important;
+        max-height: 70vh !important;
+    }
+
+    .slides-provider-tabs {
+        flex-direction: row !important;
+        overflow-x: auto !important;
+        gap: 0 !important;
+    }
+
+    .slides-provider-tab {
+        flex-shrink: 0 !important;
+        min-width: 140px !important;
+        width: auto !important;
+    }
+
+    #slides-editor-container {
+        min-height: 300px !important;
+    }
+}
+
+/* ========================================
    ACCESSIBILITY & INTERACTION IMPROVEMENTS
    ======================================== */
 
@@ -566,12 +787,14 @@
     /* High contrast mode support (Alternative approach) */
     @media (forced-colors: active) {
         .provider-tab,
+        .slides-provider-tab,
         .btn,
         .lang-item {
             border: 2px solid;
         }
 
         .provider-tab.active,
+        .slides-provider-tab.active,
         .btn:hover {
             background: var(--text-primary);
             color: var(--surface);
