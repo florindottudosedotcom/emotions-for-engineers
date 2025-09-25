@@ -2973,15 +2973,29 @@ class KonvaSlideSystem {
                 return;
             }
 
-            // Only warn if we should have state but don't
-            console.warn('❌ No slidesAppState available for saving:', {
-                hasWindow: !!window,
-                hasSlidesAppState: !!window.slidesAppState,
-                hasCurrentSlideData: !!(window.slidesAppState?.currentSlideData),
-                isInitializing: this.isInitializing,
-                slideCount: this.slides?.length || 0
-            });
-            return;
+            // If we have slides but no slidesAppState, create it as a fallback
+            if (this.slides && this.slides.length > 0 && !window.slidesAppState) {
+                console.warn('🔧 Emergency slidesAppState initialization in saveSlideState');
+                window.slidesAppState = {
+                    currentSlideData: {
+                        title: 'Recovered Slides',
+                        slides: this.slides
+                    },
+                    currentSlideIndex: this.currentSlideIndex,
+                    currentTheme: null
+                };
+                console.log('✅ Created emergency slidesAppState with', this.slides.length, 'slides');
+            } else {
+                // Only warn if we really can't recover
+                console.warn('❌ No slidesAppState available for saving:', {
+                    hasWindow: !!window,
+                    hasSlidesAppState: !!window.slidesAppState,
+                    hasCurrentSlideData: !!(window.slidesAppState?.currentSlideData),
+                    isInitializing: this.isInitializing,
+                    slideCount: this.slides?.length || 0
+                });
+                return;
+            }
         }
 
         try {
