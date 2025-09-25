@@ -880,11 +880,11 @@ class KonvaSlideSystem {
                 <div class="category-content">
                     <div class="style-controls">
                         <div class="control-group">
-                            <label>Text Color:</label>
+                            <label for="text-color">Text Color:</label>
                             <input type="color" id="text-color" value="#000000" onchange="window.konvaSlideSystem?.updateSelectedColor(this.value)">
                         </div>
                         <div class="control-group">
-                            <label>Font Size: <span id="font-size-display">24px</span></label>
+                            <label for="font-size">Font Size: <span id="font-size-display">24px</span></label>
                             <input type="range" id="font-size" min="12" max="72" value="24" onchange="window.konvaSlideSystem?.updateSelectedFontSize(this.value)">
                         </div>
                     </div>
@@ -2973,24 +2973,10 @@ class KonvaSlideSystem {
                 return;
             }
 
-            // If we have slides but no slidesAppState, create it as a fallback
-            if (this.slides && this.slides.length > 0 && !window.slidesAppState) {
-                console.warn('🔧 Emergency slidesAppState initialization in saveSlideState');
-                window.slidesAppState = {
-                    currentSlideData: {
-                        title: 'Recovered Slides',
-                        slides: this.slides
-                    },
-                    currentSlideIndex: this.currentSlideIndex,
-                    currentTheme: null
-                };
-                console.log('✅ Created emergency slidesAppState with', this.slides.length, 'slides');
-            } else {
-                // Only warn if we really can't recover
-                console.warn('❌ No slidesAppState available for saving:', {
+            // slidesAppState should now be initialized early during app startup
+            if (!window.slidesAppState) {
+                console.error('❌ No slidesAppState available for saving - this should not happen after initialization fix:', {
                     hasWindow: !!window,
-                    hasSlidesAppState: !!window.slidesAppState,
-                    hasCurrentSlideData: !!(window.slidesAppState?.currentSlideData),
                     isInitializing: this.isInitializing,
                     slideCount: this.slides?.length || 0
                 });
@@ -2999,7 +2985,14 @@ class KonvaSlideSystem {
         }
 
         try {
-            // Ensure we have a slide to save to
+            // Skip saving during initialization when no slides exist yet
+            if (!window.slidesAppState.currentSlideData.slides ||
+                window.slidesAppState.currentSlideData.slides.length === 0) {
+                // This is normal during initialization - no warning needed
+                return;
+            }
+
+            // Ensure we have a slide to save to at the current index
             if (!window.slidesAppState.currentSlideData.slides[this.currentSlideIndex]) {
                 console.warn(`No slide data at index ${this.currentSlideIndex}`);
                 return;

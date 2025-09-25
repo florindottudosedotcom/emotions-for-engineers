@@ -163,6 +163,10 @@ class SlidesCreatorApp {
      */
     async initializeComponents() {
         try {
+            // Initialize slidesAppState early in the component initialization process
+            // This ensures KonvaSlideSystem has access to it during its initialization
+            this.initializeSlidesAppState();
+
             // Initialize LanguageSelector component
             this.components.languageSelector = new LanguageSelector('language-section', {
                 title: 'Export Languages',
@@ -214,6 +218,20 @@ class SlidesCreatorApp {
             logger.error('Failed to initialize slides creator components:', error);
             throw error;
         }
+    }
+
+    /**
+     * Initialize slidesAppState early to prevent race conditions
+     */
+    initializeSlidesAppState() {
+        // Initialize with empty state that can be updated later
+        window.slidesAppState = {
+            currentSlideData: { title: 'New Presentation', slides: [] },
+            currentSlideIndex: 0,
+            currentTheme: null
+        };
+
+        logger.debug('Initialized empty slidesAppState to prevent race conditions');
     }
 
     /**
@@ -535,14 +553,15 @@ Generate ${numSlides} slides about "${topic}" following this exact format:`;
     createSlidesInEditor(slidesData) {
         if (!this.components.slidesEditor || !this.components.slidesEditor.konvaSlideSystem) return;
 
-        // Set up global state for KonvaSlideSystem compatibility BEFORE loading slides
-        window.slidesAppState = {
-            currentSlideData: slidesData,
-            currentSlideIndex: 0,
-            currentTheme: null
-        };
+        // Update existing global state for KonvaSlideSystem compatibility
+        // slidesAppState was already initialized during component setup
+        if (window.slidesAppState) {
+            window.slidesAppState.currentSlideData = slidesData;
+            window.slidesAppState.currentSlideIndex = 0;
+            window.slidesAppState.currentTheme = null;
+        }
 
-        console.log('🔧 Set up slidesAppState with data:', {
+        console.log('✅ Updated slidesAppState with generated data:', {
             title: slidesData.title,
             slideCount: slidesData.slides?.length || 0,
             firstSlideTitle: slidesData.slides?.[0]?.title || 'N/A',
