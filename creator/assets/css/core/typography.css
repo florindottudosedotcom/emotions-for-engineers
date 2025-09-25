@@ -302,8 +302,7 @@ a:focus {
 
     p {
         color: #000;
-        orphans: 3;
-        widows: 3;
+        /* orphans and widows removed for Firefox compatibility */
     }
 
     pre, code {

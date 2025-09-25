@@ -21,8 +21,7 @@ html {
     font-size: 16px; /* Base font size for rem calculations */
     line-height: 1.5;
     -webkit-text-size-adjust: 100%;
-    -moz-text-size-adjust: 100%;
-    text-size-adjust: 100%;
+    /* text-size-adjust properties removed for Firefox compatibility */
 }
 
 body {
@@ -74,7 +73,8 @@ button {
 }
 
 /* Remove default button styling */
-button::-moz-focus-inner {
+/* Firefox-specific button styling removed for compatibility */
+button {
     border: 0;
     padding: 0;
 }
