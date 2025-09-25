@@ -7,8 +7,24 @@
     <title>Slides Creator - OpenRouter</title>
     <link rel="icon" type="image/svg+xml" href="../favicon.svg">
 
-    <!-- Load CSS bundle normally to avoid preloading issues -->
-    <link rel="stylesheet" href="./assets/css/bundle.min.css">
+    <!-- Load CSS files in dependency order (replaces bundle for better debugging) -->
+    <link rel="stylesheet" href="./assets/css/core/variables.css">
+    <link rel="stylesheet" href="./assets/css/core/reset.css">
+    <link rel="stylesheet" href="./assets/css/core/typography.css">
+    <link rel="stylesheet" href="./assets/css/layouts/containers.css">
+    <link rel="stylesheet" href="./assets/css/layouts/grid.css">
+    <link rel="stylesheet" href="./assets/css/components/buttons.css">
+    <link rel="stylesheet" href="./assets/css/components/forms.css">
+    <link rel="stylesheet" href="./assets/css/components/cards.css">
+    <link rel="stylesheet" href="./assets/css/components/modals.css">
+    <link rel="stylesheet" href="./assets/css/components/status.css">
+    <link rel="stylesheet" href="./assets/css/components/launcher.css">
+    <link rel="stylesheet" href="./assets/css/components/puter.css">
+    <link rel="stylesheet" href="./assets/css/components/icons.css">
+    <link rel="stylesheet" href="./assets/css/core/utilities.css">
+    <link rel="stylesheet" href="./assets/css/responsive/mobile.css">
+    <link rel="stylesheet" href="./assets/css/themes/light.css">
+    <link rel="stylesheet" href="./assets/css/themes/dark.css">
 
     <!-- Critical inline styles to prevent layout shift -->
     <style>

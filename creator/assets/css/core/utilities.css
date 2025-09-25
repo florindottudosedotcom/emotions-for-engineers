@@ -1,131 +1,7 @@
 /**
- * Main CSS Entry Point - Creator Application
- * Following CLAUDE.md Guidelines for Modular Architecture
- *
- * This file imports all CSS modules in the correct order
- * to create a complete, optimized styling system.
+ * Utility Classes - Following CLAUDE.md Guidelines
+ * Common utility classes for layout, display, and interaction
  */
-
-/* ========================================
-   CORE FOUNDATION
-   ======================================== */
-
-/* 1. CSS Variables and Design System Tokens */
-@import url('./core/variables.css');
-
-/* 2. CSS Reset and Base Styles */
-@import url('./core/reset.css');
-
-/* 3. Typography System */
-@import url('./core/typography.css');
-
-/* ========================================
-   LAYOUT SYSTEMS
-   ======================================== */
-
-/* 4. Container and Layout System */
-@import url('./layouts/containers.css');
-
-/* 5. Grid and Flexbox System */
-@import url('./layouts/grid.css');
-
-/* ========================================
-   COMPONENT LIBRARY
-   ======================================== */
-
-/* 6. Button Component System */
-@import url('./components/buttons.css');
-
-/* 7. Form Component System */
-@import url('./components/forms.css');
-
-/* 8. Card Component System */
-@import url('./components/cards.css');
-
-/* 9. Modal Component System */
-@import url('./components/modals.css');
-
-/* 10. Status Display System */
-@import url('./components/status.css');
-
-/* 11. Launcher Component System */
-@import url('./components/launcher.css');
-
-/* 12. Puter Provider Specific Styles */
-@import url('./components/puter.css');
-
-/* ========================================
-   THEME SYSTEMS
-   ======================================== */
-
-/* 13. Light Theme (Default) */
-@import url('./themes/light.css');
-
-/* 14. Dark Theme (Auto-applied based on system preference) */
-@import url('./themes/dark.css');
-
-/* ========================================
-   ICON SYSTEM (Minimal CSS Icons)
-   ======================================== */
-
-/* Icon base class - inherit colors from parent */
-.icon-minimal {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    width: 24px;
-    height: 24px;
-    border-radius: var(--radius-small);
-    font-size: var(--font-size-sm);
-    font-weight: var(--font-weight-semibold);
-    color: inherit;
-    background-color: transparent;
-    margin-right: var(--spacing-2);
-}
-
-.icon-minimal::before {
-    color: inherit;
-}
-
-/* Pure glyphicon variants - inherit color from parent */
-.icon-cloud::before { content: '☁'; color: inherit; }
-.icon-brain::before { content: '⧉'; color: inherit; }
-.icon-desktop::before { content: '⌂'; color: inherit; }
-.icon-slides::before { content: '▤'; color: inherit; }
-.icon-export::before { content: '↓'; color: inherit; }
-.icon-generate::before { content: '✦'; color: inherit; }
-.icon-edit::before { content: '✎'; color: inherit; }
-.icon-delete::before { content: '×'; color: inherit; }
-.icon-settings::before { content: '⚙'; color: inherit; }
-.icon-help::before { content: '?'; color: inherit; }
-.icon-document::before { content: '⟄'; color: inherit; }
-.icon-palette::before { content: '◉'; color: inherit; }
-.icon-shape::before { content: '◆'; color: inherit; }
-.icon-image::before { content: '◪'; color: inherit; }
-.icon-notes::before { content: '≡'; color: inherit; }
-
-/* Geometric icon variants for main buttons */
-.icon-minimal.geometric {
-    border-radius: 50%;
-    width: 32px;
-    height: 32px;
-    font-size: var(--font-size-lg);
-    background-color: transparent;
-    border: 2px solid currentColor;
-    color: inherit;
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-}
-
-.icon-minimal.geometric::before {
-    color: inherit;
-}
-
-.icon-minimal.geometric.icon-cloud::before { content: '☁'; }
-.icon-minimal.geometric.icon-brain::before { content: '⧉'; }
-.icon-minimal.geometric.icon-desktop::before { content: '⌂'; }
-.icon-minimal.geometric.icon-slides::before { content: '▤'; }
 
 /* ========================================
    LOADING ANIMATIONS
@@ -140,10 +16,8 @@
 }
 
 /* ========================================
-   UTILITY CLASSES
+   DISPLAY UTILITIES
    ======================================== */
-
-/* Display utilities */
 .hidden { display: none !important; }
 .block { display: block !important; }
 .inline { display: inline !important; }
@@ -152,13 +26,17 @@
 .inline-flex { display: inline-flex !important; }
 .grid { display: grid !important; }
 
-/* Position utilities */
+/* ========================================
+   POSITION UTILITIES
+   ======================================== */
 .relative { position: relative !important; }
 .absolute { position: absolute !important; }
 .fixed { position: fixed !important; }
 .sticky { position: sticky !important; }
 
-/* Float utilities */
+/* ========================================
+   FLOAT UTILITIES
+   ======================================== */
 .float-left { float: left; }
 .float-right { float: right; }
 .float-none { float: none; }
@@ -168,18 +46,24 @@
     clear: both;
 }
 
-/* Visibility utilities */
+/* ========================================
+   VISIBILITY UTILITIES
+   ======================================== */
 .visible { visibility: visible !important; }
 .invisible { visibility: hidden !important; }
 
-/* Opacity utilities */
+/* ========================================
+   OPACITY UTILITIES
+   ======================================== */
 .opacity-0 { opacity: 0; }
 .opacity-25 { opacity: 0.25; }
 .opacity-50 { opacity: 0.5; }
 .opacity-75 { opacity: 0.75; }
 .opacity-100 { opacity: 1; }
 
-/* Cursor utilities */
+/* ========================================
+   CURSOR UTILITIES
+   ======================================== */
 .cursor-auto { cursor: auto; }
 .cursor-default { cursor: default; }
 .cursor-pointer { cursor: pointer; }
@@ -189,21 +73,23 @@
 .cursor-help { cursor: help; }
 .cursor-not-allowed { cursor: not-allowed; }
 
-/* User select utilities */
+/* ========================================
+   USER SELECT UTILITIES
+   ======================================== */
 .select-none { user-select: none; }
 .select-text { user-select: text; }
 .select-all { user-select: all; }
 .select-auto { user-select: auto; }
 
-/* Pointer events */
+/* ========================================
+   POINTER EVENTS
+   ======================================== */
 .pointer-events-none { pointer-events: none; }
 .pointer-events-auto { pointer-events: auto; }
 
 /* ========================================
    LEGACY COMPATIBILITY CLASSES
    ======================================== */
-
-/* Legacy utility classes from original CSS */
 .margin-top-1-5rem { margin-top: 1.5rem; }
 .margin-left-auto { margin-left: auto; }
 .margin-left-1rem { margin-left: 1rem; }
@@ -262,15 +148,12 @@
 /* ========================================
    FOCUS AND ACCESSIBILITY IMPROVEMENTS
    ======================================== */
-
-/* Enhanced focus styles for better accessibility */
 :focus-visible {
     outline: 2px solid var(--primary-color);
     outline-offset: 2px;
     border-radius: var(--radius-small);
 }
 
-/* Remove focus outline for mouse users */
 :focus:not(:focus-visible) {
     outline: none;
 }
@@ -309,7 +192,6 @@
    PRINT STYLES
    ======================================== */
 @media print {
-    /* Optimize for printing */
     * {
         background: transparent !important;
         color: black !important;
@@ -329,7 +211,6 @@
         content: " (" attr(title) ")";
     }
 
-    /* Don't show links for images, or javascript/internal links */
     a[href^="javascript:"]:after,
     a[href^="#"]:after {
         content: "";
@@ -361,7 +242,6 @@
         page-break-after: avoid;
     }
 
-    /* Hide non-essential elements when printing */
     .no-print,
     .modal-overlay,
     .debug-container {
@@ -370,7 +250,7 @@
 }
 
 /* ========================================
-   REDUCED MOTION SUPPORT (Additional)
+   REDUCED MOTION SUPPORT
    ======================================== */
 @media (prefers-reduced-motion: reduce) {
     .loading-minimal {
@@ -385,7 +265,7 @@
 }
 
 /* ========================================
-   HIGH CONTRAST MODE SUPPORT (Alternative approach)
+   HIGH CONTRAST MODE SUPPORT
    ======================================== */
 @media (forced-colors: active) {
     .btn {
