@@ -582,6 +582,28 @@ export function loadState() {
         loadProviderConfiguration();
     }, 200);
 
+    // Restore slides data if available (for slides creator)
+    if (window.CREATOR_TYPE === 'slides') {
+        const savedSlidesData = appState.get('slidesData');
+        const savedTopic = appState.get('presentationTopic');
+
+        if (savedSlidesData && savedTopic) {
+            // Restore presentation topic
+            const topicTextarea = document.querySelector('#presentation-topic');
+            if (topicTextarea) {
+                topicTextarea.value = savedTopic;
+            }
+
+            // Trigger slides restoration after DOM is fully ready
+            setTimeout(() => {
+                if (window.slidesCreatorApp && window.slidesCreatorApp.restoreSlidesFromState) {
+                    window.slidesCreatorApp.restoreSlidesFromState(savedSlidesData);
+                    logger.info('Restored slides from saved state');
+                }
+            }, 500);
+        }
+    }
+
     logger.debug('State loaded');
 }
 

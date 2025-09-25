@@ -7,8 +7,18 @@
     <title>Slides Creator - Ollama</title>
     <link rel="icon" type="image/svg+xml" href="../favicon.svg">
 
-    <!-- Load CSS bundle -->
-    <link rel="stylesheet" href="./assets/css/bundle.min.css" />
+    <!-- Load CSS bundle normally to avoid preloading issues -->
+    <link rel="stylesheet" href="./assets/css/bundle.min.css">
+
+    <!-- Critical inline styles to prevent layout shift -->
+    <style>
+        /* Hide content until CSS is fully loaded */
+        body { visibility: hidden; opacity: 0; transition: opacity 0.3s ease; }
+        .container { transition: opacity 0.3s ease; }
+
+        /* Show content after DOM is ready */
+        body.loaded { visibility: visible; opacity: 1; }
+    </style>
 
     <style>
         .slides-container {
@@ -123,9 +133,6 @@
             </div>
         </div>
 
-        <!-- Language Selection (will be injected by LanguageSelector component) -->
-        <div id="language-section"></div>
-
         <!-- Slides Editor -->
         <div class="card mb-6">
             <div class="card-header">
@@ -139,13 +146,25 @@
             </div>
         </div>
 
+        <!-- Language Selection (will be injected by LanguageSelector component) -->
+        <div id="language-section"></div>
+
         <!-- Export Section -->
         <div class="card">
             <div class="card-header">
                 <h3>Export & Download</h3>
-                <p class="text-secondary">Export your presentation in various formats</p>
+                <p class="text-secondary">Export your presentation with automatic translation to selected languages</p>
             </div>
             <div class="card-body">
+                <div class="export-info mb-4 p-4" style="background: var(--background-tertiary); border-radius: var(--radius-medium);">
+                    <p class="mb-2"><strong>💡 Multi-Language Export:</strong></p>
+                    <ul class="mb-0" style="margin-left: 1rem; line-height: 1.6;">
+                        <li>Select multiple languages above to automatically translate your slides</li>
+                        <li>Each language will be exported as a separate file</li>
+                        <li>Multiple files are packaged in a ZIP for easy download</li>
+                        <li>AI translation preserves formatting and professional tone</li>
+                    </ul>
+                </div>
                 <div class="export-buttons-grid">
                     <button type="button" id="export-pdf-btn" class="btn btn-primary">⟄ Export as PDF</button>
                     <button type="button" id="export-pptx-btn" class="btn btn-primary">⟐ Export as PowerPoint</button>
@@ -165,6 +184,14 @@
     <script>
         window.COURSE_CREATOR_PROVIDER = 'ollama';
         window.CREATOR_TYPE = 'slides';
+
+        // Prevent FOUC by showing content after CSS is loaded
+        document.addEventListener('DOMContentLoaded', function() {
+            // Wait a moment for CSS to be applied, then show content
+            setTimeout(() => {
+                document.body.classList.add('loaded');
+            }, 50);
+        });
     </script>
 
     <!-- Main Application -->

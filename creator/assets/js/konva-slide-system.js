@@ -313,6 +313,8 @@ class KonvaSlideSystem {
         this.currentSlideIndex = 0;
         this.slides = [];
         this.isInitialized = false;
+        this.isInitializing = false; // Flag to track initial loading state
+        this.pendingSaveOperations = []; // Queue save operations until state is ready
         this.slideObjects = []; // Store Konva objects for each slide
 
         // Canvas dimensions
@@ -1464,21 +1466,48 @@ class KonvaSlideSystem {
 
     // Load slides from the AI-generated data format
     loadSlidesFromData(slideData) {
+        // Set initialization flag to prevent premature state saving
+        this.isInitializing = true;
+
         this.slides = slideData.slides || [];
         this.slideObjects = [];
+
+        // Ensure slidesAppState is properly initialized here to fix race condition
+        if (!window.slidesAppState) {
+            window.slidesAppState = {
+                currentSlideData: slideData,
+                currentSlideIndex: 0,
+                currentTheme: null
+            };
+            console.log('🔧 Initialized slidesAppState within KonvaSlideSystem');
+        } else {
+            // Update existing state with new data
+            window.slidesAppState.currentSlideData = slideData;
+            console.log('🔄 Updated existing slidesAppState with new slide data');
+        }
 
         console.log('Loading slides data:', slideData);
         console.log('Number of slides to load:', this.slides.length);
 
         // Convert each slide data to Konva objects
         this.slides.forEach((slide, index) => {
-            console.log(`Processing slide ${index + 1}:`, slide);
+            console.log(`🎯 Processing slide ${index + 1}:`, {
+                title: slide.title,
+                contentType: typeof slide.content,
+                contentLength: slide.content?.length || 0,
+                contentPreview: typeof slide.content === 'string'
+                    ? slide.content.substring(0, 100) + '...'
+                    : Array.isArray(slide.content)
+                        ? slide.content.slice(0, 2)
+                        : slide.content,
+                visualSuggestions: slide.visualSuggestions
+            });
             try {
                 const slideContent = this.createSlideFromData(slide, index);
-                console.log(`Created ${slideContent.length} objects for slide ${index + 1}`);
+                console.log(`✅ Created ${slideContent.length} objects for slide ${index + 1}`);
                 this.slideObjects.push(slideContent);
             } catch (error) {
-                console.error(`Error creating slide ${index + 1}:`, error);
+                console.error(`❌ Error creating slide ${index + 1}:`, error);
                 this.slideObjects.push([]); // Add empty slide to maintain indexing
             }
         });
@@ -1504,6 +1533,19 @@ class KonvaSlideSystem {
             this.stage.height(this.actualHeight);
             this.showSlide(this.currentSlideIndex);
             this.updateNavigation();
+
+            // Clear initialization flag - now ready for state saving
+            this.isInitializing = false;
+            console.log('✅ Slide initialization complete - state saving now enabled');
+
+            // Process any queued save operations
+            if (this.pendingSaveOperations.length > 0) {
+                console.log(`🔄 Processing ${this.pendingSaveOperations.length} queued save operations`);
+                // Execute the last save operation (most recent state)
+                const lastSave = this.pendingSaveOperations.pop();
+                this.pendingSaveOperations = []; // Clear the queue
+                if (lastSave) lastSave();
+            }
         }, 100);
     }
 
@@ -1597,7 +1639,30 @@ class KonvaSlideSystem {
 
         // Enhanced content with staggered animations
         if (slide.content && slide.content.length > 0) {
-            slide.content.forEach((point, index) => {
+            // Handle both string and array content formats
+            let contentArray;
+            if (typeof slide.content === 'string') {
+                // Split string content by bullet points, newlines, or semicolons
+                contentArray = slide.content.split(/[•\n;]/)
+                    .map(item => item.trim())
+                    .filter(item => item.length > 0);
+                console.log(`📝 Converted string content to array for slide ${slideIndex + 1}:`, {
+                    originalString: slide.content.substring(0, 200) + '...',
+                    arrayLength: contentArray.length,
+                    arrayItems: contentArray.slice(0, 3)
+                });
+            } else if (Array.isArray(slide.content)) {
+                contentArray = slide.content;
+                console.log(`📋 Using array content for slide ${slideIndex + 1}:`, {
+                    arrayLength: contentArray.length,
+                    arrayItems: contentArray.slice(0, 3)
+                });
+            } else {
+                contentArray = [String(slide.content)];
+                console.log(`🔄 Converted other content type to array for slide ${slideIndex + 1}:`, typeof slide.content);
+            }
+
+            contentArray.forEach((point, index) => {
                 // Skip empty content
                 if (!point || point.trim() === '') return;
 
@@ -1735,7 +1800,21 @@ class KonvaSlideSystem {
 
         // Enhanced content with cards
         if (slide.content) {
-            slide.content.slice(0, 3).forEach((point, index) => {
+            // Handle both string and array content
+            let contentArray;
+            if (typeof slide.content === 'string') {
+                // Split string content by bullet points or newlines
+                contentArray = slide.content.split(/[•\n]/)
+                    .map(item => item.trim())
+                    .filter(item => item.length > 0)
+                    .slice(0, 3);
+            } else if (Array.isArray(slide.content)) {
+                contentArray = slide.content.slice(0, 3);
+            } else {
+                contentArray = [String(slide.content)];
+            }
+
+            contentArray.forEach((point, index) => {
                 const cardY = this.actualHeight * 0.3 + (index * 120 * this.scaleFactor);
 
                 // Card background
@@ -2869,9 +2948,39 @@ class KonvaSlideSystem {
     }
 
     saveSlideState() {
+        // Skip if slides haven't been loaded yet
+        if (!this.slides || this.slides.length === 0) {
+            console.log('⏭️ Skipping saveSlideState - no slides loaded yet');
+            return;
+        }
+
         // Sync Konva objects back to slidesAppState for persistence
+        console.log('🔄 saveSlideState called, checking slidesAppState...', {
+            hasWindow: !!window,
+            hasSlidesAppState: !!window.slidesAppState,
+            hasCurrentSlideData: !!(window.slidesAppState?.currentSlideData),
+            currentSlideIndex: this.currentSlideIndex,
+            totalSlides: this.slides?.length || 0
+        });
+
         if (!window.slidesAppState || !window.slidesAppState.currentSlideData) {
-            console.warn('No slidesAppState available for saving');
+            // If we're still initializing or don't have slide data, skip silently
+            if (this.isInitializing || !this.slides || this.slides.length === 0) {
+                console.log('⏳ Skipping saveSlideState - slides not ready yet', {
+                    isInitializing: this.isInitializing,
+                    hasSlides: this.slides?.length > 0
+                });
+                return;
+            }
+
+            // Only warn if we should have state but don't
+            console.warn('❌ No slidesAppState available for saving:', {
+                hasWindow: !!window,
+                hasSlidesAppState: !!window.slidesAppState,
+                hasCurrentSlideData: !!(window.slidesAppState?.currentSlideData),
+                isInitializing: this.isInitializing,
+                slideCount: this.slides?.length || 0
+            });
             return;
         }
 

@@ -13,6 +13,7 @@ import { LanguageSelector } from './components/LanguageSelector.js';
 import { ProviderSelector } from './components/ProviderSelector.js';
 import { StatusDisplay } from './components/StatusDisplay.js';
 import { KonvaEditor } from './components/KonvaEditor.js';
+import { TranslationService } from './services/TranslationService.js';
 
 /**
  * Slides Creator Application Class
@@ -24,6 +25,7 @@ class SlidesCreatorApp {
         this.components = {};
         this.isInitialized = false;
         this.slides = [];
+        this.translationService = null;
 
         // Bind methods
         this.handleProviderChange = this.handleProviderChange.bind(this);
@@ -163,8 +165,8 @@ class SlidesCreatorApp {
         try {
             // Initialize LanguageSelector component
             this.components.languageSelector = new LanguageSelector('language-section', {
-                title: 'Presentation Languages',
-                description: 'Select languages for your presentation'
+                title: 'Export Languages',
+                description: 'Select languages for translation and export'
             });
             await this.components.languageSelector.init();
 
@@ -198,6 +200,11 @@ class SlidesCreatorApp {
 
             // Setup component event listeners
             this.setupComponentEventListeners();
+
+            // Initialize TranslationService after provider is loaded
+            if (this.currentProvider) {
+                this.translationService = new TranslationService(this.currentProvider);
+            }
 
             // Make components globally available for compatibility
             window.slidesComponents = this.components;
@@ -355,65 +362,166 @@ class SlidesCreatorApp {
         try {
             this.components.generationStatus?.showLoading('Generating presentation...', 0);
 
-            const prompt = `Create a presentation about: ${topic}
+            // Debug: Check provider availability
+            if (!this.currentProvider) {
+                throw new Error('AI provider not initialized');
+            }
+            if (typeof this.currentProvider.generateText !== 'function') {
+                throw new Error('AI provider generateText method not available');
+            }
 
-Generate ${numSlides} slides with the following structure:
-- Slide 1: Title slide with the presentation title
-- Slides 2-${numSlides-1}: Content slides with key points
-- Slide ${numSlides}: Conclusion/Summary slide
+            logger.info(`Generating ${numSlides} slides using provider: ${this.currentProvider.name || 'Unknown'}`);
 
-For each slide, provide:
-- Title
-- Main content (bullet points or paragraphs)
-- Suggested visual elements (colors, shapes, images)
+            const prompt = `Create a comprehensive presentation about: "${topic}"
 
-Format the response as JSON with this structure:
+CRITICAL REQUIREMENTS:
+- Generate EXACTLY ${numSlides} slides
+- Respond with VALID JSON only (no markdown, no explanations)
+- Each slide must have meaningful, detailed content
+
+Slide Structure:
+- Slide 1: Title slide with compelling presentation title
+- Slides 2-${numSlides-1}: Content slides with detailed information, examples, key points
+- Slide ${numSlides}: Strong conclusion/summary with key takeaways
+
+REQUIRED JSON FORMAT (respond with this exact structure):
 {
-  "title": "Presentation Title",
+  "title": "Compelling Presentation Title",
   "slides": [
     {
       "slideNumber": 1,
-      "title": "Slide Title",
-      "content": "Slide content",
+      "title": "Title Here",
+      "content": "Detailed content with multiple points separated by bullet points using •",
       "visualSuggestions": {
-        "backgroundColor": "#ffffff",
-        "textColor": "#333333",
-        "accentColor": "#0066cc",
-        "layout": "title-only|content|conclusion"
+        "backgroundColor": "#f0f9ff",
+        "textColor": "#1e293b",
+        "accentColor": "#3b82f6",
+        "layout": "title-only"
       }
     }
   ]
-}`;
+}
 
+EXAMPLE (for reference):
+{
+  "title": "The Future of Artificial Intelligence",
+  "slides": [
+    {
+      "slideNumber": 1,
+      "title": "The Future of Artificial Intelligence",
+      "content": "Exploring the transformative impact of AI on society, business, and daily life",
+      "visualSuggestions": {
+        "backgroundColor": "#f0f9ff",
+        "textColor": "#1e293b",
+        "accentColor": "#3b82f6",
+        "layout": "title-only"
+      }
+    },
+    {
+      "slideNumber": 2,
+      "title": "What is Artificial Intelligence?",
+      "content": "• Machine learning algorithms that can learn from data\\n• Natural language processing for human-computer interaction\\n• Computer vision for image and video analysis\\n• Robotics and autonomous systems",
+      "visualSuggestions": {
+        "backgroundColor": "#ffffff",
+        "textColor": "#374151",
+        "accentColor": "#059669",
+        "layout": "content"
+      }
+    }
+  ]
+}
+
+Generate ${numSlides} slides about "${topic}" following this exact format:`;
+
+            logger.debug('Sending prompt to AI provider');
             const response = await this.currentProvider.generateText(prompt);
 
-            // Try to parse JSON response
+            logger.debug('Received response from AI provider:', response.substring(0, 500));
+
+            // Try to parse JSON response with improved error handling
             let slidesData;
             try {
-                slidesData = JSON.parse(response);
+                // Clean up response - remove markdown code blocks if present
+                let cleanedResponse = response.trim();
+                if (cleanedResponse.startsWith('```json')) {
+                    cleanedResponse = cleanedResponse.substring(7);
+                }
+                if (cleanedResponse.startsWith('```')) {
+                    cleanedResponse = cleanedResponse.substring(3);
+                }
+                if (cleanedResponse.endsWith('```')) {
+                    cleanedResponse = cleanedResponse.substring(0, cleanedResponse.length - 3);
+                }
+
+                cleanedResponse = cleanedResponse.trim();
+                logger.debug('Cleaned response for parsing:', cleanedResponse.substring(0, 200));
+
+                slidesData = JSON.parse(cleanedResponse);
+
+                // Validate the parsed data
+                if (!slidesData.slides || !Array.isArray(slidesData.slides)) {
+                    throw new Error('Invalid slides data structure');
+                }
+
+                if (slidesData.slides.length === 0) {
+                    throw new Error('No slides generated');
+                }
+
+                logger.info(`Successfully parsed ${slidesData.slides.length} slides`);
+
             } catch (parseError) {
-                // If JSON parsing fails, create a simple structure
+                logger.error('JSON parsing failed:', parseError);
+                logger.error('Raw response:', response);
+
+                // Create structured fallback based on requested slide count
+                const fallbackSlides = [];
+                const responseLines = response.split('\n').filter(line => line.trim());
+
+                for (let i = 0; i < numSlides; i++) {
+                    let slideContent = '';
+                    if (i === 0) {
+                        slideContent = `${topic}\n\nPresentation Overview`;
+                    } else if (i === numSlides - 1) {
+                        slideContent = 'Conclusion\n\nKey takeaways and next steps';
+                    } else {
+                        slideContent = responseLines.slice(i * 2, (i + 1) * 2).join('\n') || `${topic} - Key Point ${i}`;
+                    }
+
+                    fallbackSlides.push({
+                        slideNumber: i + 1,
+                        title: i === 0 ? topic : `${topic} - Slide ${i + 1}`,
+                        content: slideContent,
+                        visualSuggestions: {
+                            backgroundColor: i === 0 ? "#f0f9ff" : "#ffffff",
+                            textColor: "#1e293b",
+                            accentColor: "#3b82f6",
+                            layout: i === 0 ? "title-only" : "content"
+                        }
+                    });
+                }
+
                 slidesData = {
                     title: topic,
-                    slides: [{
-                        slideNumber: 1,
-                        title: topic,
-                        content: response,
-                        visualSuggestions: {
-                            backgroundColor: "#ffffff",
-                            textColor: "#333333",
-                            accentColor: "#0066cc",
-                            layout: "content"
-                        }
-                    }]
+                    slides: fallbackSlides
                 };
+
+                logger.warn(`Created ${fallbackSlides.length} fallback slides due to parsing error`);
             }
 
             this.slides = slidesData.slides || [];
+
+            // Store slides data in centralized state for persistence
+            appState.set('slidesData', slidesData);
+            appState.set('presentationTopic', topic);
+            appState.set('slideCount', this.slides.length);
+
             this.createSlidesInEditor(slidesData);
 
             this.components.generationStatus?.showSuccess(`Generated ${this.slides.length} slides successfully!`);
+
+            // Save both centralized state and legacy state for compatibility
             saveState();
+            logger.info('Slides data saved to state management');
 
         } catch (error) {
             logger.error('Failed to generate slides:', error);
@@ -425,86 +533,33 @@ Format the response as JSON with this structure:
      * Create slides in the Konva editor
      */
     createSlidesInEditor(slidesData) {
-        if (!this.components.slidesEditor) return;
+        if (!this.components.slidesEditor || !this.components.slidesEditor.konvaSlideSystem) return;
 
-        // Clear existing slides
-        this.components.slidesEditor.clearAll();
+        // Set up global state for KonvaSlideSystem compatibility BEFORE loading slides
+        window.slidesAppState = {
+            currentSlideData: slidesData,
+            currentSlideIndex: 0,
+            currentTheme: null
+        };
 
-        // Create slides from AI-generated data
-        slidesData.slides.forEach((slide, index) => {
-            this.createSlideElements(slide, index);
-        });
-    }
-
-    /**
-     * Create visual elements for a single slide
-     */
-    createSlideElements(slide, slideIndex) {
-        const editor = this.components.slidesEditor;
-        if (!editor) return;
-
-        const slideY = slideIndex * 750; // Vertical offset for each slide
-        const suggestions = slide.visualSuggestions || {};
-
-        // Create slide title
-        const titleElement = new window.Konva.Text({
-            x: 50,
-            y: slideY + 50,
-            text: slide.title || `Slide ${slide.slideNumber}`,
-            fontSize: 32,
-            fontFamily: 'Arial',
-            fill: suggestions.textColor || '#333333',
-            fontStyle: 'bold',
-            width: 900,
-            align: 'center',
-            draggable: true,
-            id: `slide-${slideIndex}-title`
+        console.log('🔧 Set up slidesAppState with data:', {
+            title: slidesData.title,
+            slideCount: slidesData.slides?.length || 0,
+            firstSlideTitle: slidesData.slides?.[0]?.title || 'N/A',
+            firstSlideContent: this.getContentPreview(slidesData.slides?.[0]?.content)
         });
 
-        editor.addElement(titleElement);
-
-        // Create slide content
-        if (slide.content) {
-            const contentElement = new window.Konva.Text({
-                x: 50,
-                y: slideY + 150,
-                text: slide.content,
-                fontSize: 18,
-                fontFamily: 'Arial',
-                fill: suggestions.textColor || '#333333',
-                width: 900,
-                align: 'left',
-                draggable: true,
-                id: `slide-${slideIndex}-content`
-            });
-
-            editor.addElement(contentElement);
+        // The KonvaSlideSystem will handle displaying the slides
+        // Load the slides data into the KonvaSlideSystem using the correct method name
+        if (this.components.slidesEditor.konvaSlideSystem.loadSlidesFromData) {
+            this.components.slidesEditor.konvaSlideSystem.loadSlidesFromData(slidesData);
         }
 
-        // Add decorative elements based on layout
-        if (suggestions.layout === 'title-only') {
-            // Add a decorative line under the title
-            const line = new window.Konva.Line({
-                points: [100, slideY + 120, 900, slideY + 120],
-                stroke: suggestions.accentColor || '#0066cc',
-                strokeWidth: 3,
-                draggable: true,
-                id: `slide-${slideIndex}-line`
-            });
-            editor.addElement(line);
-        }
-
-        // Add slide separator if not the last slide
-        if (slideIndex < this.slides.length - 1) {
-            const separator = new window.Konva.Line({
-                points: [0, slideY + 700, 1000, slideY + 700],
-                stroke: '#cccccc',
-                strokeWidth: 1,
-                listening: false,
-                id: `slide-${slideIndex}-separator`
-            });
-            editor.addElement(separator);
-        }
+        // Emit event for components listening to slide creation
+        this.components.slidesEditor.emit('slidesCreated', {
+            slides: slidesData.slides,
+            count: slidesData.slides.length
+        });
     }
 
     /**
@@ -554,35 +609,38 @@ Return only the improved topic description, nothing else.`;
     }
 
     /**
-     * Export presentation in various formats
+     * Export presentation in various formats with multi-language support
      */
     async exportPresentation(format) {
-        if (!this.components.slidesEditor) {
-            this.components.exportStatus?.showError('No slides to export');
+        if (!this.slides || this.slides.length === 0) {
+            this.components.exportStatus?.showError('No slides to export. Generate slides first.');
+            return;
+        }
+
+        if (!this.translationService) {
+            this.components.exportStatus?.showError('Translation service not available');
             return;
         }
 
         try {
-            this.components.exportStatus?.showLoading(`Exporting as ${format.toUpperCase()}...`);
+            // Get selected languages
+            const selectedLanguages = this.components.languageSelector?.getSelectedLanguages() || ['en'];
 
-            switch (format) {
-                case 'pdf':
-                    await this.exportAsPDF();
-                    break;
-                case 'pptx':
-                    await this.exportAsPowerPoint();
-                    break;
-                case 'html':
-                    await this.exportAsHTML();
-                    break;
-                case 'json':
-                    await this.exportAsJSON();
-                    break;
-                default:
-                    throw new Error(`Unsupported export format: ${format}`);
+            if (selectedLanguages.length === 1) {
+                // Single language export
+                this.components.exportStatus?.showLoading(`Exporting as ${format.toUpperCase()}...`);
+                await this.exportSingleLanguage(format, selectedLanguages[0]);
+            } else {
+                // Multi-language export with translation
+                this.components.exportStatus?.showLoading(`Translating and exporting in ${selectedLanguages.length} languages...`);
+                await this.exportMultiLanguage(format, selectedLanguages);
             }
 
-            this.components.exportStatus?.showSuccess(`Exported as ${format.toUpperCase()} successfully!`);
+            this.components.exportStatus?.showSuccess(
+                selectedLanguages.length === 1
+                    ? `Exported as ${format.toUpperCase()} successfully!`
+                    : `Exported in ${selectedLanguages.length} languages as ${format.toUpperCase()}!`
+            );
 
         } catch (error) {
             logger.error(`Failed to export as ${format}:`, error);
@@ -591,72 +649,405 @@ Return only the improved topic description, nothing else.`;
     }
 
     /**
-     * Export as PDF
+     * Export presentation in a single language
      */
-    async exportAsPDF() {
-        const dataURL = this.components.slidesEditor.exportAsImage('png');
+    async exportSingleLanguage(format, language) {
+        const languageName = this.translationService.getLanguageName(language);
 
-        // Create a simple PDF with the canvas image
-        const link = DOM.create('a', {
-            href: dataURL,
-            download: 'presentation.png'
-        });
-
-        document.body.appendChild(link);
-        link.click();
-        document.body.removeChild(link);
+        switch (format) {
+            case 'pdf':
+                await this.exportAsPDF(this.slides, language);
+                break;
+            case 'pptx':
+                await this.exportAsPowerPoint(this.slides, language);
+                break;
+            case 'html':
+                await this.exportAsHTML(this.slides, language);
+                break;
+            case 'json':
+                await this.exportAsJSON(this.slides, language);
+                break;
+            default:
+                throw new Error(`Unsupported export format: ${format}`);
+        }
     }
 
     /**
-     * Export as PowerPoint (simplified)
+     * Export presentation in multiple languages with translation
      */
-    async exportAsPowerPoint() {
-        const canvasData = this.components.slidesEditor.getCanvasData();
-        const dataURL = this.components.slidesEditor.exportAsImage('png');
+    async exportMultiLanguage(format, languages) {
+        const translatedSlides = new Map();
+        const files = [];
 
-        // For now, export as image
-        const link = DOM.create('a', {
-            href: dataURL,
-            download: 'presentation.png'
-        });
+        // Show translation progress
+        const updateProgress = (progressData) => {
+            if (progressData.currentLanguage) {
+                this.components.exportStatus?.showLoading(
+                    `Translating (${progressData.currentLanguage}/${progressData.totalLanguages}): ${progressData.status}`,
+                    (progressData.currentLanguage / progressData.totalLanguages) * 0.7 // 70% of progress for translation
+                );
+            } else {
+                this.components.exportStatus?.showLoading(progressData.status);
+            }
+        };
 
-        document.body.appendChild(link);
-        link.click();
-        document.body.removeChild(link);
+        // Translate content for non-English languages
+        const languagesToTranslate = languages.filter(lang => lang !== 'en');
+
+        if (languagesToTranslate.length > 0) {
+            const translations = await this.translationService.translateToMultipleLanguages(
+                this.slides,
+                languagesToTranslate,
+                updateProgress
+            );
+
+            // Store translations
+            translations.forEach((slides, language) => {
+                translatedSlides.set(language, slides);
+            });
+        }
+
+        // Add original English slides if included
+        if (languages.includes('en')) {
+            translatedSlides.set('en', this.slides.map(slide => ({ ...slide, language: 'en' })));
+        }
+
+        this.components.exportStatus?.showLoading('Generating export files...', 0.7);
+
+        // Generate files for each language
+        let fileIndex = 0;
+        for (const [language, slides] of translatedSlides) {
+            fileIndex++;
+            this.components.exportStatus?.showLoading(
+                `Generating ${format.toUpperCase()} for ${this.translationService.getLanguageName(language)} (${fileIndex}/${languages.length})...`,
+                0.7 + (fileIndex / languages.length) * 0.3
+            );
+
+            try {
+                const fileData = await this.generateExportFile(format, slides, language);
+                files.push(fileData);
+            } catch (error) {
+                logger.error(`Failed to generate ${format} for ${language}:`, error);
+                // Continue with other languages
+            }
+        }
+
+        // Package and download files
+        await this.downloadMultipleFiles(files, format);
     }
 
     /**
-     * Export as HTML
+     * Generate export file data for a specific format and language
      */
-    async exportAsHTML() {
-        const canvasData = this.components.slidesEditor.getCanvasData();
-        const imageDataURL = this.components.slidesEditor.exportAsImage('png');
+    async generateExportFile(format, slides, language) {
+        const languageName = this.translationService.getLanguageName(language);
 
-        const htmlContent = `
+        switch (format) {
+            case 'pdf':
+                return await this.generatePDFData(slides, language);
+            case 'pptx':
+                return await this.generatePowerPointData(slides, language);
+            case 'html':
+                return await this.generateHTMLData(slides, language);
+            case 'json':
+                return await this.generateJSONData(slides, language);
+            default:
+                throw new Error(`Unsupported format: ${format}`);
+        }
+    }
+
+    /**
+     * Generate PDF export data
+     */
+    async generatePDFData(slides, language) {
+        const languageName = this.translationService.getLanguageName(language);
+
+        // Create HTML content for PDF generation
+        const htmlContent = this.generateHTMLFromSlides(slides, `Presentation - ${languageName}`);
+
+        return {
+            filename: `presentation-${language}.html`,
+            content: htmlContent,
+            type: 'text/html',
+            language,
+            languageName
+        };
+    }
+
+    /**
+     * Generate PowerPoint export data
+     */
+    async generatePowerPointData(slides, language) {
+        const languageName = this.translationService.getLanguageName(language);
+
+        // For now, generate HTML as we don't have PPTX library
+        const htmlContent = this.generateHTMLFromSlides(slides, `Presentation - ${languageName}`);
+
+        return {
+            filename: `presentation-${language}.html`,
+            content: htmlContent,
+            type: 'text/html',
+            language,
+            languageName
+        };
+    }
+
+    /**
+     * Generate HTML export data
+     */
+    async generateHTMLData(slides, language) {
+        const languageName = this.translationService.getLanguageName(language);
+        const htmlContent = this.generateHTMLFromSlides(slides, `Presentation - ${languageName}`);
+
+        return {
+            filename: `presentation-${language}.html`,
+            content: htmlContent,
+            type: 'text/html',
+            language,
+            languageName
+        };
+    }
+
+    /**
+     * Generate JSON export data
+     */
+    async generateJSONData(slides, language) {
+        const languageName = this.translationService.getLanguageName(language);
+
+        const exportData = {
+            metadata: {
+                title: this.dom.presentationTopicTextarea?.value || 'Untitled Presentation',
+                createdAt: new Date().toISOString(),
+                provider: this.currentProvider?.name || 'Unknown',
+                language: language,
+                languageName: languageName
+            },
+            slides: slides
+        };
+
+        return {
+            filename: `presentation-data-${language}.json`,
+            content: JSON.stringify(exportData, null, 2),
+            type: 'application/json',
+            language,
+            languageName
+        };
+    }
+
+    /**
+     * Generate HTML content from slides data
+     */
+    generateHTMLFromSlides(slides, title) {
+        const slidesHTML = slides.map((slide, index) => {
+            const visualSuggestions = slide.visualSuggestions || {};
+            const backgroundColor = visualSuggestions.backgroundColor || '#ffffff';
+            const textColor = visualSuggestions.textColor || '#333333';
+            const accentColor = visualSuggestions.accentColor || '#0066cc';
+
+            return `
+                <div class="slide" style="background-color: ${backgroundColor}; color: ${textColor};">
+                    <div class="slide-number">Slide ${slide.slideNumber || index + 1}</div>
+                    <h2 class="slide-title" style="color: ${accentColor};">${slide.title || ''}</h2>
+                    <div class="slide-content">
+                        ${slide.content ? slide.content.replace(/\n/g, '<br>') : ''}
+                    </div>
+                </div>
+            `;
+        }).join('');
+
+        return `
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-    <title>Presentation</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>${title}</title>
     <style>
-        body { margin: 0; padding: 20px; font-family: Arial, sans-serif; }
-        .presentation { text-align: center; }
-        .slide-image { max-width: 100%; height: auto; border: 1px solid #ccc; margin: 20px 0; }
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Arial, sans-serif;
+            line-height: 1.6;
+            background-color: #f5f5f5;
+            padding: 20px;
+        }
+
+        .presentation-container {
+            max-width: 1000px;
+            margin: 0 auto;
+        }
+
+        .presentation-header {
+            text-align: center;
+            margin-bottom: 40px;
+            padding: 20px;
+            background: white;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+
+        .presentation-title {
+            font-size: 2.5em;
+            color: #333;
+            margin-bottom: 10px;
+        }
+
+        .presentation-meta {
+            color: #666;
+            font-size: 1.1em;
+        }
+
+        .slide {
+            background: white;
+            margin: 30px 0;
+            padding: 40px;
+            border-radius: 10px;
+            box-shadow: 0 2px 15px rgba(0,0,0,0.1);
+            min-height: 400px;
+            position: relative;
+            border-left: 5px solid #0066cc;
+        }
+
+        .slide-number {
+            position: absolute;
+            top: 15px;
+            right: 20px;
+            background: #0066cc;
+            color: white;
+            padding: 5px 10px;
+            border-radius: 15px;
+            font-size: 0.9em;
+            font-weight: 500;
+        }
+
+        .slide-title {
+            font-size: 2.2em;
+            margin-bottom: 25px;
+            border-bottom: 2px solid #eee;
+            padding-bottom: 15px;
+        }
+
+        .slide-content {
+            font-size: 1.2em;
+            line-height: 1.8;
+        }
+
+        .slide-content ul {
+            margin: 15px 0;
+            padding-left: 20px;
+        }
+
+        .slide-content li {
+            margin: 10px 0;
+        }
+
+        @media print {
+            .slide {
+                page-break-after: always;
+                margin: 0;
+                box-shadow: none;
+                border: 1px solid #ccc;
+            }
+
+            body {
+                background: white;
+                padding: 0;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .presentation-container {
+                padding: 10px;
+            }
+
+            .slide {
+                padding: 20px;
+                margin: 15px 0;
+            }
+
+            .slide-title {
+                font-size: 1.8em;
+            }
+
+            .slide-content {
+                font-size: 1.1em;
+            }
+        }
     </style>
 </head>
 <body>
-    <div class="presentation">
-        <h1>Generated Presentation</h1>
-        <img src="${imageDataURL}" alt="Presentation Slides" class="slide-image">
+    <div class="presentation-container">
+        <header class="presentation-header">
+            <h1 class="presentation-title">${title}</h1>
+            <div class="presentation-meta">
+                Generated on ${new Date().toLocaleDateString()}
+            </div>
+        </header>
+
+        <main>
+            ${slidesHTML}
+        </main>
     </div>
 </body>
 </html>`;
+    }
 
-        const blob = new Blob([htmlContent], { type: 'text/html' });
-        const url = URL.createObjectURL(blob);
+    /**
+     * Download multiple files (ZIP for multiple, direct download for single)
+     */
+    async downloadMultipleFiles(files, format) {
+        if (files.length === 0) {
+            throw new Error('No files generated');
+        }
 
+        if (files.length === 1) {
+            // Single file - direct download
+            const file = files[0];
+            const blob = new Blob([file.content], { type: file.type });
+            const url = URL.createObjectURL(blob);
+
+            const link = DOM.create('a', {
+                href: url,
+                download: file.filename
+            });
+
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+            URL.revokeObjectURL(url);
+        } else {
+            // Multiple files - create ZIP
+            await this.createAndDownloadZip(files, format);
+        }
+    }
+
+    /**
+     * Create and download ZIP file containing all language versions
+     */
+    async createAndDownloadZip(files, format) {
+        if (!window.JSZip) {
+            throw new Error('JSZip library not loaded');
+        }
+
+        const zip = new window.JSZip();
+
+        // Add each file to the ZIP
+        files.forEach(file => {
+            zip.file(file.filename, file.content);
+        });
+
+        // Generate ZIP file
+        const zipBlob = await zip.generateAsync({ type: 'blob' });
+
+        // Download ZIP
+        const url = URL.createObjectURL(zipBlob);
         const link = DOM.create('a', {
             href: url,
-            download: 'presentation.html'
+            download: `presentation-multilanguage-${format}.zip`
         });
 
         document.body.appendChild(link);
@@ -666,27 +1057,72 @@ Return only the improved topic description, nothing else.`;
     }
 
     /**
-     * Export as JSON
+     * Legacy export methods for compatibility
      */
-    async exportAsJSON() {
-        const exportData = {
-            metadata: {
-                title: this.dom.presentationTopicTextarea?.value || 'Untitled Presentation',
-                createdAt: new Date().toISOString(),
-                provider: this.currentProvider?.name || 'Unknown',
-                languages: this.components.languageSelector?.getSelectedLanguages() || ['en']
-            },
-            slides: this.slides,
-            canvasData: this.components.slidesEditor.getCanvasData()
-        };
+    async exportAsPDF(slides = null, language = 'en') {
+        const targetSlides = slides || this.slides;
+        const fileData = await this.generatePDFData(targetSlides, language);
 
-        const jsonString = JSON.stringify(exportData, null, 2);
-        const blob = new Blob([jsonString], { type: 'application/json' });
+        const blob = new Blob([fileData.content], { type: fileData.type });
         const url = URL.createObjectURL(blob);
 
         const link = DOM.create('a', {
             href: url,
-            download: 'presentation-data.json'
+            download: fileData.filename
+        });
+
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        URL.revokeObjectURL(url);
+    }
+
+    async exportAsPowerPoint(slides = null, language = 'en') {
+        const targetSlides = slides || this.slides;
+        const fileData = await this.generatePowerPointData(targetSlides, language);
+
+        const blob = new Blob([fileData.content], { type: fileData.type });
+        const url = URL.createObjectURL(blob);
+
+        const link = DOM.create('a', {
+            href: url,
+            download: fileData.filename
+        });
+
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        URL.revokeObjectURL(url);
+    }
+
+    async exportAsHTML(slides = null, language = 'en') {
+        const targetSlides = slides || this.slides;
+        const fileData = await this.generateHTMLData(targetSlides, language);
+
+        const blob = new Blob([fileData.content], { type: fileData.type });
+        const url = URL.createObjectURL(blob);
+
+        const link = DOM.create('a', {
+            href: url,
+            download: fileData.filename
+        });
+
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        URL.revokeObjectURL(url);
+    }
+
+    async exportAsJSON(slides = null, language = 'en') {
+        const targetSlides = slides || this.slides;
+        const fileData = await this.generateJSONData(targetSlides, language);
+
+        const blob = new Blob([fileData.content], { type: fileData.type });
+        const url = URL.createObjectURL(blob);
+
+        const link = DOM.create('a', {
+            href: url,
+            download: fileData.filename
         });
 
         document.body.appendChild(link);
@@ -758,6 +1194,46 @@ Return only the improved topic description, nothing else.`;
         } catch (error) {
             logger.error('Failed to refresh slides creator state:', error);
         }
+    }
+
+    /**
+     * Restore slides from saved state data
+     */
+    restoreSlidesFromState(slidesData) {
+        try {
+            if (!slidesData || !slidesData.slides) {
+                logger.warn('No valid slides data to restore');
+                return;
+            }
+
+            this.slides = slidesData.slides;
+
+            // Create slides in the visual editor
+            this.createSlidesInEditor(slidesData);
+
+            // Update UI to reflect restored data
+            if (this.components.generationStatus) {
+                this.components.generationStatus.showSuccess(`Restored ${this.slides.length} slides from previous session`);
+            }
+
+            logger.info(`Restored ${this.slides.length} slides from saved state`);
+        } catch (error) {
+            logger.error('Failed to restore slides from state:', error);
+        }
+    }
+
+    /**
+     * Get a safe preview of content for logging
+     */
+    getContentPreview(content) {
+        if (!content) return 'N/A';
+        if (typeof content === 'string') {
+            return content.substring(0, 100) + (content.length > 100 ? '...' : '');
+        }
+        if (Array.isArray(content)) {
+            return `Array[${content.length}]: ${content.slice(0, 2).join(', ')}${content.length > 2 ? '...' : ''}`;
+        }
+        return `${typeof content}: ${String(content).substring(0, 50)}`;
     }
 
     /**

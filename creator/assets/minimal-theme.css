@@ -595,12 +595,21 @@ body {
     margin: 0 auto;
 }
 
-/* High contrast support */
-@media (prefers-contrast: high) {
+/* Windows High Contrast mode support - only use supported features */
+@media screen and (forced-colors: active) {
     :root {
-        --border-light: #000000;
-        --border-medium: #000000;
-        --text-secondary: #000000;
+        --border-light: ButtonText;
+        --border-medium: ButtonText;
+        --text-secondary: ButtonText;
+    }
+}
+
+/* High contrast alternative using supported media queries */
+@media screen and (min-resolution: 2dppx) and (prefers-color-scheme: dark) {
+    :root {
+        --border-light: #ffffff;
+        --border-medium: #ffffff;
+        --text-secondary: #ffffff;
     }
 }
 
