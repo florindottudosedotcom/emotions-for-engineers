@@ -208,6 +208,7 @@ export class OpenRouterProvider extends BaseProvider {
                         .models-list {
                             max-height: 200px;
                             overflow-y: auto;
+                            background: var(--bg-primary);
                         }
 
                         .model-group {
