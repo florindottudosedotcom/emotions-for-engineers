@@ -104,21 +104,162 @@ export class OpenRouterProvider extends BaseProvider {
 
                     <div class="model-selection-section">
                         <div class="input-group">
-                            <label for="openrouter-model-search" class="label-no-shrink-no-margin">Search Models:</label>
-                            <input type="text" id="openrouter-model-search" placeholder="Search by model name, provider, or capability..." class="input-flex-grow" style="margin-bottom: var(--spacing-2);">
-                        </div>
-
-                        <div class="input-group">
-                            <label for="openrouter-model-select" class="label-no-shrink-no-margin">AI Model:</label>
-                            <select id="openrouter-model-select" class="select-no-margin" size="8" style="height: auto; max-height: 200px; overflow-y: auto;">
-                                ${modelOptionsHtml}
-                            </select>
-                        </div>
-
-                        <div id="model-count-info" style="font-size: var(--font-size-sm); color: var(--text-secondary); margin-top: var(--spacing-1);">
-                            Showing all models
+                            <label for="openrouter-model-dropdown" class="label-no-shrink-no-margin">AI Model:</label>
+                            <div class="custom-dropdown" id="openrouter-model-dropdown">
+                                <div class="dropdown-trigger" id="dropdown-trigger">
+                                    <span class="selected-model" id="selected-model">Select a model...</span>
+                                    <span class="dropdown-arrow">▼</span>
+                                </div>
+                                <div class="dropdown-content" id="dropdown-content" style="display: none;">
+                                    <div class="search-container">
+                                        <input type="text" id="dropdown-search" placeholder="Search models..." class="dropdown-search">
+                                    </div>
+                                    <div class="models-list" id="models-list">
+                                        ${this.generateDropdownContent()}
+                                    </div>
+                                    <div class="model-count" id="model-count-info">
+                                        Showing all models
+                                    </div>
+                                </div>
+                            </div>
                         </div>
                     </div>
+
+                    <style>
+                        .custom-dropdown {
+                            position: relative;
+                            width: 100%;
+                        }
+
+                        .dropdown-trigger {
+                            display: flex;
+                            justify-content: space-between;
+                            align-items: center;
+                            padding: var(--spacing-2);
+                            border: 1px solid var(--border-primary);
+                            border-radius: 4px;
+                            background: var(--bg-primary);
+                            cursor: pointer;
+                            min-height: 40px;
+                        }
+
+                        .dropdown-trigger:hover {
+                            border-color: var(--color-primary);
+                        }
+
+                        .dropdown-trigger.open {
+                            border-color: var(--color-primary);
+                            border-bottom-left-radius: 0;
+                            border-bottom-right-radius: 0;
+                        }
+
+                        .selected-model {
+                            flex: 1;
+                            color: var(--text-primary);
+                            font-size: var(--font-size-base);
+                        }
+
+                        .dropdown-arrow {
+                            color: var(--text-secondary);
+                            font-size: 12px;
+                            transition: transform 0.2s ease;
+                        }
+
+                        .dropdown-trigger.open .dropdown-arrow {
+                            transform: rotate(180deg);
+                        }
+
+                        .dropdown-content {
+                            position: absolute;
+                            top: 100%;
+                            left: 0;
+                            right: 0;
+                            background: var(--bg-primary);
+                            border: 1px solid var(--color-primary);
+                            border-top: none;
+                            border-radius: 0 0 4px 4px;
+                            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+                            z-index: 1000;
+                            max-height: 300px;
+                            overflow: hidden;
+                        }
+
+                        .search-container {
+                            padding: var(--spacing-2);
+                            border-bottom: 1px solid var(--border-primary);
+                        }
+
+                        .dropdown-search {
+                            width: 100%;
+                            padding: var(--spacing-2);
+                            border: 1px solid var(--border-primary);
+                            border-radius: 4px;
+                            font-size: var(--font-size-sm);
+                            background: var(--bg-secondary);
+                        }
+
+                        .dropdown-search:focus {
+                            outline: none;
+                            border-color: var(--color-primary);
+                        }
+
+                        .models-list {
+                            max-height: 200px;
+                            overflow-y: auto;
+                        }
+
+                        .model-group {
+                            border-bottom: 1px solid var(--border-secondary);
+                        }
+
+                        .model-group-header {
+                            padding: var(--spacing-2);
+                            background: var(--bg-secondary);
+                            font-weight: 600;
+                            font-size: var(--font-size-sm);
+                            color: var(--text-secondary);
+                            border-bottom: 1px solid var(--border-primary);
+                        }
+
+                        .model-option {
+                            padding: var(--spacing-2);
+                            cursor: pointer;
+                            border-bottom: 1px solid var(--border-tertiary);
+                            font-size: var(--font-size-sm);
+                            color: var(--text-primary);
+                        }
+
+                        .model-option:hover {
+                            background: var(--bg-secondary);
+                        }
+
+                        .model-option.selected {
+                            background: var(--color-primary);
+                            color: white;
+                        }
+
+                        .model-name {
+                            font-weight: 600;
+                            margin-bottom: 2px;
+                        }
+
+                        .model-details {
+                            font-size: 11px;
+                            color: var(--text-tertiary);
+                        }
+
+                        .model-option.selected .model-details {
+                            color: rgba(255, 255, 255, 0.8);
+                        }
+
+                        .model-count {
+                            padding: var(--spacing-2);
+                            font-size: var(--font-size-sm);
+                            color: var(--text-secondary);
+                            background: var(--bg-secondary);
+                            border-top: 1px solid var(--border-primary);
+                        }
+                    </style>
 
                     <div id="cost-estimation" class="card" style="background: var(--bg-tertiary); border: 1px solid var(--color-warning); border-radius: 6px; padding: var(--spacing-2); margin: var(--spacing-2) 0; font-size: var(--font-size-sm); display: none; color: var(--text-primary);">
                         <strong>💰 Cost Estimation:</strong> <span id="estimated-cost"></span>
@@ -130,7 +271,7 @@ export class OpenRouterProvider extends BaseProvider {
         `;
     }
 
-    generateModelOptionsHtml(searchQuery = '') {
+    generateDropdownContent(searchQuery = '') {
         let models = this.availableModels || this.config.models;
 
         // Apply search filter if provided
@@ -175,25 +316,36 @@ export class OpenRouterProvider extends BaseProvider {
                 const icon = groupIcons[category] || '🎯';
                 const label = groupLabels[category] || 'Other Models';
 
-                html += `<optgroup label="${icon} ${label}">`;
+                html += `<div class="model-group">`;
+                html += `<div class="model-group-header">${icon} ${label}</div>`;
 
                 categoryModels.forEach(model => {
-                    const isSelected = model.id === this.config.defaultModel ? 'selected' : '';
-                    const displayName = `${model.name} - ${model.description} (${model.pricing})`;
+                    const isSelected = model.id === this.currentModel ? 'selected' : '';
 
-                    html += `<option value="${model.id}" ${isSelected}>${displayName}</option>`;
+                    html += `<div class="model-option ${isSelected}" data-model-id="${model.id}">`;
+                    html += `<div class="model-name">${model.name}</div>`;
+                    html += `<div class="model-details">${model.description} • ${model.pricing}</div>`;
+                    html += `</div>`;
                 });
 
-                html += '</optgroup>';
+                html += `</div>`;
             }
         });
 
         // Fallback if no models available
         if (!html) {
-            html = `<option value="${this.config.defaultModel}" selected>Loading models...</option>`;
+            html = `<div class="model-option" data-model-id="${this.config.defaultModel}">
+                        <div class="model-name">Loading models...</div>
+                        <div class="model-details">Please wait</div>
+                    </div>`;
         }
 
         return html;
+    }
+
+    // Keep the old method for backward compatibility (though we won't use it)
+    generateModelOptionsHtml(searchQuery = '') {
+        return ''; // No longer used with custom dropdown
     }
 
     filterModelsBySearch(models, searchQuery) {
@@ -222,33 +374,107 @@ export class OpenRouterProvider extends BaseProvider {
         });
     }
 
-    filterModels(searchQuery) {
-        // Update model selection with filtered results
-        if (this.dom.modelSelect) {
-            const currentValue = this.dom.modelSelect.value;
-            const filteredHtml = this.generateModelOptionsHtml(searchQuery);
+    toggleDropdown() {
+        if (this.dropdownOpen) {
+            this.closeDropdown();
+        } else {
+            this.openDropdown();
+        }
+    }
 
-            this.dom.modelSelect.innerHTML = filteredHtml;
+    openDropdown() {
+        if (!this.dom.dropdownContent) return;
 
-            // Try to restore selection if it still exists in filtered results
-            const allModels = this.availableModels || this.config.models;
-            const filteredModels = searchQuery ? this.filterModelsBySearch(allModels, searchQuery) : allModels;
-            const stillExists = filteredModels.some(m => m.id === currentValue);
+        this.dropdownOpen = true;
+        this.dom.dropdownContent.style.display = 'block';
+        this.dom.dropdownTrigger?.classList.add('open');
 
-            if (stillExists) {
-                this.dom.modelSelect.value = currentValue;
-            } else {
-                // Select first filtered model if current selection is filtered out
-                if (filteredModels.length > 0) {
-                    this.dom.modelSelect.value = filteredModels[0].id;
-                    this.currentModel = filteredModels[0].id;
-                    this.updateCostEstimation();
+        // Focus the search input
+        setTimeout(() => {
+            this.dom.dropdownSearch?.focus();
+        }, 50);
+
+        // Set up model option click handlers
+        this.setupModelOptionHandlers();
+    }
+
+    closeDropdown() {
+        if (!this.dom.dropdownContent) return;
+
+        this.dropdownOpen = false;
+        this.dom.dropdownContent.style.display = 'none';
+        this.dom.dropdownTrigger?.classList.remove('open');
+
+        // Clear search
+        if (this.dom.dropdownSearch) {
+            this.dom.dropdownSearch.value = '';
+            this.filterDropdownModels(''); // Reset to show all models
+        }
+    }
+
+    setupModelOptionHandlers() {
+        // Remove existing handlers
+        const existingOptions = this.dom.modelsList?.querySelectorAll('.model-option');
+        existingOptions?.forEach(option => {
+            const clonedOption = option.cloneNode(true);
+            option.parentNode?.replaceChild(clonedOption, option);
+        });
+
+        // Add new handlers
+        const modelOptions = this.dom.modelsList?.querySelectorAll('.model-option');
+        modelOptions?.forEach(option => {
+            option.addEventListener('click', (e) => {
+                const modelId = option.getAttribute('data-model-id');
+                if (modelId) {
+                    this.selectModel(modelId);
+                    this.closeDropdown();
                 }
+            });
+        });
+    }
+
+    selectModel(modelId) {
+        const models = this.availableModels || this.config.models;
+        const selectedModel = models.find(m => m.id === modelId);
+
+        if (selectedModel) {
+            this.currentModel = modelId;
+
+            // Update display
+            if (this.dom.selectedModel) {
+                this.dom.selectedModel.textContent = `${selectedModel.name} - ${selectedModel.description}`;
             }
 
-            // Update count info
-            this.updateModelCountInfo(filteredModels.length, allModels.length, searchQuery);
+            // Update selection highlighting
+            const allOptions = this.dom.modelsList?.querySelectorAll('.model-option');
+            allOptions?.forEach(opt => opt.classList.remove('selected'));
+
+            const selectedOption = this.dom.modelsList?.querySelector(`[data-model-id="${modelId}"]`);
+            selectedOption?.classList.add('selected');
+
+            this.updateCostEstimation();
         }
+    }
+
+    filterDropdownModels(searchQuery) {
+        // Update the models list with filtered results
+        if (this.dom.modelsList) {
+            const filteredHtml = this.generateDropdownContent(searchQuery);
+            this.dom.modelsList.innerHTML = filteredHtml;
+
+            // Update count info
+            const allModels = this.availableModels || this.config.models;
+            const filteredModels = searchQuery ? this.filterModelsBySearch(allModels, searchQuery) : allModels;
+            this.updateModelCountInfo(filteredModels.length, allModels.length, searchQuery);
+
+            // Re-setup click handlers for new content
+            this.setupModelOptionHandlers();
+        }
+    }
+
+    // Keep old method for backward compatibility
+    filterModels(searchQuery) {
+        this.filterDropdownModels(searchQuery);
     }
 
     updateModelCountInfo(filteredCount, totalCount, searchQuery) {
@@ -263,35 +489,35 @@ export class OpenRouterProvider extends BaseProvider {
     }
 
     refreshModelSelection() {
-        // Update the model select dropdown with current models
-        if (this.dom.modelSelect) {
-            const currentValue = this.dom.modelSelect.value;
-
+        // Update the custom dropdown with current models
+        if (this.dom.modelsList) {
             // Clear search if exists
-            if (this.dom.modelSearch) {
-                this.dom.modelSearch.value = '';
+            if (this.dom.dropdownSearch) {
+                this.dom.dropdownSearch.value = '';
             }
 
-            this.dom.modelSelect.innerHTML = this.generateModelOptionsHtml();
+            // Update the dropdown content
+            this.dom.modelsList.innerHTML = this.generateDropdownContent();
 
             // Try to restore the previous selection, or use default
+            const currentValue = this.currentModel;
             const modelExists = this.availableModels?.some(m => m.id === currentValue);
+
             if (modelExists) {
-                this.dom.modelSelect.value = currentValue;
-                this.currentModel = currentValue;
+                this.selectModel(currentValue);
             } else {
                 // Find a suitable default from available models
                 const defaultModel = this.availableModels?.find(m => m.id === this.config.defaultModel) ||
                                    this.availableModels?.[0];
                 if (defaultModel) {
-                    this.dom.modelSelect.value = defaultModel.id;
-                    this.currentModel = defaultModel.id;
+                    this.selectModel(defaultModel.id);
                 }
             }
 
-            // Update count info and cost estimation
+            // Update count info and setup handlers
             const totalCount = (this.availableModels || this.config.models).length;
             this.updateModelCountInfo(totalCount, totalCount, '');
+            this.setupModelOptionHandlers();
             this.updateCostEstimation();
         }
     }
@@ -301,8 +527,11 @@ export class OpenRouterProvider extends BaseProvider {
         this.dom.apiKeyInput = DOM.query('#openrouter-api-key');
         this.dom.connectBtn = DOM.query('#openrouter-connect-btn');
         this.dom.disconnectBtn = DOM.query('#openrouter-disconnect-btn');
-        this.dom.modelSelect = DOM.query('#openrouter-model-select');
-        this.dom.modelSearch = DOM.query('#openrouter-model-search');
+        this.dom.dropdownTrigger = DOM.query('#dropdown-trigger');
+        this.dom.dropdownContent = DOM.query('#dropdown-content');
+        this.dom.dropdownSearch = DOM.query('#dropdown-search');
+        this.dom.modelsList = DOM.query('#models-list');
+        this.dom.selectedModel = DOM.query('#selected-model');
         this.dom.modelCountInfo = DOM.query('#model-count-info');
         this.dom.authSection = DOM.query('#openrouter-auth');
         this.dom.authenticatedSection = DOM.query('#openrouter-authenticated');
@@ -310,6 +539,9 @@ export class OpenRouterProvider extends BaseProvider {
         this.dom.sessionUsage = DOM.query('#session-usage');
         this.dom.costEstimation = DOM.query('#cost-estimation');
         this.dom.estimatedCost = DOM.query('#estimated-cost');
+
+        // Track dropdown state
+        this.dropdownOpen = false;
 
         // Setup event listeners
         if (this.dom.connectBtn) {
@@ -320,18 +552,32 @@ export class OpenRouterProvider extends BaseProvider {
             Events.on(this.dom.disconnectBtn, 'click', () => this.disconnect());
         }
 
-        if (this.dom.modelSelect) {
-            Events.on(this.dom.modelSelect, 'change', (e) => {
-                this.currentModel = e.target.value;
-                this.updateCostEstimation();
+        // Custom dropdown event listeners
+        if (this.dom.dropdownTrigger) {
+            Events.on(this.dom.dropdownTrigger, 'click', (e) => {
+                e.preventDefault();
+                this.toggleDropdown();
             });
         }
 
-        if (this.dom.modelSearch) {
-            Events.on(this.dom.modelSearch, 'input', (e) => {
-                this.filterModels(e.target.value);
+        if (this.dom.dropdownSearch) {
+            Events.on(this.dom.dropdownSearch, 'input', (e) => {
+                this.filterDropdownModels(e.target.value);
+            });
+
+            Events.on(this.dom.dropdownSearch, 'keydown', (e) => {
+                // Prevent dropdown from closing when typing
+                e.stopPropagation();
             });
         }
+
+        // Close dropdown when clicking outside
+        Events.on(document, 'click', (e) => {
+            if (!this.dom.dropdownTrigger?.contains(e.target) &&
+                !this.dom.dropdownContent?.contains(e.target)) {
+                this.closeDropdown();
+            }
+        });
 
         // Load saved authentication if available
         await this.loadSavedAuth();
