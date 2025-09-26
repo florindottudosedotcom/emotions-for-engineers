@@ -39,6 +39,7 @@ export class OpenRouterProvider extends BaseProvider {
         this.apiKey = null;
         this.accountInfo = null;
         this.isAuthenticated = false;
+        this.availableModels = this.config.models; // Initialize with fallback models
 
         // Usage tracking
         this.requestCount = 0;
@@ -49,13 +50,16 @@ export class OpenRouterProvider extends BaseProvider {
     }
 
     async getTemplate() {
+        const modelOptionsHtml = this.generateModelOptionsHtml();
+        const modelCount = this.availableModels?.length || this.config.models.length;
+
         return `
             <fieldset>
                 <legend>🌐 Professional Cloud AI</legend>
 
                 <div class="openrouter-info card" style="background: var(--color-primary); color: white; padding: var(--spacing-4); border-radius: 8px; margin-bottom: var(--spacing-4); border: 1px solid var(--color-primary);">
-                    <h3 style="margin: 0 0 var(--spacing-2) 0; font-size: var(--font-size-lg);">🚀 200+ Premium AI Models</h3>
-                    <p style="margin: 0 0 var(--spacing-2) 0; font-size: var(--font-size-sm); opacity: 0.95;">Access GPT-4o, Claude 3.5 Sonnet, Gemini Pro, LLaMA, and 200+ more models with transparent pricing.</p>
+                    <h3 style="margin: 0 0 var(--spacing-2) 0; font-size: var(--font-size-lg);">🚀 ${modelCount}+ Premium AI Models</h3>
+                    <p style="margin: 0 0 var(--spacing-2) 0; font-size: var(--font-size-sm); opacity: 0.95;">Access GPT-5, Claude 4.1, Gemini 2.5, LLaMA, and ${modelCount}+ more current models with transparent pricing.</p>
                     <div style="display: flex; gap: var(--spacing-4); margin-top: var(--spacing-2); flex-wrap: wrap;">
                         <div style="font-size: var(--font-size-sm); opacity: 0.9;">✨ <strong>Transparent Billing</strong></div>
                         <div style="font-size: var(--font-size-sm); opacity: 0.9;">📊 <strong>Usage Analytics</strong></div>
@@ -101,25 +105,7 @@ export class OpenRouterProvider extends BaseProvider {
                     <div class="input-group">
                         <label for="openrouter-model-select" class="label-no-shrink-no-margin">AI Model:</label>
                         <select id="openrouter-model-select" class="select-no-margin">
-                            <optgroup label="🚀 Premium Models (Best Quality)">
-                                <option value="anthropic/claude-3.5-sonnet">Claude 3.5 Sonnet - Best for writing & analysis ($3.00/$15.00)</option>
-                                <option value="openai/gpt-4o" selected>GPT-4o - Balanced performance & speed ($5.00/$15.00)</option>
-                                <option value="google/gemini-pro-1.5">Gemini Pro 1.5 - Google's flagship model ($2.50/$10.00)</option>
-                            </optgroup>
-                            <optgroup label="⚡ Fast & Efficient Models">
-                                <option value="openai/gpt-4o-mini">GPT-4o Mini - Fast & cost-effective ($0.15/$0.60)</option>
-                                <option value="anthropic/claude-3-haiku">Claude 3 Haiku - Lightning fast ($0.25/$1.25)</option>
-                                <option value="google/gemini-flash-1.5">Gemini Flash 1.5 - Ultra fast ($0.075/$0.30)</option>
-                                <option value="meta-llama/llama-3.1-8b-instruct">LLaMA 3.1 8B - Open source & efficient ($0.18/$0.18)</option>
-                            </optgroup>
-                            <optgroup label="🎯 Specialized Models">
-                                <option value="meta-llama/llama-3.1-70b-instruct">LLaMA 3.1 70B - Advanced reasoning ($0.59/$0.79)</option>
-                                <option value="mistralai/mistral-large">Mistral Large - European model ($3.00/$9.00)</option>
-                                <option value="qwen/qwen-2.5-72b-instruct">Qwen 2.5 72B - Multilingual expert ($0.56/$2.24)</option>
-                                <option value="microsoft/wizardlm-2-8x22b">WizardLM 2 - Code & math specialist ($1.00/$1.00)</option>
-                                <option value="anthropic/claude-3-opus">Claude 3 Opus - Maximum capability ($15.00/$75.00)</option>
-                                <option value="cohere/command-r-plus">Command R+ - Enterprise focused ($3.00/$15.00)</option>
-                            </optgroup>
+                            ${modelOptionsHtml}
                         </select>
                     </div>
 
@@ -131,6 +117,93 @@ export class OpenRouterProvider extends BaseProvider {
                 <div id="connection-status" class="status-display"></div>
             </fieldset>
         `;
+    }
+
+    generateModelOptionsHtml() {
+        const models = this.availableModels || this.config.models;
+
+        // Group models by category
+        const groupedModels = {
+            premium: [],
+            fast: [],
+            specialized: [],
+            free: []
+        };
+
+        models.forEach(model => {
+            const category = model.category || 'specialized';
+            if (groupedModels[category]) {
+                groupedModels[category].push(model);
+            }
+        });
+
+        // Generate HTML for each group
+        const groupIcons = {
+            premium: '🚀',
+            fast: '⚡',
+            specialized: '🎯',
+            free: '🆓'
+        };
+
+        const groupLabels = {
+            premium: 'Premium Models (Best Quality)',
+            fast: 'Fast & Efficient Models',
+            specialized: 'Specialized Models',
+            free: 'Free Models'
+        };
+
+        let html = '';
+
+        Object.entries(groupedModels).forEach(([category, categoryModels]) => {
+            if (categoryModels.length > 0) {
+                const icon = groupIcons[category] || '🎯';
+                const label = groupLabels[category] || 'Other Models';
+
+                html += `<optgroup label="${icon} ${label}">`;
+
+                categoryModels.forEach(model => {
+                    const isSelected = model.id === this.config.defaultModel ? 'selected' : '';
+                    const displayName = `${model.name} - ${model.description} (${model.pricing})`;
+
+                    html += `<option value="${model.id}" ${isSelected}>${displayName}</option>`;
+                });
+
+                html += '</optgroup>';
+            }
+        });
+
+        // Fallback if no models available
+        if (!html) {
+            html = `<option value="${this.config.defaultModel}" selected>Loading models...</option>`;
+        }
+
+        return html;
+    }
+
+    refreshModelSelection() {
+        // Update the model select dropdown with current models
+        if (this.dom.modelSelect) {
+            const currentValue = this.dom.modelSelect.value;
+            this.dom.modelSelect.innerHTML = this.generateModelOptionsHtml();
+
+            // Try to restore the previous selection, or use default
+            const modelExists = this.availableModels?.some(m => m.id === currentValue);
+            if (modelExists) {
+                this.dom.modelSelect.value = currentValue;
+                this.currentModel = currentValue;
+            } else {
+                // Find a suitable default from available models
+                const defaultModel = this.availableModels?.find(m => m.id === this.config.defaultModel) ||
+                                   this.availableModels?.[0];
+                if (defaultModel) {
+                    this.dom.modelSelect.value = defaultModel.id;
+                    this.currentModel = defaultModel.id;
+                }
+            }
+
+            // Update cost estimation with new model
+            this.updateCostEstimation();
+        }
     }
 
     async onInit() {
@@ -190,6 +263,7 @@ export class OpenRouterProvider extends BaseProvider {
 
             this.showMessage('Successfully connected to OpenRouter!', 'success');
             await this.updateAccountInfo();
+            this.refreshModelSelection(); // Update model list with fresh data
             this.updateUI();
         } catch (error) {
             this.apiKey = null;
@@ -200,7 +274,7 @@ export class OpenRouterProvider extends BaseProvider {
     }
 
     async validateApiKey() {
-        // Test the API key by making a simple request to OpenRouter
+        // Test the API key by making a simple request to OpenRouter and fetch current models
         const response = await fetch('https://openrouter.ai/api/v1/models', {
             headers: {
                 'Authorization': `Bearer ${this.apiKey}`,
@@ -212,7 +286,173 @@ export class OpenRouterProvider extends BaseProvider {
             throw new Error('API key validation failed');
         }
 
-        return await response.json();
+        const modelsData = await response.json();
+
+        // Process and store the current model list
+        await this.updateModelList(modelsData.data || []);
+
+        return modelsData;
+    }
+
+    async updateModelList(apiModels) {
+        try {
+            // Validate input
+            if (!Array.isArray(apiModels) || apiModels.length === 0) {
+                throw new Error('No models received from API');
+            }
+
+            // Filter and categorize models for the slides creator
+            const processedModels = apiModels
+                .filter(model => this.isModelSuitableForSlides(model))
+                .map(model => this.processModelData(model))
+                .sort((a, b) => this.sortModelsByCategory(a, b));
+
+            // Ensure we have at least some models
+            if (processedModels.length === 0) {
+                throw new Error('No suitable models found after filtering');
+            }
+
+            // Store the processed models
+            this.availableModels = processedModels;
+
+            // Update the config models array
+            this.config.models = processedModels;
+
+            logger.info(`Updated model list with ${processedModels.length} current models from OpenRouter`);
+        } catch (error) {
+            logger.error('Failed to process model list:', error);
+
+            // Fallback: Keep existing hardcoded models and add warning
+            if (!this.availableModels || this.availableModels.length === 0) {
+                this.availableModels = this.config.models;
+                logger.warn('Using fallback hardcoded model list due to API processing failure');
+            }
+
+            // Show user-friendly message about fallback
+            if (this.showMessage) {
+                this.showMessage('Using cached model list. Some models may be outdated.', 'warning');
+            }
+        }
+    }
+
+    async validateApiKeyWithFallback() {
+        try {
+            return await this.validateApiKey();
+        } catch (error) {
+            logger.error('API validation failed, using fallback models:', error);
+
+            // For authentication purposes, still throw the error
+            // but ensure we have fallback models available
+            if (!this.availableModels || this.availableModels.length === 0) {
+                this.availableModels = this.config.models;
+            }
+
+            throw error;
+        }
+    }
+
+    isModelSuitableForSlides(model) {
+        // Filter out models that aren't suitable for content generation
+        const unsuitableTypes = ['image', 'audio', 'vision-only', 'embedding'];
+        const modelName = model.name?.toLowerCase() || '';
+        const modelId = model.id?.toLowerCase() || '';
+
+        // Skip if it's an unsuitable type
+        if (unsuitableTypes.some(type => modelName.includes(type) || modelId.includes(type))) {
+            return false;
+        }
+
+        // Include models that are good for text generation
+        return model.context_length >= 4000; // Minimum context for slide generation
+    }
+
+    processModelData(model) {
+        // Extract provider from model ID
+        const provider = model.id.split('/')[0] || 'unknown';
+
+        // Categorize model
+        const category = this.categorizeModel(model);
+
+        // Format pricing
+        const pricing = this.formatPricing(model.pricing);
+
+        return {
+            id: model.id,
+            name: model.name || model.id.split('/')[1] || model.id,
+            provider: provider,
+            category: category,
+            description: this.generateModelDescription(model, category),
+            pricing: pricing,
+            context_length: model.context_length || 'Unknown',
+            capabilities: this.extractCapabilities(model)
+        };
+    }
+
+    categorizeModel(model) {
+        const modelId = model.id.toLowerCase();
+        const modelName = model.name?.toLowerCase() || '';
+
+        // Premium models (high capability, higher cost)
+        if (modelId.includes('gpt-4') || modelId.includes('claude-3.5-sonnet') ||
+            modelId.includes('claude-4') || modelId.includes('gpt-5') ||
+            modelId.includes('gemini-pro') || modelId.includes('opus')) {
+            return 'premium';
+        }
+
+        // Fast models (optimized for speed and cost)
+        if (modelId.includes('mini') || modelId.includes('haiku') ||
+            modelId.includes('flash') || modelId.includes('8b') ||
+            modelName.includes('fast') || modelName.includes('lite')) {
+            return 'fast';
+        }
+
+        // Free models
+        if (model.pricing?.prompt === 0 || model.pricing?.completion === 0) {
+            return 'free';
+        }
+
+        // Default to specialized
+        return 'specialized';
+    }
+
+    generateModelDescription(model, category) {
+        const provider = model.id.split('/')[0];
+        const capabilities = [];
+
+        if (model.context_length >= 100000) capabilities.push('Long context');
+        if (model.multimodal) capabilities.push('Multimodal');
+        if (provider === 'anthropic') capabilities.push('Excellent writing');
+        if (provider === 'openai') capabilities.push('Balanced performance');
+        if (provider === 'google') capabilities.push('Fast inference');
+        if (provider === 'meta-llama') capabilities.push('Open source');
+
+        return capabilities.join(' • ') || 'Text generation';
+    }
+
+    formatPricing(pricing) {
+        if (!pricing) return 'Contact provider';
+
+        const prompt = pricing.prompt ? (pricing.prompt * 1000000).toFixed(2) : '0';
+        const completion = pricing.completion ? (pricing.completion * 1000000).toFixed(2) : '0';
+
+        return `$${prompt}/$${completion}`;
+    }
+
+    extractCapabilities(model) {
+        const caps = [];
+        if (model.multimodal) caps.push('multimodal');
+        if (model.context_length >= 100000) caps.push('long-context');
+        return caps;
+    }
+
+    sortModelsByCategory(a, b) {
+        const categoryOrder = { premium: 0, fast: 1, specialized: 2, free: 3 };
+        const categoryDiff = (categoryOrder[a.category] || 99) - (categoryOrder[b.category] || 99);
+
+        if (categoryDiff !== 0) return categoryDiff;
+
+        // Within category, sort by name
+        return a.name.localeCompare(b.name);
     }
 
     async updateAccountInfo() {
@@ -306,6 +546,7 @@ export class OpenRouterProvider extends BaseProvider {
                 await this.validateApiKey();
                 this.isAuthenticated = true;
                 await this.updateAccountInfo();
+                this.refreshModelSelection(); // Update model list with saved auth
                 this.updateUI();
             } catch (error) {
                 localStorage.removeItem('openrouter_token');
