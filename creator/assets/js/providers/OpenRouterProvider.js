@@ -174,19 +174,20 @@ export class OpenRouterProvider extends BaseProvider {
                             top: 100%;
                             left: 0;
                             right: 0;
-                            background: var(--bg-primary);
+                            background: #ffffff;
                             border: 1px solid var(--color-primary);
                             border-top: none;
                             border-radius: 0 0 4px 4px;
-                            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+                            box-shadow: 0 8px 16px rgba(0, 0, 0, 0.15);
                             z-index: 1000;
-                            max-height: 300px;
+                            max-height: 350px;
                             overflow: hidden;
                         }
 
                         .search-container {
                             padding: var(--spacing-2);
                             border-bottom: 1px solid var(--border-primary);
+                            background: #ffffff;
                         }
 
                         .dropdown-search {
@@ -195,7 +196,7 @@ export class OpenRouterProvider extends BaseProvider {
                             border: 1px solid var(--border-primary);
                             border-radius: 4px;
                             font-size: var(--font-size-sm);
-                            background: var(--bg-secondary);
+                            background: #f8f9fa;
                         }
 
                         .dropdown-search:focus {
@@ -214,10 +215,10 @@ export class OpenRouterProvider extends BaseProvider {
 
                         .model-group-header {
                             padding: var(--spacing-2);
-                            background: var(--bg-secondary);
+                            background: #f1f3f4;
                             font-weight: 600;
                             font-size: var(--font-size-sm);
-                            color: var(--text-secondary);
+                            color: #495057;
                             border-bottom: 1px solid var(--border-primary);
                         }
 
@@ -255,8 +256,8 @@ export class OpenRouterProvider extends BaseProvider {
                         .model-count {
                             padding: var(--spacing-2);
                             font-size: var(--font-size-sm);
-                            color: var(--text-secondary);
-                            background: var(--bg-secondary);
+                            color: #6c757d;
+                            background: #f8f9fa;
                             border-top: 1px solid var(--border-primary);
                         }
                     </style>
@@ -283,6 +284,9 @@ export class OpenRouterProvider extends BaseProvider {
         const groupedModels = {
             premium: [],
             fast: [],
+            image: [],
+            audio: [],
+            embedding: [],
             specialized: [],
             free: []
         };
@@ -298,6 +302,9 @@ export class OpenRouterProvider extends BaseProvider {
         const groupIcons = {
             premium: '🚀',
             fast: '⚡',
+            image: '🎨',
+            audio: '🎵',
+            embedding: '📊',
             specialized: '🎯',
             free: '🆓'
         };
@@ -305,6 +312,9 @@ export class OpenRouterProvider extends BaseProvider {
         const groupLabels = {
             premium: 'Premium Models (Best Quality)',
             fast: 'Fast & Efficient Models',
+            image: 'Image Generation & Vision',
+            audio: 'Audio & Speech Models',
+            embedding: 'Embedding & Vector Models',
             specialized: 'Specialized Models',
             free: 'Free Models'
         };
@@ -696,18 +706,9 @@ export class OpenRouterProvider extends BaseProvider {
     }
 
     isModelSuitableForSlides(model) {
-        // Filter out models that aren't suitable for content generation
-        const unsuitableTypes = ['image', 'audio', 'vision-only', 'embedding'];
-        const modelName = model.name?.toLowerCase() || '';
-        const modelId = model.id?.toLowerCase() || '';
-
-        // Skip if it's an unsuitable type
-        if (unsuitableTypes.some(type => modelName.includes(type) || modelId.includes(type))) {
-            return false;
-        }
-
-        // Include models that are good for text generation
-        return model.context_length >= 4000; // Minimum context for slide generation
+        // Show ALL models - no filtering
+        // Users can now access image generators, audio models, vision models, etc.
+        return true; // Accept all models from OpenRouter
     }
 
     processModelData(model) {
@@ -735,6 +736,28 @@ export class OpenRouterProvider extends BaseProvider {
     categorizeModel(model) {
         const modelId = model.id.toLowerCase();
         const modelName = model.name?.toLowerCase() || '';
+
+        // Image generation models
+        if (modelId.includes('dall-e') || modelId.includes('midjourney') ||
+            modelId.includes('stable-diffusion') || modelId.includes('flux') ||
+            modelName.includes('image') || modelName.includes('draw') ||
+            modelName.includes('art') || modelName.includes('vision') ||
+            modelId.includes('replicate') && (modelName.includes('image') || modelName.includes('art'))) {
+            return 'image';
+        }
+
+        // Audio/Speech models
+        if (modelId.includes('whisper') || modelId.includes('tts') ||
+            modelName.includes('audio') || modelName.includes('speech') ||
+            modelName.includes('voice') || modelName.includes('sound')) {
+            return 'audio';
+        }
+
+        // Embedding models
+        if (modelId.includes('embedding') || modelName.includes('embedding') ||
+            modelId.includes('embed') || modelName.includes('embed')) {
+            return 'embedding';
+        }
 
         // Premium models (high capability, higher cost)
         if (modelId.includes('gpt-4') || modelId.includes('claude-3.5-sonnet') ||
