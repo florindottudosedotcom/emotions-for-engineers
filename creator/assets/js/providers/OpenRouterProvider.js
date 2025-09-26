@@ -102,11 +102,22 @@ export class OpenRouterProvider extends BaseProvider {
                         <div id="session-usage" style="font-size: var(--font-size-sm); color: var(--text-tertiary); margin-top: var(--spacing-1);"></div>
                     </div>
 
-                    <div class="input-group">
-                        <label for="openrouter-model-select" class="label-no-shrink-no-margin">AI Model:</label>
-                        <select id="openrouter-model-select" class="select-no-margin">
-                            ${modelOptionsHtml}
-                        </select>
+                    <div class="model-selection-section">
+                        <div class="input-group">
+                            <label for="openrouter-model-search" class="label-no-shrink-no-margin">Search Models:</label>
+                            <input type="text" id="openrouter-model-search" placeholder="Search by model name, provider, or capability..." class="input-flex-grow" style="margin-bottom: var(--spacing-2);">
+                        </div>
+
+                        <div class="input-group">
+                            <label for="openrouter-model-select" class="label-no-shrink-no-margin">AI Model:</label>
+                            <select id="openrouter-model-select" class="select-no-margin" size="8" style="height: auto; max-height: 200px; overflow-y: auto;">
+                                ${modelOptionsHtml}
+                            </select>
+                        </div>
+
+                        <div id="model-count-info" style="font-size: var(--font-size-sm); color: var(--text-secondary); margin-top: var(--spacing-1);">
+                            Showing all models
+                        </div>
                     </div>
 
                     <div id="cost-estimation" class="card" style="background: var(--bg-tertiary); border: 1px solid var(--color-warning); border-radius: 6px; padding: var(--spacing-2); margin: var(--spacing-2) 0; font-size: var(--font-size-sm); display: none; color: var(--text-primary);">
@@ -119,8 +130,13 @@ export class OpenRouterProvider extends BaseProvider {
         `;
     }
 
-    generateModelOptionsHtml() {
-        const models = this.availableModels || this.config.models;
+    generateModelOptionsHtml(searchQuery = '') {
+        let models = this.availableModels || this.config.models;
+
+        // Apply search filter if provided
+        if (searchQuery && searchQuery.trim()) {
+            models = this.filterModelsBySearch(models, searchQuery.trim());
+        }
 
         // Group models by category
         const groupedModels = {
@@ -180,10 +196,82 @@ export class OpenRouterProvider extends BaseProvider {
         return html;
     }
 
+    filterModelsBySearch(models, searchQuery) {
+        const query = searchQuery.toLowerCase();
+
+        return models.filter(model => {
+            // Search in model name
+            if (model.name?.toLowerCase().includes(query)) return true;
+
+            // Search in model ID
+            if (model.id?.toLowerCase().includes(query)) return true;
+
+            // Search in provider
+            if (model.provider?.toLowerCase().includes(query)) return true;
+
+            // Search in description
+            if (model.description?.toLowerCase().includes(query)) return true;
+
+            // Search in category
+            if (model.category?.toLowerCase().includes(query)) return true;
+
+            // Search in capabilities
+            if (model.capabilities?.some(cap => cap.toLowerCase().includes(query))) return true;
+
+            return false;
+        });
+    }
+
+    filterModels(searchQuery) {
+        // Update model selection with filtered results
+        if (this.dom.modelSelect) {
+            const currentValue = this.dom.modelSelect.value;
+            const filteredHtml = this.generateModelOptionsHtml(searchQuery);
+
+            this.dom.modelSelect.innerHTML = filteredHtml;
+
+            // Try to restore selection if it still exists in filtered results
+            const allModels = this.availableModels || this.config.models;
+            const filteredModels = searchQuery ? this.filterModelsBySearch(allModels, searchQuery) : allModels;
+            const stillExists = filteredModels.some(m => m.id === currentValue);
+
+            if (stillExists) {
+                this.dom.modelSelect.value = currentValue;
+            } else {
+                // Select first filtered model if current selection is filtered out
+                if (filteredModels.length > 0) {
+                    this.dom.modelSelect.value = filteredModels[0].id;
+                    this.currentModel = filteredModels[0].id;
+                    this.updateCostEstimation();
+                }
+            }
+
+            // Update count info
+            this.updateModelCountInfo(filteredModels.length, allModels.length, searchQuery);
+        }
+    }
+
+    updateModelCountInfo(filteredCount, totalCount, searchQuery) {
+        if (this.dom.modelCountInfo) {
+            if (searchQuery && searchQuery.trim()) {
+                this.dom.modelCountInfo.textContent =
+                    `Showing ${filteredCount} of ${totalCount} models for "${searchQuery}"`;
+            } else {
+                this.dom.modelCountInfo.textContent = `Showing all ${totalCount} models`;
+            }
+        }
+    }
+
     refreshModelSelection() {
         // Update the model select dropdown with current models
         if (this.dom.modelSelect) {
             const currentValue = this.dom.modelSelect.value;
+
+            // Clear search if exists
+            if (this.dom.modelSearch) {
+                this.dom.modelSearch.value = '';
+            }
+
             this.dom.modelSelect.innerHTML = this.generateModelOptionsHtml();
 
             // Try to restore the previous selection, or use default
@@ -201,7 +289,9 @@ export class OpenRouterProvider extends BaseProvider {
                 }
             }
 
-            // Update cost estimation with new model
+            // Update count info and cost estimation
+            const totalCount = (this.availableModels || this.config.models).length;
+            this.updateModelCountInfo(totalCount, totalCount, '');
             this.updateCostEstimation();
         }
     }
@@ -212,6 +302,8 @@ export class OpenRouterProvider extends BaseProvider {
         this.dom.connectBtn = DOM.query('#openrouter-connect-btn');
         this.dom.disconnectBtn = DOM.query('#openrouter-disconnect-btn');
         this.dom.modelSelect = DOM.query('#openrouter-model-select');
+        this.dom.modelSearch = DOM.query('#openrouter-model-search');
+        this.dom.modelCountInfo = DOM.query('#model-count-info');
         this.dom.authSection = DOM.query('#openrouter-auth');
         this.dom.authenticatedSection = DOM.query('#openrouter-authenticated');
         this.dom.accountBalance = DOM.query('#account-balance');
@@ -232,6 +324,12 @@ export class OpenRouterProvider extends BaseProvider {
             Events.on(this.dom.modelSelect, 'change', (e) => {
                 this.currentModel = e.target.value;
                 this.updateCostEstimation();
+            });
+        }
+
+        if (this.dom.modelSearch) {
+            Events.on(this.dom.modelSearch, 'input', (e) => {
+                this.filterModels(e.target.value);
             });
         }
 
