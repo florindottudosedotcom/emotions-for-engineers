@@ -1787,7 +1787,8 @@ class KonvaSlideSystem {
                                     this.handleCanvasFailure('final-recovery-error');
                                 }
                             }
-                    }, 100);
+                        }, 100);
+                    }
                 }
             }
         } else {
