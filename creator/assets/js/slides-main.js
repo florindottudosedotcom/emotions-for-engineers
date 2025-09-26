@@ -155,6 +155,17 @@ class SlidesCreatorApp {
         // Make DOM available globally for compatibility
         window.slidesCreatorDom = this.dom;
 
+        // Check export functions availability after a delay
+        setTimeout(() => {
+            console.log('=== Export Functions Availability Check ===');
+            console.log('PDF Export function:', typeof window.exportToPDF);
+            console.log('PPTX Export function:', typeof window.exportToPPTX);
+            console.log('Available export-related functions:', Object.keys(window).filter(k => k.includes('export')));
+            console.log('PDFKit available:', typeof window.PDFDocument);
+            console.log('PptxGenJS available:', typeof window.PptxGenJS);
+            console.log('========================================');
+        }, 2000);
+
         logger.debug('DOM elements cached for slides creator');
     }
 
@@ -817,16 +828,30 @@ Return only the improved topic description, nothing else.`;
     async generatePDFData(slides, language) {
         const languageName = this.translationService.getLanguageName(language);
 
-        // Create HTML content for PDF generation
-        const htmlContent = this.generateHTMLFromSlides(slides, `Presentation - ${languageName}`);
+        try {
+            // Use structured PDF export (slide data → PDF primitives)
+            console.log('PDF Export - Using structured export method');
 
-        return {
-            filename: `presentation-${language}.html`,
-            content: htmlContent,
-            type: 'text/html',
-            language,
-            languageName
-        };
+            if (typeof window.exportStructuredPDF === 'function') {
+                // Call the structured export function directly - it handles file download
+                await window.exportStructuredPDF(false); // false = don't include speaker notes for now
+
+                // Return success indicator (the function downloads the file directly)
+                return {
+                    filename: `presentation-${language}.pdf`,
+                    content: 'PDF downloaded via structured export',
+                    type: 'application/pdf',
+                    language,
+                    languageName,
+                    downloaded: true // Indicate file was downloaded
+                };
+            } else {
+                throw new Error('Structured PDF export function not available');
+            }
+        } catch (error) {
+            console.error('PDF generation failed:', error);
+            throw error; // No fallbacks - single reliable approach
+        }
     }
 
     /**
@@ -835,16 +860,30 @@ Return only the improved topic description, nothing else.`;
     async generatePowerPointData(slides, language) {
         const languageName = this.translationService.getLanguageName(language);
 
-        // For now, generate HTML as we don't have PPTX library
-        const htmlContent = this.generateHTMLFromSlides(slides, `Presentation - ${languageName}`);
+        try {
+            // Use structured PowerPoint export (slide data → PowerPoint objects)
+            console.log('PPTX Export - Using structured export method');
 
-        return {
-            filename: `presentation-${language}.html`,
-            content: htmlContent,
-            type: 'text/html',
-            language,
-            languageName
-        };
+            if (typeof window.exportStructuredPowerPoint === 'function') {
+                // Call the structured export function directly - it handles file download
+                await window.exportStructuredPowerPoint(false); // false = don't include speaker notes for now
+
+                // Return success indicator (the function downloads the file directly)
+                return {
+                    filename: `presentation-${language}.pptx`,
+                    content: 'PPTX downloaded via structured export',
+                    type: 'application/vnd.openxmlformats-officedocument.presentationml.presentation',
+                    language,
+                    languageName,
+                    downloaded: true // Indicate file was downloaded
+                };
+            } else {
+                throw new Error('Structured PowerPoint export function not available');
+            }
+        } catch (error) {
+            console.error('PPTX generation failed:', error);
+            throw error; // No fallbacks - single reliable approach
+        }
     }
 
     /**
@@ -852,15 +891,155 @@ Return only the improved topic description, nothing else.`;
      */
     async generateHTMLData(slides, language) {
         const languageName = this.translationService.getLanguageName(language);
-        const htmlContent = this.generateHTMLFromSlides(slides, `Presentation - ${languageName}`);
 
-        return {
-            filename: `presentation-${language}.html`,
-            content: htmlContent,
-            type: 'text/html',
-            language,
-            languageName
+        try {
+            // Use the structured HTML export (restored original functionality)
+            const htmlContent = this.generateStandaloneHTML({
+                title: `Presentation - ${languageName}`,
+                slides: slides
+            }, false); // false = don't include speaker notes by default
+
+            return {
+                filename: `presentation-${language}.html`,
+                content: htmlContent,
+                type: 'text/html',
+                language,
+                languageName
+            };
+        } catch (error) {
+            console.error('HTML generation failed:', error);
+            throw error;
+        }
+    }
+
+    /**
+     * Generate standalone HTML file (restored from working version)
+     */
+    generateStandaloneHTML(slideData, includeSpeakerNotes = false) {
+        // Get current theme colors, fallback to default if no theme selected
+        const theme = window.slidesAppState?.currentTheme || {
+            backgroundColor: '#ffffff',
+            textColor: '#000000',
+            borderColor: '#dddddd',
+            fillColor: '#f5f5f5'
         };
+
+        return `<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>${slideData.title || 'Presentation'}</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background-color: #f8f9fa;
+        }
+        .title-slide {
+            background-color: ${theme.backgroundColor};
+            color: ${theme.textColor};
+            border-radius: 8px;
+            padding: 40px;
+            margin-bottom: 30px;
+            text-align: center;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            width: 960px;
+            height: 540px;
+            max-width: 90vw;
+            margin: 0 auto 30px auto;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-sizing: border-box;
+        }
+        .slide {
+            background-color: ${theme.backgroundColor};
+            color: ${theme.textColor};
+            border-radius: 8px;
+            page-break-after: always;
+            margin-bottom: 30px;
+            padding: 40px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            width: 960px;
+            height: 540px;
+            max-width: 90vw;
+            margin: 0 auto 30px auto;
+            box-sizing: border-box;
+            position: relative;
+        }
+        .slide-number {
+            position: absolute;
+            top: 10px;
+            right: 20px;
+            font-size: 12px;
+            opacity: 0.6;
+        }
+        .slide h2 {
+            margin-top: 0;
+            margin-bottom: 20px;
+            font-size: 32px;
+            color: ${theme.textColor};
+        }
+        .slide ul {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+        .slide li {
+            background-color: ${theme.fillColor};
+            border: 1px solid ${theme.borderColor};
+            border-radius: 4px;
+            padding: 12px 16px;
+            margin-bottom: 8px;
+            font-size: 16px;
+            line-height: 1.4;
+        }
+        .slide li:before {
+            content: "• ";
+            color: ${theme.textColor};
+            font-weight: bold;
+            margin-right: 8px;
+        }
+        .speaker-notes {
+            background-color: #f8f9fa;
+            border-left: 4px solid #007bff;
+            padding: 15px;
+            margin-top: 15px;
+            font-size: 14px;
+            font-style: italic;
+            color: #6c757d;
+        }
+        @media print {
+            body { background-color: white; }
+            .slide { page-break-after: always; box-shadow: none; border: 1px solid #ddd; }
+        }
+    </style>
+</head>
+<body>
+    <div class="title-slide">
+        <h1>${slideData.title || 'Presentation'}</h1>
+    </div>
+
+    ${slideData.slides.map((slide, index) => `
+        <div class="slide">
+            <div class="slide-number">${index + 1}</div>
+            <h2>${slide.title}</h2>
+            ${slide.content && slide.content.length > 0 ? `
+                <ul>
+                    ${slide.content.map(point => `<li>${point}</li>`).join('')}
+                </ul>
+            ` : ''}
+            ${includeSpeakerNotes && slide.speakerNotes ? `
+                <div class="speaker-notes">
+                    <strong>Speaker Notes:</strong> ${slide.speakerNotes}
+                </div>
+            ` : ''}
+        </div>
+    `).join('')}
+</body>
+</html>`;
     }
 
     /**
@@ -899,12 +1078,27 @@ Return only the improved topic description, nothing else.`;
             const textColor = visualSuggestions.textColor || '#333333';
             const accentColor = visualSuggestions.accentColor || '#0066cc';
 
+            // Handle slide.content - it can be array or string
+            let contentHTML = '';
+            if (slide.content) {
+                if (Array.isArray(slide.content)) {
+                    // Join array elements with line breaks
+                    contentHTML = slide.content.join('<br>');
+                } else if (typeof slide.content === 'string') {
+                    // Handle string content with newline replacement
+                    contentHTML = slide.content.replace(/\n/g, '<br>');
+                } else {
+                    // Convert other types to string
+                    contentHTML = String(slide.content).replace(/\n/g, '<br>');
+                }
+            }
+
             return `
                 <div class="slide" style="background-color: ${backgroundColor}; color: ${textColor};">
                     <div class="slide-number">Slide ${slide.slideNumber || index + 1}</div>
                     <h2 class="slide-title" style="color: ${accentColor};">${slide.title || ''}</h2>
                     <div class="slide-content">
-                        ${slide.content ? slide.content.replace(/\n/g, '<br>') : ''}
+                        ${contentHTML}
                     </div>
                 </div>
             `;
@@ -1245,10 +1439,27 @@ Return only the improved topic description, nothing else.`;
      */
     loadFormState() {
         try {
-            // Load number of slides selection
+            // Load number of slides selection with DOM readiness check
             const savedNumSlides = appState.get('numSlides', '8');
-            if (this.dom.numSlidesSelect && savedNumSlides) {
-                this.dom.numSlidesSelect.value = savedNumSlides;
+            if (savedNumSlides) {
+                // Ensure DOM element is available, retry if needed
+                const setNumSlides = () => {
+                    if (this.dom.numSlidesSelect) {
+                        this.dom.numSlidesSelect.value = savedNumSlides;
+                        logger.debug(`Restored num-slides to: ${savedNumSlides}`);
+                        return true;
+                    }
+                    return false;
+                };
+
+                // Try immediately, fallback to retry after DOM ready
+                if (!setNumSlides()) {
+                    setTimeout(() => {
+                        if (!setNumSlides()) {
+                            logger.warn('num-slides element not found, unable to restore value');
+                        }
+                    }, 200);
+                }
             }
 
             // Load presentation topic if available
@@ -1466,6 +1677,306 @@ function initializeSlidesCreator() {
 
 // Auto-initialize
 initializeSlidesCreator();
+
+/**
+ * Structured PDF Export using Slide Data
+ * Creates editable PDF with text and shapes using jsPDF primitives
+ */
+async function exportStructuredPDF(includeSpeakerNotes = false) {
+    try {
+        // Check if jsPDF is available
+        let jsPDF;
+        if (window.jspdf && window.jspdf.jsPDF) {
+            jsPDF = window.jspdf.jsPDF;
+        } else if (window.jsPDF) {
+            jsPDF = window.jsPDF;
+        } else {
+            throw new Error('jsPDF library not loaded. Please refresh the page and try again.');
+        }
+
+        const slideData = window.slidesAppState?.currentSlideData;
+        const theme = window.slidesAppState?.currentTheme || {
+            backgroundColor: '#ffffff',
+            textColor: '#000000',
+            borderColor: '#dddddd',
+            fillColor: '#f5f5f5'
+        };
+
+        if (!slideData) {
+            throw new Error('Slide data not available');
+        }
+
+        console.log(`Creating structured PDF with ${slideData.slides.length} slides...`);
+
+        // Create PDF in landscape orientation
+        const pdf = new jsPDF('landscape', 'mm', 'a4');
+        const pageWidth = 297; // A4 landscape width
+        const pageHeight = 210; // A4 landscape height
+
+        // Helper function to convert hex color to RGB
+        const hexToRgb = (hex) => {
+            const result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
+            return result ? {
+                r: parseInt(result[1], 16),
+                g: parseInt(result[2], 16),
+                b: parseInt(result[3], 16)
+            } : { r: 255, g: 255, b: 255 };
+        };
+
+        // Title slide
+        const bgColor = hexToRgb(theme.backgroundColor);
+        const textColor = hexToRgb(theme.textColor);
+
+        // Background
+        pdf.setFillColor(bgColor.r, bgColor.g, bgColor.b);
+        pdf.rect(0, 0, pageWidth, pageHeight, 'F');
+
+        // Title
+        pdf.setTextColor(textColor.r, textColor.g, textColor.b);
+        pdf.setFontSize(44);
+        pdf.setFont('helvetica', 'bold');
+        pdf.text(slideData.title || 'Presentation', pageWidth / 2, pageHeight / 2, {
+            align: 'center',
+            baseline: 'middle'
+        });
+
+        // Content slides
+        slideData.slides.forEach((slide, index) => {
+            pdf.addPage('a4', 'landscape');
+
+            // Background
+            pdf.setFillColor(bgColor.r, bgColor.g, bgColor.b);
+            pdf.rect(0, 0, pageWidth, pageHeight, 'F');
+
+            // Slide number (small, bottom right)
+            pdf.setFontSize(12);
+            pdf.setFont('helvetica', 'normal');
+            pdf.setTextColor(textColor.r, textColor.g, textColor.b);
+            pdf.text(`${index + 1}`, pageWidth - 20, pageHeight - 10, { align: 'right' });
+
+            // Slide title
+            pdf.setFontSize(32);
+            pdf.setFont('helvetica', 'bold');
+            pdf.text(slide.title, 20, 40);
+
+            // Content bullets - normalize content to array format
+            let contentArray = [];
+            if (slide.content) {
+                if (Array.isArray(slide.content)) {
+                    contentArray = slide.content;
+                } else if (typeof slide.content === 'string') {
+                    // Split string content into array by common delimiters
+                    contentArray = slide.content.split(/\n|•/).filter(item => item.trim().length > 0);
+                } else {
+                    contentArray = [String(slide.content)];
+                }
+            }
+
+            if (contentArray.length > 0) {
+                const bulletColor = hexToRgb(theme.fillColor);
+                const borderColor = hexToRgb(theme.borderColor);
+
+                contentArray.forEach((point, pointIndex) => {
+                    const y = 70 + (pointIndex * 30);
+
+                    // Bullet box background
+                    pdf.setFillColor(bulletColor.r, bulletColor.g, bulletColor.b);
+                    pdf.setDrawColor(borderColor.r, borderColor.g, borderColor.b);
+                    pdf.roundedRect(20, y - 10, pageWidth - 40, 25, 3, 3, 'FD');
+
+                    // Bullet text
+                    pdf.setFontSize(16);
+                    pdf.setFont('helvetica', 'normal');
+                    pdf.setTextColor(textColor.r, textColor.g, textColor.b);
+                    pdf.text(`• ${point}`, 25, y + 3);
+                });
+            }
+
+            // Speaker notes if requested
+            if (includeSpeakerNotes && slide.speakerNotes) {
+                pdf.addPage('a4', 'portrait');
+                pdf.setFillColor(255, 255, 255);
+                pdf.rect(0, 0, 210, 297, 'F');
+
+                pdf.setTextColor(0, 0, 0);
+                pdf.setFontSize(12);
+                pdf.setFont('helvetica', 'bold');
+                pdf.text(`Speaker Notes - Slide ${index + 1}`, 20, 20);
+
+                pdf.setFontSize(10);
+                pdf.setFont('helvetica', 'normal');
+                const lines = pdf.splitTextToSize(slide.speakerNotes, 170);
+                pdf.text(lines, 20, 40);
+            }
+        });
+
+        // Save the PDF
+        const filename = `${slideData.title || 'presentation'}.pdf`;
+        pdf.save(filename);
+
+        console.log('Structured PDF exported successfully!');
+
+    } catch (error) {
+        console.error('Structured PDF export error:', error);
+        throw error;
+    }
+}
+
+/**
+ * Structured PowerPoint Export using Slide Data
+ * Uses PptxGenJS to create proper PowerPoint files with structured content
+ */
+async function exportStructuredPowerPoint(includeSpeakerNotes = false) {
+    try {
+        // Check if PptxGenJS is available with more debug info
+        console.log('Available globals:', Object.keys(window).filter(k => k.toLowerCase().includes('pptx')));
+        console.log('window.PptxGenJS:', window.PptxGenJS);
+
+        let PptxGen;
+        if (window.PptxGenJS) {
+            PptxGen = window.PptxGenJS;
+        } else if (typeof PptxGenJS !== 'undefined') {
+            PptxGen = PptxGenJS;
+        } else {
+            throw new Error('PptxGenJS library not found. Please refresh the page and try again.');
+        }
+
+        const pptx = new PptxGen();
+        const slideData = window.slidesAppState?.currentSlideData;
+        const theme = window.slidesAppState?.currentTheme || {
+            backgroundColor: '#ffffff',
+            textColor: '#000000',
+            borderColor: '#dddddd',
+            fillColor: '#f5f5f5'
+        };
+
+        if (!slideData) {
+            throw new Error('Slide data not available');
+        }
+
+        // Set presentation properties with landscape layout
+        pptx.defineLayout({ name: 'LAYOUT_WIDE', width: 13.33, height: 7.5 }); // 16:9 landscape
+        pptx.layout = 'LAYOUT_WIDE';
+        pptx.author = 'AI Slides Creator';
+        pptx.company = 'Emotions for Engineers';
+        pptx.title = slideData.title || 'Presentation';
+
+        console.log(`Creating structured PowerPoint with ${slideData.slides.length} slides...`);
+
+        // Title slide with theme colors and landscape sizing
+        const titleSlide = pptx.addSlide();
+
+        // Set title slide background
+        if (theme.backgroundColor && theme.backgroundColor !== '#ffffff') {
+            titleSlide.background = { color: theme.backgroundColor.replace('#', '') };
+        }
+
+        titleSlide.addText(slideData.title || 'Presentation', {
+            x: 1, y: 2.5, w: 11.33, h: 2.5,
+            fontSize: 44,
+            bold: true,
+            align: 'center',
+            color: theme.textColor.replace('#', ''),
+            valign: 'middle'
+        });
+
+        // Content slides with landscape layout and theme colors
+        slideData.slides.forEach((slide, index) => {
+            const pptSlide = pptx.addSlide();
+
+            // Set slide background using theme
+            if (theme.backgroundColor && theme.backgroundColor !== '#ffffff') {
+                pptSlide.background = { color: theme.backgroundColor.replace('#', '') };
+            }
+
+            // Slide number (bottom right)
+            pptSlide.addText(`${index + 1}`, {
+                x: 12.5, y: 6.8, w: 0.5, h: 0.5,
+                fontSize: 12,
+                color: theme.textColor.replace('#', ''),
+                align: 'right',
+                transparency: 30
+            });
+
+            // Slide title with theme colors and landscape positioning
+            pptSlide.addText(slide.title, {
+                x: 0.5, y: 0.5, w: 12.33, h: 1,
+                fontSize: 32,
+                bold: true,
+                color: theme.textColor.replace('#', ''),
+                valign: 'top'
+            });
+
+            // Slide content with better spacing for landscape - normalize content to array format
+            let contentArray = [];
+            if (slide.content) {
+                if (Array.isArray(slide.content)) {
+                    contentArray = slide.content;
+                } else if (typeof slide.content === 'string') {
+                    // Split string content into array by common delimiters
+                    contentArray = slide.content.split(/\n|•/).filter(item => item.trim().length > 0);
+                } else {
+                    contentArray = [String(slide.content)];
+                }
+            }
+
+            if (contentArray.length > 0) {
+                contentArray.forEach((point, pointIndex) => {
+                    // First add the rounded rectangle shape for the bullet box
+                    pptSlide.addShape(pptx.ShapeType.roundRect, {
+                        x: 0.8,  // Move more to the right
+                        y: 2 + (pointIndex * 0.9), // Spacing between points
+                        w: 11.5,
+                        h: 0.65,
+                        fill: { color: theme.fillColor.replace('#', '') },
+                        line: { color: theme.borderColor.replace('#', ''), width: 1 },
+                        rectRadius: 0.08 // Rounded corners (smaller value for subtle rounding)
+                    });
+
+                    // Then add the bullet point text on top
+                    pptSlide.addText(`• ${point}`, {
+                        x: 0.9,  // Align with the rounded box + small margin
+                        y: 2 + (pointIndex * 0.9), // Match the box position
+                        w: 11.3,
+                        h: 0.65,
+                        fontSize: 16,
+                        color: theme.textColor.replace('#', ''),
+                        valign: 'middle',
+                        align: 'left',
+                        margin: [0.1, 0.1, 0.1, 0.1] // top, right, bottom, left margins
+                    });
+                });
+            }
+
+            // Speaker notes with slide reference
+            if (includeSpeakerNotes && slide.speakerNotes) {
+                pptSlide.addNotes(`Slide ${index + 1} Notes: ${slide.speakerNotes}`);
+            }
+        });
+
+        // Save the PowerPoint file
+        const fileName = `${slideData.title || 'presentation'}.pptx`;
+
+        // Try different methods to save
+        if (pptx.writeFile) {
+            await pptx.writeFile({ fileName: fileName });
+        } else if (pptx.save) {
+            await pptx.save(fileName);
+        } else {
+            throw new Error('PptxGenJS save method not available');
+        }
+
+        console.log('PowerPoint exported successfully!');
+
+    } catch (error) {
+        console.error('PowerPoint export error:', error);
+        throw error;
+    }
+}
+
+// Make structured export functions globally available
+window.exportStructuredPDF = exportStructuredPDF;
+window.exportStructuredPowerPoint = exportStructuredPowerPoint;
 
 // Export debug information
 window.slidesCreatorDebug = {
