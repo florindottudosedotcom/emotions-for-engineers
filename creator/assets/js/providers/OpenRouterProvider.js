@@ -174,7 +174,7 @@ export class OpenRouterProvider extends BaseProvider {
                             top: 100%;
                             left: 0;
                             right: 0;
-                            background: #ffffff;
+                            background: var(--bg-primary);
                             border: 1px solid var(--color-primary);
                             border-top: none;
                             border-radius: 0 0 4px 4px;
@@ -187,7 +187,7 @@ export class OpenRouterProvider extends BaseProvider {
                         .search-container {
                             padding: var(--spacing-2);
                             border-bottom: 1px solid var(--border-primary);
-                            background: #ffffff;
+                            background: var(--bg-primary);
                         }
 
                         .dropdown-search {
@@ -196,7 +196,8 @@ export class OpenRouterProvider extends BaseProvider {
                             border: 1px solid var(--border-primary);
                             border-radius: 4px;
                             font-size: var(--font-size-sm);
-                            background: #f8f9fa;
+                            background: var(--bg-secondary);
+                            color: var(--text-primary);
                         }
 
                         .dropdown-search:focus {
@@ -215,10 +216,10 @@ export class OpenRouterProvider extends BaseProvider {
 
                         .model-group-header {
                             padding: var(--spacing-2);
-                            background: #f1f3f4;
+                            background: var(--bg-secondary);
                             font-weight: 600;
                             font-size: var(--font-size-sm);
-                            color: #495057;
+                            color: var(--text-secondary);
                             border-bottom: 1px solid var(--border-primary);
                         }
 
@@ -228,6 +229,7 @@ export class OpenRouterProvider extends BaseProvider {
                             border-bottom: 1px solid var(--border-tertiary);
                             font-size: var(--font-size-sm);
                             color: var(--text-primary);
+                            background: var(--bg-primary);
                         }
 
                         .model-option:hover {
@@ -256,8 +258,8 @@ export class OpenRouterProvider extends BaseProvider {
                         .model-count {
                             padding: var(--spacing-2);
                             font-size: var(--font-size-sm);
-                            color: #6c757d;
-                            background: #f8f9fa;
+                            color: var(--text-secondary);
+                            background: var(--bg-secondary);
                             border-top: 1px solid var(--border-primary);
                         }
                     </style>
