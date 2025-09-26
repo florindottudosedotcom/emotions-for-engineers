@@ -616,6 +616,8 @@
         padding: var(--spacing-2);
         border-radius: var(--border-radius);
         overflow: hidden;
+        min-width: 300px !important; /* Mobile override */
+        width: 100% !important;
     }
 
     /* Konva canvas mobile optimization */
@@ -737,6 +739,8 @@
 
     #slides-editor-container {
         min-height: 500px !important;
+        min-width: 400px !important;
+        width: 100% !important;
     }
 }
 
@@ -761,6 +765,8 @@
 
     #slides-editor-container {
         min-height: 300px !important;
+        min-width: 350px !important;
+        width: 100% !important;
     }
 }
 

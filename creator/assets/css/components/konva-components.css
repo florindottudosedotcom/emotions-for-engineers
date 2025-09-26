@@ -183,6 +183,35 @@
 }
 
 /* ========================================
+   SLIDES EDITOR BASE STYLES
+   ======================================== */
+
+/* Base desktop styles for slides editor container */
+#slides-editor-container {
+    width: 100%;
+    min-width: 600px;
+    min-height: 400px;
+    padding: 0; /* Let inner components handle padding */
+    box-sizing: border-box;
+    position: relative;
+}
+
+/* Ensure the dynamically created editor layout maintains dimensions */
+#slides-editor-container .konva-editor-layout {
+    width: 100% !important;
+    min-width: 600px !important;
+    box-sizing: border-box !important;
+}
+
+/* Force canvas containers to maintain explicit dimensions */
+#slides-editor-container .konva-canvas-container {
+    width: 100% !important;
+    min-width: 400px !important;
+    min-height: 350px !important;
+    box-sizing: border-box !important;
+}
+
+/* ========================================
    CANVAS CONTAINER SYSTEM
    ======================================== */
 
@@ -316,7 +345,8 @@
     grid-area: content;
     display: flex;
     flex-direction: column;
-    min-width: 0; /* Prevents grid item from overflowing */
+    min-width: 400px; /* Ensure minimum width to prevent collapse */
+    width: 100%;
     position: relative;
 }
 

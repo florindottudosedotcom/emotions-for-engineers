@@ -315,7 +315,20 @@ class KonvaSlideSystem {
         this.isInitialized = false;
         this.isInitializing = false; // Flag to track initial loading state
         this.pendingSaveOperations = []; // Queue save operations until state is ready
+        this.isResizing = false; // Flag to prevent concurrent resize operations
+        this.isTransitioning = false; // Flag to track active transitions
+        this.currentTween = null; // Reference to current transition tween
         this.slideObjects = []; // Store Konva objects for each slide
+
+        // Circuit breaker pattern for error recovery
+        this.circuitBreaker = {
+            failureCount: 0,
+            maxFailures: 5,
+            resetTimeout: 30000, // 30 seconds
+            state: 'CLOSED', // CLOSED, OPEN, HALF_OPEN
+            lastFailureTime: 0,
+            errorNotificationShown: false
+        };
 
         // Canvas dimensions
         this.slideWidth = 1000;
@@ -438,8 +451,18 @@ class KonvaSlideSystem {
     }
 
     calculateResponsiveDimensions(container) {
-        // Get container width - ensure we have a proper container reference
+        // Enhanced container readiness detection
         if (!container) container = this.canvasContainer || this.container;
+
+        // Container readiness checks
+        const isContainerReady = this.checkContainerReadiness(container);
+        if (!isContainerReady) {
+            console.warn('⚠️ Container not ready, using emergency fallback dimensions');
+            this.actualWidth = 600;
+            this.actualHeight = 400;
+            this.scaleFactor = 0.6;
+            return;
+        }
 
         // Wait for container to be rendered and get proper dimensions
         let containerWidth = 0;
@@ -486,23 +509,282 @@ class KonvaSlideSystem {
         }
     }
 
-    setupResizeHandler(container) {
-        const resizeObserver = new ResizeObserver(() => {
-            this.handleResize(container);
+    /**
+     * Check if container is ready for dimension calculation
+     */
+    checkContainerReadiness(container) {
+        // Primary container checks
+        if (!container) {
+            console.log('🔍 Container readiness: No container provided');
+            return false;
+        }
+
+        // DOM presence check
+        if (!container.isConnected || !document.body.contains(container)) {
+            console.log('🔍 Container readiness: Container not in DOM');
+            return false;
+        }
+
+        // CSS computation check
+        const computedStyle = window.getComputedStyle(container);
+        if (computedStyle.display === 'none' || computedStyle.visibility === 'hidden') {
+            console.log('🔍 Container readiness: Container hidden via CSS');
+            return false;
+        }
+
+        // Parent readiness check (containers can inherit 0 width from parents)
+        let parent = container.parentElement;
+        let depth = 0;
+        while (parent && depth < 5) { // Check up to 5 levels up
+            const parentStyle = window.getComputedStyle(parent);
+            if (parentStyle.display === 'none' || parent.clientWidth === 0) {
+                console.log(`🔍 Container readiness: Parent at depth ${depth} has zero width or hidden`);
+                return false;
+            }
+            parent = parent.parentElement;
+            depth++;
+        }
+
+        // Basic dimension check
+        const hasValidDimensions = container.clientWidth > 0 && container.clientHeight > 0;
+        if (!hasValidDimensions) {
+            // Additional CSS checks for containers with explicit width/height
+            const width = computedStyle.width;
+            const height = computedStyle.height;
+            const hasExplicitDimensions = (width && width !== 'auto' && parseInt(width) > 0) &&
+                                         (height && height !== 'auto' && parseInt(height) > 0);
+
+            if (!hasExplicitDimensions) {
+                console.log('🔍 Container readiness: No valid dimensions and no explicit CSS sizes');
+                return false;
+            }
+        }
+
+        console.log('✅ Container readiness: Container is ready', {
+            clientWidth: container.clientWidth,
+            clientHeight: container.clientHeight,
+            display: computedStyle.display,
+            visibility: computedStyle.visibility
         });
+
+        return true;
+    }
+
+    /**
+     * Circuit breaker pattern for handling repeated failures
+     */
+    handleCanvasFailure(errorContext) {
+        const breaker = this.circuitBreaker;
+        const now = Date.now();
+
+        breaker.failureCount++;
+        breaker.lastFailureTime = now;
+
+        console.log(`🚨 Canvas failure #${breaker.failureCount} in context: ${errorContext}`);
+
+        if (breaker.failureCount >= breaker.maxFailures) {
+            // Open the circuit - stop trying operations
+            breaker.state = 'OPEN';
+            console.log('🚫 Circuit breaker OPEN - canvas operations suspended');
+            this.showErrorRecoveryUI();
+        }
+
+        // Auto-reset after timeout
+        setTimeout(() => {
+            if (now - breaker.lastFailureTime >= breaker.resetTimeout) {
+                this.resetCircuitBreaker();
+            }
+        }, breaker.resetTimeout);
+    }
+
+    resetCircuitBreaker() {
+        console.log('🔄 Circuit breaker reset - attempting recovery');
+        this.circuitBreaker = {
+            failureCount: 0,
+            maxFailures: 5,
+            resetTimeout: 30000,
+            state: 'CLOSED',
+            lastFailureTime: 0,
+            errorNotificationShown: false
+        };
+        this.hideErrorRecoveryUI();
+    }
+
+    canPerformCanvasOperation() {
+        return this.circuitBreaker.state !== 'OPEN';
+    }
+
+    /**
+     * Show user-visible error recovery interface
+     */
+    showErrorRecoveryUI() {
+        if (this.circuitBreaker.errorNotificationShown) return;
+
+        const errorDiv = document.createElement('div');
+        errorDiv.id = 'konva-error-recovery';
+        errorDiv.innerHTML = `
+            <div style="
+                position: fixed;
+                top: 20px;
+                right: 20px;
+                background: #fee2e2;
+                border: 1px solid #fecaca;
+                border-left: 4px solid #ef4444;
+                border-radius: 6px;
+                padding: 16px;
+                max-width: 400px;
+                box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+                z-index: 10000;
+                font-family: system-ui, -apple-system, sans-serif;
+                font-size: 14px;
+                line-height: 1.4;
+            ">
+                <div style="display: flex; align-items: flex-start; gap: 12px;">
+                    <div style="flex-shrink: 0; font-size: 18px;">⚠️</div>
+                    <div style="flex: 1;">
+                        <h4 style="margin: 0 0 8px 0; color: #991b1b; font-weight: 600;">Editor Temporarily Unavailable</h4>
+                        <p style="margin: 0 0 12px 0; color: #7f1d1d;">
+                            The slide editor is experiencing technical difficulties. This usually resolves automatically.
+                        </p>
+                        <div style="display: flex; gap: 8px; margin-top: 12px;">
+                            <button id="konva-retry-btn" style="
+                                background: #ef4444;
+                                color: white;
+                                border: none;
+                                padding: 6px 12px;
+                                border-radius: 4px;
+                                font-size: 12px;
+                                cursor: pointer;
+                                font-weight: 500;
+                            ">Try Again</button>
+                            <button id="konva-dismiss-btn" style="
+                                background: transparent;
+                                color: #7f1d1d;
+                                border: 1px solid #fecaca;
+                                padding: 6px 12px;
+                                border-radius: 4px;
+                                font-size: 12px;
+                                cursor: pointer;
+                            ">Dismiss</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        `;
+
+        document.body.appendChild(errorDiv);
+        this.circuitBreaker.errorNotificationShown = true;
+
+        // Event listeners
+        document.getElementById('konva-retry-btn').addEventListener('click', () => {
+            this.resetCircuitBreaker();
+            this.recreateCanvas();
+        });
+
+        document.getElementById('konva-dismiss-btn').addEventListener('click', () => {
+            this.hideErrorRecoveryUI();
+        });
+
+        // Auto-hide after 10 seconds
+        setTimeout(() => {
+            this.hideErrorRecoveryUI();
+        }, 10000);
+    }
+
+    hideErrorRecoveryUI() {
+        const errorDiv = document.getElementById('konva-error-recovery');
+        if (errorDiv) {
+            errorDiv.remove();
+        }
+        this.circuitBreaker.errorNotificationShown = false;
+    }
+
+    setupResizeHandler(container) {
+        // Single debounced resize handler with infinite loop protection
+        this.resizeCount = 0;
+        this.resizeStartTime = 0;
+        this.maxResizesPerSecond = 10; // Prevent more than 10 resizes per second
+        this.resizeTimeout = null;
+
+        const debouncedResize = () => {
+            if (this.resizeTimeout) {
+                clearTimeout(this.resizeTimeout);
+            }
+
+            this.resizeTimeout = setTimeout(() => {
+                this.handleResize(container);
+                this.resizeTimeout = null;
+            }, 100); // 100ms debounce
+        };
+
+        // Use ResizeObserver as primary trigger with loop protection
+        const resizeObserver = new ResizeObserver((entries) => {
+            // Infinite loop detection
+            const now = Date.now();
+            if (now - this.resizeStartTime > 1000) {
+                // Reset counter every second
+                this.resizeCount = 0;
+                this.resizeStartTime = now;
+            }
+
+            this.resizeCount++;
+            if (this.resizeCount > this.maxResizesPerSecond) {
+                console.warn('🚨 Resize loop detected, throttling resize events');
+                return;
+            }
+
+            debouncedResize();
+        });
+
         resizeObserver.observe(this.container);
 
-        // Store reference for cleanup
+        // Store references for cleanup
         this.resizeObserver = resizeObserver;
+        this.debouncedResize = debouncedResize;
     }
 
     handleResize(container = null) {
+        console.log('🔄 Resize event triggered', {
+            isResizing: this.isResizing,
+            isTransitioning: this.isTransitioning,
+            resizeCount: this.resizeCount,
+            currentDimensions: { width: this.actualWidth, height: this.actualHeight }
+        });
+
+        // Prevent concurrent resize operations
+        if (this.isResizing) {
+            console.log('⏸️ Resize already in progress, skipping');
+            return;
+        }
+
+        // Additional safety check for container readiness
+        if (!this.container || !this.stage) {
+            console.log('⚠️ Container or stage not ready for resize');
+            return;
+        }
+
+        this.isResizing = true;
         const oldWidth = this.actualWidth;
         const oldHeight = this.actualHeight;
 
         this.calculateResponsiveDimensions(container || this.canvasContainer);
 
+        console.log('📐 Resize calculation complete', {
+            oldDimensions: { width: oldWidth, height: oldHeight },
+            newDimensions: { width: this.actualWidth, height: this.actualHeight },
+            changed: this.actualWidth !== oldWidth || this.actualHeight !== oldHeight
+        });
+
         if (this.actualWidth !== oldWidth || this.actualHeight !== oldHeight) {
+            // Cancel any ongoing transitions before resizing
+            if (this.currentTween) {
+                console.log('🛑 Cancelling ongoing transition for resize');
+                this.currentTween.destroy();
+                this.currentTween = null;
+                this.isTransitioning = false;
+                this.layer.opacity(1);
+            }
+
             // Update stage size
             this.stage.width(this.actualWidth);
             this.stage.height(this.actualHeight);
@@ -510,6 +792,8 @@ class KonvaSlideSystem {
             // Redraw current slide to apply new dimensions
             this.showSlide(this.currentSlideIndex);
         }
+
+        this.isResizing = false;
     }
 
     scaleAllObjects(scale) {
@@ -1480,24 +1764,29 @@ class KonvaSlideSystem {
                 console.log(`✅ Slide ${index + 1} drawn successfully`);
             } catch (drawError) {
                 console.error(`❌ Failed to draw slide ${index + 1}:`, drawError);
-                // Try to recover with basic drawing
-                this.layer.clear();
-                this.layer.add(backgroundRect);
-                try {
-                    this.layer.draw();
-                    console.log(`🔄 Recovery draw successful for slide ${index + 1}`);
-                } catch (recoveryError) {
-                    console.error(`❌ Recovery draw also failed:`, recoveryError);
-                    // Last resort: wait and retry
-                    setTimeout(() => {
-                        if (this.validateCanvasDimensions()) {
-                            try {
-                                this.layer.draw();
-                                console.log(`🔄 Delayed recovery draw successful for slide ${index + 1}`);
-                            } catch (finalError) {
-                                console.error(`❌ Final recovery attempt failed:`, finalError);
+                this.handleCanvasFailure('draw-error');
+
+                if (this.canPerformCanvasOperation()) {
+                    // Try to recover with basic drawing
+                    this.layer.clear();
+                    this.layer.add(backgroundRect);
+                    try {
+                        this.layer.draw();
+                        console.log(`🔄 Recovery draw successful for slide ${index + 1}`);
+                    } catch (recoveryError) {
+                        console.error(`❌ Recovery draw also failed:`, recoveryError);
+                        this.handleCanvasFailure('recovery-error');
+                        // Last resort: wait and retry
+                        setTimeout(() => {
+                            if (this.validateCanvasDimensions() && this.canPerformCanvasOperation()) {
+                                try {
+                                    this.layer.draw();
+                                    console.log(`🔄 Delayed recovery draw successful for slide ${index + 1}`);
+                                } catch (finalError) {
+                                    console.error(`❌ Final recovery attempt failed:`, finalError);
+                                    this.handleCanvasFailure('final-recovery-error');
+                                }
                             }
-                        }
                     }, 100);
                 }
             }
@@ -3510,6 +3799,37 @@ class KonvaSlideSystem {
             return false;
         }
 
+        // Check all canvas elements in the DOM for 0 dimensions
+        const canvasElements = this.stage.content?.querySelectorAll('canvas') || [];
+        let hasZeroDimensions = false;
+
+        canvasElements.forEach((canvas, index) => {
+            if (canvas.width === 0 || canvas.height === 0) {
+                console.error(`❌ Canvas element ${index} has zero dimensions:`, {
+                    width: canvas.width,
+                    height: canvas.height,
+                    clientWidth: canvas.clientWidth,
+                    clientHeight: canvas.clientHeight,
+                    offsetWidth: canvas.offsetWidth,
+                    offsetHeight: canvas.offsetHeight
+                });
+                hasZeroDimensions = true;
+            }
+        });
+
+        if (hasZeroDimensions) {
+            console.error('Found canvas elements with zero dimensions - triggering recreation');
+            this.handleCanvasFailure('zero-dimensions');
+
+            if (this.canPerformCanvasOperation()) {
+                // Trigger canvas recreation on next tick to avoid recursion
+                setTimeout(() => {
+                    this.recreateCanvas();
+                }, 50);
+            }
+            return false;
+        }
+
         // Ensure stage dimensions match our calculated dimensions
         if (this.stage.width() !== this.actualWidth || this.stage.height() !== this.actualHeight) {
             console.log('Stage dimensions mismatch, updating...', {
@@ -3523,6 +3843,109 @@ class KonvaSlideSystem {
         }
 
         return true;
+    }
+
+    /**
+     * Emergency canvas recreation when validation fails repeatedly
+     */
+    recreateCanvas() {
+        console.log('🚑 Emergency canvas recreation triggered');
+
+        // Store current state before destruction
+        const currentIndex = this.currentSlideIndex;
+        const currentSlides = [...this.slides];
+        const currentSlideObjects = [...this.slideObjects];
+        const currentTheme = {...this.currentTheme};
+
+        try {
+            // Clean up current stage
+            if (this.stage) {
+                console.log('🧨 Cleaning up existing stage');
+                if (this.currentTween) {
+                    this.currentTween.destroy();
+                    this.currentTween = null;
+                }
+                this.stage.destroy();
+                this.stage = null;
+                this.layer = null;
+                this.transformer = null;
+            }
+
+            // Force garbage collection pause
+            setTimeout(() => {
+                try {
+                    console.log('🔄 Recreating Konva stage with fresh dimensions');
+
+                    // Recalculate container dimensions
+                    this.calculateResponsiveDimensions();
+
+                    // Ensure minimum viable dimensions
+                    if (this.actualWidth < 300 || this.actualHeight < 200) {
+                        console.warn('⚠️ Container too small, using fallback dimensions');
+                        this.actualWidth = Math.max(this.actualWidth, 400);
+                        this.actualHeight = Math.max(this.actualHeight, 300);
+                    }
+
+                    // Create new stage with explicit dimensions
+                    this.stage = new Konva.Stage({
+                        container: this.canvasContainer,
+                        width: this.actualWidth,
+                        height: this.actualHeight,
+                        draggable: false
+                    });
+
+                    // Create new layer
+                    this.layer = new Konva.Layer();
+                    this.stage.add(this.layer);
+
+                    // Create new transformer
+                    this.transformer = new Konva.Transformer({
+                        anchorSize: 8 * this.scaleFactor,
+                        borderStroke: this.currentTheme?.accentColor || '#60a5fa',
+                        borderStrokeWidth: 2,
+                        keepRatio: false,
+                        enabledAnchors: [
+                            'top-left', 'top-center', 'top-right',
+                            'middle-left', 'middle-right',
+                            'bottom-left', 'bottom-center', 'bottom-right'
+                        ]
+                    });
+                    this.layer.add(this.transformer);
+
+                    // Apply canvas styling
+                    const canvas = this.stage.content.querySelector('canvas');
+                    if (canvas) {
+                        canvas.className = 'konva-canvas';
+                    }
+
+                    // Restore state
+                    this.slides = currentSlides;
+                    this.slideObjects = currentSlideObjects;
+                    this.currentTheme = currentTheme;
+
+                    // Reset flags
+                    this.isResizing = false;
+                    this.isTransitioning = false;
+
+                    console.log('✨ Canvas recreation successful');
+
+                    // Restore current slide
+                    if (this.slides.length > 0) {
+                        this.showSlide(currentIndex);
+                    }
+
+                    return true;
+                } catch (recreationError) {
+                    console.error('❌ Canvas recreation failed:', recreationError);
+                    this.handleCanvasFailure('recreation-error');
+                    return false;
+                }
+            }, 100);
+        } catch (cleanupError) {
+            console.error('❌ Canvas cleanup failed:', cleanupError);
+            this.handleCanvasFailure('cleanup-error');
+            return false;
+        }
     }
 
     retrySlideShow(index, retryCount = 0) {
@@ -3556,12 +3979,26 @@ class KonvaSlideSystem {
     }
 
     applySlideTransition(transitionType, callback) {
+        // Prevent transitions if already transitioning or resizing
+        if (this.isTransitioning) {
+            console.warn('Transition already in progress, skipping');
+            return;
+        }
+
+        if (this.isResizing) {
+            console.warn('Resize in progress, delaying transition');
+            setTimeout(() => this.applySlideTransition(transitionType, callback), 100);
+            return;
+        }
+
         // Validate canvas dimensions before applying transitions
         if (!this.validateCanvasDimensions()) {
             console.warn('Canvas dimensions invalid during transition, executing callback without animation');
             if (callback) callback();
             return;
         }
+
+        this.isTransitioning = true;
 
         const safeCallback = () => {
             if (callback) {
@@ -3575,21 +4012,67 @@ class KonvaSlideSystem {
 
         const transitions = {
             fade: () => {
+                // Skip animation entirely if canvas dimensions are invalid
+                if (!this.validateCanvasDimensions()) {
+                    console.warn('Skipping fade animation due to invalid canvas dimensions');
+                    this.isTransitioning = false;
+                    safeCallback();
+                    return;
+                }
+
                 this.layer.opacity(0);
                 safeCallback();
+
+                // Additional validation before starting tween
+                if (!this.validateCanvasDimensions()) {
+                    console.warn('Canvas became invalid after callback, restoring opacity');
+                    this.layer.opacity(1);
+                    this.isTransitioning = false;
+                    return;
+                }
+
                 const tween = new Konva.Tween({
                     node: this.layer,
                     duration: 0.5,
                     opacity: 1,
                     easing: Konva.Easings.EaseInOut,
+                    onUpdate: () => {
+                        // Validate dimensions during animation to catch mid-animation issues
+                        if (!this.validateCanvasDimensions()) {
+                            console.warn('Canvas became invalid during fade animation, stopping tween');
+                            tween.destroy();
+                            this.currentTween = null;
+                            this.isTransitioning = false;
+                            this.layer.opacity(1);
+                        }
+                    },
                     onFinish: () => {
+                        this.currentTween = null;
+                        this.isTransitioning = false;
+
                         // Ensure layer is properly drawn after transition
                         if (this.validateCanvasDimensions()) {
-                            this.layer.draw();
+                            try {
+                                this.layer.draw();
+                            } catch (error) {
+                                console.error('Failed to draw layer after fade transition:', error);
+                                // Try to recover by forcing redraw
+                                this.retrySlideShow(this.currentSlideIndex, 0);
+                            }
                         }
                     }
                 });
-                tween.play();
+
+                this.currentTween = tween;
+
+                try {
+                    tween.play();
+                } catch (error) {
+                    console.error('Failed to start fade transition:', error);
+                    this.layer.opacity(1);
+                    this.currentTween = null;
+                    this.isTransitioning = false;
+                }
             },
             slideLeft: () => {
                 this.layer.x(this.actualWidth);
@@ -3646,6 +4129,7 @@ class KonvaSlideSystem {
         if (transitions[transitionType]) {
             transitions[transitionType]();
         } else {
+            this.isTransitioning = false;
             safeCallback();
         }
     }
@@ -4080,13 +4564,19 @@ class KonvaSlideSystem {
 // Export for global use
 window.KonvaSlideSystem = KonvaSlideSystem;
 
-// Add global resize handler for mobile responsiveness
-let resizeTimeout;
+// Simplified global resize handler (ResizeObserver handles most cases)
+// Only handle window-specific changes like orientation
+let windowResizeTimeout;
 window.addEventListener('resize', () => {
-    clearTimeout(resizeTimeout);
-    resizeTimeout = setTimeout(() => {
+    clearTimeout(windowResizeTimeout);
+    windowResizeTimeout = setTimeout(() => {
         if (window.konvaSlideSystem && typeof window.konvaSlideSystem.handleWindowResize === 'function') {
-            window.konvaSlideSystem.handleWindowResize();
+            // Only call if this is a significant window change (orientation, etc)
+            const isSignificantChange = window.innerWidth !== window.konvaSlideSystem.lastWindowWidth;
+            if (isSignificantChange) {
+                window.konvaSlideSystem.lastWindowWidth = window.innerWidth;
+                window.konvaSlideSystem.handleWindowResize();
+            }
         }
-    }, 250);
+    }, 300); // Longer debounce for window events
 });
