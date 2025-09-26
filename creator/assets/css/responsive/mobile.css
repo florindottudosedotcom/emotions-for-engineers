@@ -615,8 +615,8 @@
     #slides-editor-container {
         padding: var(--spacing-2);
         border-radius: var(--border-radius);
-        overflow: hidden;
-        min-width: 300px !important; /* Mobile override */
+        overflow: visible; /* Allow stage to be fully visible */
+        min-width: 280px !important; /* Reduced for better mobile fit */
         width: 100% !important;
     }
 
@@ -738,8 +738,8 @@
     }
 
     #slides-editor-container {
-        min-height: 500px !important;
-        min-width: 400px !important;
+        min-height: 400px !important; /* Reduced height for tablets */
+        min-width: 320px !important; /* Reduced width for tablets */
         width: 100% !important;
     }
 }
@@ -764,8 +764,8 @@
     }
 
     #slides-editor-container {
-        min-height: 300px !important;
-        min-width: 350px !important;
+        min-height: 250px !important; /* Reduced for small screens */
+        min-width: 280px !important; /* Reduced for small screens */
         width: 100% !important;
     }
 }

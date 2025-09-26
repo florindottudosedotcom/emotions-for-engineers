@@ -208,11 +208,13 @@
 
 .color-schemes-grid {
     display: grid;
-    grid-template-columns: 1fr 1fr;
+    grid-template-columns: repeat(2, 1fr); /* 2 columns for 2×3 layout */
     gap: var(--spacing-3);
     margin: 0;
     min-height: fit-content;
     width: 100%;
+    /* Ensure proper alignment for 6 schemes in 2×3 grid */
+    align-items: start;
 }
 
 .color-scheme-tile {

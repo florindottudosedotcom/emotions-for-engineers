@@ -360,6 +360,29 @@ class KonvaSlideSystem {
         };
     }
 
+    /**
+     * Apply theme colors to a specific slide
+     */
+    applyThemeToSlide(slideIndex, theme) {
+        if (!this.slides[slideIndex]) return;
+
+        // Initialize visualSuggestions if it doesn't exist
+        if (!this.slides[slideIndex].visualSuggestions) {
+            this.slides[slideIndex].visualSuggestions = {};
+        }
+
+        // Apply theme colors to slide data
+        this.slides[slideIndex].visualSuggestions.backgroundColor = theme.backgroundColor;
+        this.slides[slideIndex].visualSuggestions.textColor = theme.textColor;
+        this.slides[slideIndex].visualSuggestions.borderColor = theme.borderColor;
+        this.slides[slideIndex].visualSuggestions.fillColor = theme.fillColor;
+
+        // Update current theme for immediate visual feedback
+        this.currentTheme = {...theme};
+
+        console.log(`✨ Applied theme to slide ${slideIndex + 1}:`, theme);
+    }
+
     init() {
         // Prevent double initialization
         if (this.isInitialized) {
@@ -458,9 +481,11 @@ class KonvaSlideSystem {
         const isContainerReady = this.checkContainerReadiness(container);
         if (!isContainerReady) {
             console.warn('⚠️ Container not ready, using emergency fallback dimensions');
-            this.actualWidth = 600;
-            this.actualHeight = 400;
-            this.scaleFactor = 0.6;
+            // Use mobile-friendly fallback dimensions
+            const isMobile = window.innerWidth <= 767;
+            this.actualWidth = isMobile ? 320 : 600;
+            this.actualHeight = isMobile ? 240 : 400;
+            this.scaleFactor = isMobile ? 0.32 : 0.6;
             return;
         }
 
@@ -481,17 +506,21 @@ class KonvaSlideSystem {
             }
         }
 
-        // Ensure minimum width
-        containerWidth = Math.max(containerWidth, 400);
+        // Ensure minimum width (mobile-responsive)
+        const isMobile = window.innerWidth <= 767;
+        const minWidth = isMobile ? 280 : 400;
+        containerWidth = Math.max(containerWidth, minWidth);
 
         const maxWidth = Math.min(containerWidth - 40, this.slideWidth); // 40px for margins
 
         // Calculate scale factor, ensure it's not zero
         this.scaleFactor = Math.max(maxWidth / this.slideWidth, 0.3); // Minimum 30% scale
 
-        // Set actual dimensions with minimums to prevent 0 size
-        this.actualWidth = Math.max(maxWidth, 400);
-        this.actualHeight = Math.max(this.slideHeight * this.scaleFactor, 300);
+        // Set actual dimensions with minimums to prevent 0 size (mobile-responsive)
+        const minActualWidth = isMobile ? 280 : 400;
+        const minActualHeight = isMobile ? 200 : 300;
+        this.actualWidth = Math.max(maxWidth, minActualWidth);
+        this.actualHeight = Math.max(this.slideHeight * this.scaleFactor, minActualHeight);
 
         console.log('Calculated dimensions:', {
             containerWidth,
@@ -813,9 +842,6 @@ class KonvaSlideSystem {
         navContainer.innerHTML = `
             <div class="slide-counter">
                 <span class="current-slide">1</span> / <span class="total-slides">1</span>
-            </div>
-            <div class="slide-title-display">
-                <h2 id="current-slide-title" contenteditable="true" class="slide-title-editable">Slide Title</h2>
             </div>
             <div class="navigation-buttons">
                 <button class="nav-btn undo-btn" onclick="window.konvaSlideSystem?.undo()" title="Undo (Ctrl+Z)">↶ Undo</button>
@@ -1724,6 +1750,12 @@ class KonvaSlideSystem {
             return;
         }
 
+        // Auto-apply default theme if slide doesn't have theme data
+        if (this.slides[index] && !this.slides[index].visualSuggestions?.backgroundColor) {
+            console.log('📄 Auto-applying default theme to slide', index + 1);
+            this.applyThemeToSlide(index, this.getDefaultTheme());
+        }
+
         // Clear current layer but preserve the transformer and slide selection
         const childrenToRemove = this.layer.children.filter(child =>
             child !== this.transformer && child.name() !== 'slide-selection'
@@ -1802,10 +1834,9 @@ class KonvaSlideSystem {
         // Apply any pending animations now that objects are in the layer
         this.applyPendingAnimations(index);
 
-        // Update slide title in navigation
-        const titleElement = document.getElementById('current-slide-title');
-        if (titleElement && this.slides[index]) {
-            titleElement.textContent = this.slides[index].title || `Slide ${index + 1}`;
+        // Ensure current theme is applied to background
+        if (this.slides[index]?.visualSuggestions?.backgroundColor) {
+            this.currentTheme.backgroundColor = this.slides[index].visualSuggestions.backgroundColor;
         }
     }
 
@@ -1832,16 +1863,10 @@ class KonvaSlideSystem {
         const totalSpan = document.querySelector('.total-slides');
         const prevBtn = document.querySelector('.prev-btn');
         const nextBtn = document.querySelector('.next-btn');
-        const titleElement = document.getElementById('current-slide-title');
 
         // Update slide counter
         if (currentSpan) currentSpan.textContent = this.currentSlideIndex + 1;
         if (totalSpan) totalSpan.textContent = this.slideObjects.length;
-
-        // Update slide title
-        if (titleElement && this.slides[this.currentSlideIndex]) {
-            titleElement.textContent = this.slides[this.currentSlideIndex].title || `Slide ${this.currentSlideIndex + 1}`;
-        }
 
         // Update button states
         if (prevBtn) prevBtn.disabled = this.currentSlideIndex === 0;
@@ -3880,11 +3905,17 @@ class KonvaSlideSystem {
                     // Recalculate container dimensions
                     this.calculateResponsiveDimensions();
 
-                    // Ensure minimum viable dimensions
-                    if (this.actualWidth < 300 || this.actualHeight < 200) {
+                    // Ensure minimum viable dimensions (mobile-responsive)
+                    const isMobile = window.innerWidth <= 767;
+                    const minWidth = isMobile ? 280 : 300;
+                    const minHeight = isMobile ? 200 : 200;
+                    const fallbackWidth = isMobile ? 320 : 400;
+                    const fallbackHeight = isMobile ? 240 : 300;
+
+                    if (this.actualWidth < minWidth || this.actualHeight < minHeight) {
                         console.warn('⚠️ Container too small, using fallback dimensions');
-                        this.actualWidth = Math.max(this.actualWidth, 400);
-                        this.actualHeight = Math.max(this.actualHeight, 300);
+                        this.actualWidth = Math.max(this.actualWidth, fallbackWidth);
+                        this.actualHeight = Math.max(this.actualHeight, fallbackHeight);
                     }
 
                     // Create new stage with explicit dimensions

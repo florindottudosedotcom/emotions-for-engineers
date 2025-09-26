@@ -199,15 +199,15 @@
 /* Ensure the dynamically created editor layout maintains dimensions */
 #slides-editor-container .konva-editor-layout {
     width: 100% !important;
-    min-width: 600px !important;
+    min-width: 320px !important; /* Allow mobile scaling */
     box-sizing: border-box !important;
 }
 
 /* Force canvas containers to maintain explicit dimensions */
 #slides-editor-container .konva-canvas-container {
     width: 100% !important;
-    min-width: 400px !important;
-    min-height: 350px !important;
+    min-width: 280px !important; /* Allow better mobile scaling */
+    min-height: 200px !important; /* Reduce minimum height for mobile */
     box-sizing: border-box !important;
 }
 
