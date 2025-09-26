@@ -21,6 +21,10 @@
     <link rel="stylesheet" href="./assets/css/components/launcher.css">
     <link rel="stylesheet" href="./assets/css/components/puter.css">
     <link rel="stylesheet" href="./assets/css/components/icons.css">
+    <link rel="stylesheet" href="./assets/css/components/tabs.css">
+    <link rel="stylesheet" href="./assets/css/components/konva-components.css">
+    <link rel="stylesheet" href="./assets/css/components/modal-system.css">
+    <link rel="stylesheet" href="./assets/css/components/accordion-toolbar.css">
     <link rel="stylesheet" href="./assets/css/core/utilities.css">
     <link rel="stylesheet" href="./assets/css/responsive/mobile.css">
     <link rel="stylesheet" href="./assets/css/themes/light.css">
@@ -36,49 +40,6 @@
         body.loaded { visibility: visible; opacity: 1; }
     </style>
 
-    <style>
-        .slides-container {
-            max-width: 1200px;
-            margin: 0 auto;
-        }
-
-        .slide-preview {
-            border: 1px solid #ddd;
-            border-radius: 8px;
-            margin: 20px 0;
-            padding: 20px;
-            background: white;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-        }
-
-
-        /* WebLLM specific styles */
-        .webllm-info {
-            background: var(--info-bg, #e6f3ff);
-            border: 1px solid var(--info-border, #3b82f6);
-            border-radius: var(--radius-medium);
-            padding: var(--spacing-4);
-            margin-bottom: var(--spacing-4);
-        }
-
-        .model-loading-progress {
-            margin-top: var(--spacing-3);
-        }
-
-        .progress-bar {
-            width: 100%;
-            height: 6px;
-            background: var(--border-light);
-            border-radius: 3px;
-            overflow: hidden;
-        }
-
-        .progress-fill {
-            height: 100%;
-            background: var(--primary-color);
-            transition: width 0.3s ease;
-        }
-    </style>
 </head>
 <body>
     <div class="container p-6">
@@ -97,9 +58,9 @@
                 <div class="webllm-info">
                     <h4>🖥️ Browser AI (WebLLM)</h4>
                     <p>AI models run directly in your browser for maximum privacy. First-time use requires downloading model files (~1-4GB).</p>
-                    <div id="model-status" class="model-loading-progress" style="display: none;">
+                    <div id="model-status" class="model-loading-progress hidden">
                         <div class="progress-bar">
-                            <div class="progress-fill" style="width: 0%"></div>
+                            <div class="progress-fill" data-progress="0"></div>
                         </div>
                         <p class="mt-2 text-sm">Loading model...</p>
                     </div>
@@ -152,9 +113,9 @@
                 <p class="text-secondary">Export your presentation with automatic translation to selected languages</p>
             </div>
             <div class="card-body">
-                <div class="export-info mb-4 p-4" style="background: var(--background-tertiary); border-radius: var(--radius-medium);">
+                <div class="export-info mb-4 p-4">
                     <p class="mb-2"><strong>💡 Multi-Language Export:</strong></p>
-                    <ul class="mb-0" style="margin-left: 1rem; line-height: 1.6;">
+                    <ul class="mb-0 export-list">
                         <li>Select multiple languages above to automatically translate your slides</li>
                         <li>Each language will be exported as a separate file</li>
                         <li>Multiple files are packaged in a ZIP for easy download</li>

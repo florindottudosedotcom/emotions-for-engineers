@@ -13,11 +13,13 @@
         --background-secondary: #1E293B;    /* Dark slate - Guidelines */
         --background-tertiary: #334155;     /* Medium slate - Guidelines */
         --surface: #1E293B;                 /* Card backgrounds */
+        --surface-elevated: #334155;        /* Elevated surfaces for better contrast */
 
-        /* Dark theme text colors */
-        --text-primary: #F8FAFC;            /* Off-white - Guidelines */
-        --text-secondary: #CBD5E1;          /* Light gray - Guidelines */
+        /* Dark theme text colors - Enhanced for better contrast */
+        --text-primary: #FFFFFF;            /* Pure white for maximum contrast */
+        --text-secondary: #E2E8F0;          /* Lighter gray for better readability */
         --text-disabled: #94A3B8;           /* Medium gray - Guidelines */
+        --text-muted: #64748B;              /* More muted text for less emphasis */
 
         /* Dark theme borders */
         --border-light: #334155;            /* Darker borders */
@@ -52,11 +54,13 @@
         --background-secondary: #1E293B;    /* Dark slate - Guidelines */
         --background-tertiary: #334155;     /* Medium slate - Guidelines */
         --surface: #1E293B;                 /* Card backgrounds */
+        --surface-elevated: #334155;        /* Elevated surfaces for better contrast */
 
-        /* Dark theme text colors */
-        --text-primary: #F8FAFC;            /* Off-white - Guidelines */
-        --text-secondary: #CBD5E1;          /* Light gray - Guidelines */
+        /* Dark theme text colors - Enhanced for better contrast */
+        --text-primary: #FFFFFF;            /* Pure white for maximum contrast */
+        --text-secondary: #E2E8F0;          /* Lighter gray for better readability */
         --text-disabled: #94A3B8;           /* Medium gray - Guidelines */
+        --text-muted: #64748B;              /* More muted text for less emphasis */
 
         /* Dark theme borders */
         --border-light: #334155;            /* Darker borders */

@@ -23,11 +23,13 @@
     --background-secondary: #F8FAFC;    /* Subtle off-white - Guidelines */
     --background-tertiary: #F1F5F9;     /* Light gray - Guidelines */
     --surface: #FFFFFF;                 /* Card/surface backgrounds */
+    --surface-elevated: #FFFFFF;        /* Elevated surfaces (same as surface in light) */
 
     /* Text Colors - Design Guidelines */
     --text-primary: #0F172A;            /* Near-black - Guidelines */
     --text-secondary: #64748B;          /* Medium gray - Guidelines */
     --text-disabled: #94A3B8;           /* Light gray - Guidelines */
+    --text-muted: #94A3B8;              /* Muted text for less emphasis */
     --text-on-primary: #FFFFFF;         /* Text on primary color */
 
     /* Border Colors - Design Guidelines */

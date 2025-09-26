@@ -21,6 +21,10 @@
     <link rel="stylesheet" href="./assets/css/components/launcher.css">
     <link rel="stylesheet" href="./assets/css/components/puter.css">
     <link rel="stylesheet" href="./assets/css/components/icons.css">
+    <link rel="stylesheet" href="./assets/css/components/tabs.css">
+    <link rel="stylesheet" href="./assets/css/components/konva-components.css">
+    <link rel="stylesheet" href="./assets/css/components/modal-system.css">
+    <link rel="stylesheet" href="./assets/css/components/accordion-toolbar.css">
     <link rel="stylesheet" href="./assets/css/core/utilities.css">
     <link rel="stylesheet" href="./assets/css/responsive/mobile.css">
     <link rel="stylesheet" href="./assets/css/themes/light.css">
@@ -36,71 +40,6 @@
         body.loaded { visibility: visible; opacity: 1; }
     </style>
 
-    <style>
-        .slides-container {
-            max-width: 1200px;
-            margin: 0 auto;
-        }
-
-        .slide-preview {
-            border: 1px solid #ddd;
-            border-radius: 8px;
-            margin: 20px 0;
-            padding: 20px;
-            background: white;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-        }
-
-
-        /* Ollama specific styles */
-        .ollama-info {
-            background: var(--success-bg, #ecfdf5);
-            border: 1px solid var(--success-border, #10b981);
-            border-radius: var(--radius-medium);
-            padding: var(--spacing-4);
-            margin-bottom: var(--spacing-4);
-        }
-
-        .connection-indicator {
-            display: inline-flex;
-            align-items: center;
-            gap: var(--spacing-2);
-            padding: var(--spacing-2) var(--spacing-3);
-            border-radius: var(--radius-small);
-            font-size: 0.9em;
-            font-weight: var(--font-weight-medium);
-        }
-
-        .connection-indicator.connected {
-            background: var(--success-bg, #ecfdf5);
-            color: var(--success-text, #065f46);
-        }
-
-        .connection-indicator.disconnected {
-            background: var(--error-bg, #fef2f2);
-            color: var(--error-text, #991b1b);
-        }
-
-        .status-dot {
-            width: 8px;
-            height: 8px;
-            border-radius: 50%;
-            animation: pulse 2s infinite;
-        }
-
-        .status-dot.connected {
-            background: var(--success-color, #10b981);
-        }
-
-        .status-dot.disconnected {
-            background: var(--error-color, #ef4444);
-        }
-
-        @keyframes pulse {
-            0%, 100% { opacity: 1; }
-            50% { opacity: 0.5; }
-        }
-    </style>
 </head>
 <body>
     <div class="container p-6">
@@ -172,9 +111,9 @@
                 <p class="text-secondary">Export your presentation with automatic translation to selected languages</p>
             </div>
             <div class="card-body">
-                <div class="export-info mb-4 p-4" style="background: var(--background-tertiary); border-radius: var(--radius-medium);">
+                <div class="export-info mb-4 p-4">
                     <p class="mb-2"><strong>💡 Multi-Language Export:</strong></p>
-                    <ul class="mb-0" style="margin-left: 1rem; line-height: 1.6;">
+                    <ul class="mb-0 export-list">
                         <li>Select multiple languages above to automatically translate your slides</li>
                         <li>Each language will be exported as a separate file</li>
                         <li>Multiple files are packaged in a ZIP for easy download</li>

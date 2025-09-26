@@ -4,30 +4,42 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Redirecting to Slides Creator Launcher</title>
-    <link rel="icon" type="image/svg+xml" href="../favicon.svg">
+    <link rel="icon" type="image/svg+xml" href="favicon.svg">
+
+    <!-- Load minimal CSS for redirect page -->
+    <link rel="stylesheet" href="./assets/css/core/variables.css">
+    <link rel="stylesheet" href="./assets/css/core/reset.css">
+    <link rel="stylesheet" href="./assets/css/core/typography.css">
+    <link rel="stylesheet" href="./assets/css/themes/light.css">
+    <link rel="stylesheet" href="./assets/css/themes/dark.css">
+
     <style>
         body {
-            font-family: Arial, sans-serif;
+            font-family: var(--font-family);
             text-align: center;
-            padding: 50px;
+            padding: var(--spacing-12);
             background: var(--primary-color);
-            color: white;
+            color: var(--text-on-primary);
             min-height: 100vh;
             display: flex;
             flex-direction: column;
             justify-content: center;
         }
         .redirect-message {
-            font-size: 1.5em;
-            margin-bottom: 20px;
+            font-size: var(--font-size-xl);
+            margin-bottom: var(--spacing-6);
         }
         .countdown {
-            font-size: 2em;
-            margin: 20px 0;
+            font-size: var(--font-size-3xl);
+            margin: var(--spacing-6) 0;
+            font-weight: var(--font-weight-bold);
         }
         a {
-            color: #fff;
+            color: var(--text-on-primary);
             text-decoration: underline;
+        }
+        a:hover {
+            opacity: 0.8;
         }
     </style>
 </head>
@@ -36,7 +48,7 @@
         <h1>⚡ Slides Creator has been upgraded!</h1>
         <p>You're being redirected to the new provider selection launcher...</p>
         <div class="countdown" id="countdown">3</div>
-        <p>Or <a href="slides_creator_launcher.html">click here to go directly</a></p>
+        <p>Or <a href="slides.html">click here to go directly</a></p>
     </div>
 
     <script>
@@ -49,7 +61,7 @@
 
             if (count <= 0) {
                 clearInterval(timer);
-                window.location.href = 'slides_creator_launcher.html';
+                window.location.href = 'slides.html';
             }
         }, 1000);
     </script>

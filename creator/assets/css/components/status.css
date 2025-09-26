@@ -363,6 +363,123 @@
 }
 
 /* ========================================
+   PROVIDER-SPECIFIC STATUS COMPONENTS
+   ======================================== */
+
+/* Ollama connection status */
+.ollama-info {
+    background: var(--success-light);
+    border: 1px solid var(--success-color);
+    border-radius: var(--radius-medium);
+    padding: var(--spacing-4);
+    margin-bottom: var(--spacing-4);
+}
+
+.connection-indicator {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--spacing-2);
+    padding: var(--spacing-2) var(--spacing-3);
+    border-radius: var(--radius-small);
+    font-size: var(--font-size-sm);
+    font-weight: var(--font-weight-medium);
+}
+
+.connection-indicator.connected {
+    background: var(--success-light);
+    color: var(--success-color);
+}
+
+.connection-indicator.disconnected {
+    background: var(--error-light);
+    color: var(--error-color);
+}
+
+.status-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    animation: pulse 2s infinite;
+    flex-shrink: 0;
+}
+
+.status-dot.connected {
+    background: var(--success-color);
+}
+
+.status-dot.disconnected {
+    background: var(--error-color);
+}
+
+/* WebLLM model loading */
+.webllm-info {
+    background: var(--info-light);
+    border: 1px solid var(--info-color);
+    border-radius: var(--radius-medium);
+    padding: var(--spacing-4);
+    margin-bottom: var(--spacing-4);
+}
+
+.model-loading-progress {
+    margin-top: var(--spacing-3);
+}
+
+.progress-bar {
+    width: 100%;
+    height: 6px;
+    background: var(--border-light);
+    border-radius: 3px;
+    overflow: hidden;
+}
+
+.progress-fill {
+    height: 100%;
+    background: var(--primary-color);
+    transition: width var(--transition-normal);
+}
+
+/* Slide container components */
+.slides-container {
+    max-width: 1200px;
+    margin: 0 auto;
+}
+
+.slide-preview {
+    border: 1px solid var(--border-light);
+    border-radius: var(--radius-medium);
+    margin: var(--spacing-6) 0;
+    padding: var(--spacing-6);
+    background: var(--surface);
+    box-shadow: var(--shadow-small);
+}
+
+/* Export section components */
+.export-info {
+    background: var(--background-tertiary);
+    border-radius: var(--radius-medium);
+}
+
+.export-list {
+    margin-left: var(--spacing-4);
+    line-height: var(--line-height-relaxed);
+}
+
+/* Progress bar with data attributes */
+.progress-fill[data-progress] {
+    width: 0%;
+    transition: width var(--transition-normal);
+}
+
+/* Utility classes for dynamic content */
+.hidden {
+    display: none !important;
+}
+
+.visible {
+    display: block !important;
+}
+
+/* ========================================
    DOWNLOAD SECTION (Specific Component)
    ======================================== */
 #download-section {
@@ -435,6 +552,117 @@
     .ai-assistant {
         padding: var(--spacing-4) 0;
         margin: var(--spacing-4) 0;
+    }
+}
+
+/* ========================================
+   DARK MODE TEXT CONTRAST IMPROVEMENTS
+   ======================================== */
+
+@media (prefers-color-scheme: dark) {
+    .status-display {
+        color: var(--text-primary);
+        border-color: currentColor;
+    }
+
+    .status-display.status-info,
+    .status-info {
+        background-color: var(--info-light);
+        border-color: var(--info-color);
+        color: var(--info-color);
+    }
+
+    .status-display.status-success,
+    .status-success {
+        background-color: var(--success-light);
+        border-color: var(--success-color);
+        color: var(--success-color);
+    }
+
+    .status-display.status-warning,
+    .status-warning {
+        background-color: var(--warning-light);
+        border-color: var(--warning-color);
+        color: var(--warning-color);
+    }
+
+    .status-display.status-error,
+    .status-error {
+        background-color: var(--error-light);
+        border-color: var(--error-color);
+        color: var(--error-color);
+    }
+
+    .export-info {
+        background: var(--background-tertiary);
+        color: var(--text-primary);
+    }
+
+    .export-list {
+        color: var(--text-primary);
+    }
+
+    .ollama-info,
+    .webllm-info {
+        background: var(--background-tertiary);
+        color: var(--text-primary);
+    }
+
+    .connection-indicator.connected {
+        background: var(--success-light);
+        color: var(--success-color);
+    }
+
+    .connection-indicator.disconnected {
+        background: var(--error-light);
+        color: var(--error-color);
+    }
+
+    .slide-preview {
+        background: var(--surface);
+        border-color: var(--border-light);
+        color: var(--text-primary);
+    }
+
+    .progress-text.completed {
+        color: var(--success-color);
+    }
+
+    .progress-text.active {
+        color: var(--primary-color);
+    }
+
+    .generation-progress {
+        background: var(--surface);
+        border-color: var(--border-light);
+        color: var(--text-primary);
+    }
+
+    .generation-progress h3 {
+        color: var(--text-primary);
+    }
+
+    .toast {
+        background-color: var(--surface);
+        border-color: var(--border-light);
+    }
+
+    .toast-title {
+        color: var(--text-primary);
+    }
+
+    .toast-body {
+        color: var(--text-secondary);
+    }
+
+    #download-section {
+        background-color: var(--success-light);
+        border-color: var(--success-color);
+    }
+
+    #download-section h3,
+    #download-section p {
+        color: var(--success-color);
     }
 }
 

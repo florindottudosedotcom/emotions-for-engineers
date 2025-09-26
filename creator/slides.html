@@ -19,278 +19,39 @@
     <link rel="stylesheet" href="./assets/css/components/launcher.css">
     <link rel="stylesheet" href="./assets/css/components/puter.css">
     <link rel="stylesheet" href="./assets/css/components/icons.css">
+    <link rel="stylesheet" href="./assets/css/components/tabs.css">
+    <link rel="stylesheet" href="./assets/css/components/konva-components.css">
+    <link rel="stylesheet" href="./assets/css/components/modal-system.css">
+    <link rel="stylesheet" href="./assets/css/components/accordion-toolbar.css">
     <link rel="stylesheet" href="./assets/css/core/utilities.css">
     <link rel="stylesheet" href="./assets/css/responsive/mobile.css">
     <link rel="stylesheet" href="./assets/css/themes/light.css">
     <link rel="stylesheet" href="./assets/css/themes/dark.css">
     <script src="./assets/js/theme-manager.js"></script>
-    <style>
-
-        /* Slides provider styling - mobile-responsive via mobile.css */
-        .provider-row {
-            display: flex;
-            align-items: flex-end;
-            gap: 2rem;
-            margin-bottom: 0;
-            flex-wrap: wrap;
-            padding-left: 16px;
-        }
-
-        .provider-tabs {
-            display: flex;
-            flex-direction: row;
-            gap: 0;
-            flex: 0 0 auto;
-            flex-wrap: wrap;
-        }
-
-        .provider-tab {
-            padding: 12px 24px;
-            border: 2px solid var(--border-light, #ddd);
-            border-right: none;
-            border-radius: 0;
-            background: var(--surface, white);
-            color: var(--text-primary);
-            cursor: pointer;
-            transition: all 0.3s ease;
-            font-weight: 500;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            min-width: 140px;
-            justify-content: center;
-        }
-
-        .provider-tab:first-child {
-            border-radius: 8px 0 0 8px;
-        }
-
-        .provider-tab:last-child {
-            border-radius: 0 8px 8px 0;
-            border-right: 2px solid var(--border-light, #ddd);
-        }
-
-        .provider-tab.active:first-child {
-            border-radius: 8px 0 0 8px;
-        }
-
-        .provider-tab.active:last-child {
-            border-radius: 0 8px 8px 0;
-        }
-
-        .provider-tab:hover {
-            border-color: var(--primary-color, #667eea);
-            background: var(--background-tertiary, #f8f9ff);
-        }
-
-        .provider-tab.active {
-            border-color: var(--primary-color, #667eea);
-            background: var(--primary-color, #667eea);
-            color: white;
-        }
-
-        .provider-tab .icon {
-            font-size: 1.2em;
-        }
-
-        .creator-frame {
-            width: 100%;
-            height: 800px;
-            border: 1px solid var(--border-light, #ddd);
-            border-radius: 0 8px 8px 8px;
-            border-top: none;
-            min-height: 600px;
-            background: var(--surface);
-        }
-
-        /* Dark mode styles for provider tabs and iframe */
-        @media (prefers-color-scheme: dark) {
-            .provider-tab {
-                background: var(--surface, #1E293B) !important;
-                border-color: var(--border-light, #334155) !important;
-                color: var(--text-primary, #F8FAFC) !important;
-            }
-
-            .provider-tab:hover {
-                border-color: var(--primary-color, #3B82F6) !important;
-                background: var(--background-tertiary, #334155) !important;
-                color: var(--text-primary, #F8FAFC) !important;
-            }
-
-            .provider-tab.active {
-                border-color: var(--primary-color, #3B82F6) !important;
-                background: var(--primary-color, #3B82F6) !important;
-                color: white !important;
-            }
-
-            .provider-tab:last-child {
-                border-color: var(--border-light, #334155) !important;
-            }
-
-            .provider-tab.active:last-child {
-                border-color: var(--primary-color, #3B82F6) !important;
-            }
-
-            .creator-frame {
-                background: var(--surface, #1E293B) !important;
-                border-color: var(--border-light, #334155) !important;
-            }
-
-            h1, h2, h3, h4, h5, h6 {
-                color: var(--text-primary, #F8FAFC) !important;
-            }
-
-            body {
-                background-color: var(--background-secondary, #1E293B) !important;
-                color: var(--text-primary, #F8FAFC) !important;
-            }
-
-            .main-container {
-                background-color: var(--background-secondary, #1E293B) !important;
-            }
-        }
-
-        .main-container {
-            max-width: none;
-            width: 100%;
-            padding: 1rem 2rem;
-        }
-
-        /* Mobile-responsive adjustments handled in mobile.css */
-
-        #creator-container {
-            width: 100%;
-            margin: 0;
-        }
-
-        body {
-            margin: 0;
-            padding: 0;
-        }
-
-        .loading-state {
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            height: 400px;
-            color: var(--text-secondary);
-            flex-direction: column;
-            gap: 1rem;
-        }
-
-
-        .back-button {
-            display: inline-flex;
-            align-items: center;
-            gap: 0.5rem;
-            text-decoration: none;
-            color: var(--primary-color);
-            font-weight: 500;
-            margin-bottom: 1rem;
-            padding: 0.5rem 1rem;
-            border-radius: 6px;
-            transition: background-color 0.2s;
-        }
-
-        .back-button:hover {
-            background-color: var(--background-tertiary);
-        }
-
-        .slides-icon {
-            color: var(--primary-color);
-        }
-
-        /* Icon styles */
-        .icon {
-            display: inline-block;
-            width: 1em;
-            height: 1em;
-            vertical-align: middle;
-        }
-
-        /* CSS-based icons */
-        .icon-slides-css {
-            display: inline-block;
-            width: 1.2em;
-            height: 1.2em;
-            background: currentColor;
-            mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath d='M2,3H8V9H2V3M9,3H15V9H9V3M16,3H22V9H16V3M2,10H8V16H2V10M9,10H15V16H9V10M16,10H22V16H16V10M2,17H8V23H2V17M9,17H15V23H9V17M16,17H22V23H16V17Z'/%3E%3C/svg%3E") no-repeat center;
-            mask-size: contain;
-            vertical-align: middle;
-        }
-
-        .icon-cloud-css {
-            display: inline-block;
-            width: 1.2em;
-            height: 1.2em;
-            background: currentColor;
-            mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath d='M19.35 10.04C18.67 6.59 15.64 4 12 4 9.11 4 6.6 5.64 5.35 8.04 2.34 8.36 0 10.91 0 14c0 3.31 2.69 6 6 6h13c2.76 0 5-2.24 5-5 0-2.64-2.05-4.78-4.65-4.96z'/%3E%3C/svg%3E") no-repeat center;
-            mask-size: contain;
-            vertical-align: middle;
-        }
-
-        .icon-brain-css {
-            display: inline-block;
-            width: 1.2em;
-            height: 1.2em;
-            background: currentColor;
-            mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath d='M12,2A3,3 0 0,1 15,5V11A3,3 0 0,1 12,14A3,3 0 0,1 9,11V5A3,3 0 0,1 12,2M19,11A3,3 0 0,1 22,14A3,3 0 0,1 19,17H18V22H16V17H13V15H16V13H18A1,1 0 0,0 19,12A1,1 0 0,0 18,11H16V9H18A3,3 0 0,1 19,11M5,11A3,3 0 0,1 8,9H10V11H8A1,1 0 0,0 7,12A1,1 0 0,0 8,13H10V15H8V22H6V17H5A3,3 0 0,1 2,14A3,3 0 0,1 5,11Z'/%3E%3C/svg%3E") no-repeat center;
-            mask-size: contain;
-            vertical-align: middle;
-        }
-
-        .icon-desktop-css {
-            display: inline-block;
-            width: 1.2em;
-            height: 1.2em;
-            background: currentColor;
-            mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath d='M21,16H3V4H21M21,2H3C1.89,2 1,2.89 1,4V16A2,2 0 0,0 3,18H10V20H8V22H16V20H14V18H21A2,2 0 0,0 23,16V4C23,2.89 22.1,2 21,2Z'/%3E%3C/svg%3E") no-repeat center;
-            mask-size: contain;
-            vertical-align: middle;
-        }
-
-        .icon-point-css {
-            display: inline-block;
-            width: 1.2em;
-            height: 1.2em;
-            background: currentColor;
-            mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath d='M7,14L12,9L17,14H7Z'/%3E%3C/svg%3E") no-repeat center;
-            mask-size: contain;
-            vertical-align: middle;
-        }
-
-        .icon-rocket-css {
-            display: inline-block;
-            width: 1.2em;
-            height: 1.2em;
-            background: currentColor;
-            mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath d='M13.13 22.19l-.45-2.56c-.89.31-1.7.49-2.68.49-1.97 0-3.75-.88-4.94-2.27l-.7-.77L2 20.44v.52A1.5 1.5 0 003.5 22.5h8c.36 0 .7-.1 1.01-.28l.62-.03zM21.5 2.5l-3.46.86C16.54 2.91 15.5 2.5 14.4 2.5c-2.76 0-5 2.24-5 5l-.86 3.46c-.44 1.5.04 3.15 1.26 4.37l4.37 4.37c1.22 1.22 2.87 1.7 4.37 1.26L22 19.5c.36-.9.36-1.9 0-2.8l-2.5-10zM12 7c0-1.1.9-2 2-2s2 .9 2 2-.9 2-2 2-2-.9-2-2z'/%3E%3C/svg%3E") no-repeat center;
-            mask-size: contain;
-            vertical-align: middle;
-        }
-    </style>
 </head>
 <body class="text-minimal">
-    <div class="main-container slides-main-container">
-        <a href="index.html" class="back-button">
+    <div class="main-container">
+        <a href="index.html" class="btn btn-ghost mb-4">
             ← Back to Creator Hub
         </a>
 
-        <h1><span class="icon-slides-css"></span> AI Slides Creator</h1>
-        <p>Create beautiful, AI-powered presentations with visual elements. Choose your preferred AI provider below:</p>
+        <h1 class="mb-4">
+            <span class="icon-slides-css mr-2"></span> AI Slides Creator
+        </h1>
+        <p class="text-secondary mb-6">Create beautiful, AI-powered presentations with visual elements. Choose your preferred AI provider below:</p>
 
         <div class="provider-selector">
-            <div class="provider-row slides-provider-row">
-                <div class="provider-tabs slides-provider-tabs">
-                    <div class="provider-tab slides-provider-tab" data-provider="openrouter">
+            <div class="provider-row">
+                <div class="provider-tabs">
+                    <div class="provider-tab" data-provider="openrouter">
                         <span class="icon-cloud-css"></span>
                         <span>OpenRouter</span>
                     </div>
-                    <div class="provider-tab slides-provider-tab" data-provider="webllm">
+                    <div class="provider-tab" data-provider="webllm">
                         <span class="icon-rocket-css"></span>
                         <span>WebLLM</span>
                     </div>
-                    <div class="provider-tab slides-provider-tab" data-provider="ollama">
+                    <div class="provider-tab" data-provider="ollama">
                         <span class="icon-desktop-css"></span>
                         <span>Ollama</span>
                     </div>
@@ -300,8 +61,13 @@
 
         <div id="creator-container">
             <div class="loading-state">
-                <div><span class="icon-point-css"></span> Select an AI provider above to get started</div>
-                <p>Each provider offers different capabilities for creating engaging presentations.</p>
+                <div class="status-with-icon">
+                    <span class="status-icon">
+                        <span class="icon-point-css"></span>
+                    </span>
+                    <span>Select an AI provider above to get started</span>
+                </div>
+                <p class="text-secondary mt-2">Each provider offers different capabilities for creating engaging presentations.</p>
             </div>
         </div>
     </div>
@@ -374,7 +140,7 @@
             // Load provider in iframe
             const iframe = document.createElement('iframe');
             iframe.src = providerUrls[provider];
-            iframe.className = 'creator-frame slides-creator-frame';
+            iframe.className = 'creator-frame';
             iframe.title = `${provider} Slides Creator`;
 
             // Auto-resize iframe based on content

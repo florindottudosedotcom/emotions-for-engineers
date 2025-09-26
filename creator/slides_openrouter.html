@@ -21,6 +21,10 @@
     <link rel="stylesheet" href="./assets/css/components/launcher.css">
     <link rel="stylesheet" href="./assets/css/components/puter.css">
     <link rel="stylesheet" href="./assets/css/components/icons.css">
+    <link rel="stylesheet" href="./assets/css/components/tabs.css">
+    <link rel="stylesheet" href="./assets/css/components/konva-components.css">
+    <link rel="stylesheet" href="./assets/css/components/modal-system.css">
+    <link rel="stylesheet" href="./assets/css/components/accordion-toolbar.css">
     <link rel="stylesheet" href="./assets/css/core/utilities.css">
     <link rel="stylesheet" href="./assets/css/responsive/mobile.css">
     <link rel="stylesheet" href="./assets/css/themes/light.css">
@@ -36,22 +40,6 @@
         body.loaded { visibility: visible; opacity: 1; }
     </style>
 
-    <style>
-        .slides-container {
-            max-width: 1200px;
-            margin: 0 auto;
-        }
-
-        .slide-preview {
-            border: 1px solid #ddd;
-            border-radius: 8px;
-            margin: 20px 0;
-            padding: 20px;
-            background: white;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-        }
-
-    </style>
 </head>
 <body>
     <div class="container p-6">
@@ -114,9 +102,9 @@
                 <p class="text-secondary">Export your presentation with automatic translation to selected languages</p>
             </div>
             <div class="card-body">
-                <div class="export-info mb-4 p-4" style="background: var(--background-tertiary); border-radius: var(--radius-medium);">
+                <div class="export-info mb-4 p-4">
                     <p class="mb-2"><strong>💡 Multi-Language Export:</strong></p>
-                    <ul class="mb-0" style="margin-left: 1rem; line-height: 1.6;">
+                    <ul class="mb-0 export-list">
                         <li>Select multiple languages above to automatically translate your slides</li>
                         <li>Each language will be exported as a separate file</li>
                         <li>Multiple files are packaged in a ZIP for easy download</li>

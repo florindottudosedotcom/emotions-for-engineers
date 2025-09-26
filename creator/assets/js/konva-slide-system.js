@@ -370,29 +370,9 @@ class KonvaSlideSystem {
         // Create Konva stage with responsive sizing
         const canvasContainer = document.createElement('div');
         canvasContainer.id = 'konva-slide-stage';
-        canvasContainer.style.cssText = `
-            width: 100%;
-            max-width: ${this.slideWidth}px;
-            height: auto;
-            background: ${this.currentTheme.backgroundColor};
-            margin: 20px auto;
-            position: relative;
-            overflow: hidden;
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
-            border-radius: 8px;
-            touch-action: manipulation;
-            user-select: none;
-            -webkit-user-select: none;
-            -webkit-touch-callout: none;
-            -webkit-tap-highlight-color: transparent;
-        `;
-
-        // Add mobile-specific responsive behavior
-        if (window.innerWidth <= 767) {
-            canvasContainer.style.margin = '10px auto';
-            canvasContainer.style.maxWidth = '100%';
-            canvasContainer.style.borderRadius = '6px';
-        }
+        canvasContainer.className = window.innerWidth <= 767 ? 'konva-canvas-container responsive' : 'konva-canvas-container';
+        canvasContainer.style.maxWidth = `${this.slideWidth}px`;
+        canvasContainer.style.background = this.currentTheme.backgroundColor;
 
         this.container.appendChild(canvasContainer);
 
@@ -438,10 +418,10 @@ class KonvaSlideSystem {
         // Setup selection system
         this.setupSelection();
 
-        // Apply border radius to the canvas element to match container
+        // Apply canvas styling
         const canvas = this.stage.content.querySelector('canvas');
         if (canvas) {
-            canvas.style.borderRadius = '8px';
+            canvas.className = 'konva-canvas';
         }
 
         // Handle window resize
@@ -461,22 +441,49 @@ class KonvaSlideSystem {
         // Get container width - ensure we have a proper container reference
         if (!container) container = this.canvasContainer || this.container;
 
-        const containerWidth = container.clientWidth || this.container.clientWidth || this.slideWidth;
+        // Wait for container to be rendered and get proper dimensions
+        let containerWidth = 0;
+        if (container && container.clientWidth > 0) {
+            containerWidth = container.clientWidth;
+        } else if (this.container && this.container.clientWidth > 0) {
+            containerWidth = this.container.clientWidth;
+        } else {
+            // Fallback: Get parent container width or use viewport-based calculation
+            const parentContainer = container?.parentElement || this.container?.parentElement;
+            if (parentContainer && parentContainer.clientWidth > 0) {
+                containerWidth = parentContainer.clientWidth * 0.75; // Assume 75% of parent width
+            } else {
+                // Last resort: Use viewport width
+                containerWidth = Math.min(window.innerWidth * 0.6, this.slideWidth);
+            }
+        }
+
+        // Ensure minimum width
+        containerWidth = Math.max(containerWidth, 400);
+
         const maxWidth = Math.min(containerWidth - 40, this.slideWidth); // 40px for margins
 
-        // Calculate scale factor
-        this.scaleFactor = maxWidth / this.slideWidth;
+        // Calculate scale factor, ensure it's not zero
+        this.scaleFactor = Math.max(maxWidth / this.slideWidth, 0.3); // Minimum 30% scale
 
-        // Set actual dimensions
-        this.actualWidth = maxWidth;
-        this.actualHeight = this.slideHeight * this.scaleFactor;
+        // Set actual dimensions with minimums to prevent 0 size
+        this.actualWidth = Math.max(maxWidth, 400);
+        this.actualHeight = Math.max(this.slideHeight * this.scaleFactor, 300);
 
         console.log('Calculated dimensions:', {
             containerWidth,
             scaleFactor: this.scaleFactor,
             actualWidth: this.actualWidth,
-            actualHeight: this.actualHeight
+            actualHeight: this.actualHeight,
+            containerElement: container?.tagName || 'undefined',
+            containerClientWidth: container?.clientWidth || 'undefined'
         });
+
+        // Ensure stage has proper dimensions before any drawing operations
+        if (this.stage) {
+            this.stage.width(this.actualWidth);
+            this.stage.height(this.actualHeight);
+        }
     }
 
     setupResizeHandler(container) {
@@ -518,29 +525,18 @@ class KonvaSlideSystem {
     createNavigationControls() {
         const navContainer = document.createElement('div');
         navContainer.className = 'konva-slide-navigation';
-        navContainer.style.cssText = `
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 15px 20px;
-            background: rgba(255, 255, 255, 0.95);
-            border: 1px solid #e5e7eb;
-            border-radius: 8px;
-            margin-bottom: 15px;
-            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-        `;
 
         navContainer.innerHTML = `
             <div class="slide-counter">
                 <span class="current-slide">1</span> / <span class="total-slides">1</span>
             </div>
             <div class="slide-title-display">
-                <h2 id="current-slide-title" contenteditable="true" style="margin: 0; padding: 8px; border: 2px solid transparent; border-radius: 4px;">Slide Title</h2>
+                <h2 id="current-slide-title" contenteditable="true" class="slide-title-editable">Slide Title</h2>
             </div>
             <div class="navigation-buttons">
                 <button class="nav-btn undo-btn" onclick="window.konvaSlideSystem?.undo()" title="Undo (Ctrl+Z)">↶ Undo</button>
                 <button class="nav-btn redo-btn" onclick="window.konvaSlideSystem?.redo()" title="Redo (Ctrl+Y)">↷ Redo</button>
-                <span style="margin: 0 8px; border-left: 1px solid #d1d5db; height: 20px;"></span>
+                <span class="nav-btn-divider"></span>
                 <button class="nav-btn prev-btn" onclick="window.konvaSlideSystem?.previousSlide()">◀ Previous</button>
                 <button class="nav-btn next-btn" onclick="window.konvaSlideSystem?.nextSlide()">Next ▶</button>
             </div>
@@ -605,39 +601,14 @@ class KonvaSlideSystem {
         // Create main container with left sidebar layout
         const mainContainer = document.createElement('div');
         mainContainer.className = 'konva-editor-layout';
-        mainContainer.style.cssText = `
-            display: flex;
-            gap: 20px;
-            margin-top: 15px;
-            height: auto;
-            min-height: 600px;
-        `;
 
         // Create left sidebar toolbar
         const toolbar = document.createElement('div');
         toolbar.className = 'konva-slide-sidebar';
-        toolbar.style.cssText = `
-            width: 280px;
-            min-width: 280px;
-            background: rgba(255, 255, 255, 0.98);
-            border: 1px solid #e5e7eb;
-            border-radius: 12px;
-            padding: 20px 16px;
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
-            backdrop-filter: blur(10px);
-            max-height: 90vh;
-            overflow-y: auto;
-            position: sticky;
-            top: 20px;
-        `;
 
         // Create content area wrapper for slides
         const contentWrapper = document.createElement('div');
         contentWrapper.className = 'konva-content-wrapper';
-        contentWrapper.style.cssText = `
-            flex: 1;
-            min-width: 0;
-        `;
 
         toolbar.innerHTML = `
             <div class="accordion-container">
@@ -947,533 +918,7 @@ class KonvaSlideSystem {
         // Set up color scheme functionality
         this.setupColorSchemes();
 
-        // Add toolbar styles
-        if (!document.getElementById('konva-slide-toolbar-styles')) {
-            const style = document.createElement('style');
-            style.id = 'konva-slide-toolbar-styles';
-            style.textContent = `
-                .toolbar-group {
-                    display: flex;
-                    align-items: center;
-                    gap: 8px;
-                    padding: 0 12px;
-                    border-right: 1px solid #e5e7eb;
-                }
-                .toolbar-group:last-child {
-                    border-right: none;
-                }
-                .toolbar-group label {
-                    font-weight: 600;
-                    color: #374151;
-                    margin-right: 4px;
-                }
-                .tool-btn {
-                    padding: 8px 12px;
-                    border: 1px solid #d1d5db;
-                    border-radius: 6px;
-                    background: white;
-                    cursor: pointer;
-                    font-size: 13px;
-                    transition: all 0.2s ease;
-                }
-                .tool-btn:hover {
-                    background: #f3f4f6;
-                    border-color: #60a5fa;
-                    transform: translateY(-1px);
-                }
-                .delete-btn:hover {
-                    background: #fee2e2;
-                    border-color: #ef4444;
-                }
-                #font-size {
-                    width: 80px;
-                }
-                #text-color {
-                    width: 40px;
-                    height: 32px;
-                    border: 1px solid #d1d5db;
-                    border-radius: 4px;
-                    cursor: pointer;
-                }
-
-                /* Sidebar Layout */
-                .konva-slide-sidebar {
-                    scrollbar-width: thin;
-                    scrollbar-color: #d1d5db #f9fafb;
-                }
-
-                .konva-slide-sidebar::-webkit-scrollbar {
-                    width: 8px;
-                }
-
-                .konva-slide-sidebar::-webkit-scrollbar-track {
-                    background: #f9fafb;
-                    border-radius: 4px;
-                }
-
-                .konva-slide-sidebar::-webkit-scrollbar-thumb {
-                    background: #d1d5db;
-                    border-radius: 4px;
-                }
-
-                .konva-slide-sidebar::-webkit-scrollbar-thumb:hover {
-                    background: #9ca3af;
-                }
-
-                /* Accordion Container */
-                .accordion-container {
-                    border: 1px solid #e5e7eb;
-                    border-radius: 12px;
-                    overflow: hidden;
-                    background: white;
-                    margin: 0;
-                    padding: 0;
-                }
-
-                /* Dark mode for accordion container */
-                @media (prefers-color-scheme: dark) {
-                    .accordion-container {
-                        border-color: #475569 !important;
-                        background: #1E293B !important;
-                    }
-
-                    .category-header {
-                        background: #334155 !important;
-                        border-color: #475569 !important;
-                        color: #F8FAFC !important;
-                    }
-
-                    .category-header:hover {
-                        background: #475569 !important;
-                    }
-
-                    .accordion-category.expanded .category-header {
-                        background: #1E40AF !important;
-                        border-color: #475569 !important;
-                    }
-
-                    .category-icon {
-                        color: #F8FAFC !important;
-                    }
-
-                    .accordion-category.expanded .category-icon {
-                        color: #BFDBFE !important;
-                    }
-
-                    .color-scheme-tile {
-                        background: #334155 !important;
-                        border-color: #475569 !important;
-                        color: #F8FAFC !important;
-                    }
-
-                    .color-scheme-tile:hover {
-                        border-color: #60A5FA !important;
-                        background: #475569 !important;
-                    }
-
-                    .color-scheme-tile.selected {
-                        border-color: #3B82F6 !important;
-                        background: #1E40AF !important;
-                    }
-
-                    .category-content {
-                        background: #1E293B !important;
-                    }
-
-                    .sidebar-tool-btn {
-                        background: #334155 !important;
-                        border-color: #475569 !important;
-                        color: #F8FAFC !important;
-                    }
-
-                    .sidebar-tool-btn:hover {
-                        background: #475569 !important;
-                        border-color: #60A5FA !important;
-                    }
-
-                    .sidebar-tool-btn.delete-btn:hover {
-                        background: #7F1D1D !important;
-                        border-color: #EF4444 !important;
-                    }
-
-                    .sidebar-tool-btn span {
-                        color: #CBD5E1 !important;
-                    }
-
-                    .scheme-preview {
-                        border-color: rgba(148, 163, 184, 0.3) !important;
-                    }
-
-                    .edit-theme-btn {
-                        background: rgba(30, 41, 59, 0.95) !important;
-                        color: #F8FAFC !important;
-                    }
-                }
-
-                /* Accordion Categories */
-                .accordion-category {
-                    margin: 0;
-                    border: none;
-                    border-radius: 0;
-                    overflow: hidden;
-                    transition: all 0.2s ease;
-                }
-
-                .category-header {
-                    display: flex;
-                    align-items: center;
-                    gap: 12px;
-                    padding: 16px 18px;
-                    background: #f8fafc;
-                    cursor: pointer;
-                    transition: all 0.2s ease;
-                    border-top: 1px solid #e5e7eb;
-                    position: relative;
-                }
-
-                .accordion-category:first-child .category-header {
-                    border-top: none;
-                }
-
-                .category-header:hover {
-                    background: #f1f5f9;
-                }
-
-                .accordion-category.expanded .category-header {
-                    background: #eff6ff;
-                    border-bottom: 1px solid #e5e7eb;
-                }
-
-                .category-icon {
-                    font-size: 24px;
-                    line-height: 1;
-                    color: #374151;
-                    transition: all 0.2s ease;
-                    min-width: 32px;
-                    width: auto;
-                    text-align: center;
-                    display: flex;
-                    align-items: center;
-                    justify-content: center;
-                }
-
-                .accordion-category.expanded .category-icon {
-                    color: #1e40af;
-                    transform: scale(1.1);
-                }
-
-                /* Custom CSS Icons */
-                .category-icon span[class^="icon-"] {
-                    color: #374151;
-                    font-size: 20px;
-                    line-height: 1;
-                    display: inline-block;
-                    width: 20px;
-                    height: 20px;
-                    position: relative;
-                }
-
-                .accordion-category.expanded .category-icon span[class^="icon-"] {
-                    color: #1e40af;
-                }
-
-                /* Icon definitions using CSS */
-                .icon-tint:before { content: "●"; }
-                .icon-plus:before { content: "+"; font-weight: bold; }
-                .icon-stop:before { content: "■"; }
-                .icon-picture:before { content: "🖼"; }
-                .icon-th-large:before { content: "▦"; }
-                .icon-flash:before { content: "✦"; }
-                .icon-play-circle:before { content: "▶"; }
-                .icon-brush:before { content: "🖌"; }
-                .icon-cog:before { content: "⚙"; }
-
-                .category-title {
-                    font-size: 15px;
-                    font-weight: 600;
-                    color: #374151;
-                    flex: 1;
-                    transition: color 0.2s ease;
-                }
-
-                .accordion-category.expanded .category-title {
-                    color: #1e40af;
-                }
-
-                .chevron {
-                    font-size: 16px;
-                    color: #9ca3af;
-                    transition: all 0.2s ease;
-                    font-weight: bold;
-                }
-
-                .accordion-category.expanded .chevron {
-                    transform: rotate(90deg);
-                    color: #2563eb;
-                }
-
-                .category-content {
-                    padding: 0;
-                    margin: 0;
-                    max-height: 0;
-                    overflow: hidden;
-                    transition: all 0.3s ease;
-                    background: #fafbfc;
-                    opacity: 0;
-                    border: none;
-                    box-sizing: border-box;
-                }
-
-                .accordion-category.expanded .category-content {
-                    padding: 18px;
-                    max-height: 500px; /* Large enough for content but still allows animation */
-                    opacity: 1;
-                    overflow: visible; /* Ensure content isn't clipped */
-                }
-
-                /* Content Area Reset */
-                .category-content * {
-                    margin: 0 !important;
-                    box-sizing: border-box;
-                }
-
-                .category-content {
-                    margin: 0 !important;
-                }
-
-                /* Color Schemes Grid */
-                .color-schemes-grid {
-                    display: grid;
-                    grid-template-columns: 1fr 1fr;
-                    gap: 12px;
-                    margin: 0;
-                    min-height: fit-content;
-                    width: 100%;
-                }
-
-                .color-scheme-tile {
-                    display: flex;
-                    flex-direction: column;
-                    align-items: center;
-                    padding: 12px 8px;
-                    border: 2px solid #e5e7eb;
-                    border-radius: 8px;
-                    cursor: pointer;
-                    transition: all 0.2s ease;
-                    background: white;
-                    min-height: 80px;
-                    width: 100%;
-                    box-sizing: border-box;
-                }
-
-                .color-scheme-tile:hover {
-                    border-color: #60a5fa;
-                    background: #f8fafc;
-                }
-
-                .color-scheme-tile.selected {
-                    border-color: #2563eb;
-                    background: #eff6ff;
-                }
-
-                .scheme-preview {
-                    display: flex;
-                    flex-direction: row;
-                    height: 40px;
-                    border-radius: 4px;
-                    overflow: hidden;
-                    position: relative;
-                    margin-bottom: 6px;
-                    border: 1px solid rgba(0, 0, 0, 0.1);
-                    width: 100%;
-                }
-
-                .color-stripe {
-                    flex: 1 1 33.333%;
-                    height: 100%;
-                    border: none;
-                    display: block;
-                    min-width: 12px;
-                    width: auto;
-                }
-
-                .edit-theme-btn {
-                    position: absolute;
-                    top: 4px;
-                    right: 4px;
-                    width: 20px;
-                    height: 20px;
-                    background: rgba(255, 255, 255, 0.95);
-                    border-radius: 50%;
-                    display: none;
-                    align-items: center;
-                    justify-content: center;
-                    cursor: pointer;
-                    font-size: 12px;
-                    color: #666;
-                    border: 1px solid #ddd;
-                    font-weight: normal;
-                    z-index: 10;
-                    transition: all 0.2s ease;
-                    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-                }
-
-                .edit-theme-btn:hover {
-                    background: rgba(255, 255, 255, 1);
-                    color: #333;
-                    transform: scale(1.1);
-                }
-
-                .scheme-name {
-                    font-size: 11px;
-                    font-weight: 600;
-                    color: #6b7280;
-                    text-transform: uppercase;
-                    letter-spacing: 0.5px;
-                }
-
-                /* Tool Grid */
-                .tool-grid {
-                    display: grid;
-                    grid-template-columns: 1fr 1fr;
-                    gap: 8px;
-                    margin: 0;
-                }
-
-                .sidebar-tool-btn {
-                    display: flex;
-                    flex-direction: column;
-                    align-items: center;
-                    gap: 6px;
-                    padding: 12px 8px;
-                    border: 1px solid #e5e7eb;
-                    border-radius: 8px;
-                    background: white;
-                    cursor: pointer;
-                    transition: all 0.2s ease;
-                    text-decoration: none;
-                    color: inherit;
-                    min-height: 60px;
-                }
-
-                .sidebar-tool-btn:hover {
-                    background: #f8fafc;
-                    border-color: #60a5fa;
-                    transform: translateY(-1px);
-                    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
-                }
-
-                .sidebar-tool-btn.delete-btn:hover {
-                    background: #fef2f2;
-                    border-color: #ef4444;
-                }
-
-                .tool-icon {
-                    font-size: 20px;
-                    line-height: 1;
-                    filter: grayscale(0.2);
-                }
-
-                .sidebar-tool-btn:hover .tool-icon {
-                    filter: grayscale(0);
-                    transform: scale(1.1);
-                }
-
-                .sidebar-tool-btn span {
-                    font-size: 11px;
-                    font-weight: 600;
-                    color: #6b7280;
-                    text-align: center;
-                    line-height: 1.2;
-                }
-
-                /* Style Controls */
-                .style-controls {
-                    display: flex;
-                    flex-direction: column;
-                    gap: 12px;
-                    margin: 0;
-                }
-
-                .control-group {
-                    display: flex;
-                    flex-direction: column;
-                    gap: 6px;
-                }
-
-                .control-group label {
-                    font-size: 12px;
-                    font-weight: 600;
-                    color: #6b7280;
-                }
-
-                .control-group input[type="color"] {
-                    width: 100%;
-                    height: 36px;
-                    border: 1px solid #e5e7eb;
-                    border-radius: 6px;
-                    cursor: pointer;
-                    background: white;
-                }
-
-                .control-group input[type="range"] {
-                    width: 100%;
-                    height: 6px;
-                    background: #e5e7eb;
-                    border-radius: 3px;
-                    outline: none;
-                    cursor: pointer;
-                }
-
-                .control-group input[type="range"]::-webkit-slider-thumb {
-                    appearance: none;
-                    width: 16px;
-                    height: 16px;
-                    background: #2563eb;
-                    border-radius: 50%;
-                    cursor: pointer;
-                }
-
-                .control-group input[type="range"]::-moz-range-thumb {
-                    width: 16px;
-                    height: 16px;
-                    background: #2563eb;
-                    border-radius: 50%;
-                    cursor: pointer;
-                    border: none;
-                }
-
-                /* Responsive adjustments */
-                @media (max-width: 1200px) {
-                    .konva-slide-sidebar {
-                        width: 240px;
-                        min-width: 240px;
-                    }
-                }
-
-                @media (max-width: 768px) {
-                    .konva-editor-layout {
-                        flex-direction: column;
-                    }
-
-                    .konva-slide-sidebar {
-                        width: 100%;
-                        position: static;
-                        max-height: none;
-                        order: 2;
-                    }
-
-                    .tool-grid {
-                        grid-template-columns: repeat(4, 1fr);
-                    }
-
-                    .color-schemes-grid {
-                        grid-template-columns: repeat(4, 1fr);
-                    }
-                }
-            `;
-            document.head.appendChild(style);
-        }
+        // Toolbar and accordion styles now loaded from accordion-toolbar.css module
     }
 
     // Load slides from the AI-generated data format
@@ -1538,27 +983,46 @@ class KonvaSlideSystem {
         }
 
         // Force recalculation of dimensions after slides are loaded
-        setTimeout(() => {
+        // Use requestAnimationFrame for better timing
+        const initializeSlides = () => {
             console.log('Forcing resize and redraw after slide load');
-            this.calculateResponsiveDimensions();
-            this.stage.width(this.actualWidth);
-            this.stage.height(this.actualHeight);
-            this.showSlide(this.currentSlideIndex);
-            this.updateNavigation();
 
-            // Clear initialization flag - now ready for state saving
-            this.isInitializing = false;
-            console.log('✅ Slide initialization complete - state saving now enabled');
-
-            // Process any queued save operations
-            if (this.pendingSaveOperations.length > 0) {
-                console.log(`🔄 Processing ${this.pendingSaveOperations.length} queued save operations`);
-                // Execute the last save operation (most recent state)
-                const lastSave = this.pendingSaveOperations.pop();
-                this.pendingSaveOperations = []; // Clear the queue
-                if (lastSave) lastSave();
+            // Ensure container is ready
+            if (!this.canvasContainer || this.canvasContainer.clientWidth === 0) {
+                console.log('Container not ready, retrying...');
+                setTimeout(initializeSlides, 50);
+                return;
             }
-        }, 100);
+
+            this.calculateResponsiveDimensions();
+
+            // Verify stage has valid dimensions
+            if (this.actualWidth > 0 && this.actualHeight > 0) {
+                this.stage.width(this.actualWidth);
+                this.stage.height(this.actualHeight);
+                this.showSlide(this.currentSlideIndex);
+                this.updateNavigation();
+
+                // Clear initialization flag - now ready for state saving
+                this.isInitializing = false;
+                console.log('✅ Slide initialization complete - state saving now enabled');
+
+                // Process any queued save operations
+                if (this.pendingSaveOperations.length > 0) {
+                    console.log(`🔄 Processing ${this.pendingSaveOperations.length} queued save operations`);
+                    // Execute the last save operation (most recent state)
+                    const lastSave = this.pendingSaveOperations.pop();
+                    this.pendingSaveOperations = []; // Clear the queue
+                    if (lastSave) lastSave();
+                }
+            } else {
+                console.error('Invalid stage dimensions, retrying...');
+                setTimeout(initializeSlides, 100);
+            }
+        };
+
+        // Start initialization after a brief delay to ensure DOM is ready
+        setTimeout(initializeSlides, 150);
     }
 
     addSlideFromData(slideData) {
@@ -1948,11 +1412,11 @@ class KonvaSlideSystem {
 
         // Add visual feedback
         textObj.on('mouseenter', () => {
-            this.stage.container().style.cursor = 'pointer';
+            this.stage.container().className = 'konva-canvas-pointer';
         });
 
         textObj.on('mouseleave', () => {
-            this.stage.container().style.cursor = 'default';
+            this.stage.container().className = 'konva-canvas-default';
         });
     }
 
@@ -1961,11 +1425,11 @@ class KonvaSlideSystem {
 
         // Add visual feedback
         shapeObj.on('mouseenter', () => {
-            this.stage.container().style.cursor = 'move';
+            this.stage.container().className = 'konva-canvas-move';
         });
 
         shapeObj.on('mouseleave', () => {
-            this.stage.container().style.cursor = 'default';
+            this.stage.container().className = 'konva-canvas-default';
         });
     }
 
@@ -2009,7 +1473,40 @@ class KonvaSlideSystem {
             this.layer.add(this.transformer);
         }
 
-        this.layer.draw();
+        // Validate canvas dimensions and draw safely
+        if (this.validateCanvasDimensions()) {
+            try {
+                this.layer.draw();
+                console.log(`✅ Slide ${index + 1} drawn successfully`);
+            } catch (drawError) {
+                console.error(`❌ Failed to draw slide ${index + 1}:`, drawError);
+                // Try to recover with basic drawing
+                this.layer.clear();
+                this.layer.add(backgroundRect);
+                try {
+                    this.layer.draw();
+                    console.log(`🔄 Recovery draw successful for slide ${index + 1}`);
+                } catch (recoveryError) {
+                    console.error(`❌ Recovery draw also failed:`, recoveryError);
+                    // Last resort: wait and retry
+                    setTimeout(() => {
+                        if (this.validateCanvasDimensions()) {
+                            try {
+                                this.layer.draw();
+                                console.log(`🔄 Delayed recovery draw successful for slide ${index + 1}`);
+                            } catch (finalError) {
+                                console.error(`❌ Final recovery attempt failed:`, finalError);
+                            }
+                        }
+                    }, 100);
+                }
+            }
+        } else {
+            console.error(`❌ Canvas validation failed for slide ${index + 1}`);
+            // Force recalculate dimensions and retry with exponential backoff
+            this.retrySlideShow(index, 0);
+        }
+
         this.currentSlideIndex = index;
 
         // Apply any pending animations now that objects are in the layer
@@ -2233,14 +1730,14 @@ class KonvaSlideSystem {
         imageObj.on('dragend', () => this.saveSlideState());
 
         imageObj.on('mouseenter', () => {
-            this.stage.container().style.cursor = 'pointer';
+            this.stage.container().className = 'konva-canvas-pointer';
             imageObj.stroke(this.currentTheme.textColor);
             imageObj.strokeWidth(2 * this.scaleFactor);
             this.layer.draw();
         });
 
         imageObj.on('mouseleave', () => {
-            this.stage.container().style.cursor = 'default';
+            this.stage.container().className = 'konva-canvas-default';
             imageObj.stroke(this.currentTheme.borderColor);
             imageObj.strokeWidth(1 * this.scaleFactor);
             this.layer.draw();
@@ -3997,51 +3494,150 @@ class KonvaSlideSystem {
         return shape;
     }
 
+    validateCanvasDimensions() {
+        // Check if stage and layer are valid and have proper dimensions
+        if (!this.stage || !this.layer) {
+            console.warn('Stage or layer not initialized');
+            return false;
+        }
+
+        if (!this.actualWidth || !this.actualHeight ||
+            this.actualWidth <= 0 || this.actualHeight <= 0) {
+            console.warn('Invalid canvas dimensions:', {
+                actualWidth: this.actualWidth,
+                actualHeight: this.actualHeight
+            });
+            return false;
+        }
+
+        // Ensure stage dimensions match our calculated dimensions
+        if (this.stage.width() !== this.actualWidth || this.stage.height() !== this.actualHeight) {
+            console.log('Stage dimensions mismatch, updating...', {
+                stageWidth: this.stage.width(),
+                stageHeight: this.stage.height(),
+                actualWidth: this.actualWidth,
+                actualHeight: this.actualHeight
+            });
+            this.stage.width(this.actualWidth);
+            this.stage.height(this.actualHeight);
+        }
+
+        return true;
+    }
+
+    retrySlideShow(index, retryCount = 0) {
+        const maxRetries = 3;
+        const baseDelay = 100;
+
+        if (retryCount >= maxRetries) {
+            console.error(`❌ Failed to show slide ${index + 1} after ${maxRetries} retries`);
+            return;
+        }
+
+        const delay = baseDelay * Math.pow(2, retryCount); // Exponential backoff
+        console.log(`🔄 Retrying slide ${index + 1} show (attempt ${retryCount + 1}/${maxRetries}) in ${delay}ms`);
+
+        setTimeout(() => {
+            // Force recalculation
+            this.calculateResponsiveDimensions();
+
+            if (this.validateCanvasDimensions()) {
+                try {
+                    this.layer.draw();
+                    console.log(`✅ Slide ${index + 1} retry successful`);
+                } catch (error) {
+                    console.error(`❌ Slide ${index + 1} retry failed:`, error);
+                    this.retrySlideShow(index, retryCount + 1);
+                }
+            } else {
+                this.retrySlideShow(index, retryCount + 1);
+            }
+        }, delay);
+    }
+
     applySlideTransition(transitionType, callback) {
+        // Validate canvas dimensions before applying transitions
+        if (!this.validateCanvasDimensions()) {
+            console.warn('Canvas dimensions invalid during transition, executing callback without animation');
+            if (callback) callback();
+            return;
+        }
+
+        const safeCallback = () => {
+            if (callback) {
+                try {
+                    callback();
+                } catch (error) {
+                    console.error('Error during slide transition callback:', error);
+                }
+            }
+        };
+
         const transitions = {
             fade: () => {
                 this.layer.opacity(0);
-                if (callback) callback();
+                safeCallback();
                 const tween = new Konva.Tween({
                     node: this.layer,
                     duration: 0.5,
                     opacity: 1,
-                    easing: Konva.Easings.EaseInOut
+                    easing: Konva.Easings.EaseInOut,
+                    onFinish: () => {
+                        // Ensure layer is properly drawn after transition
+                        if (this.validateCanvasDimensions()) {
+                            this.layer.draw();
+                        }
+                    }
                 });
                 tween.play();
             },
             slideLeft: () => {
                 this.layer.x(this.actualWidth);
-                if (callback) callback();
+                safeCallback();
                 const tween = new Konva.Tween({
                     node: this.layer,
                     duration: 0.6,
                     x: 0,
-                    easing: Konva.Easings.EaseOut
+                    easing: Konva.Easings.EaseOut,
+                    onFinish: () => {
+                        if (this.validateCanvasDimensions()) {
+                            this.layer.draw();
+                        }
+                    }
                 });
                 tween.play();
             },
             slideRight: () => {
                 this.layer.x(-this.actualWidth);
-                if (callback) callback();
+                safeCallback();
                 const tween = new Konva.Tween({
                     node: this.layer,
                     duration: 0.6,
                     x: 0,
-                    easing: Konva.Easings.EaseOut
+                    easing: Konva.Easings.EaseOut,
+                    onFinish: () => {
+                        if (this.validateCanvasDimensions()) {
+                            this.layer.draw();
+                        }
+                    }
                 });
                 tween.play();
             },
             scale: () => {
                 this.layer.scaleX(0);
                 this.layer.scaleY(0);
-                if (callback) callback();
+                safeCallback();
                 const tween = new Konva.Tween({
                     node: this.layer,
                     duration: 0.5,
                     scaleX: 1,
                     scaleY: 1,
-                    easing: Konva.Easings.BackEaseOut
+                    easing: Konva.Easings.BackEaseOut,
+                    onFinish: () => {
+                        if (this.validateCanvasDimensions()) {
+                            this.layer.draw();
+                        }
+                    }
                 });
                 tween.play();
             }
@@ -4050,7 +3646,7 @@ class KonvaSlideSystem {
         if (transitions[transitionType]) {
             transitions[transitionType]();
         } else {
-            if (callback) callback();
+            safeCallback();
         }
     }
 

@@ -1,0 +1,708 @@
+/**
+ * Konva Slide System Components - Following CLAUDE.md Guidelines
+ * Styles for the interactive slide editor interface
+ */
+
+/* ========================================
+   SLIDE NAVIGATION SYSTEM
+   ======================================== */
+
+/* Main navigation container - Enhanced responsive design */
+.konva-slide-navigation {
+    display: grid;
+    grid-template-columns: auto 1fr auto;
+    grid-template-areas: "counter title buttons";
+    align-items: center;
+    gap: var(--spacing-3);
+    padding: var(--spacing-3) var(--spacing-4);
+    background: var(--surface-elevated);
+    border: 1px solid var(--border-light);
+    border-radius: var(--radius-medium);
+    margin-bottom: var(--spacing-3);
+    box-shadow: var(--shadow-medium);
+    min-height: 64px; /* Ensure consistent height */
+}
+
+/* Slide counter display - Grid positioned */
+.slide-counter {
+    grid-area: counter;
+    font-weight: var(--font-weight-medium);
+    color: var(--text-secondary);
+    font-size: var(--font-size-sm);
+    min-width: 80px;
+    padding: var(--spacing-2) var(--spacing-3);
+    background: var(--background-secondary);
+    border-radius: var(--radius-small);
+    text-align: center;
+    border: 1px solid var(--border-light);
+}
+
+.current-slide {
+    color: var(--primary-color);
+    font-weight: var(--font-weight-bold);
+    font-size: var(--font-size-base);
+}
+
+.total-slides {
+    color: var(--text-secondary);
+}
+
+/* Slide title display area - Grid positioned */
+.slide-title-display {
+    grid-area: title;
+    margin: 0;
+}
+
+.slide-title-editable {
+    margin: 0;
+    padding: var(--spacing-3);
+    border: 2px solid transparent;
+    border-radius: var(--radius-medium);
+    background: transparent;
+    color: var(--text-primary);
+    font-size: var(--font-size-lg);
+    font-weight: var(--font-weight-semibold);
+    text-align: center;
+    cursor: text;
+    transition: all var(--transition-normal);
+    width: 100%;
+    min-height: 48px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.slide-title-editable:hover {
+    border-color: var(--border-medium);
+    background: var(--background-secondary);
+}
+
+.slide-title-editable:focus {
+    outline: none;
+    border-color: var(--primary-color);
+    background: var(--surface);
+    box-shadow: var(--shadow-small);
+}
+
+/* Navigation button group - Grid positioned */
+.navigation-buttons {
+    grid-area: buttons;
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-2);
+}
+
+.nav-btn {
+    padding: var(--spacing-3) var(--spacing-4);
+    background: var(--surface);
+    border: 1px solid var(--border-light);
+    border-radius: var(--radius-medium);
+    color: var(--text-primary);
+    font-size: var(--font-size-sm);
+    font-weight: var(--font-weight-semibold);
+    cursor: pointer;
+    transition: all var(--transition-normal);
+    white-space: nowrap;
+    min-height: 44px; /* Touch-friendly minimum */
+    min-width: 44px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+    overflow: hidden;
+}
+
+.nav-btn::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+    transition: left var(--transition-normal);
+}
+
+.nav-btn:hover:not(:disabled) {
+    background: var(--primary-light);
+    border-color: var(--primary-color);
+    color: var(--primary-color);
+    transform: translateY(-1px);
+    box-shadow: var(--shadow-small);
+}
+
+.nav-btn:hover:not(:disabled)::before {
+    left: 100%;
+}
+
+.nav-btn:disabled {
+    opacity: 0.4;
+    cursor: not-allowed;
+    background: var(--background-secondary);
+    color: var(--text-muted);
+}
+
+.nav-btn:active:not(:disabled) {
+    transform: translateY(0);
+    box-shadow: none;
+}
+
+.nav-btn:focus {
+    outline: 2px solid var(--primary-color);
+    outline-offset: 2px;
+}
+
+/* Keyboard navigation support */
+@media (prefers-reduced-motion: no-preference) {
+    .nav-btn,
+    .slide-title-editable,
+    .konva-canvas-wrapper {
+        transition: all var(--transition-normal);
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .nav-btn,
+    .slide-title-editable,
+    .konva-canvas-wrapper,
+    .konva-editor-layout,
+    .konva-slide-sidebar {
+        transition: none;
+    }
+
+    .nav-btn::before {
+        transition: none;
+    }
+}
+
+/* Button divider */
+.nav-btn-divider {
+    margin: 0 var(--spacing-2);
+    border-left: 1px solid var(--border-light);
+    height: 20px;
+}
+
+/* ========================================
+   CANVAS CONTAINER SYSTEM
+   ======================================== */
+
+/* Main canvas container - Improved visibility and responsive sizing */
+.konva-canvas-container {
+    position: relative;
+    width: 100%;
+    max-width: none; /* Remove max-width constraint */
+    margin: var(--spacing-2) 0;
+    padding: var(--spacing-4);
+    background: var(--surface);
+    border: 1px solid var(--border-light);
+    border-radius: var(--radius-medium);
+    box-shadow: var(--shadow-medium);
+    overflow: visible; /* Ensure content is visible */
+    min-height: 500px; /* Guarantee minimum visible area */
+}
+
+.konva-canvas-container.responsive {
+    margin: var(--spacing-1) 0;
+    padding: var(--spacing-3);
+    border-radius: var(--radius-small);
+    min-height: 400px;
+}
+
+/* Canvas wrapper for proper centering and aspect ratio */
+.konva-canvas-wrapper {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 450px;
+    border-radius: var(--radius-small);
+    overflow: visible; /* Changed from hidden to visible */
+    position: relative;
+    background: var(--background-secondary);
+    border: 2px dashed var(--border-light);
+    transition: all var(--transition-normal);
+}
+
+.konva-canvas-wrapper:hover {
+    border-color: var(--primary-color);
+    background: var(--primary-light);
+}
+
+/* Canvas element styling - Enhanced visibility */
+.konva-canvas {
+    border-radius: var(--radius-small);
+    box-shadow: var(--shadow-medium);
+    max-width: 100%;
+    height: auto;
+    background: #ffffff; /* Ensure white background for slides */
+    border: 1px solid var(--border-light);
+}
+
+/* Canvas loading state */
+.konva-canvas-wrapper.loading {
+    background: var(--background-secondary);
+}
+
+.konva-canvas-wrapper.loading::before {
+    content: 'Loading slide editor...';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    color: var(--text-secondary);
+    font-size: var(--font-size-lg);
+    font-weight: var(--font-weight-medium);
+    z-index: 1;
+}
+
+/* Canvas responsive sizing enhancements */
+@media (max-width: 1199px) {
+    .konva-canvas-container {
+        padding: var(--spacing-3);
+        min-height: 450px;
+    }
+
+    .konva-canvas-wrapper {
+        min-height: 400px;
+    }
+}
+
+@media (max-width: 767px) {
+    .konva-canvas-container {
+        padding: var(--spacing-2);
+        min-height: 350px;
+        margin: var(--spacing-1) 0;
+    }
+
+    .konva-canvas-wrapper {
+        min-height: 300px;
+    }
+}
+
+/* ========================================
+   RESPONSIVE GRID LAYOUT SYSTEM
+   ======================================== */
+
+/* Main editor layout container - CSS Grid based */
+.konva-editor-layout {
+    display: grid;
+    grid-template-columns: minmax(240px, 25%) 1fr;
+    grid-template-areas: "sidebar content";
+    gap: var(--spacing-4);
+    margin-top: var(--spacing-4);
+    min-height: 600px;
+    width: 100%;
+    position: relative;
+    overflow: hidden;
+}
+
+/* Responsive sidebar with smart width management */
+.konva-slide-sidebar {
+    grid-area: sidebar;
+    background: var(--surface-elevated);
+    border: 1px solid var(--border-light);
+    border-radius: var(--radius-large);
+    padding: var(--spacing-4);
+    box-shadow: var(--shadow-medium);
+    backdrop-filter: blur(10px);
+    max-height: 85vh;
+    overflow-y: auto;
+    position: relative;
+    transition: all var(--transition-normal);
+    z-index: 10;
+}
+
+/* Content wrapper for slides and navigation */
+.konva-content-wrapper {
+    grid-area: content;
+    display: flex;
+    flex-direction: column;
+    min-width: 0; /* Prevents grid item from overflowing */
+    position: relative;
+}
+
+/* ========================================
+   RESPONSIVE BREAKPOINT SYSTEM
+   ======================================== */
+
+/* Tablet: 768px-1199px - 2-column layout with collapsible sidebar */
+@media (max-width: 1199px) {
+    .konva-editor-layout {
+        grid-template-columns: minmax(200px, 22%) 1fr;
+        gap: var(--spacing-3);
+    }
+
+    .konva-slide-sidebar {
+        padding: var(--spacing-3);
+    }
+}
+
+/* Small Tablet: 768px-1023px - Compact 2-column */
+@media (max-width: 1023px) {
+    .konva-editor-layout {
+        grid-template-columns: minmax(180px, 20%) 1fr;
+        gap: var(--spacing-2);
+    }
+}
+
+/* Mobile: 320px-767px - Stacked layout with collapsible sidebar */
+@media (max-width: 767px) {
+    .konva-editor-layout {
+        display: flex;
+        flex-direction: column;
+        gap: var(--spacing-3);
+    }
+
+    .konva-slide-sidebar {
+        order: 2; /* Move sidebar below content on mobile */
+        max-height: 50vh;
+        border-radius: var(--radius-medium);
+        margin: 0;
+    }
+
+    .konva-content-wrapper {
+        order: 1;
+        width: 100%;
+    }
+}
+
+/* Large Mobile: 480px-767px - Improved spacing */
+@media (min-width: 480px) and (max-width: 767px) {
+    .konva-slide-sidebar {
+        max-height: 60vh;
+    }
+}
+
+/* ========================================
+   NAVIGATION RESPONSIVE ENHANCEMENTS
+   ======================================== */
+
+/* Mobile navigation improvements */
+@media (max-width: 767px) {
+    .konva-slide-navigation {
+        grid-template-columns: auto 1fr;
+        grid-template-areas:
+            "counter buttons"
+            "title title";
+        gap: var(--spacing-2);
+        padding: var(--spacing-3);
+        min-height: auto;
+    }
+
+    .slide-title-display {
+        margin-top: var(--spacing-2);
+    }
+
+    .slide-title-editable {
+        font-size: var(--font-size-base);
+        padding: var(--spacing-2);
+        min-height: 40px;
+    }
+
+    .navigation-buttons {
+        gap: var(--spacing-1);
+    }
+
+    .nav-btn {
+        padding: var(--spacing-2) var(--spacing-3);
+        font-size: var(--font-size-xs);
+        min-height: 40px;
+        min-width: 40px;
+    }
+
+    .slide-counter {
+        min-width: 70px;
+        font-size: var(--font-size-xs);
+    }
+}
+
+/* Small mobile adjustments */
+@media (max-width: 480px) {
+    .konva-slide-navigation {
+        padding: var(--spacing-2);
+    }
+
+    .navigation-buttons {
+        flex-wrap: wrap;
+    }
+
+    .nav-btn {
+        padding: var(--spacing-2);
+        min-width: 36px;
+        min-height: 36px;
+    }
+
+    .slide-counter {
+        min-width: 60px;
+        padding: var(--spacing-1) var(--spacing-2);
+    }
+}
+
+/* Main toolbar container */
+.konva-main-container {
+    position: relative;
+    background: var(--surface);
+    border-radius: var(--radius-medium);
+    box-shadow: var(--shadow-medium);
+    overflow: hidden;
+    margin: var(--spacing-6) 0;
+}
+
+/* Toolbar styling */
+.konva-toolbar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: var(--spacing-3) var(--spacing-6);
+    background: var(--background-secondary);
+    border-bottom: 1px solid var(--border-light);
+    gap: var(--spacing-4);
+}
+
+/* ========================================
+   CURSOR STATES
+   ======================================== */
+
+/* Canvas cursor states */
+.konva-canvas-pointer {
+    cursor: pointer !important;
+}
+
+.konva-canvas-move {
+    cursor: move !important;
+}
+
+.konva-canvas-default {
+    cursor: default !important;
+}
+
+.konva-canvas-text {
+    cursor: text !important;
+}
+
+.konva-canvas-crosshair {
+    cursor: crosshair !important;
+}
+
+/* ========================================
+   SLIDE EDITING INTERFACE
+   ======================================== */
+
+/* Text editing interface */
+.konva-text-editor {
+    position: absolute;
+    z-index: var(--z-tooltip);
+    background: var(--surface);
+    border: 2px solid var(--primary-color);
+    border-radius: var(--radius-small);
+    padding: var(--spacing-2);
+    font-family: var(--font-family);
+    font-size: inherit;
+    color: var(--text-primary);
+    outline: none;
+    box-shadow: var(--shadow-medium);
+    resize: none;
+    overflow: hidden;
+    min-width: 100px;
+    min-height: 24px;
+}
+
+.konva-text-editor:focus {
+    border-color: var(--primary-dark);
+}
+
+/* Selection indicators */
+.konva-selection-box {
+    border: 2px solid var(--primary-color);
+    border-radius: var(--radius-small);
+    background: rgba(var(--primary-rgb), 0.1);
+}
+
+/* ========================================
+   RESPONSIVE DESIGN
+   ======================================== */
+
+/* Mobile: 320px-767px */
+@media (max-width: 767px) {
+    .konva-slide-navigation {
+        flex-direction: column;
+        gap: var(--spacing-3);
+        padding: var(--spacing-4);
+    }
+
+    .slide-title-display {
+        margin: 0;
+        order: -1;
+    }
+
+    .slide-title-editable {
+        font-size: var(--font-size-base);
+        min-width: 0;
+        width: 100%;
+    }
+
+    .navigation-buttons {
+        flex-wrap: wrap;
+        justify-content: center;
+        gap: var(--spacing-1);
+    }
+
+    .nav-btn {
+        padding: var(--spacing-2);
+        font-size: var(--font-size-xs);
+        min-width: 0;
+    }
+
+    .konva-canvas-container {
+        padding: var(--spacing-4);
+        margin: var(--spacing-2) 0;
+    }
+
+    .konva-toolbar {
+        flex-direction: column;
+        gap: var(--spacing-2);
+        padding: var(--spacing-4);
+    }
+
+    .konva-content-wrapper {
+        padding: var(--spacing-4);
+        min-height: 300px;
+    }
+}
+
+/* Tablet: 768px-1023px */
+@media (min-width: 768px) and (max-width: 1023px) {
+    .konva-slide-navigation {
+        padding: var(--spacing-3) var(--spacing-5);
+    }
+
+    .slide-title-editable {
+        font-size: var(--font-size-base);
+    }
+
+    .konva-canvas-container {
+        padding: var(--spacing-5);
+    }
+}
+
+/* Desktop: 1024px+ */
+@media (min-width: 1024px) {
+    .nav-btn:hover:not(:disabled) {
+        transform: translateY(-1px);
+        box-shadow: var(--shadow-small);
+    }
+
+    .konva-canvas-container:hover {
+        box-shadow: var(--shadow-large);
+    }
+}
+
+/* ========================================
+   DARK MODE ADAPTATIONS
+   ======================================== */
+
+@media (prefers-color-scheme: dark) {
+    .konva-slide-navigation {
+        background: var(--surface-elevated);
+        border-color: var(--border-light);
+    }
+
+    .slide-title-editable {
+        color: var(--text-primary);
+    }
+
+    .slide-title-editable:hover {
+        border-color: var(--border-medium);
+    }
+
+    .slide-title-editable:focus {
+        background: var(--surface);
+        border-color: var(--primary-color);
+    }
+
+    .nav-btn {
+        background: var(--surface);
+        border-color: var(--border-light);
+        color: var(--text-primary);
+    }
+
+    .nav-btn:hover:not(:disabled) {
+        background: var(--background-tertiary);
+        border-color: var(--primary-color);
+        color: var(--primary-color);
+    }
+
+    .nav-btn:disabled {
+        background: var(--background-secondary);
+        color: var(--text-disabled);
+        border-color: var(--border-light);
+    }
+
+    .konva-canvas-container {
+        background: var(--surface);
+        border-color: var(--border-light);
+    }
+
+    .konva-slide-sidebar {
+        background: var(--surface-elevated);
+        border-color: var(--border-light);
+    }
+
+    .konva-toolbar {
+        background: var(--background-secondary);
+        border-color: var(--border-light);
+    }
+
+    .konva-text-editor {
+        background: var(--surface);
+        color: var(--text-primary);
+        border-color: var(--primary-color);
+    }
+}
+
+/* ========================================
+   UTILITY CLASSES
+   ======================================== */
+
+.konva-hidden {
+    display: none !important;
+}
+
+.konva-visible {
+    display: block !important;
+}
+
+.konva-loading {
+    opacity: 0.6;
+    pointer-events: none;
+}
+
+.konva-disabled {
+    opacity: 0.5;
+    pointer-events: none;
+    cursor: not-allowed;
+}
+
+/* Animation utilities */
+.konva-fade-in {
+    animation: fadeIn var(--transition-normal) ease-out;
+}
+
+.konva-slide-up {
+    animation: slideUp var(--transition-normal) ease-out;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
+
+@keyframes slideUp {
+    from {
+        opacity: 0;
+        transform: translateY(var(--spacing-4));
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}

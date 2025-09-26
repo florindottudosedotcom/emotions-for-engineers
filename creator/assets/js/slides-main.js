@@ -300,13 +300,21 @@ class SlidesCreatorApp {
     setupEventListeners() {
         // State persistence (debounced)
         const debouncedSave = debounce(saveState, 300);
+        const debouncedFormSave = debounce(() => this.saveFormState(), 300);
 
         // Form input listeners
         if (this.dom.presentationTopicTextarea) {
-            Events.on(this.dom.presentationTopicTextarea, 'input', debouncedSave);
+            Events.on(this.dom.presentationTopicTextarea, 'input', () => {
+                debouncedSave();
+                debouncedFormSave();
+            });
         }
         if (this.dom.numSlidesSelect) {
-            Events.on(this.dom.numSlidesSelect, 'change', debouncedSave);
+            Events.on(this.dom.numSlidesSelect, 'change', () => {
+                debouncedSave();
+                debouncedFormSave();
+                logger.debug('Number of slides changed to:', this.dom.numSlidesSelect.value);
+            });
         }
 
         // Button listeners
@@ -364,6 +372,9 @@ class SlidesCreatorApp {
      * Generate slides using AI
      */
     async generateSlides() {
+        // Force save form state before generation to ensure persistence
+        this.saveFormState();
+
         const topic = this.dom.presentationTopicTextarea?.value?.trim();
         const numSlides = parseInt(this.dom.numSlidesSelect?.value || '8');
 
@@ -376,6 +387,14 @@ class SlidesCreatorApp {
             this.components.generationStatus?.showError('No AI provider available');
             return;
         }
+
+        // Save pre-generation state with timestamp for recovery
+        appState.set('lastGenerationAttempt', {
+            topic,
+            numSlides,
+            timestamp: Date.now(),
+            provider: this.currentProvider.name
+        });
 
         try {
             this.components.generationStatus?.showLoading('Generating presentation...', 0);
@@ -539,11 +558,28 @@ Generate ${numSlides} slides about "${topic}" following this exact format:`;
 
             // Save both centralized state and legacy state for compatibility
             saveState();
+
+            // Mark generation as complete and save final form state
+            this.saveFormState();
+            appState.set('lastSuccessfulGeneration', {
+                topic,
+                numSlides: this.slides.length,
+                timestamp: Date.now(),
+                provider: this.currentProvider.name
+            });
+
+            // Clear the pending attempt since generation succeeded
+            appState.remove('lastGenerationAttempt');
+
             logger.info('Slides data saved to state management');
 
         } catch (error) {
             logger.error('Failed to generate slides:', error);
             this.components.generationStatus?.showError(`Failed to generate slides: ${error.message}`);
+
+            // Mark generation attempt as failed but keep form state
+            appState.set('lastGenerationAttempt.failed', true);
+            appState.set('lastGenerationAttempt.error', error.message);
         }
     }
 
@@ -1194,9 +1230,127 @@ Return only the improved topic description, nothing else.`;
         try {
             appState.loadApiKeys();
             loadState();
+
+            // Load form values from state
+            this.loadFormState();
+
             logger.debug('Slides creator state loaded');
         } catch (error) {
             logger.error('Failed to load slides creator state:', error);
+        }
+    }
+
+    /**
+     * Load form state from persistence
+     */
+    loadFormState() {
+        try {
+            // Load number of slides selection
+            const savedNumSlides = appState.get('numSlides', '8');
+            if (this.dom.numSlidesSelect && savedNumSlides) {
+                this.dom.numSlidesSelect.value = savedNumSlides;
+            }
+
+            // Load presentation topic if available
+            const savedTopic = appState.get('presentationTopic', '');
+            if (this.dom.presentationTopicTextarea && savedTopic) {
+                this.dom.presentationTopicTextarea.value = savedTopic;
+            }
+
+            // Check for interrupted generation and offer recovery
+            const lastAttempt = appState.get('lastGenerationAttempt');
+            if (lastAttempt) {
+                const timeSinceAttempt = Date.now() - lastAttempt.timestamp;
+                const fiveMinutes = 5 * 60 * 1000;
+
+                // If generation attempt was within last 5 minutes and form is empty, offer recovery
+                if (timeSinceAttempt < fiveMinutes && !savedTopic) {
+                    this.offerGenerationRecovery(lastAttempt);
+                } else if (timeSinceAttempt >= fiveMinutes) {
+                    // Clean up old attempts
+                    appState.remove('lastGenerationAttempt');
+                }
+            }
+
+            logger.debug('Form state loaded', { numSlides: savedNumSlides, topic: savedTopic });
+        } catch (error) {
+            logger.error('Failed to load form state:', error);
+        }
+    }
+
+    /**
+     * Offer to recover from interrupted generation
+     */
+    offerGenerationRecovery(lastAttempt) {
+        if (this.components.generationStatus) {
+            const message = `It looks like a previous generation was interrupted. Would you like to restore: "${lastAttempt.topic}" (${lastAttempt.numSlides} slides)?`;
+
+            // Create a simple recovery notification
+            const recoveryDiv = document.createElement('div');
+            recoveryDiv.className = 'recovery-notification';
+            recoveryDiv.style.cssText = `
+                background: var(--warning-light, #fff3cd);
+                border: 1px solid var(--warning-border, #ffeaa7);
+                color: var(--warning-text, #856404);
+                padding: 12px;
+                border-radius: 4px;
+                margin: 8px 0;
+                font-size: 14px;
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+            `;
+
+            recoveryDiv.innerHTML = `
+                <span>${message}</span>
+                <div>
+                    <button id="restore-attempt" style="background: var(--primary-color); color: white; border: none; padding: 4px 8px; border-radius: 3px; margin-right: 4px; cursor: pointer;">Restore</button>
+                    <button id="dismiss-recovery" style="background: transparent; border: 1px solid var(--border-light); padding: 4px 8px; border-radius: 3px; cursor: pointer;">Dismiss</button>
+                </div>
+            `;
+
+            // Insert after form elements
+            const formContainer = document.querySelector('.presentation-generator, .form-container') || document.body;
+            formContainer.appendChild(recoveryDiv);
+
+            // Add event listeners
+            document.getElementById('restore-attempt')?.addEventListener('click', () => {
+                if (this.dom.presentationTopicTextarea) {
+                    this.dom.presentationTopicTextarea.value = lastAttempt.topic;
+                }
+                if (this.dom.numSlidesSelect) {
+                    this.dom.numSlidesSelect.value = lastAttempt.numSlides.toString();
+                }
+                this.saveFormState(); // Save the restored values
+                recoveryDiv.remove();
+                appState.remove('lastGenerationAttempt');
+            });
+
+            document.getElementById('dismiss-recovery')?.addEventListener('click', () => {
+                recoveryDiv.remove();
+                appState.remove('lastGenerationAttempt');
+            });
+        }
+    }
+
+    /**
+     * Save form state to persistence
+     */
+    saveFormState() {
+        try {
+            // Save number of slides selection
+            if (this.dom.numSlidesSelect) {
+                appState.set('numSlides', this.dom.numSlidesSelect.value);
+            }
+
+            // Save presentation topic
+            if (this.dom.presentationTopicTextarea) {
+                appState.set('presentationTopic', this.dom.presentationTopicTextarea.value);
+            }
+
+            logger.debug('Form state saved');
+        } catch (error) {
+            logger.error('Failed to save form state:', error);
         }
     }
 
