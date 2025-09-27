@@ -224,6 +224,62 @@
     <script>
         // Configure provider type
         window.COURSE_CREATOR_PROVIDER = 'ollama';
+        window.CREATOR_TYPE = 'course';
+
+        // Initialize course creator
+        document.addEventListener('DOMContentLoaded', async function() {
+            try {
+                await initializeCourseCreator();
+            } catch (error) {
+                console.error('Failed to initialize course creator:', error);
+            }
+        });
+
+        async function initializeCourseCreator() {
+            try {
+                // Dynamic imports for modular loading
+                const [
+                    { DOM, Events },
+                    { UIManager },
+                    { CourseManager },
+                    { LanguageSelector },
+                    { StatusDisplay },
+                    { BaseProvider }
+                ] = await Promise.all([
+                    import('./assets/js/core/dom.js'),
+                    import('./assets/js/components/UIManager.js'),
+                    import('./assets/js/creators/CourseManager.js'),
+                    import('./assets/js/components/LanguageSelector.js'),
+                    import('./assets/js/components/StatusDisplay.js'),
+                    import('./assets/js/providers/BaseProvider.js')
+                ]);
+
+                // Get provider-specific module
+                const providerModule = await import(`./assets/js/providers/${window.COURSE_CREATOR_PROVIDER.charAt(0).toUpperCase() + window.COURSE_CREATOR_PROVIDER.slice(1)}Provider.js`);
+                const ProviderClass = Object.values(providerModule)[0];
+
+                // Initialize core components
+                const dom = new DOM();
+                const ui = new UIManager(dom);
+                const provider = new ProviderClass();
+                const courseManager = new CourseManager(dom, ui, provider);
+                const languageSelector = new LanguageSelector('language-section');
+                const statusDisplay = new StatusDisplay('ai-status');
+
+                // Initialize all components
+                await Promise.all([
+                    ui.init(),
+                    courseManager.init(),
+                    languageSelector.init(),
+                    statusDisplay.init()
+                ]);
+
+                console.log(`Course creator initialized with ${window.COURSE_CREATOR_PROVIDER} provider`);
+            } catch (error) {
+                console.error('Course creator initialization failed:', error);
+                throw error;
+            }
+        }
     </script>
 </body>
 </html>
