@@ -6,6 +6,7 @@
 import { BaseProvider } from './BaseProvider.js';
 import { DOM, Events } from '../core/dom.js';
 import { logger } from '../core/utils.js';
+import { templateEngine } from '../core/TemplateEngine.js';
 
 export class WebLLMProvider extends BaseProvider {
     constructor() {
@@ -45,48 +46,22 @@ export class WebLLMProvider extends BaseProvider {
     }
 
     async getTemplate() {
-        return `
-            <fieldset>
-                <legend>🖥️ Browser AI</legend>
+        const templateData = this.getTemplateData();
+        return await templateEngine.loadProviderTemplate('webllm', templateData);
+    }
 
-                <div class="webllm-info" style="background: linear-gradient(135deg, #10b981 0%, #059669 100%); color: white; padding: 16px; border-radius: 8px; margin-bottom: 16px;">
-                    <h3 style="margin: 0 0 8px 0; font-size: 1.1em;">🚀 Run AI Models Locally in Your Browser</h3>
-                    <p style="margin: 0 0 8px 0; font-size: 0.9em; opacity: 0.95;">No server required! Models run entirely in your browser using WebAssembly.</p>
-                    <div style="display: flex; gap: 16px; margin-top: 8px; flex-wrap: wrap;">
-                        <div style="font-size: 0.8em; opacity: 0.9;">🔒 <strong>100% Private</strong></div>
-                        <div style="font-size: 0.8em; opacity: 0.9;">⚡ <strong>No Internet Needed</strong></div>
-                        <div style="font-size: 0.8em; opacity: 0.9;">💰 <strong>Completely Free</strong></div>
-                    </div>
-                </div>
-
-                <div class="input-group" id="ai-model-selection-group">
-                    <label for="ai-model-select" class="label-no-shrink-no-margin">AI Model:</label>
-                    <select id="ai-model-select" class="select-no-margin">
-                        <option value="">Select a model to download...</option>
-                        <option value="Phi-3-mini-4k-instruct-q4f16_1-MLC">Phi 3 Mini - 2.3GB (Lightweight, 1-3 min load)</option>
-                        <option value="Llama-3-8B-Instruct-q4f16_1-MLC">Llama 3 8B - 4.8GB (Balanced, 2-5 min load)</option>
-                        <option value="Llama-3.1-8B-Instruct-q4f16_1-MLC">Llama 3.1 8B - 5.1GB (Latest, 3-6 min load)</option>
-                    </select>
-                </div>
-
-                <div id="model-info" style="background: #fef3c7; border: 1px solid #f59e0b; border-radius: 6px; padding: 12px; margin: 8px 0; font-size: 0.85em; display: none;">
-                    <div id="model-description"></div>
-                    <div style="margin-top: 8px; font-size: 0.9em;">
-                        <strong>💡 First-time setup:</strong> Model will download and cache in your browser. Subsequent uses are instant!
-                    </div>
-                </div>
-
-                <div id="download-progress" style="background: #e0f2fe; border: 1px solid #0288d1; border-radius: 6px; padding: 12px; margin: 8px 0; display: none;">
-                    <div style="font-weight: 600; margin-bottom: 8px;">📥 Downloading Model...</div>
-                    <div id="progress-text" style="font-size: 0.9em; margin-bottom: 8px;"></div>
-                    <div style="background: #fff; border-radius: 4px; height: 8px; overflow: hidden;">
-                        <div id="progress-bar" style="background: #0288d1; height: 100%; width: 0%; transition: width 0.3s;"></div>
-                    </div>
-                </div>
-
-                <div id="connection-status" class="status-display"></div>
-            </fieldset>
-        `;
+    /**
+     * Get template data for rendering
+     */
+    getTemplateData() {
+        return {
+            models: this.config.models,
+            showModelInfo: false,
+            modelDescription: '',
+            showDownloadProgress: false,
+            progressText: '',
+            progressPercent: 0
+        };
     }
 
     async onInit() {

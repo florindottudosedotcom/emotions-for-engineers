@@ -1,0 +1,395 @@
+/**
+ * OpenRouter Provider CSS - Following CLAUDE.md Guidelines
+ * Extracted from inline styles in OpenRouterProvider.js
+ */
+
+/* ========================================
+   OPENROUTER PROVIDER INFO
+   ======================================== */
+.openrouter-info {
+    background: var(--primary-color);
+    color: white;
+    padding: var(--spacing-4);
+    border-radius: 8px;
+    margin-bottom: var(--spacing-4);
+    border: 1px solid var(--primary-color);
+}
+
+.openrouter-info h3 {
+    margin: 0 0 var(--spacing-2) 0;
+    font-size: var(--font-size-lg);
+}
+
+.openrouter-info p {
+    margin: 0 0 var(--spacing-2) 0;
+    font-size: var(--font-size-sm);
+    opacity: 0.95;
+}
+
+.openrouter-info .features-list {
+    display: flex;
+    gap: var(--spacing-4);
+    margin-top: var(--spacing-2);
+    flex-wrap: wrap;
+}
+
+.openrouter-info .feature-item {
+    font-size: var(--font-size-sm);
+    opacity: 0.9;
+}
+
+/* ========================================
+   SETUP INFO CARD
+   ======================================== */
+.setup-info {
+    background: var(--background-secondary);
+    border: 1px solid var(--border-light);
+    border-radius: 6px;
+    padding: var(--spacing-3);
+    margin-bottom: var(--spacing-3);
+}
+
+.setup-info .setup-title {
+    font-weight: 600;
+    margin-bottom: var(--spacing-2);
+    color: var(--text-primary);
+}
+
+.setup-info .setup-content {
+    font-size: var(--font-size-sm);
+    color: var(--text-secondary);
+    margin-bottom: var(--spacing-2);
+}
+
+.setup-info a {
+    color: var(--primary-color);
+    font-weight: 600;
+}
+
+/* ========================================
+   ACCOUNT INFO CARD
+   ======================================== */
+.account-info {
+    background: var(--background-secondary);
+    border: 1px solid var(--border-light);
+    border-radius: 6px;
+    padding: var(--spacing-3);
+    margin-bottom: var(--spacing-4);
+}
+
+.account-info .account-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: var(--spacing-2);
+}
+
+.account-info .account-title {
+    margin: 0;
+    color: var(--text-primary);
+}
+
+.account-info .disconnect-btn {
+    font-size: var(--font-size-sm);
+    border-color: var(--border-medium);
+    color: var(--text-secondary);
+    background-color: var(--background-primary);
+}
+
+.disconnect-btn:hover {
+    border-color: var(--text-secondary);
+    color: var(--text-primary);
+    background-color: var(--background-secondary);
+}
+
+.disconnect-btn:active {
+    background-color: var(--background-tertiary);
+}
+
+
+.account-info .session-usage {
+    font-size: var(--font-size-sm);
+    color: var(--text-disabled);
+    margin-top: var(--spacing-1);
+}
+
+/* ========================================
+   CUSTOM DROPDOWN SYSTEM
+   ======================================== */
+.custom-dropdown {
+    position: relative;
+    width: 100%;
+}
+
+.dropdown-trigger {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: var(--spacing-2);
+    border: 1px solid var(--border-light);
+    border-radius: 4px;
+    background: var(--background-primary);
+    cursor: pointer;
+    min-height: 40px;
+}
+
+.dropdown-trigger:hover {
+    border-color: var(--primary-color);
+}
+
+.dropdown-trigger.open {
+    border-color: var(--primary-color);
+    border-bottom-left-radius: 0;
+    border-bottom-right-radius: 0;
+}
+
+.selected-model {
+    flex: 1;
+    color: var(--text-primary);
+    font-size: var(--font-size-base);
+}
+
+.dropdown-arrow {
+    color: var(--text-secondary);
+    font-size: 12px;
+    transition: transform 0.2s ease;
+}
+
+.dropdown-trigger.open .dropdown-arrow {
+    transform: rotate(180deg);
+}
+
+/* ========================================
+   DROPDOWN CONTENT
+   ======================================== */
+.dropdown-content {
+    position: absolute;
+    top: 100%;
+    left: 0;
+    right: 0;
+    background: var(--background-primary);
+    border: 1px solid var(--primary-color);
+    border-top: none;
+    border-radius: 0 0 4px 4px;
+    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.15);
+    z-index: 1000;
+    max-height: 400px;
+    overflow: hidden;
+}
+
+.search-container {
+    padding: var(--spacing-2);
+    border-bottom: 1px solid var(--border-light);
+    background: var(--background-primary);
+}
+
+.dropdown-search {
+    width: 100%;
+    padding: var(--spacing-2);
+    border: 1px solid var(--border-light);
+    border-radius: 4px;
+    font-size: var(--font-size-sm);
+    background: var(--background-secondary);
+    color: var(--text-primary);
+}
+
+.dropdown-search:focus {
+    outline: none;
+    border-color: var(--primary-color);
+}
+
+.models-list {
+    max-height: 300px;
+    overflow-y: auto;
+    background: var(--background-primary);
+}
+
+/* ========================================
+   MODEL GROUPS
+   ======================================== */
+.model-group {
+    border-bottom: 1px solid var(--border-medium);
+}
+
+.model-group-header {
+    padding: var(--spacing-2);
+    background: var(--background-secondary);
+    font-weight: 600;
+    font-size: var(--font-size-sm);
+    color: var(--text-secondary);
+    border-bottom: 1px solid var(--border-light);
+}
+
+/* ========================================
+   MODEL OPTIONS
+   ======================================== */
+.model-option {
+    padding: var(--spacing-2);
+    cursor: pointer;
+    border-bottom: 1px solid var(--border-medium);
+    font-size: var(--font-size-sm);
+    color: var(--text-primary);
+    background: var(--background-primary);
+}
+
+.model-option:hover {
+    background: var(--background-secondary);
+}
+
+.model-option.selected {
+    background: var(--primary-color);
+    color: white;
+}
+
+.model-name {
+    font-weight: 600;
+    margin-bottom: 2px;
+}
+
+.model-details {
+    font-size: 11px;
+    color: var(--text-disabled);
+}
+
+.model-option.selected .model-details {
+    color: rgba(255, 255, 255, 0.8);
+}
+
+/* ========================================
+   MODEL COUNT INFO
+   ======================================== */
+.model-count {
+    padding: var(--spacing-2);
+    font-size: var(--font-size-sm);
+    color: var(--text-secondary);
+    background: var(--background-secondary);
+    border-top: 1px solid var(--border-light);
+}
+
+/* ========================================
+   COST ESTIMATION
+   ======================================== */
+.cost-estimation {
+    background: var(--background-tertiary);
+    border: 1px solid var(--warning-color);
+    border-radius: 6px;
+    padding: var(--spacing-2);
+    margin: var(--spacing-2) 0;
+    font-size: var(--font-size-sm);
+    color: var(--text-primary);
+}
+
+.cost-estimation.hidden {
+    display: none;
+}
+
+.estimated-cost {
+    font-weight: 600;
+}
+
+/* ========================================
+   RESPONSIVE DESIGN
+   ======================================== */
+
+/* Mobile: 320px-767px */
+@media (max-width: 767px) {
+    .openrouter-info .features-list {
+        flex-direction: column;
+        gap: var(--spacing-2);
+    }
+
+    .account-info .account-header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: var(--spacing-2);
+    }
+
+    .dropdown-content {
+        max-height: 250px;
+    }
+
+    .models-list {
+        max-height: 150px;
+    }
+
+    .model-option {
+        padding: var(--spacing-3);
+    }
+
+    .setup-info {
+        padding: var(--spacing-2);
+    }
+}
+
+/* Tablet: 768px-1023px */
+@media (min-width: 768px) and (max-width: 1023px) {
+    .dropdown-content {
+        max-height: 300px;
+    }
+
+    .models-list {
+        max-height: 175px;
+    }
+}
+
+/* ========================================
+   DARK MODE ENHANCEMENTS
+   ======================================== */
+@media (prefers-color-scheme: dark) {
+    .dropdown-content {
+        box-shadow: 0 8px 16px rgba(0, 0, 0, 0.3);
+    }
+
+    .model-option:hover {
+        background: var(--background-tertiary);
+    }
+
+    .openrouter-info {
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+    }
+
+    /* Ensure disconnect button is visible in dark mode */
+    .disconnect-btn {
+        border-color: var(--border-medium) !important;
+        color: var(--text-secondary) !important;
+        background-color: var(--background-secondary) !important;
+    }
+
+    .disconnect-btn:hover {
+        border-color: var(--border-light) !important;
+        color: var(--text-primary) !important;
+        background-color: var(--background-tertiary) !important;
+    }
+}
+
+/* ========================================
+   ACCESSIBILITY ENHANCEMENTS
+   ======================================== */
+.dropdown-trigger:focus,
+.dropdown-search:focus,
+.model-option:focus {
+    outline: 2px solid var(--primary-color);
+    outline-offset: 2px;
+}
+
+.model-option:focus {
+    background: var(--background-secondary);
+}
+
+.model-option.selected:focus {
+    background: var(--primary-color);
+    outline-color: white;
+}
+
+/* High contrast mode support */
+@media (prefers-contrast: high) {
+    .dropdown-trigger,
+    .dropdown-content,
+    .model-option {
+        border-width: 2px;
+    }
+
+    .model-option.selected {
+        border: 2px solid white;
+    }
+}

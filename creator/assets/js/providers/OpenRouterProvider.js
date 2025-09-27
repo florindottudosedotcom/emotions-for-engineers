@@ -6,6 +6,7 @@
 import { BaseProvider } from './BaseProvider.js';
 import { DOM, Events } from '../core/dom.js';
 import { logger } from '../core/utils.js';
+import { templateEngine } from '../core/TemplateEngine.js';
 
 export class OpenRouterProvider extends BaseProvider {
     constructor() {
@@ -50,229 +51,8 @@ export class OpenRouterProvider extends BaseProvider {
     }
 
     async getTemplate() {
-        const modelOptionsHtml = this.generateModelOptionsHtml();
-        const modelCount = this.availableModels?.length || this.config.models.length;
-
-        return `
-            <fieldset>
-                <legend>🌐 Professional Cloud AI</legend>
-
-                <div class="openrouter-info card" style="background: var(--color-primary); color: white; padding: var(--spacing-4); border-radius: 8px; margin-bottom: var(--spacing-4); border: 1px solid var(--color-primary);">
-                    <h3 style="margin: 0 0 var(--spacing-2) 0; font-size: var(--font-size-lg);">🚀 ${modelCount}+ Premium AI Models</h3>
-                    <p style="margin: 0 0 var(--spacing-2) 0; font-size: var(--font-size-sm); opacity: 0.95;">Access GPT-5, Claude 4.1, Gemini 2.5, LLaMA, and ${modelCount}+ more current models with transparent pricing.</p>
-                    <div style="display: flex; gap: var(--spacing-4); margin-top: var(--spacing-2); flex-wrap: wrap;">
-                        <div style="font-size: var(--font-size-sm); opacity: 0.9;">✨ <strong>Transparent Billing</strong></div>
-                        <div style="font-size: var(--font-size-sm); opacity: 0.9;">📊 <strong>Usage Analytics</strong></div>
-                        <div style="font-size: var(--font-size-sm); opacity: 0.9;">⚡ <strong>Real-time Balance</strong></div>
-                    </div>
-                </div>
-
-                <div class="auth-section" id="openrouter-auth">
-                    <div class="auth-option" style="display: block;" id="auth-login">
-                        <h4 style="margin: 0 0 var(--spacing-3) 0; color: var(--text-primary);">🔐 Connect Your OpenRouter Account</h4>
-
-                        <div class="setup-info card" style="background: var(--bg-secondary); border: 1px solid var(--border-primary); border-radius: 6px; padding: var(--spacing-3); margin-bottom: var(--spacing-3);">
-                            <div style="font-weight: 600; margin-bottom: var(--spacing-2); color: var(--text-primary);">📋 Quick Setup</div>
-                            <div style="font-size: var(--font-size-sm); color: var(--text-secondary); margin-bottom: var(--spacing-2);">
-                                1. Visit <a href="https://openrouter.ai" target="_blank" style="color: var(--color-primary); font-weight: 600;">OpenRouter.ai</a> and create a free account<br>
-                                2. Go to <a href="https://openrouter.ai/keys" target="_blank" style="color: var(--color-primary); font-weight: 600;">API Keys</a> and generate a new key<br>
-                                3. Add credits to your account for usage<br>
-                                4. Enter your API key below
-                            </div>
-                        </div>
-
-                        <div class="input-group">
-                            <label for="openrouter-api-key" class="label-no-shrink-no-margin">OpenRouter API Key:</label>
-                            <input type="password" id="openrouter-api-key" placeholder="sk-or-v1-..." class="input-flex-grow">
-                            <button id="openrouter-connect-btn" class="btn btn-primary">Connect</button>
-                        </div>
-                        <div style="font-size: var(--font-size-sm); color: var(--text-tertiary); margin-top: var(--spacing-1);">
-                            Your API key is stored locally and never leaves your browser
-                        </div>
-                    </div>
-                </div>
-
-                <div id="openrouter-authenticated" style="display: none;">
-                    <div class="account-info card" style="background: var(--bg-secondary); border: 1px solid var(--border-primary); border-radius: 6px; padding: var(--spacing-3); margin-bottom: var(--spacing-4);">
-                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: var(--spacing-2);">
-                            <h4 style="margin: 0; color: var(--text-primary);">✅ Connected to OpenRouter</h4>
-                            <button id="openrouter-disconnect-btn" class="btn btn-sm" style="font-size: var(--font-size-sm);">Disconnect</button>
-                        </div>
-                        <div id="account-balance" style="font-size: var(--font-size-sm); color: var(--text-secondary);"></div>
-                        <div id="session-usage" style="font-size: var(--font-size-sm); color: var(--text-tertiary); margin-top: var(--spacing-1);"></div>
-                    </div>
-
-                    <div class="model-selection-section">
-                        <div class="input-group">
-                            <label for="openrouter-model-dropdown" class="label-no-shrink-no-margin">AI Model:</label>
-                            <div class="custom-dropdown" id="openrouter-model-dropdown">
-                                <div class="dropdown-trigger" id="dropdown-trigger">
-                                    <span class="selected-model" id="selected-model">Select a model...</span>
-                                    <span class="dropdown-arrow">▼</span>
-                                </div>
-                                <div class="dropdown-content" id="dropdown-content" style="display: none;">
-                                    <div class="search-container">
-                                        <input type="text" id="dropdown-search" placeholder="Search models..." class="dropdown-search">
-                                    </div>
-                                    <div class="models-list" id="models-list">
-                                        ${this.generateDropdownContent()}
-                                    </div>
-                                    <div class="model-count" id="model-count-info">
-                                        Showing all models
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-
-                    <style>
-                        .custom-dropdown {
-                            position: relative;
-                            width: 100%;
-                        }
-
-                        .dropdown-trigger {
-                            display: flex;
-                            justify-content: space-between;
-                            align-items: center;
-                            padding: var(--spacing-2);
-                            border: 1px solid var(--border-primary);
-                            border-radius: 4px;
-                            background: var(--bg-primary);
-                            cursor: pointer;
-                            min-height: 40px;
-                        }
-
-                        .dropdown-trigger:hover {
-                            border-color: var(--color-primary);
-                        }
-
-                        .dropdown-trigger.open {
-                            border-color: var(--color-primary);
-                            border-bottom-left-radius: 0;
-                            border-bottom-right-radius: 0;
-                        }
-
-                        .selected-model {
-                            flex: 1;
-                            color: var(--text-primary);
-                            font-size: var(--font-size-base);
-                        }
-
-                        .dropdown-arrow {
-                            color: var(--text-secondary);
-                            font-size: 12px;
-                            transition: transform 0.2s ease;
-                        }
-
-                        .dropdown-trigger.open .dropdown-arrow {
-                            transform: rotate(180deg);
-                        }
-
-                        .dropdown-content {
-                            position: absolute;
-                            top: 100%;
-                            left: 0;
-                            right: 0;
-                            background: var(--bg-primary);
-                            border: 1px solid var(--color-primary);
-                            border-top: none;
-                            border-radius: 0 0 4px 4px;
-                            box-shadow: 0 8px 16px rgba(0, 0, 0, 0.15);
-                            z-index: 1000;
-                            max-height: 350px;
-                            overflow: hidden;
-                        }
-
-                        .search-container {
-                            padding: var(--spacing-2);
-                            border-bottom: 1px solid var(--border-primary);
-                            background: var(--bg-primary);
-                        }
-
-                        .dropdown-search {
-                            width: 100%;
-                            padding: var(--spacing-2);
-                            border: 1px solid var(--border-primary);
-                            border-radius: 4px;
-                            font-size: var(--font-size-sm);
-                            background: var(--bg-secondary);
-                            color: var(--text-primary);
-                        }
-
-                        .dropdown-search:focus {
-                            outline: none;
-                            border-color: var(--color-primary);
-                        }
-
-                        .models-list {
-                            max-height: 200px;
-                            overflow-y: auto;
-                            background: var(--bg-primary);
-                        }
-
-                        .model-group {
-                            border-bottom: 1px solid var(--border-secondary);
-                        }
-
-                        .model-group-header {
-                            padding: var(--spacing-2);
-                            background: var(--bg-secondary);
-                            font-weight: 600;
-                            font-size: var(--font-size-sm);
-                            color: var(--text-secondary);
-                            border-bottom: 1px solid var(--border-primary);
-                        }
-
-                        .model-option {
-                            padding: var(--spacing-2);
-                            cursor: pointer;
-                            border-bottom: 1px solid var(--border-tertiary);
-                            font-size: var(--font-size-sm);
-                            color: var(--text-primary);
-                            background: var(--bg-primary);
-                        }
-
-                        .model-option:hover {
-                            background: var(--bg-secondary);
-                        }
-
-                        .model-option.selected {
-                            background: var(--color-primary);
-                            color: white;
-                        }
-
-                        .model-name {
-                            font-weight: 600;
-                            margin-bottom: 2px;
-                        }
-
-                        .model-details {
-                            font-size: 11px;
-                            color: var(--text-tertiary);
-                        }
-
-                        .model-option.selected .model-details {
-                            color: rgba(255, 255, 255, 0.8);
-                        }
-
-                        .model-count {
-                            padding: var(--spacing-2);
-                            font-size: var(--font-size-sm);
-                            color: var(--text-secondary);
-                            background: var(--bg-secondary);
-                            border-top: 1px solid var(--border-primary);
-                        }
-                    </style>
-
-                    <div id="cost-estimation" class="card" style="background: var(--bg-tertiary); border: 1px solid var(--color-warning); border-radius: 6px; padding: var(--spacing-2); margin: var(--spacing-2) 0; font-size: var(--font-size-sm); display: none; color: var(--text-primary);">
-                        <strong>💰 Cost Estimation:</strong> <span id="estimated-cost"></span>
-                    </div>
-                </div>
-
-                <div id="connection-status" class="status-display"></div>
-            </fieldset>
-        `;
+        const templateData = this.getTemplateData();
+        return await templateEngine.loadProviderTemplate('openrouter', templateData);
     }
 
     generateDropdownContent(searchQuery = '') {
@@ -354,6 +134,120 @@ export class OpenRouterProvider extends BaseProvider {
         }
 
         return html;
+    }
+
+    /**
+     * Get template data for rendering
+     */
+    getTemplateData() {
+        const modelCount = this.availableModels?.length || this.config.models.length;
+        const selectedModel = this.getCurrentSelectedModel();
+
+        return {
+            modelCount,
+            isAuthenticated: this.isAuthenticated,
+            accountBalanceText: this.getAccountBalanceText(),
+            sessionUsageText: this.getSessionUsageText(),
+            selectedModelText: selectedModel ? `${selectedModel.name} - ${selectedModel.description}` : 'Select a model...',
+            modelGroups: this.getModelGroupsData(),
+            modelCountText: this.getModelCountText(),
+            showCostEstimation: this.shouldShowCostEstimation(),
+            estimatedCostText: this.getEstimatedCostText()
+        };
+    }
+
+    getCurrentSelectedModel() {
+        const models = this.availableModels || this.config.models;
+        return models.find(m => m.id === this.currentModel);
+    }
+
+    getAccountBalanceText() {
+        if (!this.accountInfo) return '';
+
+        if (this.accountInfo.data && this.accountInfo.data.label) {
+            return `✅ Account: ${this.accountInfo.data.label}`;
+        } else if (this.accountInfo.balance !== undefined) {
+            return `💰 Balance: $${this.accountInfo.balance.toFixed(2)}`;
+        } else {
+            return '✅ API Key Connected';
+        }
+    }
+
+    getSessionUsageText() {
+        const usage = this.sessionUsage[this.currentModel] || { requests: 0, cost: 0 };
+        return `📊 Session: ${usage.requests} requests, ~$${usage.cost.toFixed(4)} estimated`;
+    }
+
+    getModelGroupsData() {
+        let models = this.availableModels || this.config.models;
+
+        // Group models by category
+        const groupedModels = {
+            premium: [],
+            fast: [],
+            image: [],
+            audio: [],
+            embedding: [],
+            specialized: [],
+            free: []
+        };
+
+        models.forEach(model => {
+            const category = model.category || 'specialized';
+            if (groupedModels[category]) {
+                groupedModels[category].push({
+                    ...model,
+                    isSelected: model.id === this.currentModel
+                });
+            }
+        });
+
+        // Generate groups data
+        const groupIcons = {
+            premium: '🚀',
+            fast: '⚡',
+            image: '🎨',
+            audio: '🎵',
+            embedding: '📊',
+            specialized: '🎯',
+            free: '🆓'
+        };
+
+        const groupLabels = {
+            premium: 'Premium Models (Best Quality)',
+            fast: 'Fast & Efficient Models',
+            image: 'Image Generation & Vision',
+            audio: 'Audio & Speech Models',
+            embedding: 'Embedding & Vector Models',
+            specialized: 'Specialized Models',
+            free: 'Free Models'
+        };
+
+        return Object.entries(groupedModels)
+            .filter(([category, categoryModels]) => categoryModels.length > 0)
+            .map(([category, categoryModels]) => ({
+                category,
+                icon: groupIcons[category] || '🎯',
+                label: groupLabels[category] || 'Other Models',
+                models: categoryModels
+            }));
+    }
+
+    getModelCountText() {
+        const allModels = this.availableModels || this.config.models;
+        return `Showing all ${allModels.length} models`;
+    }
+
+    shouldShowCostEstimation() {
+        return this.isAuthenticated && this.currentModel;
+    }
+
+    getEstimatedCostText() {
+        const model = this.config.models.find(m => m.id === this.currentModel);
+        if (model) {
+            return `~$0.50-2.00 for typical course (varies by depth and model: ${model.pricing})`;
+        }
+        return '';
     }
 
     // Keep the old method for backward compatibility (though we won't use it)

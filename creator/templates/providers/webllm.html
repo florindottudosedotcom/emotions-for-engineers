@@ -1,0 +1,40 @@
+<fieldset>
+    <legend>🖥️ Browser AI</legend>
+
+    <div class="webllm-info">
+        <h3>🚀 Run AI Models Locally in Your Browser</h3>
+        <p>No server required! Models run entirely in your browser using WebAssembly.</p>
+        <div class="features-list">
+            <div class="feature-item">🔒 <strong>100% Private</strong></div>
+            <div class="feature-item">⚡ <strong>No Internet Needed</strong></div>
+            <div class="feature-item">💰 <strong>Completely Free</strong></div>
+        </div>
+    </div>
+
+    <div class="input-group" id="ai-model-selection-group">
+        <label for="ai-model-select" class="label-no-shrink-no-margin">AI Model:</label>
+        <select id="ai-model-select" class="select-no-margin">
+            <option value="">Select a model to download...</option>
+            {{@models}}
+            <option value="{{id}}">{{name}} - {{sizeGB}}GB ({{description}}, {{estimatedLoadTime}} load)</option>
+            {{/models}}
+        </select>
+    </div>
+
+    <div id="model-info" class="model-info {{#!showModelInfo}}hidden{{/!showModelInfo}}">
+        <div id="model-description" class="model-description">{{modelDescription}}</div>
+        <div class="model-setup-note">
+            <strong>💡 First-time setup:</strong> Model will download and cache in your browser. Subsequent uses are instant!
+        </div>
+    </div>
+
+    <div id="download-progress" class="download-progress {{#!showDownloadProgress}}hidden{{/!showDownloadProgress}}">
+        <div class="download-title">📥 Downloading Model...</div>
+        <div id="progress-text" class="progress-text">{{progressText}}</div>
+        <div class="progress-bar-container">
+            <div id="progress-bar" class="progress-bar" style="width: {{progressPercent}}%;"></div>
+        </div>
+    </div>
+
+    <div id="connection-status" class="status-display"></div>
+</fieldset>

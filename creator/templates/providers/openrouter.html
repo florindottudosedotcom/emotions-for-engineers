@@ -1,0 +1,74 @@
+<fieldset>
+    <legend>🌐 Professional Cloud AI</legend>
+
+
+    <div class="auth-section" id="openrouter-auth" {{#isAuthenticated}}style="display: none;"{{/isAuthenticated}}>
+        <div class="auth-option" id="auth-login">
+            <h4>🔐 Connect Your OpenRouter Account</h4>
+
+            <div class="setup-info">
+                <div class="setup-title">📋 Quick Setup</div>
+                <div class="setup-content">
+                    1. Visit <a href="https://openrouter.ai" target="_blank">OpenRouter.ai</a> and create a free account<br>
+                    2. Go to <a href="https://openrouter.ai/keys" target="_blank">API Keys</a> and generate a new key<br>
+                    3. Add credits to your account for usage<br>
+                    4. Enter your API key below
+                </div>
+            </div>
+
+            <div class="input-group">
+                <label for="openrouter-api-key" class="label-no-shrink-no-margin">OpenRouter API Key:</label>
+                <input type="password" id="openrouter-api-key" placeholder="sk-or-v1-..." class="input-flex-grow">
+                <button id="openrouter-connect-btn" class="btn btn-primary">Connect</button>
+            </div>
+            <div class="field-message field-message-info">
+                Your API key is stored locally and never leaves your browser
+            </div>
+        </div>
+    </div>
+
+    <div id="openrouter-authenticated" {{#!isAuthenticated}}style="display: none;"{{/!isAuthenticated}}>
+        <div class="account-info">
+            <div class="account-header">
+                <h4 class="account-title">✅ Connected to OpenRouter {{accountBalanceText}}</h4>
+                <button id="openrouter-disconnect-btn" class="btn btn-sm disconnect-btn">Disconnect</button>
+            </div>
+        </div>
+
+        <div class="model-selection-section">
+            <div class="input-group">
+                <div id="model-label" class="label-no-shrink-no-margin">AI Model:</div>
+                <div class="custom-dropdown" id="openrouter-model-dropdown">
+                    <div class="dropdown-trigger" id="dropdown-trigger" role="combobox" aria-expanded="false" aria-labelledby="model-label">
+                        <span class="selected-model" id="selected-model">{{selectedModelText}}</span>
+                        <span class="dropdown-arrow">▼</span>
+                    </div>
+                    <div class="dropdown-content" id="dropdown-content" style="display: none;">
+                        <div class="search-container">
+                            <input type="text" id="dropdown-search" placeholder="Search models..." class="dropdown-search">
+                        </div>
+                        <div class="models-list" id="models-list">
+                            {{#modelGroups}}
+                            <div class="model-group">
+                                <div class="model-group-header">{{icon}} {{label}}</div>
+                                {{@models}}
+                                <div class="model-option {{#isSelected}}selected{{/isSelected}}" data-model-id="{{id}}">
+                                    <div class="model-name">{{name}}</div>
+                                    <div class="model-details">{{description}} • {{pricing}}</div>
+                                </div>
+                                {{/models}}
+                            </div>
+                            {{/modelGroups}}
+                        </div>
+                        <div class="model-count" id="model-count-info">
+                            {{modelCountText}}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <div id="connection-status" class="status-display"></div>
+</fieldset>

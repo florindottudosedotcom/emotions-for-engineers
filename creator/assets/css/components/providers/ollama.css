@@ -1,0 +1,165 @@
+/**
+ * Ollama Provider CSS - Following CLAUDE.md Guidelines
+ * Extracted from inline styles in OllamaProvider.js
+ */
+
+/* ========================================
+   OLLAMA PROVIDER INFO
+   ======================================== */
+.ollama-info {
+    background: linear-gradient(135deg, #7c3aed 0%, #5b21b6 100%);
+    color: white;
+    padding: 16px;
+    border-radius: 8px;
+    margin-bottom: 16px;
+}
+
+.ollama-info h3 {
+    margin: 0 0 8px 0;
+    font-size: 1.1em;
+}
+
+.ollama-info p {
+    margin: 0 0 8px 0;
+    font-size: 0.9em;
+    opacity: 0.95;
+}
+
+.ollama-info .features-list {
+    display: flex;
+    gap: 16px;
+    margin-top: 8px;
+    flex-wrap: wrap;
+}
+
+.ollama-info .feature-item {
+    font-size: 0.8em;
+    opacity: 0.9;
+}
+
+/* ========================================
+   OLLAMA SETUP CARD
+   ======================================== */
+.ollama-setup {
+    background: #fef3c7;
+    border: 1px solid #f59e0b;
+    border-radius: 6px;
+    padding: 12px;
+    margin-bottom: 16px;
+}
+
+.ollama-setup.hidden {
+    display: none;
+}
+
+.ollama-setup .setup-title {
+    font-weight: 600;
+    margin-bottom: 8px;
+}
+
+.ollama-setup .setup-content {
+    font-size: 0.9em;
+    margin-bottom: 8px;
+}
+
+.ollama-setup a {
+    color: #d97706;
+}
+
+.ollama-setup code {
+    background: rgba(0,0,0,0.1);
+    padding: 2px 4px;
+    border-radius: 3px;
+}
+
+/* ========================================
+   MODEL RECOMMENDATIONS
+   ======================================== */
+.model-recommendations {
+    background: #f0f9ff;
+    border: 1px solid #0ea5e9;
+    border-radius: 6px;
+    padding: 12px;
+    margin: 8px 0;
+    font-size: 0.85em;
+}
+
+.model-recommendations.hidden {
+    display: none;
+}
+
+.model-recommendations .recommendations-title {
+    font-weight: 600;
+    margin-bottom: 8px;
+}
+
+.model-recommendations .recommendation-item {
+    margin-bottom: 4px;
+}
+
+.model-recommendations .download-note {
+    margin-top: 8px;
+    font-size: 0.9em;
+    color: #0369a1;
+}
+
+.model-recommendations code {
+    background: rgba(0,0,0,0.1);
+    padding: 2px 4px;
+    border-radius: 3px;
+}
+
+/* ========================================
+   RESPONSIVE DESIGN
+   ======================================== */
+
+/* Mobile: 320px-767px */
+@media (max-width: 767px) {
+    .ollama-info .features-list {
+        flex-direction: column;
+        gap: 8px;
+    }
+
+    .ollama-info {
+        padding: 12px;
+    }
+
+    .ollama-setup,
+    .model-recommendations {
+        padding: 8px;
+        margin: 6px 0;
+    }
+}
+
+/* ========================================
+   DARK MODE ENHANCEMENTS
+   ======================================== */
+@media (prefers-color-scheme: dark) {
+    .ollama-setup {
+        background: #451a03;
+        border-color: #92400e;
+        color: #fbbf24;
+    }
+
+    .ollama-setup a {
+        color: #fbbf24;
+    }
+
+    .ollama-setup code {
+        background: rgba(255, 255, 255, 0.1);
+    }
+
+    .model-recommendations {
+        background: #0c4a6e;
+        border-color: #0369a1;
+        color: #7dd3fc;
+    }
+
+    .model-recommendations .download-note {
+        color: #7dd3fc;
+    }
+
+    .model-recommendations code {
+        background: rgba(255, 255, 255, 0.1);
+    }
+}

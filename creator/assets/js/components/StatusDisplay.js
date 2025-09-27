@@ -153,10 +153,10 @@ export class StatusDisplay {
         this.container.innerHTML = content;
         this.container.className = 'status-display status-loading show';
 
-        // Add CSS animation for spinner
+        // Add loading spinner class
         const spinner = this.container.querySelector('.loading-spinner');
         if (spinner) {
-            spinner.style.animation = 'spin 1s linear infinite';
+            DOM.addClass(spinner, 'loading-spinner');
         }
 
         this.currentStatus = { message, type: 'loading', progress, timestamp: Date.now() };
@@ -311,15 +311,7 @@ export class StatusDisplay {
                       new StatusDisplay().getStatusConfig().info;
 
         const statusDiv = DOM.create('div', {
-            className: `status-display ${config.className} show floating-status`,
-            style: `
-                position: fixed;
-                top: 20px;
-                right: 20px;
-                z-index: 10000;
-                max-width: 400px;
-                animation: slideInRight 0.3s ease-out;
-            `
+            className: `status-display ${config.className} show floating-status slide-in-right`
         });
 
         let content = `<span class="status-icon">${config.icon}</span> `;
@@ -330,7 +322,8 @@ export class StatusDisplay {
 
         // Auto-remove after duration
         setTimeout(() => {
-            statusDiv.style.animation = 'slideOutRight 0.3s ease-in forwards';
+            DOM.removeClass(statusDiv, 'slide-in-right');
+            DOM.addClass(statusDiv, 'slide-out-right');
             setTimeout(() => {
                 if (statusDiv.parentNode) {
                     statusDiv.parentNode.removeChild(statusDiv);
@@ -354,76 +347,6 @@ export class StatusDisplay {
         this.container.dispatchEvent(event);
     }
 
-    /**
-     * Add CSS for animations if not already present
-     */
-    static addAnimationCSS() {
-        if (document.querySelector('#status-display-animations')) return;
-
-        const style = DOM.create('style', { id: 'status-display-animations' });
-        style.textContent = `
-            @keyframes spin {
-                from { transform: rotate(0deg); }
-                to { transform: rotate(360deg); }
-            }
-
-            @keyframes slideInRight {
-                from {
-                    transform: translateX(100%);
-                    opacity: 0;
-                }
-                to {
-                    transform: translateX(0);
-                    opacity: 1;
-                }
-            }
-
-            @keyframes slideOutRight {
-                from {
-                    transform: translateX(0);
-                    opacity: 1;
-                }
-                to {
-                    transform: translateX(100%);
-                    opacity: 0;
-                }
-            }
-
-            .progress-bar-container {
-                width: 100%;
-                height: 4px;
-                background-color: rgba(255, 255, 255, 0.3);
-                border-radius: 2px;
-                margin: 8px 0 4px 0;
-                overflow: hidden;
-            }
-
-            .progress-bar {
-                height: 100%;
-                background-color: currentColor;
-                transition: width 0.3s ease;
-                border-radius: 2px;
-            }
-
-            .progress-text {
-                font-size: 0.85em;
-                opacity: 0.8;
-            }
-
-            .status-icon {
-                display: inline-block;
-                margin-right: 6px;
-            }
-
-            .floating-status {
-                box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
-                border-radius: 8px;
-                padding: 12px 16px;
-            }
-        `;
-
-        document.head.appendChild(style);
-    }
 
     /**
      * Destroy the component and cleanup
@@ -439,6 +362,3 @@ export class StatusDisplay {
         logger.info('StatusDisplay destroyed');
     }
 }
-
-// Add animations CSS when module loads
-StatusDisplay.addAnimationCSS();

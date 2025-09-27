@@ -5,6 +5,7 @@
 
 import { DOM, Events } from '../core/dom.js';
 import { logger } from '../core/utils.js';
+import { templateEngine } from '../core/TemplateEngine.js';
 
 export class LanguageSelector {
     constructor(containerId, options = {}) {
@@ -40,41 +41,22 @@ export class LanguageSelector {
     }
 
     /**
+     * Get template data for rendering
+     */
+    getTemplateData() {
+        return {
+            title: this.options.title,
+            description: this.options.description,
+            languages: this.getLanguageConfig()
+        };
+    }
+
+    /**
      * Generate HTML template for the language selector
      */
-    getTemplate() {
-        const languages = this.getLanguageConfig();
-
-        const languageItems = languages.map(lang => `
-            <div class="lang-item card-interactive" title="${lang.name}">
-                <input type="checkbox"
-                       id="lang-${lang.code}"
-                       name="languages"
-                       value="${lang.code}"
-                       data-name="${lang.name}"
-                       ${lang.isDefault ? 'checked' : ''}>
-                <img src="./assets/images/png/${lang.flag}"
-                     alt="${lang.name} Flag"
-                     class="flag-icon">
-                <label for="lang-${lang.code}" class="label-flex-grow">
-                    ${lang.isDefault ? '⭐ ' : ''}${lang.name}
-                </label>
-            </div>
-        `).join('');
-
-        return `
-            <div class="card mb-6">
-                <div class="card-header">
-                    <h3>${this.options.title}</h3>
-                    <p class="text-secondary">${this.options.description}</p>
-                </div>
-                <div class="card-body">
-                    <div class="lang-grid">
-                        ${languageItems}
-                    </div>
-                </div>
-            </div>
-        `;
+    async getTemplate() {
+        const templateData = this.getTemplateData();
+        return await templateEngine.loadTemplate('components/language-selector.html', templateData);
     }
 
     /**
@@ -88,7 +70,7 @@ export class LanguageSelector {
             }
 
             // Inject HTML template
-            this.container.innerHTML = this.getTemplate();
+            this.container.innerHTML = await this.getTemplate();
 
             // Setup event listeners
             this.setupEventListeners();

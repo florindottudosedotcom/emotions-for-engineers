@@ -1,0 +1,145 @@
+/**
+ * WebLLM Provider CSS - Following CLAUDE.md Guidelines
+ * Extracted from inline styles in WebLLMProvider.js
+ */
+
+/* ========================================
+   WEBLLM PROVIDER INFO
+   ======================================== */
+.webllm-info {
+    background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+    color: white;
+    padding: 16px;
+    border-radius: 8px;
+    margin-bottom: 16px;
+}
+
+.webllm-info h3 {
+    margin: 0 0 8px 0;
+    font-size: 1.1em;
+}
+
+.webllm-info p {
+    margin: 0 0 8px 0;
+    font-size: 0.9em;
+    opacity: 0.95;
+}
+
+.webllm-info .features-list {
+    display: flex;
+    gap: 16px;
+    margin-top: 8px;
+    flex-wrap: wrap;
+}
+
+.webllm-info .feature-item {
+    font-size: 0.8em;
+    opacity: 0.9;
+}
+
+/* ========================================
+   MODEL INFO CARD
+   ======================================== */
+.model-info {
+    background: #fef3c7;
+    border: 1px solid #f59e0b;
+    border-radius: 6px;
+    padding: 12px;
+    margin: 8px 0;
+    font-size: 0.85em;
+}
+
+.model-info.hidden {
+    display: none;
+}
+
+.model-description {
+    margin-bottom: 8px;
+}
+
+.model-setup-note {
+    margin-top: 8px;
+    font-size: 0.9em;
+}
+
+/* ========================================
+   DOWNLOAD PROGRESS
+   ======================================== */
+.download-progress {
+    background: #e0f2fe;
+    border: 1px solid #0288d1;
+    border-radius: 6px;
+    padding: 12px;
+    margin: 8px 0;
+}
+
+.download-progress.hidden {
+    display: none;
+}
+
+.download-title {
+    font-weight: 600;
+    margin-bottom: 8px;
+}
+
+.progress-text {
+    font-size: 0.9em;
+    margin-bottom: 8px;
+}
+
+.progress-bar-container {
+    background: #fff;
+    border-radius: 4px;
+    height: 8px;
+    overflow: hidden;
+}
+
+.progress-bar {
+    background: #0288d1;
+    height: 100%;
+    width: 0%;
+    transition: width 0.3s;
+}
+
+/* ========================================
+   RESPONSIVE DESIGN
+   ======================================== */
+
+/* Mobile: 320px-767px */
+@media (max-width: 767px) {
+    .webllm-info .features-list {
+        flex-direction: column;
+        gap: 8px;
+    }
+
+    .webllm-info {
+        padding: 12px;
+    }
+
+    .model-info,
+    .download-progress {
+        padding: 8px;
+        margin: 6px 0;
+    }
+}
+
+/* ========================================
+   DARK MODE ENHANCEMENTS
+   ======================================== */
+@media (prefers-color-scheme: dark) {
+    .model-info {
+        background: #451a03;
+        border-color: #92400e;
+        color: #fbbf24;
+    }
+
+    .download-progress {
+        background: #0c4a6e;
+        border-color: #0369a1;
+        color: #7dd3fc;
+    }
+
+    .progress-bar-container {
+        background: #1e293b;
+    }
+}

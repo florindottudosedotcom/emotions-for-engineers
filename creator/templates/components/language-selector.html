@@ -1,0 +1,26 @@
+<div class="card mb-6">
+    <div class="card-header">
+        <h3>{{title}}</h3>
+        <p class="text-secondary">{{description}}</p>
+    </div>
+    <div class="card-body">
+        <div class="lang-grid">
+            {{#languages}}
+            <div class="lang-item card-interactive" title="{{name}}">
+                <input type="checkbox"
+                       id="lang-{{code}}"
+                       name="languages"
+                       value="{{code}}"
+                       data-name="{{name}}"
+                       {{#isDefault}}checked{{/isDefault}}>
+                <img src="./assets/images/png/{{flag}}"
+                     alt="{{name}} Flag"
+                     class="flag-icon">
+                <label for="lang-{{code}}" class="label-flex-grow">
+                    {{#isDefault}}⭐ {{/isDefault}}{{name}}
+                </label>
+            </div>
+            {{/languages}}
+        </div>
+    </div>
+</div>
