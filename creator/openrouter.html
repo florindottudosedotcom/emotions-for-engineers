@@ -244,8 +244,14 @@
                     import('./assets/js/providers/BaseProvider.js')
                 ]);
 
-                // Get provider-specific module
-                const providerModule = await import(`./assets/js/providers/${window.COURSE_CREATOR_PROVIDER.charAt(0).toUpperCase() + window.COURSE_CREATOR_PROVIDER.slice(1)}Provider.js`);
+                // Get provider-specific module with correct naming
+                const providerMap = {
+                    'openrouter': 'OpenRouterProvider',
+                    'webllm': 'WebLLMProvider',
+                    'ollama': 'OllamaProvider'
+                };
+                const providerFileName = providerMap[window.COURSE_CREATOR_PROVIDER];
+                const providerModule = await import(`./assets/js/providers/${providerFileName}.js`);
                 const ProviderClass = Object.values(providerModule)[0];
 
                 // Initialize core components
