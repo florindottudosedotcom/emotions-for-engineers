@@ -218,48 +218,45 @@ export class VirtualChapterManager {
      * Create editor for rendered chapter
      */
     async createChapterEditor(chapterId, container, content = '') {
-        const iframe = DOM.create('iframe', {
-            src: `./editor.html?id=${chapterId}`,
-            className: 'chapter-editor',
-            'data-chapter-id': chapterId,
-            style: 'opacity: 0; transition: opacity 0.3s ease;'
-        });
+        try {
+            // Import ToastUIEditor component
+            const { ToastUIEditor } = await import('../components/ToastUIEditor.js');
 
-        container.appendChild(iframe);
-
-        return new Promise((resolve) => {
-            Events.on(iframe, 'load', () => {
-                // Initialize editor
-                if (iframe.contentWindow) {
-                    iframe.contentWindow.postMessage({
-                        type: 'init',
-                        id: chapterId
-                    }, '*');
-
-                    // Set content if available
-                    if (content) {
-                        iframe.contentWindow.postMessage({
-                            type: 'set-content',
-                            content: content
-                        }, '*');
-                    }
-                }
-
-                // Fade in
-                setTimeout(() => {
-                    iframe.style.opacity = '1';
-                    resolve();
-                }, 100);
+            // Create ToastUI editor instance
+            const editor = new ToastUIEditor(`editor-${chapterId}`, {
+                height: '400px',
+                initialEditType: 'wysiwyg',
+                previewStyle: 'vertical',
+                placeholder: 'Enter chapter content here...'
             });
+
+            await editor.init();
 
             // Store editor instance
             this.uiManager.editorInstances[chapterId] = {
-                iframe: iframe,
+                editor: editor,
                 content: content,
                 isReady: true,
                 pendingContent: null
             };
-        });
+
+            // Set up content change listener
+            editor.on('contentChanged', (event) => {
+                const instance = this.uiManager.editorInstances[chapterId];
+                if (instance) {
+                    instance.content = event.detail.content;
+                }
+            });
+
+            // Set content if available
+            if (content) {
+                editor.setContent(content);
+            }
+
+        } catch (error) {
+            logger.error(`Failed to create editor for ${chapterId}:`, error);
+            throw error;
+        }
     }
 
     /**
@@ -350,6 +347,9 @@ export class VirtualChapterManager {
         const chapterId = `chapter-${index}`;
 
         if (this.uiManager.editorInstances[chapterId]) {
+            if (this.uiManager.editorInstances[chapterId].editor) {
+                this.uiManager.editorInstances[chapterId].editor.destroy();
+            }
             delete this.uiManager.editorInstances[chapterId];
         }
 
@@ -430,6 +430,9 @@ export class VirtualChapterManager {
         const editorInstance = this.uiManager.editorInstances[chapterId];
         if (editorInstance) {
             chapterData.content = editorInstance.content || '';
+            if (editorInstance.editor) {
+                editorInstance.editor.destroy();
+            }
             delete this.uiManager.editorInstances[chapterId];
         }
 

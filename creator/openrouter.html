@@ -23,6 +23,7 @@
     <link rel="stylesheet" href="./assets/css/components/puter.css">
     <link rel="stylesheet" href="./assets/css/components/providers.css">
     <link rel="stylesheet" href="./assets/css/components/icons.css">
+    <link rel="stylesheet" href="./assets/css/components/editors/toastui-editor.css">
     <link rel="stylesheet" href="./assets/css/core/utilities.css">
     <link rel="stylesheet" href="./assets/css/responsive/mobile.css">
     <link rel="stylesheet" href="./assets/css/themes/light.css">
@@ -235,7 +236,8 @@
                     { StatusDisplay },
                     { BaseProvider },
                     { ToastUIEditor },
-                    { VirtualChapterManager }
+                    { VirtualChapterManager },
+                    { ThemeManager }
                 ] = await Promise.all([
                     import('./assets/js/core/dom.js'),
                     import('./assets/js/components/UIManager.js'),
@@ -243,7 +245,8 @@
                     import('./assets/js/components/StatusDisplay.js'),
                     import('./assets/js/providers/BaseProvider.js'),
                     import('./assets/js/components/ToastUIEditor.js'),
-                    import('./assets/js/utils/virtual-chapter-manager.js')
+                    import('./assets/js/utils/virtual-chapter-manager.js'),
+                    import('./assets/js/core/theme.js')
                 ]);
 
                 // Get provider-specific module with correct naming
@@ -271,20 +274,40 @@
                 const courseManager = new CourseManager(domElements, ui, provider);
                 const statusDisplay = new StatusDisplay('ai-status');
                 const virtualChapterManager = new VirtualChapterManager(ui);
+                const themeManager = new ThemeManager();
 
                 // Make components available globally for cross-component access
                 window.courseComponents = {
                     dom: domElements, ui, provider, courseManager, statusDisplay,
-                    virtualChapterManager, ToastUIEditor
+                    virtualChapterManager, ToastUIEditor, themeManager
                 };
 
-                // Initialize all components
+                // Initialize all components except provider (needs template first)
                 await Promise.all([
                     ui.init(),
                     courseManager.init(),
                     statusDisplay.init(),
                     virtualChapterManager.init()
+                    // themeManager is already initialized in constructor
                 ]);
+
+                // Load provider template into provider-section
+                const providerSection = document.getElementById('provider-section');
+                if (providerSection && provider.getTemplate) {
+                    try {
+                        const providerTemplate = await provider.getTemplate();
+                        providerSection.innerHTML = providerTemplate;
+                        console.log('Provider template loaded successfully');
+
+                        // Wait a moment for DOM to settle, then initialize the provider
+                        await new Promise(resolve => setTimeout(resolve, 100));
+                        await provider.init();
+                        console.log('Provider initialized after template loading');
+                    } catch (error) {
+                        console.error('Failed to load provider template:', error);
+                        providerSection.innerHTML = `<div class="card-body"><p class="text-warning">Provider configuration unavailable. Please check console for details.</p><pre>${error.message}</pre></div>`;
+                    }
+                }
 
                 console.log(`Course creator initialized with ${window.COURSE_CREATOR_PROVIDER} provider`);
             } catch (error) {

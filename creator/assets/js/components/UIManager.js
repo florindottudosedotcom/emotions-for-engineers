@@ -140,42 +140,43 @@ export class UIManager {
         });
 
         try {
-            // Create iframe with loading state
-            const iframe = DOM.create('iframe', {
-                src: `./editor.html?id=${chapterId}`,
-                className: 'chapter-editor',
-                'data-chapter-id': chapterId,
-                style: 'opacity: 0; transition: opacity 0.3s ease;'
+            // Import ToastUIEditor component
+            const { ToastUIEditor } = await import('./ToastUIEditor.js');
+
+            // Create ToastUI editor instance
+            const editor = new ToastUIEditor(`editor-${chapterId}`, {
+                height: '400px',
+                initialEditType: 'wysiwyg',
+                previewStyle: 'vertical',
+                placeholder: 'Enter chapter content here...'
             });
 
-            editorContainer.appendChild(iframe);
+            await editor.init();
 
             this.editorInstances[chapterId] = {
-                iframe: iframe,
+                editor: editor,
                 content: '',
-                isReady: false,
+                isReady: true,
                 pendingContent: null
             };
 
-            // Handle iframe load with fade-in effect and initialization
-            Events.on(iframe, 'load', () => {
+            // Set up content change listener
+            editor.on('contentChanged', (event) => {
                 const instance = this.editorInstances[chapterId];
                 if (instance) {
-                    // Initialize editor communication
-                    if (iframe.contentWindow) {
-                        iframe.contentWindow.postMessage({
-                            type: 'init',
-                            id: chapterId
-                        }, '*');
-                    }
-
-                    // Fade in the iframe
-                    setTimeout(() => {
-                        iframe.style.opacity = '1';
-                        loadingController.finish();
-                    }, 100);
+                    instance.content = event.detail.content;
                 }
             });
+
+            // If there's pending content, set it now
+            const instance = this.editorInstances[chapterId];
+            if (instance && instance.pendingContent) {
+                editor.setContent(instance.pendingContent);
+                instance.content = instance.pendingContent;
+                instance.pendingContent = null;
+            }
+
+            loadingController.finish();
         } catch (error) {
             logger.error(`Failed to create editor for ${chapterId}:`, error);
             loadingController.finish();
@@ -223,6 +224,9 @@ export class UIManager {
         const content = DOM.query(`#${chapterId}`);
 
         if (this.editorInstances[chapterId]) {
+            if (this.editorInstances[chapterId].editor) {
+                this.editorInstances[chapterId].editor.destroy();
+            }
             delete this.editorInstances[chapterId];
         }
 
@@ -318,14 +322,11 @@ export class UIManager {
             const editorInstance = this.editorInstances[chapterId];
             if (editorInstance && chapter.content) {
                 editorInstance.content = chapter.content;
-                if (editorInstance.isReady && editorInstance.iframe && editorInstance.iframe.contentWindow) {
+                if (editorInstance.isReady && editorInstance.editor) {
                     try {
-                        editorInstance.iframe.contentWindow.postMessage({
-                            type: 'set-content',
-                            content: chapter.content
-                        }, '*');
-                    } catch (postMessageError) {
-                        logger.warn(`Failed to set content for ${chapterId}:`, postMessageError);
+                        editorInstance.editor.setContent(chapter.content);
+                    } catch (error) {
+                        logger.warn(`Failed to set content for ${chapterId}:`, error);
                         editorInstance.pendingContent = chapter.content;
                     }
                 } else {
@@ -468,8 +469,8 @@ export class UIManager {
 
         // Clear editor instances
         Object.values(this.editorInstances).forEach(instance => {
-            if (instance.iframe) {
-                instance.iframe.remove();
+            if (instance.editor) {
+                instance.editor.destroy();
             }
         });
         this.editorInstances = {};
@@ -502,8 +503,8 @@ export class UIManager {
 
     destroy() {
         Object.values(this.editorInstances).forEach(instance => {
-            if (instance.iframe) {
-                instance.iframe.remove();
+            if (instance.editor) {
+                instance.editor.destroy();
             }
         });
 

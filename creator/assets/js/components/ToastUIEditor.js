@@ -87,7 +87,7 @@ export class ToastUIEditor {
     createEditorContainer() {
         this.container.innerHTML = `
             <div class="toastui-editor-container">
-                <div id="${this.containerId}-editor" class="toastui-editor"></div>
+                <div id="${this.containerId}-editor" class="toastui-editor-element"></div>
             </div>
         `;
     }
@@ -104,20 +104,16 @@ export class ToastUIEditor {
         // Configure editor options
         const editorConfig = {
             el: editorElement,
-            height: this.options.height,
+            height: 'auto', // Let container control height
             initialEditType: this.options.initialEditType,
             previewStyle: this.options.previewStyle,
             useCommandShortcut: this.options.useCommandShortcut,
             usageStatistics: this.options.usageStatistics,
             hideModeSwitch: this.options.hideModeSwitch,
             placeholder: this.options.placeholder,
-            language: this.options.language
+            language: this.options.language,
+            theme: this.getEffectiveTheme() // Use ToastUI's native theme support
         };
-
-        // Set theme
-        if (this.options.theme === 'dark') {
-            editorConfig.theme = 'dark';
-        }
 
         // Initialize editor
         this.editor = new window.toastui.Editor(editorConfig);
@@ -125,6 +121,95 @@ export class ToastUIEditor {
         // Set initial content if provided
         if (this.content) {
             this.editor.setMarkdown(this.content);
+        }
+
+        // Listen for theme changes
+        this.setupThemeListener();
+    }
+
+    /**
+     * Apply theme by recreating editor (ToastUI requirement)
+     */
+    async applyTheme() {
+        if (!this.editor) return;
+
+        // Save current content
+        const currentContent = this.getMarkdown();
+
+        // Get editor element
+        const editorElement = DOM.query(`#${this.containerId}-editor`);
+        if (!editorElement) return;
+
+        // Destroy current editor (but not the listeners)
+        this.editor.destroy();
+
+        // Recreate editor with new theme
+        const editorConfig = {
+            el: editorElement,
+            height: 'auto', // Let container control height
+            initialEditType: this.options.initialEditType,
+            previewStyle: this.options.previewStyle,
+            useCommandShortcut: this.options.useCommandShortcut,
+            usageStatistics: this.options.usageStatistics,
+            hideModeSwitch: this.options.hideModeSwitch,
+            placeholder: this.options.placeholder,
+            language: this.options.language,
+            theme: this.getEffectiveTheme()
+        };
+
+        this.editor = new window.toastui.Editor(editorConfig);
+
+        // Restore content
+        if (currentContent) {
+            this.editor.setMarkdown(currentContent);
+        }
+
+        // Re-setup editor event listeners (not theme listeners)
+        this.setupEventListeners();
+    }
+
+    /**
+     * Get the effective theme (light or dark)
+     */
+    getEffectiveTheme() {
+        // Check if data-theme is set on document
+        const dataTheme = document.documentElement.getAttribute('data-theme');
+        if (dataTheme === 'dark' || dataTheme === 'light') {
+            return dataTheme;
+        }
+
+        // Check system preference
+        if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
+            return 'dark';
+        }
+
+        return 'light';
+    }
+
+    /**
+     * Setup theme change listener
+     */
+    setupThemeListener() {
+        // Avoid setting up listeners during recreation
+        if (this.themeListenersSetup) return;
+        this.themeListenersSetup = true;
+
+        // Listen for theme changes from ThemeManager
+        this.themeChangeHandler = async (event) => {
+            await this.applyTheme();
+        };
+        window.addEventListener('themeChange', this.themeChangeHandler);
+
+        // Listen for system theme changes
+        if (window.matchMedia) {
+            const mediaQuery = window.matchMedia('(prefers-color-scheme: dark)');
+            this.systemThemeHandler = async () => {
+                // Only apply if not explicitly set
+                if (!document.documentElement.getAttribute('data-theme')) {
+                    await this.applyTheme();
+                }
+            };
+            mediaQuery.addEventListener('change', this.systemThemeHandler);
         }
     }
 
@@ -152,11 +237,9 @@ export class ToastUIEditor {
             this.emit('blur');
         });
 
-        // Selection change
+        // Selection change - ToastUI Editor doesn't have getRange, so we'll emit without range data
         this.editor.on('caretChange', () => {
-            this.emit('caretChange', {
-                range: this.editor.getRange()
-            });
+            this.emit('caretChange');
         });
     }
 
@@ -203,9 +286,8 @@ export class ToastUIEditor {
      */
     replaceSelection(text) {
         if (this.editor) {
-            const range = this.editor.getRange();
-            this.editor.setSelection(range);
-            this.editor.replaceSelection(text);
+            // ToastUI Editor doesn't have getRange/setSelection, use insertText instead
+            this.editor.insertText(text);
         }
     }
 
@@ -286,10 +368,8 @@ export class ToastUIEditor {
     setTheme(theme) {
         this.options.theme = theme;
         if (this.editor) {
-            // ToastUI doesn't support dynamic theme switching,
-            // so we need to recreate the editor
-            this.destroy();
-            this.init();
+            // Apply the theme immediately without recreating the editor
+            this.applyTheme();
         }
     }
 
@@ -432,6 +512,15 @@ export class ToastUIEditor {
      * Destroy the editor and cleanup
      */
     destroy() {
+        // Clean up theme listeners
+        if (this.themeChangeHandler) {
+            window.removeEventListener('themeChange', this.themeChangeHandler);
+        }
+        if (this.systemThemeHandler && window.matchMedia) {
+            const mediaQuery = window.matchMedia('(prefers-color-scheme: dark)');
+            mediaQuery.removeEventListener('change', this.systemThemeHandler);
+        }
+
         if (this.editor) {
             this.editor.destroy();
             this.editor = null;
@@ -443,6 +532,7 @@ export class ToastUIEditor {
 
         this.isInitialized = false;
         this.content = '';
+        this.themeListenersSetup = false;
         logger.info('ToastUIEditor destroyed');
     }
 }

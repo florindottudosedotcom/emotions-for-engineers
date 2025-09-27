@@ -51,8 +51,72 @@ export class OpenRouterProvider extends BaseProvider {
     }
 
     async getTemplate() {
-        const templateData = this.getTemplateData();
-        return await templateEngine.loadProviderTemplate('openrouter', templateData);
+        const data = this.getTemplateData();
+        const { isAuthenticated, accountBalanceText, selectedModelText, modelGroups } = data;
+
+        return `
+            <div class="card-header">
+                <h3>🌐 OpenRouter Provider</h3>
+                <p class="text-secondary">Professional cloud AI with 200+ models and transparent billing</p>
+            </div>
+            <div class="card-body">
+                ${!isAuthenticated ? `
+                    <div id="openrouter-auth" class="provider-auth">
+                        <div class="form-group mb-4">
+                            <label for="openrouter-api-key" class="form-label">OpenRouter API Key</label>
+                            <input type="password" id="openrouter-api-key" class="form-input" placeholder="sk-or-..." style="width: 100%; padding: 8px; border: 1px solid #d1d5db; border-radius: 4px;" />
+                            <small class="form-help" style="display: block; margin-top: 4px; color: #6b7280;">Get your free API key at <a href="https://openrouter.ai/keys" target="_blank" style="color: #2563eb;">openrouter.ai/keys</a></small>
+                        </div>
+                        <button type="button" id="openrouter-connect-btn" class="btn btn-primary" style="background: #2563eb; color: white; padding: 8px 16px; border: none; border-radius: 4px; cursor: pointer;">🔗 Connect to OpenRouter</button>
+                    </div>
+                ` : `
+                    <div id="openrouter-authenticated" class="provider-authenticated">
+                        <div class="provider-status mb-4" style="display: flex; justify-content: space-between; align-items: center; padding: 8px; background: var(--background-tertiary); border-radius: 4px;">
+                            <div class="account-balance">${accountBalanceText}</div>
+                            <button type="button" id="openrouter-disconnect-btn" class="btn btn-secondary btn-sm" style="padding: 4px 8px; border: 1px solid var(--border-light); border-radius: 4px; background: var(--surface); color: var(--text-primary); cursor: pointer;">🔌 Disconnect</button>
+                        </div>
+
+                        <div class="form-group mb-4">
+                            <label class="form-label" style="display: block; margin-bottom: 4px; font-weight: 500;">Model Selection</label>
+                            <div id="openrouter-model-dropdown" class="custom-dropdown" style="position: relative;">
+                                <button type="button" id="dropdown-trigger" class="dropdown-trigger" aria-expanded="false" style="width: 100%; padding: 8px; border: 1px solid var(--border-light); border-radius: 4px; background: var(--surface); color: var(--text-primary); text-align: left; cursor: pointer; display: flex; justify-content: space-between; align-items: center;">
+                                    <span id="selected-model">${selectedModelText}</span>
+                                    <span class="dropdown-icon">▼</span>
+                                </button>
+                                <div id="dropdown-content" class="dropdown-content" style="display: none; position: fixed; top: auto; left: auto; background: var(--surface); border: 1px solid var(--border-light); border-radius: 4px; box-shadow: var(--shadow-small); z-index: 9999; max-height: 300px; overflow-y: auto; min-width: 400px;">
+                                    <div class="dropdown-search" style="padding: 8px;">
+                                        <input type="text" id="dropdown-search" placeholder="Search models..." class="form-input-sm" style="width: 100%; padding: 4px; border: 1px solid var(--border-light); border-radius: 2px; background: var(--surface); color: var(--text-primary);" />
+                                    </div>
+                                    <div class="dropdown-info" style="padding: 4px 8px; font-size: 12px; color: var(--text-secondary); border-bottom: 1px solid var(--border-light);">
+                                        <span id="model-count-info">${data.modelCountText}</span>
+                                    </div>
+                                    <div id="models-list" class="models-list">
+                                        ${this.generateModelsHTML(modelGroups)}
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                `}
+            </div>
+        `;
+    }
+
+    /**
+     * Generate models HTML for dropdown
+     */
+    generateModelsHTML(modelGroups) {
+        return modelGroups.map(group => `
+            <div class="model-group">
+                <div class="model-group-header" style="padding: 6px 12px; background: var(--background-tertiary); font-size: 12px; font-weight: 600; color: var(--text-primary); border-bottom: 1px solid var(--border-light);">${group.icon} ${group.label}</div>
+                ${group.models.map(model => `
+                    <div class="model-option ${model.isSelected ? 'selected' : ''}" data-model-id="${model.id}" style="padding: 8px 12px; cursor: pointer; border-bottom: 1px solid var(--border-light); background: ${model.isSelected ? 'var(--primary-color-20)' : 'transparent'}; color: var(--text-primary);" onmouseover="this.style.background='var(--background-tertiary)'" onmouseout="this.style.background='${model.isSelected ? 'var(--primary-color-20)' : 'transparent'}'">
+                        <div class="model-name" style="font-weight: 500; color: var(--text-primary);">${model.name}</div>
+                        <div class="model-details" style="font-size: 12px; color: var(--text-secondary);">${model.description} • ${model.pricing}</div>
+                    </div>
+                `).join('')}
+            </div>
+        `).join('');
     }
 
     generateDropdownContent(searchQuery = '') {
@@ -152,12 +216,9 @@ export class OpenRouterProvider extends BaseProvider {
             modelCount,
             isAuthenticated: this.isAuthenticated,
             accountBalanceText: accountBalanceText,
-            sessionUsageText: this.getSessionUsageText(),
             selectedModelText: selectedModel ? `${selectedModel.name} - ${selectedModel.description}` : 'Select a model...',
             modelGroups: this.getModelGroupsData(),
-            modelCountText: this.getModelCountText(),
-            showCostEstimation: this.shouldShowCostEstimation(),
-            estimatedCostText: this.getEstimatedCostText()
+            modelCountText: this.getModelCountText()
         };
     }
 
@@ -313,12 +374,19 @@ export class OpenRouterProvider extends BaseProvider {
     }
 
     openDropdown() {
-        if (!this.dom.dropdownContent) return;
+        if (!this.dom.dropdownContent || !this.dom.dropdownTrigger) return;
+
+        // Position the dropdown relative to the trigger button
+        const triggerRect = this.dom.dropdownTrigger.getBoundingClientRect();
+        this.dom.dropdownContent.style.top = `${triggerRect.bottom + window.scrollY}px`;
+        this.dom.dropdownContent.style.left = `${triggerRect.left + window.scrollX}px`;
+        this.dom.dropdownContent.style.width = `${triggerRect.width}px`;
+        this.dom.dropdownContent.style.minWidth = `${Math.max(triggerRect.width, 400)}px`;
 
         this.dropdownOpen = true;
         this.dom.dropdownContent.style.display = 'block';
-        this.dom.dropdownTrigger?.classList.add('open');
-        this.dom.dropdownTrigger?.setAttribute('aria-expanded', 'true');
+        this.dom.dropdownTrigger.classList.add('open');
+        this.dom.dropdownTrigger.setAttribute('aria-expanded', 'true');
 
         // Focus the search input
         setTimeout(() => {
@@ -450,66 +518,31 @@ export class OpenRouterProvider extends BaseProvider {
             const totalCount = (this.availableModels || this.config.models).length;
             this.updateModelCountInfo(totalCount, totalCount, '');
             this.setupModelOptionHandlers();
-            this.updateCostEstimation();
         }
     }
 
     async onInit() {
+        // Ensure dom object exists
+        if (!this.dom) {
+            this.dom = {};
+        }
+
+        // Wait a moment for DOM elements to be fully rendered
+        await new Promise(resolve => setTimeout(resolve, 50));
+
         // Cache DOM elements
-        this.dom.apiKeyInput = DOM.query('#openrouter-api-key');
-        this.dom.connectBtn = DOM.query('#openrouter-connect-btn');
-        this.dom.disconnectBtn = DOM.query('#openrouter-disconnect-btn');
-        this.dom.dropdownTrigger = DOM.query('#dropdown-trigger');
-        this.dom.dropdownContent = DOM.query('#dropdown-content');
-        this.dom.dropdownSearch = DOM.query('#dropdown-search');
-        this.dom.modelsList = DOM.query('#models-list');
-        this.dom.selectedModel = DOM.query('#selected-model');
-        this.dom.modelCountInfo = DOM.query('#model-count-info');
-        this.dom.authSection = DOM.query('#openrouter-auth');
-        this.dom.authenticatedSection = DOM.query('#openrouter-authenticated');
-        this.dom.accountBalance = DOM.query('#account-balance');
-        this.dom.sessionUsage = DOM.query('#session-usage');
-        this.dom.costEstimation = DOM.query('#cost-estimation');
-        this.dom.estimatedCost = DOM.query('#estimated-cost');
+        this.cacheDOM();
 
         // Track dropdown state
         this.dropdownOpen = false;
 
         // Setup event listeners
-        if (this.dom.connectBtn) {
-            Events.on(this.dom.connectBtn, 'click', () => this.connectWithApiKey());
+        this.setupEventListeners();
+
+        // Set up model option handlers if we have models and are authenticated
+        if (this.isAuthenticated && this.availableModels && this.availableModels.length > 0) {
+            this.setupModelOptionHandlers();
         }
-
-        if (this.dom.disconnectBtn) {
-            Events.on(this.dom.disconnectBtn, 'click', () => this.disconnect());
-        }
-
-        // Custom dropdown event listeners
-        if (this.dom.dropdownTrigger) {
-            Events.on(this.dom.dropdownTrigger, 'click', (e) => {
-                e.preventDefault();
-                this.toggleDropdown();
-            });
-        }
-
-        if (this.dom.dropdownSearch) {
-            Events.on(this.dom.dropdownSearch, 'input', (e) => {
-                this.filterDropdownModels(e.target.value);
-            });
-
-            Events.on(this.dom.dropdownSearch, 'keydown', (e) => {
-                // Prevent dropdown from closing when typing
-                e.stopPropagation();
-            });
-        }
-
-        // Close dropdown when clicking outside
-        Events.on(document, 'click', (e) => {
-            const dropdown = DOM.query('#openrouter-model-dropdown');
-            if (this.dropdownOpen && dropdown && !dropdown.contains(e.target)) {
-                this.closeDropdown();
-            }
-        });
 
         // Load saved authentication if available
         await this.loadSavedAuth();
@@ -832,14 +865,94 @@ export class OpenRouterProvider extends BaseProvider {
     }
 
     updateUI() {
-        if (this.isAuthenticated) {
-            this.dom.authSection.style.display = 'none';
-            this.dom.authenticatedSection.style.display = 'block';
-            this.updateCostEstimation();
+        if (this.dom.authSection && this.dom.authenticatedSection) {
+            if (this.isAuthenticated) {
+                this.dom.authSection.style.display = 'none';
+                this.dom.authenticatedSection.style.display = 'block';
+                this.updateCostEstimation();
+            } else {
+                this.dom.authSection.style.display = 'block';
+                this.dom.authenticatedSection.style.display = 'none';
+            }
         } else {
-            this.dom.authSection.style.display = 'block';
-            this.dom.authenticatedSection.style.display = 'none';
+            // If DOM elements don't exist, regenerate the template
+            console.log('DOM elements not found, regenerating template');
+            this.regenerateTemplate();
         }
+    }
+
+    async regenerateTemplate() {
+        const providerSection = document.getElementById('provider-section');
+        if (providerSection) {
+            try {
+                const template = await this.getTemplate();
+                providerSection.innerHTML = template;
+
+                // Re-cache DOM elements
+                await new Promise(resolve => setTimeout(resolve, 50));
+                this.cacheDOM();
+                this.setupEventListeners();
+
+                // Set up model option handlers if we have models
+                if (this.availableModels && this.availableModels.length > 0) {
+                    this.setupModelOptionHandlers();
+                }
+            } catch (error) {
+                console.error('Failed to regenerate template:', error);
+            }
+        }
+    }
+
+    cacheDOM() {
+        this.dom.apiKeyInput = document.querySelector('#openrouter-api-key');
+        this.dom.connectBtn = document.querySelector('#openrouter-connect-btn');
+        this.dom.disconnectBtn = document.querySelector('#openrouter-disconnect-btn');
+        this.dom.dropdownTrigger = document.querySelector('#dropdown-trigger');
+        this.dom.dropdownContent = document.querySelector('#dropdown-content');
+        this.dom.dropdownSearch = document.querySelector('#dropdown-search');
+        this.dom.modelsList = document.querySelector('#models-list');
+        this.dom.selectedModel = document.querySelector('#selected-model');
+        this.dom.modelCountInfo = document.querySelector('#model-count-info');
+        this.dom.authSection = document.querySelector('#openrouter-auth');
+        this.dom.authenticatedSection = document.querySelector('#openrouter-authenticated');
+        this.dom.accountBalance = document.querySelector('.account-balance');
+    }
+
+    setupEventListeners() {
+        if (this.dom.connectBtn) {
+            Events.on(this.dom.connectBtn, 'click', () => this.connectWithApiKey());
+        }
+
+        if (this.dom.disconnectBtn) {
+            Events.on(this.dom.disconnectBtn, 'click', () => this.disconnect());
+        }
+
+        // Custom dropdown event listeners
+        if (this.dom.dropdownTrigger) {
+            Events.on(this.dom.dropdownTrigger, 'click', (e) => {
+                e.preventDefault();
+                this.toggleDropdown();
+            });
+        }
+
+        if (this.dom.dropdownSearch) {
+            Events.on(this.dom.dropdownSearch, 'input', (e) => {
+                this.filterDropdownModels(e.target.value);
+            });
+
+            Events.on(this.dom.dropdownSearch, 'keydown', (e) => {
+                // Prevent dropdown from closing when typing
+                e.stopPropagation();
+            });
+        }
+
+        // Close dropdown when clicking outside
+        Events.on(document, 'click', (e) => {
+            const dropdown = document.querySelector('#openrouter-model-dropdown');
+            if (this.dropdownOpen && dropdown && !dropdown.contains(e.target)) {
+                this.closeDropdown();
+            }
+        });
     }
 
     async disconnect() {

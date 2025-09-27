@@ -1193,3 +1193,116 @@
         scrollbar-color: var(--border-medium) var(--background-tertiary);
     }
 }
+
+/* Chapter tabs dark mode */
+[data-theme="dark"] .chapter-tab {
+    background-color: var(--surface) !important;
+    color: var(--text-secondary) !important;
+    border-color: var(--border-light) !important;
+}
+
+[data-theme="dark"] .chapter-tab.active {
+    background-color: var(--primary-color) !important;
+    color: var(--text-on-primary) !important;
+    border-color: var(--primary-color) !important;
+}
+
+[data-theme="dark"] .chapter-tab:hover:not(.active) {
+    background-color: var(--surface-elevated) !important;
+    color: var(--text-primary) !important;
+    border-color: var(--border-medium) !important;
+}
+
+[data-theme="dark"] .chapter-tab .remove-chapter {
+    color: inherit !important;
+    opacity: 0.7;
+}
+
+[data-theme="dark"] .chapter-tab .remove-chapter:hover {
+    opacity: 1 !important;
+    color: var(--error-color) !important;
+}
+
+[data-theme="dark"] .add-chapter-tab {
+    background-color: var(--surface) !important;
+    color: var(--text-secondary) !important;
+    border-color: var(--border-light) !important;
+}
+
+[data-theme="dark"] .add-chapter-tab:hover {
+    background-color: var(--surface-elevated) !important;
+    color: var(--text-primary) !important;
+    border-color: var(--border-medium) !important;
+}
+
+/* ToastUI Editor container sizing */
+[data-theme="dark"] .toastui-editor-container {
+    height: 100% !important;
+    background-color: var(--surface) !important;
+}
+
+[data-theme="dark"] .editor-container {
+    height: 400px !important;
+    min-height: 400px !important;
+}
+
+[data-theme="dark"] .toastui-editor {
+    height: 100% !important;
+}
+
+@media (prefers-color-scheme: dark) {
+    .chapter-tab {
+        background-color: var(--surface) !important;
+        color: var(--text-secondary) !important;
+        border-color: var(--border-light) !important;
+    }
+
+    .chapter-tab.active {
+        background-color: var(--primary-color) !important;
+        color: var(--text-on-primary) !important;
+        border-color: var(--primary-color) !important;
+    }
+
+    .chapter-tab:hover:not(.active) {
+        background-color: var(--surface-elevated) !important;
+        color: var(--text-primary) !important;
+        border-color: var(--border-medium) !important;
+    }
+
+    .chapter-tab .remove-chapter {
+        color: inherit !important;
+        opacity: 0.7;
+    }
+
+    .chapter-tab .remove-chapter:hover {
+        opacity: 1 !important;
+        color: var(--error-color) !important;
+    }
+
+    .add-chapter-tab {
+        background-color: var(--surface) !important;
+        color: var(--text-secondary) !important;
+        border-color: var(--border-light) !important;
+    }
+
+    .add-chapter-tab:hover {
+        background-color: var(--surface-elevated) !important;
+        color: var(--text-primary) !important;
+        border-color: var(--border-medium) !important;
+    }
+
+    /* ToastUI Editor container sizing */
+    .toastui-editor-container {
+        height: 100% !important;
+        background-color: var(--surface) !important;
+    }
+
+    .editor-container {
+        height: 400px !important;
+        min-height: 400px !important;
+    }
+
+    .toastui-editor {
+        height: 100% !important;
+    }
+}

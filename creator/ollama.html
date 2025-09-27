@@ -23,6 +23,7 @@
     <link rel="stylesheet" href="./assets/css/components/puter.css">
     <link rel="stylesheet" href="./assets/css/components/providers.css">
     <link rel="stylesheet" href="./assets/css/components/icons.css">
+    <link rel="stylesheet" href="./assets/css/components/editors/toastui-editor.css">
     <link rel="stylesheet" href="./assets/css/core/utilities.css">
     <link rel="stylesheet" href="./assets/css/responsive/mobile.css">
     <link rel="stylesheet" href="./assets/css/themes/light.css">
@@ -48,7 +49,11 @@
         <div id="ai-status" class="ai-status-initial"></div>
 
         <!-- Provider-specific section will be injected here -->
-        <div id="provider-section" class="card mb-6"></div>
+        <div id="provider-section" class="card mb-6">
+            <div class="card-body">
+                <p>Loading provider configuration...</p>
+            </div>
+        </div>
 
         <!-- Course Generation Section -->
         <div class="card mb-6">
@@ -236,6 +241,7 @@
         });
 
         async function initializeCourseCreator() {
+            const providerSection = document.getElementById('provider-section');
             try {
                 // Dynamic imports for modular loading
                 const [
@@ -245,7 +251,8 @@
                     { StatusDisplay },
                     { BaseProvider },
                     { ToastUIEditor },
-                    { VirtualChapterManager }
+                    { VirtualChapterManager },
+                    { ThemeManager }
                 ] = await Promise.all([
                     import('./assets/js/core/dom.js'),
                     import('./assets/js/components/UIManager.js'),
@@ -253,7 +260,8 @@
                     import('./assets/js/components/StatusDisplay.js'),
                     import('./assets/js/providers/BaseProvider.js'),
                     import('./assets/js/components/ToastUIEditor.js'),
-                    import('./assets/js/utils/virtual-chapter-manager.js')
+                    import('./assets/js/utils/virtual-chapter-manager.js'),
+                    import('./assets/js/core/theme.js')
                 ]);
 
                 // Get provider-specific module with correct naming
@@ -263,8 +271,13 @@
                     'ollama': 'OllamaProvider'
                 };
                 const providerFileName = providerMap[window.COURSE_CREATOR_PROVIDER];
+                console.log('Provider type:', window.COURSE_CREATOR_PROVIDER);
+                console.log('Provider file name:', providerFileName);
+
                 const providerModule = await import(`./assets/js/providers/${providerFileName}.js`);
+                console.log('Provider module loaded:', providerModule);
                 const ProviderClass = Object.values(providerModule)[0];
+                console.log('Provider class:', ProviderClass);
 
                 // Initialize core components with DOM element references
                 const domElements = {
@@ -281,24 +294,78 @@
                 const courseManager = new CourseManager(domElements, ui, provider);
                 const statusDisplay = new StatusDisplay('ai-status');
                 const virtualChapterManager = new VirtualChapterManager(ui);
+                const themeManager = new ThemeManager();
 
                 // Make components available globally for cross-component access
                 window.courseComponents = {
                     dom: domElements, ui, provider, courseManager, statusDisplay,
-                    virtualChapterManager, ToastUIEditor
+                    virtualChapterManager, ToastUIEditor, themeManager
                 };
 
-                // Initialize all components
+                // Initialize all components except provider (needs template first)
                 await Promise.all([
                     ui.init(),
                     courseManager.init(),
                     statusDisplay.init(),
                     virtualChapterManager.init()
+                    // themeManager is already initialized in constructor
                 ]);
+
+                // Load provider template into provider-section
+                const providerSection = document.getElementById('provider-section');
+                console.log('Provider section element:', providerSection);
+                console.log('Provider object:', provider);
+                console.log('Provider has getTemplate:', !!provider.getTemplate);
+
+                if (providerSection && provider.getTemplate) {
+                    try {
+                        console.log('Calling provider.getTemplate()...');
+                        const providerTemplate = await provider.getTemplate();
+                        console.log('Provider template generated:', providerTemplate ? 'Success' : 'Failed');
+                        console.log('Template length:', providerTemplate?.length);
+
+                        providerSection.innerHTML = providerTemplate;
+                        console.log('Provider template loaded successfully');
+
+                        // Wait a moment for DOM to settle, then initialize the provider
+                        console.log('Calling provider.init()...');
+                        console.log('Provider dom object before init:', provider.dom);
+                        console.log('Provider instance:', provider.constructor.name);
+
+                        await new Promise(resolve => setTimeout(resolve, 100)); // Brief delay for DOM
+                        await provider.init();
+                        console.log('Provider initialized after template loading');
+                    } catch (error) {
+                        console.error('Failed to load provider template:', error);
+                        console.error('Error details:', error.message, error.stack);
+                        providerSection.innerHTML = `<div class="card-body"><p class="text-warning">Provider configuration unavailable. Please check console for details.</p><pre>${error.message}</pre></div>`;
+                    }
+                } else {
+                    console.error('Missing requirements:', {
+                        hasProviderSection: !!providerSection,
+                        hasGetTemplate: !!provider.getTemplate
+                    });
+                }
 
                 console.log(`Course creator initialized with ${window.COURSE_CREATOR_PROVIDER} provider`);
             } catch (error) {
                 console.error('Course creator initialization failed:', error);
+
+                // Show error in the UI
+                if (providerSection) {
+                    providerSection.innerHTML = `
+                        <div class="card-body">
+                            <div class="alert alert-danger">
+                                <h4>Initialization Failed</h4>
+                                <p><strong>Error:</strong> ${error.message}</p>
+                                <details>
+                                    <summary>Technical Details</summary>
+                                    <pre>${error.stack}</pre>
+                                </details>
+                            </div>
+                        </div>
+                    `;
+                }
                 throw error;
             }
         }

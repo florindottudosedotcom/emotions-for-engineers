@@ -156,13 +156,38 @@ Always use context7 when I need code generation, setup or configuration steps, o
 
 ### Core Principles
 
-1. **Security-First Development**
+1. **CSS-First Styling Architecture**
+   - **ALWAYS add styling to CSS files**, never inline in HTML or JavaScript
+   - Use dedicated CSS files in `assets/css/` directory structure
+   - Follow the established CSS architecture: `core/`, `components/`, `themes/`, `layouts/`
+   - Apply styles via CSS classes and CSS custom properties (variables)
+   - **NEVER use inline `style` attributes** in HTML or JavaScript DOM manipulation
+   - **NEVER use CSS-in-JS** - all styles belong in `.css` files
+
+   ```javascript
+   // ❌ DON'T: Inline styles in JavaScript
+   element.style.height = '400px';
+   element.setAttribute('style', 'background: #000;');
+
+   // ✅ DO: Add CSS class and define styles in CSS file
+   element.classList.add('editor-container');
+   ```
+
+   ```css
+   /* ✅ DO: Define styles in appropriate CSS file */
+   .editor-container {
+       height: 400px;
+       background-color: var(--surface);
+   }
+   ```
+
+2. **Security-First Development**
    - Use `createElement()` and `textContent`, never `innerHTML`
    - Validate and sanitize ALL user inputs
    - Implement proper CORS policies and CSP headers
    - Regularly audit and update third-party libraries
 
-2. **Third-Party Integration Philosophy - "Don't Fight the Framework"**
+3. **Third-Party Integration Philosophy - "Don't Fight the Framework"**
    - **Start simple**: Use library defaults with minimal configuration
    - **Respect boundaries**: Don't override internal library classes unless absolutely necessary
    - **Test early**: Verify basic functionality before adding customizations
