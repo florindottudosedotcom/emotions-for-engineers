@@ -265,17 +265,25 @@
                 const providerModule = await import(`./assets/js/providers/${providerFileName}.js`);
                 const ProviderClass = Object.values(providerModule)[0];
 
-                // Initialize core components
-                const dom = new DOM();
-                const ui = new UIManager(dom);
+                // Initialize core components with DOM element references
+                const domElements = {
+                    chapterTabsContainer: document.getElementById('chapter-tabs-container'),
+                    chapterContentContainer: document.getElementById('chapter-content-container'),
+                    aiStatus: document.getElementById('ai-status'),
+                    generationStatus: document.getElementById('generation-status'),
+                    fileGenerationStatus: document.getElementById('file-generation-status'),
+                    courseForm: document.getElementById('course-form'),
+                    clearFormBtn: document.getElementById('clear-form-btn')
+                };
+                const ui = new UIManager(domElements);
                 const provider = new ProviderClass();
-                const courseManager = new CourseManager(dom, ui, provider);
+                const courseManager = new CourseManager(domElements, ui, provider);
                 const statusDisplay = new StatusDisplay('ai-status');
                 const virtualChapterManager = new VirtualChapterManager(ui);
 
                 // Make components available globally for cross-component access
                 window.courseComponents = {
-                    dom, ui, provider, courseManager, statusDisplay,
+                    dom: domElements, ui, provider, courseManager, statusDisplay,
                     virtualChapterManager, ToastUIEditor
                 };
 
