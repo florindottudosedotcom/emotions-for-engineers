@@ -78,7 +78,7 @@ export class LoadingManager {
         const progressHtml = showProgress ? `
             <div class="loading-progress">
                 <div class="loading-progress-bar">
-                    <div class="loading-progress-fill" style="width: 0%"></div>
+                    <div class="loading-progress-fill" data-progress="0"></div>
                 </div>
                 <div class="loading-progress-text">0%</div>
             </div>
@@ -117,7 +117,8 @@ export class LoadingManager {
             const progressText = element.querySelector('.loading-progress-text');
 
             if (progressFill) {
-                progressFill.style.width = `${percentage}%`;
+                progressFill.style.setProperty('--progress-width', `${percentage}%`);
+                progressFill.setAttribute('data-progress', percentage);
             }
             if (progressText) {
                 progressText.textContent = `${percentage}%`;

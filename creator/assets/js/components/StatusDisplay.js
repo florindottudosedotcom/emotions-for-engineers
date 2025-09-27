@@ -70,11 +70,7 @@ export class StatusDisplay {
 
             // Set position if specified
             if (this.options.position === 'fixed') {
-                this.container.style.position = 'fixed';
-                this.container.style.top = '20px';
-                this.container.style.right = '20px';
-                this.container.style.zIndex = '1000';
-                this.container.style.maxWidth = '400px';
+                DOM.addClass(this.container, 'status-fixed');
             }
 
             this.isInitialized = true;
@@ -144,7 +140,7 @@ export class StatusDisplay {
         if (progress !== null && progress >= 0 && progress <= 100) {
             content += `
                 <div class="progress-bar-container">
-                    <div class="progress-bar" style="width: ${progress}%"></div>
+                    <div class="progress-bar" data-progress="${progress}"></div>
                 </div>
                 <span class="progress-text">${Math.round(progress)}%</span>
             `;
@@ -152,6 +148,16 @@ export class StatusDisplay {
 
         this.container.innerHTML = content;
         this.container.className = 'status-display status-loading show';
+
+        // Update the progress bar width via CSS custom property after DOM update
+        if (progress !== null && progress >= 0 && progress <= 100) {
+            setTimeout(() => {
+                const progressBar = this.container.querySelector('.progress-bar[data-progress]');
+                if (progressBar) {
+                    progressBar.style.setProperty('--progress-width', `${progress}%`);
+                }
+            }, 10);
+        }
 
         // Add loading spinner class
         const spinner = this.container.querySelector('.loading-spinner');
@@ -283,23 +289,33 @@ export class StatusDisplay {
     setPosition(position, coordinates = {}) {
         if (!this.container) return;
 
-        this.container.style.position = position;
+        // Remove existing position classes
+        DOM.removeClass(this.container, 'status-fixed');
 
-        if (coordinates.top !== undefined) {
-            this.container.style.top = typeof coordinates.top === 'number' ?
-                `${coordinates.top}px` : coordinates.top;
+        if (position === 'fixed') {
+            DOM.addClass(this.container, 'status-fixed');
+        } else {
+            this.container.style.position = position;
         }
-        if (coordinates.right !== undefined) {
-            this.container.style.right = typeof coordinates.right === 'number' ?
-                `${coordinates.right}px` : coordinates.right;
-        }
-        if (coordinates.bottom !== undefined) {
-            this.container.style.bottom = typeof coordinates.bottom === 'number' ?
-                `${coordinates.bottom}px` : coordinates.bottom;
-        }
-        if (coordinates.left !== undefined) {
-            this.container.style.left = typeof coordinates.left === 'number' ?
-                `${coordinates.left}px` : coordinates.left;
+
+        // Apply coordinate styles only for non-predefined positions
+        if (position !== 'fixed') {
+            if (coordinates.top !== undefined) {
+                this.container.style.top = typeof coordinates.top === 'number' ?
+                    `${coordinates.top}px` : coordinates.top;
+            }
+            if (coordinates.right !== undefined) {
+                this.container.style.right = typeof coordinates.right === 'number' ?
+                    `${coordinates.right}px` : coordinates.right;
+            }
+            if (coordinates.bottom !== undefined) {
+                this.container.style.bottom = typeof coordinates.bottom === 'number' ?
+                    `${coordinates.bottom}px` : coordinates.bottom;
+            }
+            if (coordinates.left !== undefined) {
+                this.container.style.left = typeof coordinates.left === 'number' ?
+                    `${coordinates.left}px` : coordinates.left;
+            }
         }
     }
 

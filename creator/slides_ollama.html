@@ -30,6 +30,7 @@
     <link rel="stylesheet" href="./assets/css/responsive/mobile.css">
     <link rel="stylesheet" href="./assets/css/themes/light.css">
     <link rel="stylesheet" href="./assets/css/themes/dark.css">
+    <link rel="stylesheet" href="./assets/css/components/slides-creator.css">
 
     <!-- Critical inline styles to prevent layout shift -->
     <style>
@@ -43,14 +44,14 @@
 
 </head>
 <body>
-    <div class="container p-6">
+    <div class="container p-6 slides-creator">
         <div id="ai-status" class="ai-status-initial"></div>
 
         <!-- Provider Section (will be injected by ProviderSelector component) -->
         <div id="provider-section" class="mb-6"></div>
 
         <!-- Presentation Generator -->
-        <div class="card mb-6">
+        <div class="card mb-6 presentation-generator-card">
             <div class="card-header">
                 <h3>Presentation Generator</h3>
                 <p class="text-secondary">Create visual presentations with your local Ollama AI</p>
@@ -90,7 +91,7 @@
         </div>
 
         <!-- Slides Editor -->
-        <div class="card mb-6">
+        <div class="card mb-6 slides-editor-card">
             <div class="card-header">
                 <h3>Visual Editor</h3>
                 <p class="text-secondary">Edit your slides with visual tools</p>
@@ -106,21 +107,12 @@
         <div id="language-section"></div>
 
         <!-- Export Section -->
-        <div class="card">
+        <div class="card export-section-card">
             <div class="card-header">
                 <h3>Export & Download</h3>
                 <p class="text-secondary">Export your presentation with automatic translation to selected languages</p>
             </div>
             <div class="card-body">
-                <div class="export-info mb-4 p-4">
-                    <p class="mb-2"><strong>💡 Multi-Language Export:</strong></p>
-                    <ul class="mb-0 export-list">
-                        <li>Select multiple languages above to automatically translate your slides</li>
-                        <li>Each language will be exported as a separate file</li>
-                        <li>Multiple files are packaged in a ZIP for easy download</li>
-                        <li>AI translation preserves formatting and professional tone</li>
-                    </ul>
-                </div>
                 <div class="export-buttons-grid">
                     <button type="button" id="export-pdf-btn" class="btn btn-primary">⟄ Export as PDF</button>
                     <button type="button" id="export-pptx-btn" class="btn btn-primary">⟐ Export as PowerPoint</button>

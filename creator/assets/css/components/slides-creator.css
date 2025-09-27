@@ -1,0 +1,436 @@
+/**
+ * Slides Creator Specific CSS - Following CLAUDE.md Guidelines
+ * Enhanced styling to match course creator's beautiful design
+ */
+
+/* ========================================
+   PRESENTATION GENERATOR SECTION
+   ======================================== */
+/* Slides Creator Container Enhancement */
+.slides-creator {
+    background: linear-gradient(180deg, var(--background-primary) 0%, var(--background-secondary) 100%);
+    min-height: 100vh;
+    padding: var(--spacing-6);
+}
+
+.slides-creator .card {
+    box-shadow: var(--shadow-medium);
+    transition: all var(--transition-normal);
+    background: var(--surface);
+    border: 1px solid var(--border-light);
+    border-radius: var(--radius-large);
+}
+
+.slides-creator .card-header h3 {
+    color: var(--primary-color);
+    font-weight: var(--font-weight-bold);
+    font-size: var(--font-size-xl);
+}
+
+.slides-creator .card:hover {
+    box-shadow: var(--shadow-large);
+    transform: translateY(-2px);
+}
+
+.presentation-generator-card {
+    background: linear-gradient(135deg, var(--surface) 0%, rgba(37, 99, 235, 0.02) 100%);
+    border: 1px solid var(--border-light);
+}
+
+.slides-editor-card {
+    background: linear-gradient(135deg, var(--surface) 0%, rgba(37, 99, 235, 0.03) 100%);
+    border: 1px solid rgba(37, 99, 235, 0.1);
+}
+
+.export-section-card {
+    background: linear-gradient(135deg, var(--surface) 0%, rgba(16, 185, 129, 0.02) 100%);
+    border: 1px solid var(--border-light);
+}
+
+.prompt-header {
+    display: flex;
+    justify-content: flex-end;
+    margin-bottom: var(--spacing-4);
+}
+
+.prompt-textarea-large {
+    width: 100%;
+    min-height: 120px;
+    padding: var(--spacing-4);
+    border: 1px solid var(--border-light);
+    border-radius: var(--radius-medium);
+    font-size: var(--font-size-base);
+    line-height: var(--line-height-relaxed);
+    background: var(--surface);
+    color: var(--text-primary);
+    resize: vertical;
+    transition: border-color var(--transition-normal), box-shadow var(--transition-normal);
+}
+
+.prompt-textarea-large:focus {
+    outline: none;
+    border-color: var(--primary-color);
+    box-shadow: 0 0 0 3px rgba(var(--primary-color-rgb), 0.1);
+}
+
+.prompt-textarea-large::placeholder {
+    color: var(--text-tertiary);
+    font-style: italic;
+}
+
+/* ========================================
+   VISUAL EDITOR SECTION
+   ======================================== */
+#slides-editor-container,
+.slides-editor-container {
+    background: var(--surface);
+    border: 1px solid var(--border-light);
+    border-radius: var(--radius-medium);
+    padding: var(--spacing-4);
+    min-height: 500px;
+    position: relative;
+    overflow: hidden;
+}
+
+#slides-editor-container::before,
+.slides-editor-container::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: linear-gradient(135deg,
+        rgba(var(--primary-color-rgb), 0.05) 0%,
+        rgba(var(--primary-color-rgb), 0.02) 100%);
+    pointer-events: none;
+    z-index: 0;
+}
+
+#slides-editor-container > *,
+.slides-editor-container > * {
+    position: relative;
+    z-index: 1;
+}
+
+/* ========================================
+   EXPORT BUTTONS ENHANCEMENT
+   ======================================== */
+.export-buttons-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: var(--spacing-4);
+    margin: var(--spacing-4) 0;
+}
+
+.slides-creator .export-buttons-grid .btn {
+    padding: var(--spacing-3) var(--spacing-4);
+    font-weight: var(--font-weight-medium);
+    transition: all var(--transition-normal);
+    position: relative;
+    overflow: hidden;
+    background: linear-gradient(135deg, var(--primary-color) 0%, var(--primary-dark) 100%);
+    color: white;
+    border: none;
+    border-radius: var(--radius-medium);
+    box-shadow: var(--shadow-small);
+}
+
+.slides-creator .export-buttons-grid .btn.btn-secondary {
+    background: linear-gradient(135deg, var(--secondary-color) 0%, var(--secondary-dark) 100%);
+}
+
+.slides-creator .export-buttons-grid .btn.btn-outline {
+    background: transparent;
+    border: 2px solid var(--primary-color);
+    color: var(--primary-color);
+}
+
+.export-buttons-grid .btn::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg,
+        transparent,
+        rgba(255, 255, 255, 0.2),
+        transparent);
+    transition: left 0.5s ease;
+}
+
+.slides-creator .export-buttons-grid .btn:hover::before {
+    left: 100%;
+}
+
+.slides-creator .export-buttons-grid .btn:hover {
+    transform: translateY(-3px);
+    box-shadow: var(--shadow-large);
+    filter: brightness(1.1);
+}
+
+.export-buttons-grid .btn:active {
+    transform: translateY(0);
+}
+
+/* ========================================
+   SLIDES NAVIGATION
+   ======================================== */
+.slides-navigation {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: var(--spacing-3) var(--spacing-4);
+    background: var(--surface);
+    border: 1px solid var(--border-light);
+    border-radius: var(--radius-medium);
+    margin: var(--spacing-4) 0;
+}
+
+.slides-navigation .btn {
+    min-width: 120px;
+    padding: var(--spacing-2) var(--spacing-3);
+}
+
+.slide-counter {
+    font-weight: var(--font-weight-medium);
+    color: var(--text-secondary);
+    font-size: var(--font-size-sm);
+}
+
+/* ========================================
+   COURSE GENERATION SECTION ENHANCEMENT
+   ======================================== */
+.course-generation-section {
+    display: flex;
+    gap: var(--spacing-4);
+    align-items: center;
+    flex-wrap: wrap;
+}
+
+.course-generation-section .select-no-margin {
+    min-width: 200px;
+    flex: 1;
+}
+
+.course-generation-section .btn {
+    white-space: nowrap;
+    padding: var(--spacing-3) var(--spacing-4);
+    font-weight: var(--font-weight-medium);
+}
+
+/* ========================================
+   STATUS DISPLAYS ENHANCEMENT
+   ======================================== */
+.status-display.slides-specific {
+    background: var(--surface);
+    border: 1px solid var(--border-light);
+    border-radius: var(--radius-medium);
+    padding: var(--spacing-3) var(--spacing-4);
+    margin: var(--spacing-3) 0;
+    font-size: var(--font-size-sm);
+    line-height: var(--line-height-normal);
+}
+
+.status-display.slides-specific.status-loading {
+    background: linear-gradient(90deg,
+        var(--surface) 25%,
+        rgba(var(--primary-color-rgb), 0.05) 50%,
+        var(--surface) 75%);
+    background-size: 200% 100%;
+    animation: shimmer 2s infinite;
+}
+
+@keyframes shimmer {
+    0% { background-position: 200% 0; }
+    100% { background-position: -200% 0; }
+}
+
+/* ========================================
+   SLIDE PREVIEW CARDS
+   ======================================== */
+.slide-preview-card {
+    background: var(--surface);
+    border: 1px solid var(--border-light);
+    border-radius: var(--radius-medium);
+    padding: var(--spacing-4);
+    margin: var(--spacing-3) 0;
+    transition: all var(--transition-normal);
+    cursor: pointer;
+}
+
+.slide-preview-card:hover {
+    border-color: var(--primary-color);
+    box-shadow: var(--shadow-medium);
+    transform: translateY(-2px);
+}
+
+.slide-preview-card.active {
+    border-color: var(--primary-color);
+    background: rgba(var(--primary-color-rgb), 0.05);
+    box-shadow: var(--shadow-medium);
+}
+
+.slide-preview-title {
+    font-weight: var(--font-weight-semibold);
+    color: var(--text-primary);
+    margin-bottom: var(--spacing-2);
+    font-size: var(--font-size-base);
+}
+
+.slide-preview-content {
+    color: var(--text-secondary);
+    font-size: var(--font-size-sm);
+    line-height: var(--line-height-relaxed);
+}
+
+/* ========================================
+   LOADING STATES
+   ======================================== */
+.slides-loading {
+    position: relative;
+    overflow: hidden;
+}
+
+.slides-loading::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg,
+        transparent,
+        rgba(var(--primary-color-rgb), 0.1),
+        transparent);
+    animation: slide-loading 2s infinite;
+}
+
+@keyframes slide-loading {
+    0% { left: -100%; }
+    100% { left: 100%; }
+}
+
+/* ========================================
+   RESPONSIVE DESIGN
+   ======================================== */
+
+/* Mobile: 320px-767px */
+@media (max-width: 767px) {
+    .export-buttons-grid {
+        grid-template-columns: 1fr;
+        gap: var(--spacing-3);
+    }
+
+    .course-generation-section {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    .course-generation-section .select-no-margin {
+        min-width: auto;
+        width: 100%;
+    }
+
+    .slides-navigation {
+        flex-direction: column;
+        gap: var(--spacing-3);
+    }
+
+    .slides-navigation .btn {
+        min-width: auto;
+        width: 100%;
+    }
+
+    .prompt-textarea-large {
+        min-height: 100px;
+        padding: var(--spacing-3);
+    }
+
+    #slides-editor-container,
+    .slides-editor-container {
+        min-height: 400px;
+        padding: var(--spacing-3);
+    }
+
+    .slides-creator .card {
+        transform: none !important;
+        margin-bottom: var(--spacing-4);
+    }
+}
+
+/* Tablet: 768px-1023px */
+@media (min-width: 768px) and (max-width: 1023px) {
+    .export-buttons-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+
+    .course-generation-section {
+        flex-wrap: nowrap;
+    }
+}
+
+/* ========================================
+   DARK MODE ENHANCEMENTS
+   ======================================== */
+@media (prefers-color-scheme: dark) {
+    #slides-editor-container::before,
+    .slides-editor-container::before {
+        background: linear-gradient(135deg,
+            rgba(var(--primary-color-rgb), 0.08) 0%,
+            rgba(var(--primary-color-rgb), 0.03) 100%);
+    }
+
+    .slide-preview-card:hover {
+        background: rgba(var(--primary-color-rgb), 0.08);
+    }
+
+    .slide-preview-card.active {
+        background: rgba(var(--primary-color-rgb), 0.1);
+    }
+
+    .export-buttons-grid .btn::before {
+        background: linear-gradient(90deg,
+            transparent,
+            rgba(255, 255, 255, 0.1),
+            transparent);
+    }
+
+    .status-display.slides-specific.status-loading {
+        background: linear-gradient(90deg,
+            var(--surface) 25%,
+            rgba(var(--primary-color-rgb), 0.08) 50%,
+            var(--surface) 75%);
+    }
+}
+
+/* ========================================
+   ACCESSIBILITY ENHANCEMENTS
+   ======================================== */
+@media (prefers-reduced-motion: reduce) {
+    .export-buttons-grid .btn::before,
+    .slides-loading::after,
+    .status-display.slides-specific.status-loading {
+        animation: none;
+    }
+
+    .export-buttons-grid .btn:hover,
+    .slide-preview-card:hover {
+        transform: none;
+    }
+}
+
+/* High contrast mode */
+@media (prefers-contrast: high) {
+    #slides-editor-container,
+    .slides-editor-container,
+    .slide-preview-card,
+    .slides-navigation {
+        border-width: 2px;
+    }
+
+    .slide-preview-card.active {
+        border-width: 3px;
+    }
+}

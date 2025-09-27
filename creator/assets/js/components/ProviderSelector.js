@@ -107,7 +107,7 @@ export class ProviderSelector {
 
             <!-- Settings Modal -->
             ${this.options.showSettingsModal ? `
-            <div id="settings-modal" class="modal-overlay" style="display: none;">
+            <div id="settings-modal" class="modal-overlay modal-hidden">
                 <div class="modal-content">
                     <div class="modal-header">
                         <h2 class="modal-title">Settings</h2>
@@ -125,7 +125,7 @@ export class ProviderSelector {
 
             <!-- Help Modal -->
             ${this.options.showHelpModal ? `
-            <div id="help-modal" class="modal-overlay" style="display: none;">
+            <div id="help-modal" class="modal-overlay modal-hidden">
                 <div class="modal-content">
                     <div class="modal-header">
                         <h2 class="modal-title">How to Use</h2>

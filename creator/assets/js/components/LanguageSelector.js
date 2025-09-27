@@ -44,10 +44,17 @@ export class LanguageSelector {
      * Get template data for rendering
      */
     getTemplateData() {
+        // Prepare languages with computed properties for template
+        const languages = this.getLanguageConfig().map(lang => ({
+            ...lang,
+            defaultChecked: lang.isDefault ? 'checked' : '',
+            starPrefix: lang.isDefault ? '⭐ ' : ''
+        }));
+
         return {
             title: this.options.title,
             description: this.options.description,
-            languages: this.getLanguageConfig()
+            languages: languages
         };
     }
 

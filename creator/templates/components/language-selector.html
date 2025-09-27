@@ -5,19 +5,19 @@
     </div>
     <div class="card-body">
         <div class="lang-grid">
-            {{#languages}}
+            {{@languages}}
             <div class="lang-item card-interactive" title="{{name}}">
                 <input type="checkbox"
                        id="lang-{{code}}"
                        name="languages"
                        value="{{code}}"
                        data-name="{{name}}"
-                       {{#isDefault}}checked{{/isDefault}}>
+                       {{defaultChecked}}>
                 <img src="./assets/images/png/{{flag}}"
                      alt="{{name}} Flag"
                      class="flag-icon">
                 <label for="lang-{{code}}" class="label-flex-grow">
-                    {{#isDefault}}⭐ {{/isDefault}}{{name}}
+                    {{starPrefix}}{{name}}
                 </label>
             </div>
             {{/languages}}
