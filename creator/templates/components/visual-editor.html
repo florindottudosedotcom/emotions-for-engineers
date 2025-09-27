@@ -13,3 +13,48 @@
 
 <!-- Language Selection (will be injected by LanguageSelector component) -->
 <div id="language-section"></div>
+
+<script>
+// Initialize Konva Editor when this component loads
+(async function initializeVisualEditor() {
+    try {
+        // Wait for DOM to be ready
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', initKonva);
+        } else {
+            await initKonva();
+        }
+
+        async function initKonva() {
+            // Check if container exists
+            const container = document.getElementById('slides-editor-container');
+            if (!container) {
+                console.warn('Slides editor container not found, skipping Konva initialization');
+                return;
+            }
+
+            // Prevent double initialization
+            if (container.dataset.konvaInitialized === 'true') {
+                console.log('Konva editor already initialized');
+                return;
+            }
+
+            // Dynamically import KonvaEditor
+            const { KonvaEditor } = await import('../js/components/KonvaEditor.js');
+
+            // Initialize the editor
+            const editor = new KonvaEditor('slides-editor-container', {
+                width: 1000,
+                height: 700,
+                backgroundColor: '#ffffff',
+                enableAccordion: true
+            });
+
+            await editor.init();
+            console.log('Konva editor initialized from visual-editor component');
+        }
+    } catch (error) {
+        console.error('Failed to initialize Konva editor from component:', error);
+    }
+})();
+</script>

@@ -134,12 +134,34 @@
         window.CREATOR_TYPE = 'slides';
 
         // Prevent FOUC by showing content after CSS is loaded
-        document.addEventListener('DOMContentLoaded', function() {
+        document.addEventListener('DOMContentLoaded', async function() {
             // Wait a moment for CSS to be applied, then show content
-            setTimeout(() => {
+            setTimeout(async () => {
                 document.body.classList.add('loaded');
+                await initializeKonvaEditor();
             }, 50);
         });
+
+        // Initialize Konva Editor
+        async function initializeKonvaEditor() {
+            try {
+                // Dynamically import KonvaEditor
+                const { KonvaEditor } = await import('./assets/js/components/KonvaEditor.js');
+
+                // Initialize the editor
+                const editor = new KonvaEditor('slides-editor-container', {
+                    width: 1000,
+                    height: 700,
+                    backgroundColor: '#ffffff',
+                    enableAccordion: true
+                });
+
+                await editor.init();
+                console.log('Konva editor initialized successfully');
+            } catch (error) {
+                console.error('Failed to initialize Konva editor:', error);
+            }
+        }
     </script>
 
 </body>

@@ -142,16 +142,39 @@
             return hasStyles;
         }
 
-        document.addEventListener('DOMContentLoaded', function() {
+        document.addEventListener('DOMContentLoaded', async function() {
             // Check if CSS is loaded, if not wait a bit longer
             if (isCSSLoaded()) {
                 showContent();
+                await initializeKonvaEditor();
             } else {
-                setTimeout(() => {
+                setTimeout(async () => {
                     showContent();
+                    await initializeKonvaEditor();
                 }, 100);
             }
         });
+
+        // Initialize Konva Editor
+        async function initializeKonvaEditor() {
+            try {
+                // Dynamically import KonvaEditor
+                const { KonvaEditor } = await import('./assets/js/components/KonvaEditor.js');
+
+                // Initialize the editor
+                const editor = new KonvaEditor('slides-editor-container', {
+                    width: 1000,
+                    height: 700,
+                    backgroundColor: '#ffffff',
+                    enableAccordion: true
+                });
+
+                await editor.init();
+                console.log('Konva editor initialized successfully');
+            } catch (error) {
+                console.error('Failed to initialize Konva editor:', error);
+            }
+        }
     </script>
 
 </body>
