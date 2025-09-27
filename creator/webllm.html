@@ -243,14 +243,18 @@
                     { CourseManager },
                     { LanguageSelector },
                     { StatusDisplay },
-                    { BaseProvider }
+                    { BaseProvider },
+                    { ToastUIEditor },
+                    { VirtualChapterManager }
                 ] = await Promise.all([
                     import('./assets/js/core/dom.js'),
                     import('./assets/js/components/UIManager.js'),
                     import('./assets/js/creators/CourseManager.js'),
                     import('./assets/js/components/LanguageSelector.js'),
                     import('./assets/js/components/StatusDisplay.js'),
-                    import('./assets/js/providers/BaseProvider.js')
+                    import('./assets/js/providers/BaseProvider.js'),
+                    import('./assets/js/components/ToastUIEditor.js'),
+                    import('./assets/js/utils/virtual-chapter-manager.js')
                 ]);
 
                 // Get provider-specific module with correct naming
@@ -270,13 +274,21 @@
                 const courseManager = new CourseManager(dom, ui, provider);
                 const languageSelector = new LanguageSelector('language-section');
                 const statusDisplay = new StatusDisplay('ai-status');
+                const virtualChapterManager = new VirtualChapterManager(ui);
+
+                // Make components available globally for cross-component access
+                window.courseComponents = {
+                    dom, ui, provider, courseManager, languageSelector, statusDisplay,
+                    virtualChapterManager, ToastUIEditor
+                };
 
                 // Initialize all components
                 await Promise.all([
                     ui.init(),
                     courseManager.init(),
                     languageSelector.init(),
-                    statusDisplay.init()
+                    statusDisplay.init(),
+                    virtualChapterManager.init()
                 ]);
 
                 console.log(`Course creator initialized with ${window.COURSE_CREATOR_PROVIDER} provider`);
