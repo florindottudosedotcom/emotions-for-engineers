@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="en">
+{{> page-head}}
+<body class="creator-page slides-creator {{bodyClass}}">
+    <div class="container">
+        {{> back-to-hub}}
+
+        <header class="page-header">
+            <div class="header-content">
+                <h1 class="page-title">{{title}}</h1>
+                <p class="page-subtitle">{{subtitle}}</p>
+            </div>
+            {{> ai-status}}
+        </header>
+
+        {{> provider-selector}}
+
+        {{> provider-info}}
+
+        {{> prompt-generator}}
+
+        {{> presentation-generator}}
+
+        {{> visual-editor}}
+
+        {{> slides-export}}
+    </div>
+
+    <!-- JS Libraries -->
+    <script src="./assets/js/jszip/3.10.1/jszip.min.js"></script>
+    <script src="./assets/js/js-yaml/4.1.0/js-yaml.min.js"></script>
+
+    <!-- Provider Configuration -->
+    <script>
+        window.COURSE_CREATOR_PROVIDER = '{{provider}}';
+        window.CREATOR_TYPE = 'slides';
+
+        // Prevent FOUC by showing content after CSS is loaded
+        document.addEventListener('DOMContentLoaded', function() {
+            // Wait a moment for CSS to be applied, then show content
+            setTimeout(() => {
+                document.body.classList.add('loaded');
+            }, 100);
+        });
+    </script>
+
+    <!-- Main Application Logic -->
+    <script type="module">
+        import { initializeSlidesCreator } from './assets/js/slides-creator.js';
+
+        // Initialize the slides creator with provider configuration
+        window.addEventListener('DOMContentLoaded', () => {
+            initializeSlidesCreator({
+                provider: '{{provider}}',
+                debug: window.location.hostname === 'localhost'
+            });
+        });
+    </script>
+</body>
+</html>

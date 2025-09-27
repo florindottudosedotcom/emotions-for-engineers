@@ -17,7 +17,8 @@ export class TemplateEngine {
             variable: /\{\{(\w+)\}\}/g,
             conditional: /\{\{#(\w+)\}\}(.*?)\{\{\/\1\}\}/gs,
             negativeConditional: /\{\{!\+(\w+)\}\}(.*?)\{\{\/\1\}\}/gs,
-            loop: /\{\{@(\w+)\}\}(.*?)\{\{\/\1\}\}/gs
+            loop: /\{\{@(\w+)\}\}(.*?)\{\{\/\1\}\}/gs,
+            include: /\{\{>\s*([a-zA-Z0-9\-_/]+)\s*\}\}/g
         };
     }
 
@@ -49,8 +50,8 @@ export class TemplateEngine {
                 }
             }
 
-            // Render template with data
-            const renderedTemplate = this.renderTemplate(templateContent, data);
+            // Render template with data (including nested includes)
+            const renderedTemplate = await this.renderTemplateAsync(templateContent, data);
 
             this.debugLog(`Successfully rendered template: ${templatePath}`);
             return renderedTemplate;
@@ -102,7 +103,7 @@ export class TemplateEngine {
     }
 
     /**
-     * Render template string with data interpolation
+     * Render template string with data interpolation (synchronous)
      */
     renderTemplate(templateContent, data = {}) {
         let rendered = templateContent;
@@ -112,6 +113,27 @@ export class TemplateEngine {
 
         // Process loops
         rendered = this.processLoops(rendered, data);
+
+        // Process variables
+        rendered = this.processVariables(rendered, data);
+
+        return rendered;
+    }
+
+    /**
+     * Render template string with data interpolation and nested includes (asynchronous)
+     */
+    async renderTemplateAsync(templateContent, data = {}) {
+        let rendered = templateContent;
+
+        // Process includes first (they may contain other template directives)
+        rendered = await this.processIncludes(rendered, data);
+
+        // Process conditionals
+        rendered = this.processConditionals(rendered, data);
+
+        // Process loops (but need to handle nested includes in loops)
+        rendered = await this.processLoopsAsync(rendered, data);
 
         // Process variables
         rendered = this.processVariables(rendered, data);
@@ -139,7 +161,7 @@ export class TemplateEngine {
     }
 
     /**
-     * Process loop blocks {{@array}}content{{/array}}
+     * Process loop blocks {{@array}}content{{/array}} (synchronous)
      */
     processLoops(template, data) {
         return template.replace(this.patterns.loop, (match, arrayName, content) => {
@@ -160,6 +182,64 @@ export class TemplateEngine {
                 return this.renderTemplate(content, itemData);
             }).join('');
         });
+    }
+
+    /**
+     * Process loop blocks {{@array}}content{{/array}} (asynchronous with includes)
+     */
+    async processLoopsAsync(template, data) {
+        const loopMatches = Array.from(template.matchAll(this.patterns.loop));
+
+        for (const match of loopMatches) {
+            const [fullMatch, arrayName, content] = match;
+            const array = this.getValue(data, arrayName);
+
+            if (!Array.isArray(array)) {
+                template = template.replace(fullMatch, '');
+                continue;
+            }
+
+            const processedItems = await Promise.all(
+                array.map(async (item, index) => {
+                    const itemData = {
+                        ...data,
+                        ...item,
+                        $index: index,
+                        $first: index === 0,
+                        $last: index === array.length - 1,
+                        $length: array.length
+                    };
+                    return await this.renderTemplateAsync(content, itemData);
+                })
+            );
+
+            template = template.replace(fullMatch, processedItems.join(''));
+        }
+
+        return template;
+    }
+
+    /**
+     * Process include directives {{> componentName}}
+     */
+    async processIncludes(template, data) {
+        const includeMatches = Array.from(template.matchAll(this.patterns.include));
+
+        for (const match of includeMatches) {
+            const [fullMatch, componentPath] = match;
+
+            try {
+                // Load and render the included component
+                const includedContent = await this.loadTemplate(`components/${componentPath}.html`, data);
+                template = template.replace(fullMatch, includedContent);
+                this.debugLog(`Included component: ${componentPath}`);
+            } catch (error) {
+                logger.error(`Failed to include component ${componentPath}:`, error);
+                template = template.replace(fullMatch, `<!-- Include failed: ${componentPath} -->`);
+            }
+        }
+
+        return template;
     }
 
     /**
@@ -289,7 +369,9 @@ export class TemplateEngine {
             loadProviderTemplate: (type, data = {}) =>
                 this.loadProviderTemplate(type, { ...sharedData, ...data }),
             loadComponentTemplate: (name, data = {}) =>
-                this.loadComponentTemplate(name, { ...sharedData, ...data })
+                this.loadComponentTemplate(name, { ...sharedData, ...data }),
+            renderTemplateAsync: (content, data = {}) =>
+                this.renderTemplateAsync(content, { ...sharedData, ...data })
         };
     }
 }
