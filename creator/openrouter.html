@@ -232,7 +232,6 @@
                     { DOM, Events },
                     { UIManager },
                     { CourseManager },
-                    { LanguageSelector },
                     { StatusDisplay },
                     { BaseProvider },
                     { ToastUIEditor },
@@ -241,7 +240,6 @@
                     import('./assets/js/core/dom.js'),
                     import('./assets/js/components/UIManager.js'),
                     import('./assets/js/creators/CourseManager.js'),
-                    import('./assets/js/components/LanguageSelector.js'),
                     import('./assets/js/components/StatusDisplay.js'),
                     import('./assets/js/providers/BaseProvider.js'),
                     import('./assets/js/components/ToastUIEditor.js'),
@@ -263,13 +261,12 @@
                 const ui = new UIManager(dom);
                 const provider = new ProviderClass();
                 const courseManager = new CourseManager(dom, ui, provider);
-                const languageSelector = new LanguageSelector('language-section');
                 const statusDisplay = new StatusDisplay('ai-status');
                 const virtualChapterManager = new VirtualChapterManager(ui);
 
                 // Make components available globally for cross-component access
                 window.courseComponents = {
-                    dom, ui, provider, courseManager, languageSelector, statusDisplay,
+                    dom, ui, provider, courseManager, statusDisplay,
                     virtualChapterManager, ToastUIEditor
                 };
 
@@ -277,7 +274,6 @@
                 await Promise.all([
                     ui.init(),
                     courseManager.init(),
-                    languageSelector.init(),
                     statusDisplay.init(),
                     virtualChapterManager.init()
                 ]);
