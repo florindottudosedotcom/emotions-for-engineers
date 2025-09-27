@@ -142,11 +142,16 @@ export class OpenRouterProvider extends BaseProvider {
     getTemplateData() {
         const modelCount = this.availableModels?.length || this.config.models.length;
         const selectedModel = this.getCurrentSelectedModel();
+        const accountBalanceText = this.getAccountBalanceText();
+
+        console.log('📄 OpenRouter template data - accountBalanceText:', accountBalanceText);
+        console.log('📄 OpenRouter template data - isAuthenticated:', this.isAuthenticated);
+        console.log('📄 OpenRouter template data - accountInfo exists:', !!this.accountInfo);
 
         return {
             modelCount,
             isAuthenticated: this.isAuthenticated,
-            accountBalanceText: this.getAccountBalanceText(),
+            accountBalanceText: accountBalanceText,
             sessionUsageText: this.getSessionUsageText(),
             selectedModelText: selectedModel ? `${selectedModel.name} - ${selectedModel.description}` : 'Select a model...',
             modelGroups: this.getModelGroupsData(),
@@ -162,14 +167,32 @@ export class OpenRouterProvider extends BaseProvider {
     }
 
     getAccountBalanceText() {
-        if (!this.accountInfo) return '';
+        if (!this.accountInfo) {
+            logger.debug('OpenRouter: No account info available');
+            return '🔑 Connected';
+        }
 
-        if (this.accountInfo.data && this.accountInfo.data.label) {
-            return `✅ Account: ${this.accountInfo.data.label}`;
-        } else if (this.accountInfo.balance !== undefined) {
-            return `💰 Balance: $${this.accountInfo.balance.toFixed(2)}`;
+        console.log('🎯 OpenRouter account info being processed:', this.accountInfo);
+
+        // Display account info based on OpenRouter's actual API structure
+        if (this.accountInfo.data && this.accountInfo.data.limit_remaining !== undefined) {
+            // OpenRouter's remaining credit balance
+            return `💰 Credits: $${this.accountInfo.data.limit_remaining.toFixed(2)}`;
+        } else if (this.accountInfo.data && this.accountInfo.data.usage !== undefined) {
+            // Show usage if balance not available
+            return `📊 Used: $${this.accountInfo.data.usage.toFixed(4)}`;
+        } else if (this.accountInfo.data && this.accountInfo.data.limit !== undefined) {
+            // Show total limit if no remaining balance
+            return `💳 Limit: $${this.accountInfo.data.limit.toFixed(2)}`;
+        } else if (this.accountInfo.data && this.accountInfo.data.is_free_tier === false) {
+            // Paid tier indicator
+            return `👑 Paid Tier`;
+        } else if (this.accountInfo.data && this.accountInfo.data.is_free_tier === true) {
+            // Free tier indicator
+            return `🆓 Free Tier`;
         } else {
-            return '✅ API Key Connected';
+            // Fallback - show that we're connected
+            return '✅ API Key Active';
         }
     }
 
@@ -295,6 +318,7 @@ export class OpenRouterProvider extends BaseProvider {
         this.dropdownOpen = true;
         this.dom.dropdownContent.style.display = 'block';
         this.dom.dropdownTrigger?.classList.add('open');
+        this.dom.dropdownTrigger?.setAttribute('aria-expanded', 'true');
 
         // Focus the search input
         setTimeout(() => {
@@ -311,6 +335,7 @@ export class OpenRouterProvider extends BaseProvider {
         this.dropdownOpen = false;
         this.dom.dropdownContent.style.display = 'none';
         this.dom.dropdownTrigger?.classList.remove('open');
+        this.dom.dropdownTrigger?.setAttribute('aria-expanded', 'false');
 
         // Clear search
         if (this.dom.dropdownSearch) {
@@ -480,8 +505,8 @@ export class OpenRouterProvider extends BaseProvider {
 
         // Close dropdown when clicking outside
         Events.on(document, 'click', (e) => {
-            if (!this.dom.dropdownTrigger?.contains(e.target) &&
-                !this.dom.dropdownContent?.contains(e.target)) {
+            const dropdown = DOM.query('#openrouter-model-dropdown');
+            if (this.dropdownOpen && dropdown && !dropdown.contains(e.target)) {
                 this.closeDropdown();
             }
         });
@@ -723,21 +748,39 @@ export class OpenRouterProvider extends BaseProvider {
         if (!this.isAuthenticated) return;
 
         try {
-            // Get account credits and info
-            const response = await fetch('https://openrouter.ai/api/v1/auth/key', {
+            // Get account key info - this is the only reliable endpoint
+            const keyResponse = await fetch('https://openrouter.ai/api/v1/auth/key', {
                 headers: {
                     'Authorization': `Bearer ${this.apiKey}`,
                     'Content-Type': 'application/json'
                 }
             });
 
-            if (response.ok) {
-                this.accountInfo = await response.json();
-                this.updateBalanceDisplay();
+            let accountData = {};
+            if (keyResponse.ok) {
+                accountData = await keyResponse.json();
+                console.log('🔍 OpenRouter key response:', accountData);
             } else {
-                // Fallback if balance endpoint isn't available
-                this.accountInfo = { label: 'Connected', usage: 0 };
-                this.updateBalanceDisplay();
+                console.log('❌ OpenRouter key response failed:', keyResponse.status);
+                // Even if key endpoint fails, we know the API key works since validation passed
+                accountData = { connected: true };
+            }
+
+            this.accountInfo = accountData;
+            console.log('📊 Final accountInfo:', this.accountInfo);
+            this.updateBalanceDisplay();
+
+            // Directly update the account balance in DOM
+            const accountBalanceEl = DOM.query('.account-balance');
+            if (accountBalanceEl) {
+                const balanceText = this.getAccountBalanceText();
+                accountBalanceEl.textContent = balanceText;
+                console.log('🔄 Updated account balance DOM to:', balanceText);
+            }
+
+            // Update template with new account info
+            if (this.isAuthenticated) {
+                this.updateUI();
             }
         } catch (error) {
             logger.error('Failed to fetch account info:', error);
@@ -752,13 +795,22 @@ export class OpenRouterProvider extends BaseProvider {
 
         const usage = this.sessionUsage[this.currentModel] || { requests: 0, cost: 0 };
 
-        // Display account info (balance may not be available via API)
-        if (this.accountInfo.data && this.accountInfo.data.label) {
-            this.dom.accountBalance.textContent = `✅ Account: ${this.accountInfo.data.label}`;
-        } else if (this.accountInfo.balance !== undefined) {
-            this.dom.accountBalance.textContent = `💰 Balance: $${this.accountInfo.balance.toFixed(2)}`;
+        // Display account info with priority: balance > account label > connected status
+        if (this.accountInfo.balance !== undefined) {
+            // Show balance if available
+            this.dom.accountBalance.textContent = `💰 Credits: $${this.accountInfo.balance.toFixed(2)}`;
+        } else if (this.accountInfo.credits && this.accountInfo.credits.remaining !== undefined) {
+            // Check nested credits object
+            this.dom.accountBalance.textContent = `💰 Credits: $${this.accountInfo.credits.remaining.toFixed(2)}`;
+        } else if (this.accountInfo.data && this.accountInfo.data.label) {
+            // Show account label if available
+            this.dom.accountBalance.textContent = `📧 ${this.accountInfo.data.label}`;
+        } else if (this.accountInfo.data && this.accountInfo.data.usage) {
+            // Show usage info if available
+            this.dom.accountBalance.textContent = `📊 Usage: $${this.accountInfo.data.usage.toFixed(4)}`;
         } else {
-            this.dom.accountBalance.textContent = `✅ API Key Connected`;
+            // Fallback status
+            this.dom.accountBalance.textContent = `✅ API Key Active`;
         }
 
         if (this.dom.sessionUsage) {
@@ -857,6 +909,11 @@ export class OpenRouterProvider extends BaseProvider {
 
             // Track usage
             this.trackUsage(data.usage);
+
+            // Refresh account balance after generation
+            setTimeout(() => {
+                this.updateAccountInfo();
+            }, 1000); // Small delay to allow OpenRouter to process the usage
 
             return data.choices[0].message.content;
         } catch (error) {

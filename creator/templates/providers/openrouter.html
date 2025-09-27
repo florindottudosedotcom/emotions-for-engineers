@@ -30,7 +30,8 @@
     <div id="openrouter-authenticated" {{#!isAuthenticated}}style="display: none;"{{/!isAuthenticated}}>
         <div class="account-info">
             <div class="account-header">
-                <h4 class="account-title">✅ Connected to OpenRouter {{accountBalanceText}}</h4>
+                <h4 class="account-title">✅ Connected to OpenRouter</h4>
+                <div class="account-balance">{{accountBalanceText}}</div>
                 <button id="openrouter-disconnect-btn" class="btn btn-sm disconnect-btn">Disconnect</button>
             </div>
         </div>
