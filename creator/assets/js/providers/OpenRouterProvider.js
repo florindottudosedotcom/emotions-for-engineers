@@ -303,12 +303,22 @@ export class OpenRouterProvider extends BaseProvider {
             const modelsHtml = this.generateDropdownContent();
             this.dom.modelsList.innerHTML = modelsHtml;
 
+            console.log('OpenRouter: Populated dropdown with models', {
+                isAuthenticated: this.isAuthenticated,
+                availableModelsCount: (this.availableModels || []).length,
+                configModelsCount: this.config.models.length,
+                htmlLength: modelsHtml.length,
+                htmlPreview: modelsHtml.substring(0, 200) + '...'
+            });
+
             // Update count info
             const totalCount = (this.availableModels || this.config.models).length;
             this.updateModelCountInfo(totalCount, totalCount, '');
 
             // Setup handlers for the new content
             this.setupModelOptionHandlers();
+        } else {
+            console.warn('OpenRouter: modelsList DOM element not found for population');
         }
     }
 
@@ -390,6 +400,14 @@ export class OpenRouterProvider extends BaseProvider {
         this.dom.dropdownContent.classList.add('show');
         this.dom.dropdownTrigger.classList.add('open');
         this.dom.dropdownTrigger.setAttribute('aria-expanded', 'true');
+
+        // Debug: Check if classes were applied and styles are correct
+        console.log('OpenRouter: Dropdown classes after opening', {
+            hasShowClass: this.dom.dropdownContent.classList.contains('show'),
+            computedDisplay: window.getComputedStyle(this.dom.dropdownContent).display,
+            classList: Array.from(this.dom.dropdownContent.classList),
+            innerHTML: this.dom.dropdownContent.innerHTML.substring(0, 100) + '...'
+        });
 
         // Focus the search input
         setTimeout(() => {
@@ -542,10 +560,8 @@ export class OpenRouterProvider extends BaseProvider {
         // Setup event listeners
         this.setupEventListeners();
 
-        // Populate models in dropdown if authenticated
-        if (this.isAuthenticated) {
-            this.populateModelDropdown();
-        }
+        // Always populate models in dropdown (needed for selection even when not authenticated)
+        this.populateModelDropdown();
 
         // Set up model option handlers if we have models and are authenticated
         if (this.isAuthenticated && this.availableModels && this.availableModels.length > 0) {
