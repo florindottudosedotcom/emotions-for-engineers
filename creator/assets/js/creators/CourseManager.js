@@ -219,7 +219,7 @@ Please provide an enhanced version that maintains the original intent but adds e
             // For Puter quota errors, provide additional guidance
             if (errorMessage.toLowerCase().includes('quota') || errorMessage.toLowerCase().includes('limit')) {
                 setTimeout(() => {
-                    this.ui.showMessage('💡 Tip: Try Cloud AI, WebLLM, or Ollama providers if quota issues persist.', 'info', 6000);
+                    this.ui.showMessage('<i data-lucide="lightbulb"></i> Tip: Try Cloud AI, WebLLM, or Ollama providers if quota issues persist.', 'info', 6000);
                 }, 2000);
             }
 
@@ -244,9 +244,13 @@ Please provide an enhanced version that maintains the original intent but adds e
                 // Force UI update
                 if (this.dom.generateCourseBtn) {
                     this.dom.generateCourseBtn.disabled = false;
-                    this.dom.generateCourseBtn.textContent = '⚡ Generate Entire Course';
+                    this.dom.generateCourseBtn.innerHTML = '<i data-lucide="zap"></i> Generate Entire Course';
                     // Also clear any loading state from the UI manager
                     this.ui.hideLoading(this.dom.generateCourseBtn);
+                    // Re-initialize Lucide icons
+                    if (typeof lucide !== 'undefined') {
+                        lucide.createIcons();
+                    }
                 }
 
                 // Force clear any stuck status displays
@@ -259,8 +263,12 @@ Please provide an enhanced version that maintains the original intent but adds e
                 if (currentText.includes('Generating') || this.dom.generateCourseBtn.disabled) {
                     logger.warn('Button was stuck in generating state, forcing reset');
                     this.dom.generateCourseBtn.disabled = false;
-                    this.dom.generateCourseBtn.textContent = '⚡ Generate Entire Course';
+                    this.dom.generateCourseBtn.innerHTML = '<i data-lucide="zap"></i> Generate Entire Course';
                     this.ui.hideLoading(this.dom.generateCourseBtn);
+                    // Re-initialize Lucide icons
+                    if (typeof lucide !== 'undefined') {
+                        lucide.createIcons();
+                    }
                 }
             }
         }
@@ -761,8 +769,12 @@ Generated with [Emotions for Engineers Course Creator](https://github.com/user/e
     updateGenerationUI(isGenerating) {
         if (this.dom.generateCourseBtn) {
             this.dom.generateCourseBtn.disabled = isGenerating;
-            this.dom.generateCourseBtn.textContent = isGenerating ?
-                '🔄 Generating...' : '⚡ Generate Entire Course';
+            this.dom.generateCourseBtn.innerHTML = isGenerating ?
+                '<i data-lucide="refresh-cw"></i> Generating...' : '<i data-lucide="zap"></i> Generate Entire Course';
+            // Re-initialize Lucide icons
+            if (typeof lucide !== 'undefined') {
+                lucide.createIcons();
+            }
         }
     }
 

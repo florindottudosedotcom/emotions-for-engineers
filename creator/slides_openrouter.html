@@ -6,6 +6,7 @@
     <meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://cdn.jsdelivr.net https://unpkg.com; style-src 'self' 'unsafe-inline'; frame-src 'self'; img-src 'self' data: blob:; connect-src 'self' https://openrouter.ai https://api.openrouter.ai https://cdn.jsdelivr.net https://unpkg.com; font-src 'self'; object-src 'none'; base-uri 'self'; form-action 'self'; worker-src 'self' blob:;">
     <title>Slides Creator - OpenRouter</title>
     <link rel="icon" type="image/svg+xml" href="../favicon.svg">
+    <script src="./assets/js/lucide/lucide.min.js"></script>
 
     <!-- Load CSS files in dependency order (replaces bundle for better debugging) -->
     <link rel="stylesheet" href="./assets/css/core/variables.css">
@@ -75,7 +76,7 @@
                         <option value="12">12 Slides</option>
                         <option value="15">15 Slides</option>
                     </select>
-                    <button type="button" id="generate-slides-btn" class="btn btn-secondary ml-4">⚡ Generate Presentation</button>
+                    <button type="button" id="generate-slides-btn" class="btn btn-secondary ml-4"><i data-lucide="zap"></i> Generate Presentation</button>
                 </div>
                 <div id="generation-status" class="status-display mt-4"></div>
             </div>
@@ -127,6 +128,11 @@
         // Prevent FOUC by waiting for CSS to load properly
         function showContent() {
             document.body.classList.add('loaded');
+
+            // Initialize Lucide icons
+            if (typeof lucide !== 'undefined') {
+                lucide.createIcons();
+            }
         }
 
         // Check if CSS is loaded by testing a CSS property

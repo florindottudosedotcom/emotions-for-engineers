@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Creator Functionality Tests</title>
+    <script src="../assets/js/lucide/lucide.min.js"></script>
     <style>
         body {
             font-family: monospace;
@@ -124,7 +125,7 @@
     </style>
 </head>
 <body>
-    <h1>🧪 Creator Functionality Test Suite</h1>
+    <h1><i data-lucide="flask"></i> Creator Functionality Test Suite</h1>
     <p>Comprehensive tests to ensure all functionality is preserved after refactoring.</p>
 
     <div class="summary">
@@ -150,14 +151,14 @@
     </div>
 
     <div class="controls">
-        <button class="btn" onclick="runAllTests()">▶️ Run All Tests</button>
-        <button class="btn btn-secondary" onclick="resetTests()">🔄 Reset Tests</button>
-        <button class="btn btn-secondary" onclick="exportResults()">📋 Export Results</button>
+        <button class="btn" onclick="runAllTests()"><i data-lucide="play"></i> Run All Tests</button>
+        <button class="btn btn-secondary" onclick="resetTests()"><i data-lucide="refresh-cw"></i> Reset Tests</button>
+        <button class="btn btn-secondary" onclick="exportResults()"><i data-lucide="clipboard"></i> Export Results</button>
     </div>
 
     <!-- Core Functionality Tests -->
     <div class="test-suite">
-        <h2>🎯 Core Application Tests</h2>
+        <h2><i data-lucide="target"></i> Core Application Tests</h2>
         <div class="test-case" data-test="app-load">
             <div>
                 <div class="test-name">Application Load</div>
@@ -223,7 +224,7 @@
 
     <!-- Course Creator Tests -->
     <div class="test-suite">
-        <h2>📚 Course Creator Tests</h2>
+        <h2><i data-lucide="book"></i> Course Creator Tests</h2>
         <div class="test-case" data-test="course-form">
             <div>
                 <div class="test-name">Course Form Elements</div>
@@ -282,7 +283,7 @@
 
     <!-- State Management Tests -->
     <div class="test-suite">
-        <h2>💾 State Management Tests</h2>
+        <h2><i data-lucide="database"></i> State Management Tests</h2>
         <div class="test-case" data-test="state-save">
             <div>
                 <div class="test-name">State Persistence</div>
@@ -308,7 +309,7 @@
 
     <!-- Theme Tests -->
     <div class="test-suite">
-        <h2>🎨 Theme System Tests</h2>
+        <h2><i data-lucide="palette"></i> Theme System Tests</h2>
         <div class="test-case" data-test="theme-detection">
             <div>
                 <div class="test-name">Theme Detection</div>
@@ -334,7 +335,7 @@
 
     <!-- File Operations Tests -->
     <div class="test-suite">
-        <h2>📁 File Operations Tests</h2>
+        <h2><i data-lucide="folder"></i> File Operations Tests</h2>
         <div class="test-case" data-test="zip-generation">
             <div>
                 <div class="test-name">ZIP File Generation</div>
@@ -353,7 +354,7 @@
 
     <!-- Responsive Design Tests -->
     <div class="test-suite">
-        <h2>📱 Responsive Design Tests</h2>
+        <h2><i data-lucide="smartphone"></i> Responsive Design Tests</h2>
         <div class="test-case" data-test="mobile-layout">
             <div>
                 <div class="test-name">Mobile Layout</div>
@@ -380,5 +381,11 @@
     <div class="log" id="test-log"></div>
 
     <script src="test-runner.js"></script>
+    <script>
+        // Initialize Lucide icons
+        if (typeof lucide !== 'undefined') {
+            lucide.createIcons();
+        }
+    </script>
 </body>
 </html>
