@@ -1,0 +1,191 @@
+/**
+ * Puter Provider Specific Styles
+ * Styles unique to the Puter free AI provider
+ */
+
+/* Free provider highlight styles */
+.free-provider-highlight {
+    background: var(--primary-color);
+    color: white;
+    padding: var(--spacing-5);
+    border-radius: var(--border-radius-lg);
+    margin-bottom: var(--spacing-6);
+    text-align: center;
+    box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
+}
+
+.free-provider-highlight h2 {
+    margin: 0 0 var(--spacing-3) 0;
+    font-size: var(--font-size-xl);
+    font-weight: var(--font-weight-semibold);
+}
+
+.free-provider-highlight p {
+    margin: 0;
+    opacity: 0.95;
+    font-size: var(--font-size-base);
+    line-height: var(--line-height-relaxed);
+}
+
+/* Model selection styles */
+.model-selector {
+    background: var(--bg-secondary);
+    border-radius: var(--border-radius);
+    padding: var(--spacing-4);
+    margin: var(--spacing-4) 0;
+}
+
+.model-selector h4 {
+    margin: 0 0 var(--spacing-3) 0;
+    color: var(--text-primary);
+    font-size: var(--font-size-base);
+}
+
+/* Status indicator styles */
+.puter-status {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-2);
+    padding: var(--spacing-3);
+    background: #e8f5e8;
+    border-radius: var(--border-radius);
+    border-left: 4px solid var(--success-color);
+    margin: var(--spacing-4) 0;
+}
+
+.puter-status-icon {
+    color: var(--success-color);
+    font-weight: bold;
+    font-size: var(--font-size-lg);
+}
+
+.puter-status-text {
+    color: var(--text-secondary);
+    font-size: 0.95em;
+}
+
+/* Enhanced course preview styles */
+.course-preview {
+    background: var(--bg-primary);
+    border: 1px solid var(--border-primary);
+    border-radius: var(--border-radius-lg);
+    padding: var(--spacing-6);
+    margin: var(--spacing-5) 0;
+    box-shadow: var(--shadow-md);
+}
+
+.course-preview h3 {
+    margin: 0 0 var(--spacing-4) 0;
+    color: var(--text-primary);
+    font-size: var(--font-size-xl);
+    font-weight: var(--font-weight-semibold);
+}
+
+.course-preview .course-description {
+    margin: var(--spacing-4) 0;
+    padding: var(--spacing-4);
+    background: var(--bg-secondary);
+    border-radius: var(--border-radius);
+    font-style: italic;
+    color: var(--text-secondary);
+}
+
+/* Chapter styling */
+.chapter-item {
+    padding: var(--spacing-4);
+    margin: var(--spacing-3) 0;
+    background: var(--bg-secondary);
+    border-radius: var(--border-radius);
+    border-left: 4px solid var(--primary-color);
+}
+
+.chapter-item h4 {
+    margin: 0 0 var(--spacing-2) 0;
+    color: var(--primary-color);
+    font-size: var(--font-size-lg);
+}
+
+.chapter-item p {
+    margin: 0;
+    color: var(--text-secondary);
+    font-size: 0.9em;
+    line-height: var(--line-height-relaxed);
+}
+
+/* Generation progress styling */
+.generation-progress {
+    background: var(--bg-primary);
+    border: 1px solid var(--border-primary);
+    border-radius: var(--border-radius);
+    padding: var(--spacing-5);
+    margin: var(--spacing-5) 0;
+}
+
+.progress-item {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-3);
+    padding: var(--spacing-2) 0;
+    border-bottom: 1px solid var(--border-light);
+}
+
+.progress-item:last-child {
+    border-bottom: none;
+}
+
+.progress-icon {
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    background: var(--bg-tertiary);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 12px;
+    font-weight: bold;
+}
+
+.progress-icon.completed {
+    background: var(--success-color);
+    color: white;
+}
+
+.progress-icon.active {
+    background: var(--primary-color);
+    color: white;
+}
+
+.progress-text {
+    color: var(--text-secondary);
+    font-size: 0.9em;
+}
+
+.progress-text.completed {
+    color: var(--success-color);
+}
+
+.progress-text.active {
+    color: var(--primary-color);
+    font-weight: var(--font-weight-medium);
+}
+
+/* Dark theme overrides for Puter */
+@media (prefers-color-scheme: dark) {
+    .puter-status {
+        background: rgba(40, 167, 69, 0.1);
+        border-left-color: var(--success-color);
+    }
+
+    .model-selector {
+        background: var(--bg-tertiary);
+    }
+}
+
+[data-theme="dark"] .puter-status {
+    background: rgba(40, 167, 69, 0.1);
+    border-left-color: var(--success-color);
+}
+
+[data-theme="dark"] .model-selector {
+    background: var(--bg-tertiary);
+}

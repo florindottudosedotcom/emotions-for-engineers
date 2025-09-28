@@ -1,0 +1,416 @@
+/**
+ * Tabs Component System - Following CLAUDE.md Guidelines
+ * Reusable tab navigation for provider selection and content organization
+ */
+
+/* ========================================
+   PROVIDER TABS SYSTEM
+   ======================================== */
+
+/* Provider row container */
+.provider-row {
+    display: flex;
+    align-items: flex-end;
+    gap: var(--spacing-8);
+    margin-bottom: 0;
+    flex-wrap: wrap;
+    padding-left: var(--spacing-4);
+}
+
+/* Provider tabs container */
+.provider-tabs {
+    display: flex;
+    flex-direction: row;
+    gap: 0;
+    flex: 0 0 auto;
+    flex-wrap: wrap;
+}
+
+/* Individual provider tab */
+.provider-tab {
+    padding: var(--spacing-3) var(--spacing-6);
+    border: 2px solid var(--border-light);
+    border-right: none;
+    border-radius: 0;
+    background: var(--surface);
+    color: var(--text-primary);
+    cursor: pointer;
+    transition: all var(--transition-normal);
+    font-weight: var(--font-weight-medium);
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-2);
+    min-width: 140px;
+    justify-content: center;
+    font-size: var(--font-size-base);
+}
+
+/* First and last tab border radius */
+.provider-tab:first-child {
+    border-radius: var(--radius-medium) 0 0 var(--radius-medium);
+}
+
+.provider-tab:last-child {
+    border-radius: 0 var(--radius-medium) var(--radius-medium) 0;
+    border-right: 2px solid var(--border-light);
+}
+
+/* Tab hover state */
+.provider-tab:hover {
+    border-color: var(--primary-color);
+    background: var(--background-tertiary);
+    transform: translateY(-1px);
+}
+
+/* Active tab state */
+.provider-tab.active {
+    border-color: var(--primary-color);
+    background: var(--primary-color);
+    color: var(--text-on-primary);
+    box-shadow: var(--shadow-small);
+}
+
+/* Tab icons */
+.provider-tab .icon {
+    font-size: 1.2em;
+    flex-shrink: 0;
+}
+
+/* ========================================
+   CONTENT TABS SYSTEM
+   ======================================== */
+
+/* Content tab navigation */
+.tab-nav {
+    display: flex;
+    background-color: var(--background-tertiary);
+    border-bottom: 1px solid var(--border-light);
+    margin-bottom: 0;
+    padding: 0;
+    border-radius: var(--radius-medium) var(--radius-medium) 0 0;
+    justify-content: flex-start;
+    align-items: stretch;
+    overflow-x: auto;
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+}
+
+.tab-nav::-webkit-scrollbar {
+    display: none;
+}
+
+/* Content tab link/button */
+.tab-link,
+.tab {
+    padding: var(--spacing-3) var(--spacing-4);
+    background-color: var(--surface);
+    border: 1px solid var(--border-light);
+    border-bottom: none;
+    cursor: pointer;
+    transition: all var(--transition-normal);
+    margin-right: 2px;
+    border-radius: var(--radius-small) var(--radius-small) 0 0;
+    color: var(--text-primary);
+    text-decoration: none;
+    font-weight: var(--font-weight-medium);
+    font-size: var(--font-size-sm);
+    white-space: nowrap;
+    display: inline-flex;
+    align-items: center;
+    gap: var(--spacing-1);
+}
+
+/* Active content tab */
+.tab-link.active,
+.tab.active {
+    background-color: var(--primary-color);
+    color: var(--text-on-primary);
+    border-color: var(--primary-color);
+    position: relative;
+}
+
+/* Content tab hover state */
+.tab-link:hover:not(.active),
+.tab:hover:not(.active) {
+    background-color: var(--background-tertiary);
+    border-color: var(--border-medium);
+}
+
+/* Active tab bottom border indicator */
+.tab-link.active::after,
+.tab.active::after {
+    content: '';
+    position: absolute;
+    bottom: -1px;
+    left: 0;
+    right: 0;
+    height: 2px;
+    background: var(--primary-color);
+}
+
+/* ========================================
+   TAB CONTENT AREAS
+   ======================================== */
+
+/* Tab content container */
+.tab-content {
+    background: var(--surface);
+    border: 1px solid var(--border-light);
+    border-top: none;
+    border-radius: 0 0 var(--radius-medium) var(--radius-medium);
+    padding: var(--spacing-6);
+}
+
+/* Individual tab panel */
+.tab-panel {
+    display: none;
+}
+
+.tab-panel.active {
+    display: block;
+}
+
+/* ========================================
+   FRAME INTEGRATION (for embedded content)
+   ======================================== */
+
+/* Creator frame for provider content */
+.creator-frame {
+    width: 100%;
+    height: 800px;
+    border: 1px solid var(--border-light);
+    border-radius: 0 var(--radius-medium) var(--radius-medium) var(--radius-medium);
+    border-top: none;
+    min-height: 600px;
+    background: var(--surface);
+}
+
+/* ========================================
+   LOADING AND STATUS STATES
+   ======================================== */
+
+/* Loading state for tab switching */
+.loading-state {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: 400px;
+    color: var(--text-secondary);
+    flex-direction: column;
+    gap: var(--spacing-4);
+    background: var(--surface);
+    border-radius: var(--radius-medium);
+    padding: var(--spacing-8);
+}
+
+.loading-state .icon {
+    font-size: 2em;
+    opacity: 0.6;
+    animation: pulse 2s ease-in-out infinite alternate;
+}
+
+/* ========================================
+   DARK MODE TEXT CONTRAST IMPROVEMENTS
+   ======================================== */
+
+@media (prefers-color-scheme: dark) {
+    .provider-tab {
+        background: var(--surface);
+        border-color: var(--border-light);
+        color: var(--text-primary);
+    }
+
+    .provider-tab:hover {
+        background: var(--background-tertiary);
+        border-color: var(--primary-color);
+        color: var(--primary-color);
+    }
+
+    .provider-tab.active {
+        background: var(--primary-color);
+        color: var(--text-on-primary);
+        border-color: var(--primary-color);
+    }
+
+    .tab-link,
+    .tab {
+        background: var(--surface);
+        border-color: var(--border-light);
+        color: var(--text-primary);
+    }
+
+    .tab-link:hover:not(.active),
+    .tab:hover:not(.active) {
+        background: var(--background-tertiary);
+        border-color: var(--border-medium);
+        color: var(--text-primary);
+    }
+
+    .tab-link.active,
+    .tab.active {
+        background: var(--primary-color);
+        color: var(--text-on-primary);
+        border-color: var(--primary-color);
+    }
+
+    .tab-content {
+        background: var(--surface);
+        border-color: var(--border-light);
+        color: var(--text-primary);
+    }
+
+    .loading-state {
+        background: var(--surface);
+        color: var(--text-secondary);
+    }
+}
+
+/* ========================================
+   RESPONSIVE DESIGN
+   ======================================== */
+
+/* Mobile: 320px-767px */
+@media (max-width: 767px) {
+    .provider-row {
+        flex-direction: column;
+        align-items: stretch;
+        gap: var(--spacing-4);
+        padding-left: 0;
+    }
+
+    .provider-tabs {
+        flex-direction: column;
+        width: 100%;
+    }
+
+    .provider-tab {
+        min-width: 0;
+        width: 100%;
+        border-radius: 0 !important;
+        border-right: 2px solid var(--border-light) !important;
+        border-bottom: 1px solid var(--border-light);
+        justify-content: flex-start;
+        padding: var(--spacing-4);
+    }
+
+    .provider-tab:first-child {
+        border-radius: var(--radius-small) var(--radius-small) 0 0 !important;
+        border-bottom: 1px solid var(--border-light);
+    }
+
+    .provider-tab:last-child {
+        border-radius: 0 0 var(--radius-small) var(--radius-small) !important;
+        border-bottom: 2px solid var(--border-light);
+    }
+
+    .provider-tab.active:first-child,
+    .provider-tab.active:last-child {
+        border-color: var(--primary-color) !important;
+    }
+
+    .creator-frame {
+        border-radius: var(--radius-medium);
+        border-top: 1px solid var(--border-light);
+    }
+
+    .tab-nav {
+        flex-wrap: wrap;
+        border-radius: var(--radius-small) var(--radius-small) 0 0;
+    }
+
+    .tab-link,
+    .tab {
+        flex: 1;
+        min-width: 0;
+        text-align: center;
+        justify-content: center;
+    }
+
+    .loading-state {
+        height: 300px;
+        padding: var(--spacing-6);
+    }
+}
+
+/* Tablet: 768px-1023px */
+@media (min-width: 768px) and (max-width: 1023px) {
+    .provider-tab {
+        min-width: 120px;
+        font-size: var(--font-size-sm);
+    }
+
+    .creator-frame {
+        height: 700px;
+    }
+}
+
+/* Desktop: 1024px+ */
+@media (min-width: 1024px) {
+    .provider-tab:hover {
+        transform: translateY(-2px);
+        box-shadow: var(--shadow-small);
+    }
+
+    .tab-link:hover:not(.active),
+    .tab:hover:not(.active) {
+        transform: translateY(-1px);
+    }
+}
+
+/* ========================================
+   UTILITY CLASSES
+   ======================================== */
+
+/* Tab alignment utilities */
+.tabs-center {
+    justify-content: center;
+}
+
+.tabs-end {
+    justify-content: flex-end;
+}
+
+.tabs-stretch {
+    flex: 1;
+}
+
+.tabs-stretch .provider-tab,
+.tabs-stretch .tab-link,
+.tabs-stretch .tab {
+    flex: 1;
+}
+
+/* Tab size variants */
+.tabs-sm .provider-tab,
+.tabs-sm .tab-link,
+.tabs-sm .tab {
+    padding: var(--spacing-2) var(--spacing-3);
+    font-size: var(--font-size-sm);
+}
+
+.tabs-lg .provider-tab,
+.tabs-lg .tab-link,
+.tabs-lg .tab {
+    padding: var(--spacing-4) var(--spacing-8);
+    font-size: var(--font-size-lg);
+}
+
+/* Vertical tabs variant */
+.provider-tabs.vertical {
+    flex-direction: column;
+    width: fit-content;
+}
+
+.provider-tabs.vertical .provider-tab {
+    border-right: 2px solid var(--border-light);
+    border-bottom: none;
+}
+
+.provider-tabs.vertical .provider-tab:first-child {
+    border-radius: var(--radius-medium) 0 0 0;
+}
+
+.provider-tabs.vertical .provider-tab:last-child {
+    border-radius: 0 0 0 var(--radius-medium);
+    border-bottom: 2px solid var(--border-light);
+}

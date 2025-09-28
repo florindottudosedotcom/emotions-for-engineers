@@ -1,0 +1,822 @@
+/**
+ * Status Display Component System - Following CLAUDE.md Guidelines
+ * Status indicators, alerts, and notification styles
+ */
+
+/* ========================================
+   BASE STATUS DISPLAY STYLES
+   ======================================== */
+.status-display {
+    margin-top: 0.75rem;
+    padding: var(--spacing-4) var(--spacing-6);
+    border-radius: var(--radius-medium);
+    white-space: pre-wrap;
+    display: none;
+    font-size: var(--font-size-sm);
+    transition: all var(--transition-normal);
+    border: 1px solid;
+    position: relative;
+}
+
+.status-display.show {
+    display: block;
+}
+
+/* ========================================
+   STATUS VARIANTS
+   ======================================== */
+
+/* Info Status */
+.status-display.status-info,
+.status-info {
+    background-color: var(--info-light);
+    border-color: var(--info-color);
+    color: var(--info-color);
+}
+
+/* Success Status */
+.status-display.status-success,
+.status-success {
+    background-color: var(--success-light);
+    border-color: var(--success-color);
+    color: var(--success-color);
+}
+
+/* Warning Status */
+.status-display.status-warning,
+.status-warning {
+    background-color: var(--warning-light);
+    border-color: var(--warning-color);
+    color: var(--warning-color);
+}
+
+/* Error Status */
+.status-display.status-error,
+.status-error {
+    background-color: var(--error-light);
+    border-color: var(--error-color);
+    color: var(--error-color);
+}
+
+/* Loading Status */
+.status-display.status-loading,
+.status-loading {
+    background-color: var(--info-light);
+    border-color: var(--info-color);
+    color: var(--info-color);
+    animation: pulse 2s ease-in-out infinite alternate;
+}
+
+@keyframes pulse {
+    0% { opacity: 0.6; }
+    100% { opacity: 1; }
+}
+
+/* ========================================
+   LEGACY STATUS CLASSES (From Original Code)
+   ======================================== */
+
+/* AI Status */
+#ai-status,
+.ai-status-initial {
+    margin: var(--spacing-4) 0;
+    padding: var(--spacing-4) 0;
+    background-color: var(--warning-light);
+    border: 1px solid var(--warning-color);
+    border-radius: var(--radius-medium);
+    white-space: pre-wrap;
+    display: none;
+    color: var(--warning-color);
+}
+
+.ai-status-initial {
+    background-color: var(--surface);
+    color: var(--text-primary);
+}
+
+/* Ollama Status */
+.ollama-status-style {
+    margin-top: 0.5rem;
+    font-weight: var(--font-weight-semibold);
+    white-space: pre-line;
+    line-height: var(--line-height-normal);
+    padding: var(--spacing-2) 0;
+    border-radius: var(--radius-small);
+}
+
+.ollama-status-ok {
+    color: var(--success-color);
+    background-color: var(--success-light);
+    border: 1px solid var(--success-color);
+}
+
+.ollama-status-error {
+    color: var(--error-color);
+    background-color: var(--error-light);
+    border: 1px solid var(--error-color);
+}
+
+.ollama-status-info {
+    color: var(--info-color);
+    background-color: var(--info-light);
+    border: 1px solid var(--info-color);
+}
+
+/* WebLLM Status */
+.webllm-status-ok {
+    color: var(--success-color);
+    background-color: var(--success-light);
+    border: 1px solid var(--success-color);
+}
+
+.webllm-status-error {
+    color: var(--error-color);
+    background-color: var(--error-light);
+    border: 1px solid var(--error-color);
+}
+
+.webllm-status-info {
+    color: var(--info-color);
+    background-color: var(--info-light);
+    border: 1px solid var(--info-color);
+}
+
+/* ========================================
+   MINIMAL STATUS STYLES (From Original CSS)
+   ======================================== */
+.status-minimal {
+    padding: var(--spacing-4);
+    border-radius: var(--radius-medium);
+    border: 1px solid;
+    margin: var(--spacing-4) 0;
+    font-size: var(--font-size-sm);
+}
+
+.status-minimal.success {
+    background-color: var(--success-light);
+    border-color: var(--success-color);
+    color: var(--success-color);
+}
+
+.status-minimal.warning {
+    background-color: var(--warning-light);
+    border-color: var(--warning-color);
+    color: var(--warning-color);
+}
+
+.status-minimal.error {
+    background-color: var(--error-light);
+    border-color: var(--error-color);
+    color: var(--error-color);
+}
+
+.status-minimal.info {
+    background-color: var(--info-light);
+    border-color: var(--info-color);
+    color: var(--info-color);
+}
+
+/* ========================================
+   STATUS WITH ICONS
+   ======================================== */
+.status-with-icon {
+    display: flex;
+    align-items: flex-start;
+    gap: var(--spacing-2);
+}
+
+.status-with-icon .status-icon {
+    flex-shrink: 0;
+    width: 20px;
+    height: 20px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: var(--font-size-base);
+    margin-top: 2px;
+}
+
+/* Status icons */
+.status-icon-success::before { content: '✓'; }
+.status-icon-warning::before { content: '⚠'; }
+.status-icon-error::before { content: '✗'; }
+.status-icon-info::before { content: 'ℹ'; }
+.status-icon-loading::before { content: '⟳'; animation: spin 1s linear infinite; }
+
+@keyframes spin {
+    from { transform: rotate(0deg); }
+    to { transform: rotate(360deg); }
+}
+
+/* StatusDisplay specific animations */
+@keyframes slideInRight {
+    from {
+        transform: translateX(100%);
+        opacity: 0;
+    }
+    to {
+        transform: translateX(0);
+        opacity: 1;
+    }
+}
+
+@keyframes slideOutRight {
+    from {
+        transform: translateX(0);
+        opacity: 1;
+    }
+    to {
+        transform: translateX(100%);
+        opacity: 0;
+    }
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(-10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+@keyframes fadeOut {
+    from {
+        opacity: 1;
+        transform: translateY(0);
+    }
+    to {
+        opacity: 0;
+        transform: translateY(-10px);
+    }
+}
+
+/* Animation classes */
+.slide-in-right {
+    animation: slideInRight 0.3s ease-out;
+}
+
+.slide-out-right {
+    animation: slideOutRight 0.3s ease-in forwards;
+}
+
+.fade-in {
+    animation: fadeIn 0.3s ease-out;
+}
+
+.fade-out {
+    animation: fadeOut 0.3s ease-in forwards;
+}
+
+.loading-spinner {
+    animation: spin 1s linear infinite;
+}
+
+/* StatusDisplay floating notifications */
+.floating-status {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    z-index: 10000;
+    max-width: 400px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    border-radius: 8px;
+    padding: 12px 16px;
+}
+
+/* Status display positioning classes */
+.status-fixed {
+    position: fixed !important;
+    top: 20px;
+    right: 20px;
+    z-index: 1000;
+    max-width: 400px;
+}
+
+/* Progress bar container and fill */
+.progress-bar-container {
+    width: 100%;
+    height: 6px;
+    background: var(--border-light);
+    border-radius: 3px;
+    overflow: hidden;
+    margin: var(--spacing-2) 0;
+}
+
+.progress-bar {
+    height: 100%;
+    background: var(--primary-color);
+    transition: width var(--transition-normal);
+    border-radius: 3px;
+}
+
+.progress-text {
+    font-size: var(--font-size-sm);
+    color: var(--text-secondary);
+    text-align: center;
+    margin-top: var(--spacing-1);
+}
+
+/* ========================================
+   PROGRESS INDICATORS
+   ======================================== */
+.progress-indicator {
+    background-color: var(--surface);
+    border: 1px solid var(--border-light);
+    border-radius: var(--radius-medium);
+    padding: var(--spacing-4);
+    margin: var(--spacing-4) 0;
+}
+
+.progress-item {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-2);
+    padding: var(--spacing-2) 0;
+    border-bottom: 1px solid var(--border-light);
+}
+
+.progress-item:last-child {
+    border-bottom: none;
+}
+
+.progress-icon {
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: var(--font-size-sm);
+    font-weight: var(--font-weight-semibold);
+    background: var(--background-tertiary);
+    color: var(--text-secondary);
+    flex-shrink: 0;
+}
+
+.progress-icon.completed {
+    background: var(--success-color);
+    color: white;
+}
+
+.progress-icon.active {
+    background: var(--primary-color);
+    color: white;
+    animation: pulse 2s ease-in-out infinite alternate;
+}
+
+.progress-text {
+    color: var(--text-secondary);
+    font-size: var(--font-size-sm);
+}
+
+.progress-text.completed {
+    color: var(--success-color);
+    font-weight: var(--font-weight-medium);
+}
+
+.progress-text.active {
+    color: var(--primary-color);
+    font-weight: var(--font-weight-medium);
+}
+
+/* ========================================
+   GENERATION PROGRESS (Specific Component)
+   ======================================== */
+.generation-progress {
+    background: var(--surface);
+    border: 1px solid var(--border-light);
+    border-radius: var(--radius-medium);
+    padding: var(--spacing-4);
+    margin: var(--spacing-4) 0;
+    color: var(--text-primary);
+}
+
+.generation-progress h3 {
+    margin-bottom: var(--spacing-4);
+    color: var(--text-primary);
+}
+
+/* ========================================
+   TOAST NOTIFICATIONS
+   ======================================== */
+.toast {
+    position: fixed;
+    top: var(--spacing-4);
+    right: var(--spacing-4);
+    z-index: var(--z-tooltip);
+    background-color: var(--surface);
+    border: 1px solid var(--border-light);
+    border-radius: var(--radius-medium);
+    box-shadow: var(--shadow-large);
+    padding: var(--spacing-4);
+    max-width: 400px;
+    min-width: 300px;
+    transform: translateX(100%);
+    transition: transform var(--transition-normal);
+}
+
+.toast.show {
+    transform: translateX(0);
+}
+
+.toast.toast-success {
+    border-left: 4px solid var(--success-color);
+}
+
+.toast.toast-warning {
+    border-left: 4px solid var(--warning-color);
+}
+
+.toast.toast-error {
+    border-left: 4px solid var(--error-color);
+}
+
+.toast.toast-info {
+    border-left: 4px solid var(--info-color);
+}
+
+.toast-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: var(--spacing-2);
+}
+
+.toast-title {
+    font-weight: var(--font-weight-semibold);
+    color: var(--text-primary);
+    font-size: var(--font-size-base);
+}
+
+.toast-close {
+    background: none;
+    border: none;
+    color: var(--text-secondary);
+    cursor: pointer;
+    font-size: var(--font-size-lg);
+    padding: 0;
+    width: 20px;
+    height: 20px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.toast-close:hover {
+    color: var(--text-primary);
+}
+
+.toast-body {
+    color: var(--text-secondary);
+    font-size: var(--font-size-sm);
+}
+
+/* ========================================
+   PROVIDER-SPECIFIC STATUS COMPONENTS
+   ======================================== */
+
+/* Ollama connection status */
+.ollama-info {
+    background: var(--success-light);
+    border: 1px solid var(--success-color);
+    border-radius: var(--radius-medium);
+    padding: var(--spacing-4);
+    margin-bottom: var(--spacing-4);
+}
+
+.connection-indicator {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--spacing-2);
+    padding: var(--spacing-2) var(--spacing-3);
+    border-radius: var(--radius-small);
+    font-size: var(--font-size-sm);
+    font-weight: var(--font-weight-medium);
+}
+
+.connection-indicator.connected {
+    background: var(--success-light);
+    color: var(--success-color);
+}
+
+.connection-indicator.disconnected {
+    background: var(--error-light);
+    color: var(--error-color);
+}
+
+.status-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    animation: pulse 2s infinite;
+    flex-shrink: 0;
+}
+
+.status-dot.connected {
+    background: var(--success-color);
+}
+
+.status-dot.disconnected {
+    background: var(--error-color);
+}
+
+/* WebLLM model loading */
+.webllm-info {
+    background: var(--info-light);
+    border: 1px solid var(--info-color);
+    border-radius: var(--radius-medium);
+    padding: var(--spacing-4);
+    margin-bottom: var(--spacing-4);
+}
+
+.model-loading-progress {
+    margin-top: var(--spacing-3);
+}
+
+.progress-bar {
+    width: 100%;
+    height: 6px;
+    background: var(--border-light);
+    border-radius: 3px;
+    overflow: hidden;
+}
+
+.progress-fill {
+    height: 100%;
+    background: var(--primary-color);
+    transition: width var(--transition-normal);
+}
+
+/* Slide container components */
+.slides-container {
+    max-width: 1200px;
+    margin: 0 auto;
+}
+
+.slide-preview {
+    border: 1px solid var(--border-light);
+    border-radius: var(--radius-medium);
+    margin: var(--spacing-6) 0;
+    padding: var(--spacing-6);
+    background: var(--surface);
+    box-shadow: var(--shadow-small);
+}
+
+/* Export section components */
+.export-info {
+    background: var(--background-tertiary);
+    border-radius: var(--radius-medium);
+}
+
+.export-list {
+    margin-left: var(--spacing-4);
+    line-height: var(--line-height-relaxed);
+}
+
+/* Progress bar with data attributes */
+.progress-fill[data-progress] {
+    width: 0%;
+    transition: width var(--transition-normal);
+}
+
+/* Progress bar using CSS custom property for width */
+.progress-bar[data-progress],
+.loading-progress-fill[data-progress] {
+    width: var(--progress-width, 0%);
+}
+
+/* Utility classes for dynamic content */
+.hidden {
+    display: none !important;
+}
+
+.visible {
+    display: block !important;
+}
+
+/* ========================================
+   DOWNLOAD SECTION (Specific Component)
+   ======================================== */
+#download-section {
+    margin-top: var(--spacing-8);
+    padding: var(--spacing-4) 0;
+    background-color: var(--success-light);
+    border: 1px solid var(--success-color);
+    border-radius: var(--radius-medium);
+    display: none;
+    text-align: center;
+}
+
+#download-section h3 {
+    color: var(--success-color);
+    margin-bottom: var(--spacing-2);
+}
+
+#download-section p {
+    color: var(--success-color);
+    margin-bottom: var(--spacing-4);
+}
+
+/* ========================================
+   RESPONSIVE DESIGN
+   ======================================== */
+
+/* Mobile: 320px-767px */
+@media (max-width: 767px) {
+    .status-display {
+        font-size: var(--font-size-sm);
+        padding: var(--spacing-4) 0;
+        margin: var(--spacing-2) 0;
+    }
+
+    .progress-indicator {
+        padding: var(--spacing-4);
+        margin: var(--spacing-4) 0;
+    }
+
+    .progress-item {
+        padding: var(--spacing-2) 0;
+        font-size: var(--font-size-sm);
+    }
+
+    .generation-progress {
+        padding: var(--spacing-4);
+        margin: var(--spacing-4) 0;
+    }
+
+    #download-section {
+        padding: var(--spacing-4) 0;
+        margin: var(--spacing-4) 0;
+    }
+
+    /* Toast notifications on mobile */
+    .toast {
+        top: var(--spacing-2);
+        right: var(--spacing-2);
+        left: var(--spacing-2);
+        max-width: none;
+        min-width: 0;
+        transform: translateY(-100%);
+    }
+
+    .toast.show {
+        transform: translateY(0);
+    }
+
+    /* AI assistant section mobile */
+    .ai-assistant {
+        padding: var(--spacing-4) 0;
+        margin: var(--spacing-4) 0;
+    }
+}
+
+/* ========================================
+   DARK MODE TEXT CONTRAST IMPROVEMENTS
+   ======================================== */
+
+@media (prefers-color-scheme: dark) {
+    .status-display {
+        color: var(--text-primary);
+        border-color: currentColor;
+    }
+
+    .status-display.status-info,
+    .status-info {
+        background-color: var(--info-light);
+        border-color: var(--info-color);
+        color: var(--info-color);
+    }
+
+    .status-display.status-success,
+    .status-success {
+        background-color: var(--success-light);
+        border-color: var(--success-color);
+        color: var(--success-color);
+    }
+
+    .status-display.status-warning,
+    .status-warning {
+        background-color: var(--warning-light);
+        border-color: var(--warning-color);
+        color: var(--warning-color);
+    }
+
+    .status-display.status-error,
+    .status-error {
+        background-color: var(--error-light);
+        border-color: var(--error-color);
+        color: var(--error-color);
+    }
+
+    .export-info {
+        background: var(--background-tertiary);
+        color: var(--text-primary);
+    }
+
+    .export-list {
+        color: var(--text-primary);
+    }
+
+    .ollama-info,
+    .webllm-info {
+        background: var(--background-tertiary);
+        color: var(--text-primary);
+    }
+
+    .connection-indicator.connected {
+        background: var(--success-light);
+        color: var(--success-color);
+    }
+
+    .connection-indicator.disconnected {
+        background: var(--error-light);
+        color: var(--error-color);
+    }
+
+    .slide-preview {
+        background: var(--surface);
+        border-color: var(--border-light);
+        color: var(--text-primary);
+    }
+
+    .progress-text.completed {
+        color: var(--success-color);
+    }
+
+    .progress-text.active {
+        color: var(--primary-color);
+    }
+
+    .generation-progress {
+        background: var(--surface);
+        border-color: var(--border-light);
+        color: var(--text-primary);
+    }
+
+    .generation-progress h3 {
+        color: var(--text-primary);
+    }
+
+    .toast {
+        background-color: var(--surface);
+        border-color: var(--border-light);
+    }
+
+    .toast-title {
+        color: var(--text-primary);
+    }
+
+    .toast-body {
+        color: var(--text-secondary);
+    }
+
+    #download-section {
+        background-color: var(--success-light);
+        border-color: var(--success-color);
+    }
+
+    #download-section h3,
+    #download-section p {
+        color: var(--success-color);
+    }
+}
+
+/* ========================================
+   RESPONSIVE DESIGN - Mobile Adjustments
+   ======================================== */
+
+/* Mobile: 320px-767px */
+@media (max-width: 767px) {
+    .status-display {
+        padding: var(--spacing-4) var(--spacing-4);
+        margin-top: var(--spacing-2);
+        font-size: var(--font-size-sm);
+        border-radius: var(--radius-small);
+    }
+}
+
+/* ========================================
+   UTILITY CLASSES
+   ======================================== */
+.status-hidden {
+    display: none !important;
+}
+
+.status-block {
+    display: block !important;
+}
+
+.status-inline {
+    display: inline-block !important;
+}
+
+.status-bold {
+    font-weight: var(--font-weight-semibold);
+}
+
+.status-centered {
+    text-align: center;
+}

@@ -2,11 +2,50 @@
 
 This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
+## Session Management
+
+### Before Starting Work
+1. **Always read SESSION_HISTORY.md first** to understand recent activities and current project status
+2. Check the current git branch and modified files for context
+3. Review any blocking issues or next steps from previous sessions
+4. Understand the current phase of work and ongoing objectives
+
+### During Development
+- Use TodoWrite tool for complex multi-step tasks to track progress
+- Update SESSION_HISTORY.md when plans change significantly or when major milestones are reached
+- Track important decisions and architectural choices for future reference
+- Note any blockers or dependencies that might affect future sessions
+
+### Session Closure Workflow
+- Update SESSION_HISTORY.md with completed work and current status
+- Note any blocking issues, dependencies, or unresolved questions
+- Identify clear next steps and priorities for the following session
+- Ensure all important context is preserved for continuity
+
+### Session History File Management
+- Keep detailed records of the last 10 sessions
+- Archive older entries to prevent file bloat
+- Maintain clear session boundaries with dates and summaries
+- Include both planned work and actual outcomes
+
 ## Project Overview
 
 This is a Universal Course Platform with dual functionality:
-1. **AI-Powered Course Creator**: A browser-based tool (`docs/course-creator.html`) that generates complete courses using various AI providers
+1. **AI-Powered Creator Interface**: Modern browser-based tools in `creator/` directory for generating courses and presentations using various AI providers
 2. **MkDocs Publishing Platform**: Automatically builds and deploys multi-language course websites from Markdown content
+
+### Current Architecture
+
+- **Creator Interface** (`creator/`): Modern UI for content generation
+  - Modular AI provider system (Cloud, WebLLM, Ollama, Puter)
+  - Dual-mode creation: Courses + Presentations/Slides
+  - Multi-language support (11+ languages)
+  - Downloadable packages for easy deployment
+
+- **Publishing Platform** (`docs/`): Static site generation
+  - MkDocs with Material theme and i18n plugin
+  - Auto-generated navigation from course structure
+  - GitHub Pages deployment
 
 ## Key Commands
 
@@ -19,12 +58,12 @@ pip install -r requirements.txt
 mkdocs serve
 # This serves the site at http://127.0.0.1:8000
 
-# Run the course creator locally (required for Ollama integration)
+# Run the creator interface locally (required for Ollama integration)
 # On macOS/Linux:
 ./start_course_creator.sh
 # On Windows:
 ./start_course_creator.bat
-# This serves the creator at http://localhost:8000/docs/course-creator.html
+# This serves the creator at http://localhost:8000/creator/
 
 # Build the site (regenerates navigation and content)
 python build_site.py
@@ -40,471 +79,353 @@ python build_site.py
 git push origin main
 ```
 
-## Architecture
+## Screenshot System & Visual Verification
 
-### Core Components
+This project includes a comprehensive Puppeteer-based screenshot automation system for visual testing and verification. **Use screenshots before and after every UI fix** to ensure visual quality and consistency.
 
-- **`build_site.py`**: Dynamic site builder that scans `docs/` for course directories and auto-generates:
-  - Navigation structure in `mkdocs.yml`
-  - Multi-language course index pages (`courses.{lang}.md`)
-  - Metadata extraction from course index files
+### Essential Commands
+```bash
+# Start development server
+./start_course_creator.sh
 
-- **Course Creator System**: Refactored into a launcher-based architecture:
-  - **`docs/course-creator.html`**: Launcher page that provides access to specialized creator tools
-  - **`docs/cloud_creator.html`**: Cloud AI tool (OpenAI, Anthropic, Google APIs)
-  - **`docs/webllm_creator.html`**: In-browser AI tool using WebLLM (no server required)
-  - **`docs/ollama_creator.html`**: Local AI tool for Ollama integration
-  - All tools support multi-language translation (11+ languages) and downloadable course packages
+# Navigate to screenshot tools directory
+cd tools/screenshot-automation
 
-- **MkDocs Configuration**: Material theme with i18n plugin for 11 languages
+# Take screenshot of default page (cloud.html)
+node screenshot-simple.js
 
-### Content Structure
+# Take screenshot of specific page
+node screenshot-simple.js --url http://localhost:8000/creator/puter.html --filename puter-ui.png
 
-- **Course directories**: Located in `docs/`, each containing:
-  - `index.{lang}.md` files with YAML frontmatter (title, description)
-  - Chapter files following pattern: `{NN}-{chapter-name}.{lang}.md`
-  - Supported languages: en, de, fr, hi, it, ja, pt, ro, ru, es, zh
+# Take screenshot with custom viewport
+node screenshot-simple.js --width 1440 --height 900 --filename desktop-ui.png
 
-- **Static assets**: CSS/JS customizations in `docs/assets/`
+# Screenshot specific UI components
+node screenshot-simple.js --element "#chapter-tabs-container" --filename tabs-component.png
 
-### Build Process
-
-1. `build_site.py` scans `docs/` for course directories (excludes `assets/`)
-2. Extracts metadata from `index.{lang}.md` files (title from H1, description from frontmatter)
-3. Generates navigation structure based on numbered chapters (`01-`, `02-`, etc.)
-4. Creates language-specific course listing pages
-5. Updates `mkdocs.yml` with dynamic navigation
-6. GitHub Actions automatically builds and deploys on push to `main`
-
-### Multi-language Support
-
-- File naming convention: `filename.{lang}.md` (e.g., `index.en.md`, `about.de.md`)
-- MkDocs i18n plugin handles language switching
-- Build script generates localized navigation and course listings
-- Chapters must exist in target language to appear in navigation
-
-## Course Creation Workflow
-
-1. **Access the Launcher**: Open `course-creator.html` to choose your AI provider
-2. **Select Provider**:
-   - **Cloud AI**: Use API-based services (OpenAI, Anthropic, Google) - requires API keys
-   - **WebLLM**: In-browser AI processing - no server or API keys needed
-   - **Ollama**: Local AI models - requires local Ollama installation
-3. **Generate Content**: Input topic → AI generates course structure and content
-4. **Download Package**: Get ZIP file with MkDocs-compatible structure
-5. **Publish**: Extract to `docs/`, commit, and push to auto-deploy
-
-## Important Notes
-
-- Course directories are auto-discovered; no manual nav configuration needed
-- Chapter ordering is based on filename prefixes (`01-`, `02-`, etc.)
-- **Creator Tool Access**:
-  - **Ollama integration**: Only available when running locally (detects localhost/127.0.0.1)
-  - **WebLLM**: Works from any hosted environment (GitHub Pages, local, etc.)
-  - **Cloud AI**: Works from any hosted environment but requires API keys
-- All content is licensed under CC BY-SA 4.0
-- GitHub Pages deployment is automatic via `.github/workflows/deploy.yml`
-
-
-# 🏗️ DEVELOPMENT GUIDELINES - OPTIMIZED ARCHITECTURE STANDARDS
-
-These guidelines ensure all future development follows the optimized, modular architecture established in the comprehensive refactoring.
-
-## 📂 File Organization Standards
-
-### JavaScript Structure
-
-```
-docs/assets/javascripts/
-├── security.js              # Always loaded first - security utilities
-├── creator-common.js         # Shared utilities across all creators
-├── creator-components.js     # Reusable UI components
-├── [feature]-creator.js      # Specific feature implementations
-└── [feature]-components.js   # Feature-specific components (if needed)
+# All provider pages
+npm run screenshot-all
 ```
 
-### Component-Based Architecture
+### Critical UI Fix Workflow
+1. **Before coding**: `npm run screenshot-all`
+2. **During development**: `node screenshot-simple.js --element "[changed-element]" --filename during-fix.png`
+3. **After coding**: Verify fix across all providers
+4. **Final verification**: `cd creator/tools/screenshot-automation && node take-responsive-screenshots.js`
 
-- **NEVER** embed JavaScript in HTML files
-- **ALWAYS** use modular, reusable components
-- **EXTRACT** common functionality into shared utilities
-- **SEPARATE** business logic from presentation
-
-## 🔒 Security-First Development
-
-### Mandatory Security Practices
-
-1. **DOM Manipulation:** ALWAYS use `createElement()` and `textContent`, NEVER `innerHTML`
-2. **Input Validation:** Validate and sanitize ALL user inputs
-3. **API Calls:** Use `SecurityManager.validateUrl()` before external requests
-4. **XSS Prevention:** Use security utilities for all dynamic content
-
-### Required Security Imports
-
-```html
-<script src="assets/javascripts/security.js"></script>
-<script src="assets/javascripts/creator-common.js"></script>
+### Provider Consistency Verification
+Always verify all provider pages look identical after layout changes:
+```bash
+# Test all providers with same settings
+node screenshot-simple.js --url http://localhost:8000/creator/openrouter.html --filename openrouter-layout.png --delay 3000
+node screenshot-simple.js --url http://localhost:8000/creator/webllm.html --filename webllm-layout.png --delay 3000
+node screenshot-simple.js --url http://localhost:8000/creator/ollama.html --filename ollama-layout.png --delay 3000
+node screenshot-simple.js --url http://localhost:8000/creator/puter.html --filename puter-layout.png --delay 3000
 ```
 
-## 🎨 UI Component Standards
+### Responsive Testing
+```bash
+# Mobile portrait
+node screenshot-simple.js --width 375 --height 667 --filename mobile-portrait.png
 
-### Reusable Components Created
+# Tablet
+node screenshot-simple.js --width 768 --height 1024 --filename tablet.png
 
-- **LanguageSelector** - For all language selection needs
-- **ProgressIndicator** - For all progress tracking
-- **CourseStructureDisplay** - For content preview
-- **SettingsPanel** - For configurable options
-
-### Component Usage Rules
-
-```javascript
-// ✅ CORRECT - Use existing components
-this.languageSelector = new LanguageSelector('container-id', options);
-
-// ❌ WRONG - Don't recreate functionality
-const select = document.createElement('select'); // Use LanguageSelector instead
+# Desktop
+node screenshot-simple.js --width 1920 --height 1080 --filename desktop.png
 ```
 
-## 📱 CSS & Styling Standards
-
-### Use CSS Custom Properties
-
-```css
-:root {
-    --primary-color: #667eea;
-    --border-radius: 12px;
-    --transition: all 0.3s ease;
-}
-```
-
-### Required Responsive & Accessibility
-
-- Mobile-first responsive design
-- Dark mode support via `@media (prefers-color-scheme: dark)`
-- High contrast support via `@media (prefers-contrast: high)`
-- Focus indicators for keyboard navigation
-- Screen reader compatibility
-
-## 🚀 Performance Standards
-
-### Mandatory Optimizations
-
-1. **Lazy Loading:** Import heavy dependencies only when needed
-2. **Caching:** Use localStorage for user preferences
-3. **Debouncing:** Use `common.debounce()` for input handlers
-4. **Error Handling:** Comprehensive try-catch with user feedback
-
-### Code Examples
-
-```javascript
-// ✅ Lazy loading
-const JSZip = await import('https://cdn.jsdelivr.net/npm/jszip@3.10.1/+esm');
-
-// ✅ Caching
-this.common.saveToLocalStorage('feature_settings', data);
-
-// ✅ Error handling with user feedback
-try {
-    await this.performAction();
-    this.common.showSuccess('Action completed!');
-} catch (error) {
-    this.common.showError(`Action failed: ${error.message}`);
-}
-```
-
-## 🔧 Development Workflow
-
-### For Every New Feature
-
-1. **Plan:** Identify reusable components vs feature-specific code
-2. **Security:** Apply security standards from start
-3. **Components:** Use existing components or extend them
-4. **Testing:** Verify accessibility, responsive design, error handling
-5. **Documentation:** Update this guide if new patterns are established
-
-### File Creation Checklist
-
-- [ ] Security utilities imported
-- [ ] Common utilities used (no duplication)
-- [ ] Components follow established patterns
-- [ ] Responsive CSS implemented
-- [ ] Accessibility features included
-- [ ] Error handling comprehensive
-- [ ] Performance optimizations applied
-
-## 🎯 Code Quality Standards
-
-### JavaScript Best Practices
-
-```javascript
-// ✅ Class-based architecture
-class FeatureCreator {
-    constructor() {
-        this.common = new CreatorCommon();
-        this.init();
-    }
-
-    init() {
-        this.setupComponents();
-        this.bindEvents();
-        this.loadSavedSettings();
-    }
-}
-
-// ✅ Consistent error handling
-async performAction() {
-    try {
-        this.progressIndicator.update(10, 'Starting...');
-        const result = await this.apiCall();
-        this.progressIndicator.complete('Success!');
-        return result;
-    } catch (error) {
-        this.progressIndicator.error('Failed');
-        this.common.showError(error.message);
-        throw error;
-    }
-}
-```
-
-### HTML Structure Standards
-
-```html
-<!-- ✅ Component containers, not hardcoded elements -->
-<div id="language-container"></div>
-<div id="progress-container"></div>
-<div id="settings-container"></div>
-
-<!-- ✅ Proper script loading order -->
-<script src="assets/javascripts/security.js"></script>
-<script src="assets/javascripts/creator-common.js"></script>
-<script src="assets/javascripts/creator-components.js"></script>
-<script src="assets/javascripts/[feature]-creator.js"></script>
-```
-
-## 📝 Maintenance Standards
-
-### Before Adding Any Code
-
-1. **Check existing utilities** - Can CreatorCommon handle this?
-2. **Check existing components** - Can existing components be extended?
-3. **Check security implications** - Are inputs validated?
-4. **Check performance** - Will this impact load times?
-
-### Code Review Questions
-
-- Does this follow DRY principles?
-- Is this accessible and responsive?
-- Does this maintain security standards?
-- Can this be reused for other features?
-
-## 🎯 GOAL
-
-Maintain the 81% code reduction and modular architecture achieved in the optimization while ensuring all new features are secure, performant, and maintainable.
-
-
-# Modern Minimalistic UI Design Guidelines
-
-## Core Principles
-
-### 1. **Less is More**
-- Remove unnecessary elements that don't serve a clear purpose
-- Every element should have a functional or aesthetic reason for existence
-- Prioritize content over decoration
-- Use progressive disclosure to reveal complexity gradually
-
-### 2. **Clarity Above All**
-- Make the user's path obvious and intuitive
-- Use clear, concise language
-- Ensure high contrast for readability
-- Maintain consistent visual hierarchy
-
-## Visual Design
-
-### Typography
-- **Font Choice**: Use 1-2 high-quality typefaces maximum (e.g., Inter, Poppins, or system fonts)
-- **Hierarchy**: Establish clear typographic scales (H1: 2.5rem, H2: 2rem, H3: 1.5rem, Body: 1rem)
-- **Line Height**: 1.4-1.6 for body text, 1.2-1.3 for headings
-- **Font Weights**: Use 2-3 weights maximum (regular 400, medium 500, bold 600/700)
-
-### Color Palette
-- **Primary Colors**: 1-2 brand colors maximum
-- **Neutrals**: 5-7 shades of gray from white to near-black
-- **Accent**: One bright color for CTAs and highlights
-- **Example Palette**:
-  - Primary: #2563EB (Blue)
-  - Success: #10B981 (Green)
-  - Warning: #F59E0B (Amber)
-  - Error: #EF4444 (Red)
-  - Neutrals: #FFFFFF, #F8FAFC, #E2E8F0, #64748B, #334155, #0F172A
-
-### Spacing & Layout
-- **Grid System**: Use 8px or 4px base unit for consistent spacing
-- **Common Spacing**: 4px, 8px, 16px, 24px, 32px, 48px, 64px, 96px
-- **Max Width**: 1200px for content containers, 600px for reading content
-- **Margins**: 16px minimum on mobile, 24px+ on desktop
-- **Component Padding**: 12px-24px internal padding for buttons/cards
-
-### Borders & Shadows
-- **Border Radius**: 4px-8px for subtle rounding, 12px-16px for cards
-- **Borders**: 1px solid with low opacity colors (#E2E8F0)
-- **Shadows**: Subtle and layered
-  - Small: `0 1px 2px 0 rgba(0, 0, 0, 0.05)`
-  - Medium: `0 4px 6px -1px rgba(0, 0, 0, 0.1)`
-  - Large: `0 10px 15px -3px rgba(0, 0, 0, 0.1)`
-
-## Component Guidelines
-
-### Buttons
-- **Primary**: Solid background, high contrast
-- **Secondary**: Outlined or subtle background
-- **Sizes**: Small (32px), Medium (40px), Large (48px) height
-- **Padding**: 12px-24px horizontal, 8px-12px vertical
-- **States**: Hover (slightly darker), Active (pressed), Disabled (low opacity)
-
-### Forms
-- **Input Height**: 40px-48px minimum for touch targets
-- **Labels**: Always visible, positioned above inputs
-- **Validation**: Inline feedback with clear error states
-- **Focus States**: Prominent outline or border change
-
-### Navigation
-- **Header**: 60px-80px height, sticky positioning
-- **Logo**: Left-aligned, clear and legible
-- **Menu Items**: 44px minimum touch target
-- **Mobile**: Hamburger menu with full-screen overlay
-
-### Cards & Containers
-- **Background**: White or subtle off-white (#FAFBFC)
-- **Padding**: 20px-32px internal spacing
-- **Border Radius**: 8px-12px
-- **Shadow**: Subtle elevation shadow
-
-## Layout Patterns
-
-### Page Structure
-```
-Header (Navigation)
-├── Hero/Banner Section
-├── Main Content Area
-│   ├── Primary Content (70%)
-│   └── Sidebar (30%) [optional]
-└── Footer
-```
-
-### Content Sections
-- **Section Spacing**: 80px-120px between major sections
-- **Content Width**: 600px-800px for optimal reading
-- **Alignment**: Left-aligned text, center-aligned headings optional
-- **Breathing Room**: Generous whitespace around elements
-
-## Interactive Elements
-
-### Micro-Interactions
-- **Hover States**: Subtle color/opacity changes
-- **Transitions**: 200ms-300ms ease-out for most interactions
-- **Loading States**: Skeleton screens or subtle spinners
-- **Feedback**: Toast notifications for actions
-
-### Animation Guidelines
-- **Duration**: 200ms for small elements, 300ms for larger changes
-- **Easing**: `ease-out` for entrances, `ease-in` for exits
-- **Purpose**: Only animate to provide feedback or guide attention
-- **Reduce Motion**: Respect `prefers-reduced-motion` settings
-
-## Responsive Design
-
-### Breakpoints
-- **Mobile**: 320px-767px
-- **Tablet**: 768px-1023px
-- **Desktop**: 1024px+
-
-### Mobile-First Approach
-- Start with mobile layout
-- Progressive enhancement for larger screens
-- Touch-friendly targets (44px minimum)
-- Simplified navigation patterns
-
-## Accessibility Standards
-
-### Color & Contrast
-- **WCAG AA**: 4.5:1 contrast ratio for normal text
-- **WCAG AA**: 3:1 contrast ratio for large text (18pt+)
-- **Color Independence**: Don't rely solely on color for meaning
-
-### Navigation & Focus
-- **Keyboard Navigation**: Tab order follows visual order
-- **Focus Indicators**: Visible focus states for all interactive elements
-- **Skip Links**: Allow users to skip to main content
-- **Screen Reader**: Proper heading hierarchy and ARIA labels
-
-## Content Strategy
-
-### Writing Guidelines
-- **Concise**: Use clear, direct language
-- **Scannable**: Break up text with headings and bullet points
-- **Action-Oriented**: Use active voice and clear CTAs
-- **Consistent**: Maintain consistent tone and terminology
-
-### Information Architecture
-- **Progressive Disclosure**: Show only what users need when they need it
-- **Logical Grouping**: Related items should be visually grouped
-- **Clear Hierarchy**: Most important content should be most prominent
-
-## Performance Considerations
-
-### Loading & Speed
-- **Critical CSS**: Inline above-the-fold styles
-- **Image Optimization**: WebP format, proper sizing
-- **Lazy Loading**: Load images and content as needed
-- **Minimize**: Reduce HTTP requests and file sizes
-
-### Technical Implementation
-- **Semantic HTML**: Use proper HTML5 elements
-- **CSS Architecture**: Organized, maintainable stylesheets
-- **Progressive Enhancement**: Core functionality works without JavaScript
-- **Error Handling**: Graceful degradation for failed requests
-
-## Modern Design Trends to Incorporate
-
-### Visual Elements
-- **Glassmorphism**: Subtle blur effects for overlays
-- **Neumorphism**: Soft, subtle shadows for depth (use sparingly)
-- **Gradient Accents**: Subtle gradients for backgrounds or CTAs
-- **Custom Icons**: Consistent icon system (Heroicons, Lucide, or custom)
-
-### Layout Innovations
-- **Asymmetrical Grids**: Breaking traditional grid patterns thoughtfully
-- **Large Typography**: Bold, oversized headings for impact
-- **Immersive Media**: Full-width images and videos
-- **Split Screens**: Dividing content into distinct visual areas
-
-## Quality Checklist
-
-### Visual Consistency
-- [ ] Typography scale is consistent across all pages
-- [ ] Color usage follows established palette
-- [ ] Spacing follows 8px grid system
-- [ ] Component styles are reusable and documented
-
-### User Experience
-- [ ] Navigation is intuitive and consistent
-- [ ] Loading states are handled gracefully
-- [ ] Error states provide clear guidance
-- [ ] Mobile experience is touch-friendly
-
-### Technical Excellence
-- [ ] Semantic HTML structure
-- [ ] Accessible keyboard navigation
-- [ ] Proper heading hierarchy
-- [ ] Optimized images and assets
-- [ ] Cross-browser compatibility tested
-
-### Content Quality
-- [ ] Text is scannable and concise
-- [ ] Call-to-actions are clear and prominent
-- [ ] Information hierarchy guides user attention
-- [ ] Content serves user goals effectively
+### Critical Checkpoints
+Always screenshot these after UI changes:
+1. **Provider Consistency** - All provider pages should look identical
+2. **Chapter Tabs** - Tab navigation and styling
+3. **Editor Areas** - ToastUI editor height and styling
+4. **Language Grid** - Multi-language selector layout
+5. **Form Elements** - Input fields, buttons, dropdowns
+6. **Modal Dialogs** - Settings and help modals
+7. **Status Displays** - Error, loading, and success states
+
+## MCP Servers Rules
+
+### Context7 Rules
+Always use context7 when I need code generation, setup or configuration steps, or library/API documentation. This means you should automatically use the Context7 MCP tools to resolve library id and get library docs without me having to explicitly ask.
 
 ---
 
-*Remember: The best minimalistic design doesn't feel minimal to users—it feels effortless and intuitive. Focus on removing friction, not features.*
+## Development Guidelines
+
+### Core Principles
+
+1. **CSS-First Styling Architecture**
+   - **ALWAYS add styling to CSS files**, never inline in HTML or JavaScript
+   - Use dedicated CSS files in `assets/css/` directory structure
+   - Follow the established CSS architecture: `core/`, `components/`, `themes/`, `layouts/`
+   - Apply styles via CSS classes and CSS custom properties (variables)
+   - **NEVER use inline `style` attributes** in HTML or JavaScript DOM manipulation
+   - **NEVER use CSS-in-JS** - all styles belong in `.css` files
+
+   ```javascript
+   // ❌ DON'T: Inline styles in JavaScript
+   element.style.height = '400px';
+   element.setAttribute('style', 'background: #000;');
+
+   // ✅ DO: Add CSS class and define styles in CSS file
+   element.classList.add('editor-container');
+   ```
+
+   ```css
+   /* ✅ DO: Define styles in appropriate CSS file */
+   .editor-container {
+       height: 400px;
+       background-color: var(--surface);
+   }
+   ```
+
+2. **Icon System Standards**
+   - **ALWAYS use Lucide icons** for all interface icons
+   - **NEVER use emojis** in UI elements - they render inconsistently across platforms
+   - **NEVER use custom glyphicons** or Unicode symbols - use semantic icon names
+   - Use `<i data-lucide="icon-name"></i>` syntax for all icons
+   - Initialize icons with `lucide.createIcons()` after DOM changes
+   - Include Lucide CDN: `<script src="https://unpkg.com/lucide@latest/dist/umd/lucide.js"></script>`
+
+   ```html
+   <!-- ❌ DON'T: Emojis or custom symbols -->
+   <button>🔄 Refresh</button>
+   <span class="icon-custom">⚙</span>
+
+   <!-- ✅ DO: Lucide icons with semantic names -->
+   <button><i data-lucide="refresh-cw"></i> Refresh</button>
+   <span><i data-lucide="settings"></i></span>
+   ```
+
+3. **Security-First Development**
+   - Use `createElement()` and `textContent`, never `innerHTML`
+   - Validate and sanitize ALL user inputs
+   - Implement proper CORS policies and CSP headers
+   - Regularly audit and update third-party libraries
+
+4. **Third-Party Integration Philosophy - "Don't Fight the Framework"**
+   - **Start simple**: Use library defaults with minimal configuration
+   - **Respect boundaries**: Don't override internal library classes unless absolutely necessary
+   - **Test early**: Verify basic functionality before adding customizations
+   - **Avoid !important**: Heavy CSS overrides indicate over-engineering
+
+   ```javascript
+   // ✅ DO: Start with library defaults
+   const editor = new toastui.Editor({
+       el: document.querySelector('#editor'),
+       height: '100%', // Let the library manage its own sizing
+       initialEditType: 'wysiwyg'
+   });
+   ```
+
+3. **Component-Based Architecture**
+   - Create reusable, self-contained components
+   - Separate business logic from presentation
+   - Make components configurable and testable
+   - Each component should have one clear purpose
+
+4. **Performance Standards**
+   - Lazy load resources only when needed
+   - Implement intelligent caching strategies
+   - Debounce expensive operations
+   - Prevent memory leaks with proper cleanup
+
+5. **Error Handling & User Feedback**
+   - Provide fallbacks for failed features
+   - Clear, actionable error messages
+   - Structured error reporting for debugging
+   - Allow users to retry failed operations
+
+6. **Responsive Design & Accessibility**
+   - Mobile-first approach with progressive enhancement
+   - Minimum 44px touch targets
+   - Full keyboard accessibility
+   - Proper ARIA labels and semantic HTML
+   - Support accessibility preferences (reduced motion, high contrast)
+
+### Modern CSS Architecture
+
+```css
+:root {
+    /* Spacing system (8px grid) */
+    --spacing-1: 4px;
+    --spacing-2: 8px;
+    --spacing-4: 16px;
+    --spacing-6: 24px;
+    --spacing-8: 32px;
+
+    /* Typography scale */
+    --font-size-base: 1rem;
+    --font-size-lg: 1.125rem;
+    --font-size-xl: 1.25rem;
+    --font-size-2xl: 1.5rem;
+
+    /* Color system */
+    --color-primary: #2563EB;
+    --color-success: #10B981;
+    --color-warning: #F59E0B;
+    --color-error: #EF4444;
+
+    /* Elevation (shadows) */
+    --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+    --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+    --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+}
+```
+
+### Dark Mode Support
+
+```css
+:root {
+    /* Light theme (default) */
+    --bg-primary: #FFFFFF;
+    --bg-secondary: #F8FAFC;
+    --text-primary: #0F172A;
+    --text-secondary: #64748B;
+    --border-primary: #E2E8F0;
+}
+
+@media (prefers-color-scheme: dark) {
+    :root {
+        --bg-primary: #0F172A;
+        --bg-secondary: #1E293B;
+        --text-primary: #F8FAFC;
+        --text-secondary: #CBD5E1;
+        --border-primary: #334155;
+    }
+}
+
+/* Components automatically adapt */
+.card {
+    background: var(--bg-primary);
+    color: var(--text-primary);
+    border: 1px solid var(--border-primary);
+}
+```
+
+### Quality Checklist
+
+#### Code Quality
+- [ ] Follows established coding standards
+- [ ] Implements proper error handling
+- [ ] Avoids code duplication (DRY principle)
+
+#### Security
+- [ ] Validates and sanitizes all inputs
+- [ ] Uses safe DOM manipulation methods
+- [ ] Protects against XSS, CSRF vulnerabilities
+
+#### Performance
+- [ ] Minimizes bundle size and HTTP requests
+- [ ] Implements lazy loading where appropriate
+- [ ] Uses efficient algorithms and data structures
+
+#### Accessibility
+- [ ] Provides keyboard navigation support
+- [ ] Includes proper ARIA labels and roles
+- [ ] Maintains sufficient color contrast (4.5:1 minimum)
+- [ ] Respects user preferences (reduced motion, high contrast)
+
+#### Responsive Design
+- [ ] Works on mobile, tablet, and desktop
+- [ ] Uses appropriate touch targets (44px minimum)
+- [ ] Implements mobile-first CSS
+
+---
+
+## Project-Specific Implementation
+
+### Current File Structure
+```
+/
+├── creator/                    # Modern creator interface
+│   ├── assets/
+│   │   ├── minimal-theme.css  # Main theme system
+│   │   ├── course-creator.css # Creator-specific styles
+│   │   └── js/                # JavaScript modules
+│   ├── index.html             # Creator launcher
+│   ├── course.html            # Course creator selector
+│   ├── slides.html            # Slides creator selector
+│   ├── cloud.html             # Cloud AI provider
+│   ├── webllm.html            # WebLLM provider
+│   ├── ollama.html            # Ollama provider
+│   ├── puter.html             # Puter provider
+│   └── slides/                # Slides-specific variants
+├── docs/                      # Published course content
+└── build_site.py             # Site generation script
+```
+
+### Creator Interface Components
+- **LanguageSelector**: Multi-language selection with flag icons
+- **ProgressIndicator**: Step-by-step progress tracking
+- **CourseStructureDisplay**: Dynamic course outline preview
+- **SettingsPanel**: Configurable options interface
+- **AIProviderManager**: Unified AI provider integration
+
+### AI Provider Integration
+
+#### Supported Providers
+- **Cloud AI**: OpenAI, Anthropic, Google (API-based)
+- **WebLLM**: Browser-based inference (no server required)
+- **Ollama**: Local model integration
+- **Puter**: Free access to multiple providers
+
+#### Provider Interface Pattern
+```javascript
+class AIProvider {
+    constructor(config) {
+        this.config = config;
+    }
+
+    async generateContent(prompt, options) {
+        // Provider-specific implementation
+    }
+
+    validateConfiguration() {
+        // Check required settings
+    }
+
+    getTemplate() {
+        // Return provider-specific UI template
+    }
+}
+```
+
+### Build and Deployment
+
+#### Content Generation Workflow
+1. User selects AI provider and configures settings
+2. AI generates course structure and content
+3. Content is packaged as downloadable ZIP
+4. User extracts to `docs/` directory
+5. `build_site.py` processes content and updates navigation
+6. GitHub Actions builds and deploys to GitHub Pages
+
+#### Multi-language Support
+- File naming: `filename.{lang}.md` (e.g., `index.en.md`)
+- Supported languages: en, de, fr, hi, it, ja, pt, ro, ru, es, zh
+- Auto-generated navigation for each language
+- MkDocs i18n plugin handles language switching
+
+### Maintenance Notes
+
+#### When Adding New Features
+1. Check if existing components can be extended
+2. Follow the established provider pattern for AI integrations
+3. Update language files for new UI text
+4. Test across all supported AI providers
+5. Verify mobile responsiveness and accessibility
+
+#### Performance Considerations
+- Creator interface loads modularly based on selected provider
+- Large AI libraries are loaded lazily
+- User preferences are cached in localStorage
+- Generated content is optimized for MkDocs deployment
+
+## Important Instruction Reminders
+- Do what has been asked; nothing more, nothing less
+- NEVER create files unless they're absolutely necessary for achieving your goal
+- ALWAYS prefer editing an existing file to creating a new one
+- NEVER proactively create documentation files (*.md) or README files unless explicitly requested

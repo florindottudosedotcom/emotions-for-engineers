@@ -312,7 +312,23 @@ class KonvaSlideSystem {
         this.layer = null;
         this.currentSlideIndex = 0;
         this.slides = [];
+        this.isInitialized = false;
+        this.isInitializing = false; // Flag to track initial loading state
+        this.pendingSaveOperations = []; // Queue save operations until state is ready
+        this.isResizing = false; // Flag to prevent concurrent resize operations
+        this.isTransitioning = false; // Flag to track active transitions
+        this.currentTween = null; // Reference to current transition tween
         this.slideObjects = []; // Store Konva objects for each slide
+
+        // Circuit breaker pattern for error recovery
+        this.circuitBreaker = {
+            failureCount: 0,
+            maxFailures: 5,
+            resetTimeout: 30000, // 30 seconds
+            state: 'CLOSED', // CLOSED, OPEN, HALF_OPEN
+            lastFailureTime: 0,
+            errorNotificationShown: false
+        };
 
         // Canvas dimensions
         this.slideWidth = 1000;
@@ -344,9 +360,45 @@ class KonvaSlideSystem {
         };
     }
 
+    /**
+     * Apply theme colors to a specific slide
+     */
+    applyThemeToSlide(slideIndex, theme) {
+        if (!this.slides[slideIndex]) return;
+
+        // Initialize visualSuggestions if it doesn't exist
+        if (!this.slides[slideIndex].visualSuggestions) {
+            this.slides[slideIndex].visualSuggestions = {};
+        }
+
+        // Apply theme colors to slide data
+        this.slides[slideIndex].visualSuggestions.backgroundColor = theme.backgroundColor;
+        this.slides[slideIndex].visualSuggestions.textColor = theme.textColor;
+        this.slides[slideIndex].visualSuggestions.borderColor = theme.borderColor;
+        this.slides[slideIndex].visualSuggestions.fillColor = theme.fillColor;
+
+        // Update current theme for immediate visual feedback
+        this.currentTheme = {...theme};
+
+        console.log(`✨ Applied theme to slide ${slideIndex + 1}:`, theme);
+    }
+
     init() {
-        // Clear container
+        // Prevent double initialization
+        if (this.isInitialized) {
+            return;
+        }
+
+        // Force clear container and remove any existing accordions
         this.container.innerHTML = '';
+
+        // Remove any existing accordion containers that might be floating around
+        const existingAccordions = document.querySelectorAll('.accordion-container, .konva-editor-layout, .konva-slide-sidebar');
+        existingAccordions.forEach(el => {
+            if (el.parentNode) {
+                el.parentNode.removeChild(el);
+            }
+        });
 
         // Create navigation controls
         this.createNavigationControls();
@@ -354,17 +406,9 @@ class KonvaSlideSystem {
         // Create Konva stage with responsive sizing
         const canvasContainer = document.createElement('div');
         canvasContainer.id = 'konva-slide-stage';
-        canvasContainer.style.cssText = `
-            width: 100%;
-            max-width: ${this.slideWidth}px;
-            height: auto;
-            background: ${this.currentTheme.backgroundColor};
-            margin: 20px auto;
-            position: relative;
-            overflow: hidden;
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
-            border-radius: 8px;
-        `;
+        canvasContainer.className = window.innerWidth <= 767 ? 'konva-canvas-container responsive' : 'konva-canvas-container';
+        canvasContainer.style.maxWidth = `${this.slideWidth}px`;
+        canvasContainer.style.background = this.currentTheme.backgroundColor;
 
         this.container.appendChild(canvasContainer);
 
@@ -410,10 +454,10 @@ class KonvaSlideSystem {
         // Setup selection system
         this.setupSelection();
 
-        // Apply border radius to the canvas element to match container
+        // Apply canvas styling
         const canvas = this.stage.content.querySelector('canvas');
         if (canvas) {
-            canvas.style.borderRadius = '8px';
+            canvas.className = 'konva-canvas';
         }
 
         // Handle window resize
@@ -421,47 +465,355 @@ class KonvaSlideSystem {
 
         // Create toolbar for adding content
         this.createContentToolbar();
+
+        // Create initial demo slide if no slides exist
+        this.createInitialSlide();
+
+        // Mark as initialized to prevent double initialization
+        this.isInitialized = true;
     }
 
     calculateResponsiveDimensions(container) {
-        // Get container width - ensure we have a proper container reference
+        // Enhanced container readiness detection
         if (!container) container = this.canvasContainer || this.container;
 
-        const containerWidth = container.clientWidth || this.container.clientWidth || this.slideWidth;
+        // Container readiness checks
+        const isContainerReady = this.checkContainerReadiness(container);
+        if (!isContainerReady) {
+            console.warn('⚠️ Container not ready, using emergency fallback dimensions');
+            // Use mobile-friendly fallback dimensions
+            const isMobile = window.innerWidth <= 767;
+            this.actualWidth = isMobile ? 320 : 600;
+            this.actualHeight = isMobile ? 240 : 400;
+            this.scaleFactor = isMobile ? 0.32 : 0.6;
+            return;
+        }
+
+        // Wait for container to be rendered and get proper dimensions
+        let containerWidth = 0;
+        if (container && container.clientWidth > 0) {
+            containerWidth = container.clientWidth;
+        } else if (this.container && this.container.clientWidth > 0) {
+            containerWidth = this.container.clientWidth;
+        } else {
+            // Fallback: Get parent container width or use viewport-based calculation
+            const parentContainer = container?.parentElement || this.container?.parentElement;
+            if (parentContainer && parentContainer.clientWidth > 0) {
+                containerWidth = parentContainer.clientWidth * 0.75; // Assume 75% of parent width
+            } else {
+                // Last resort: Use viewport width
+                containerWidth = Math.min(window.innerWidth * 0.6, this.slideWidth);
+            }
+        }
+
+        // Ensure minimum width (mobile-responsive)
+        const isMobile = window.innerWidth <= 767;
+        const minWidth = isMobile ? 280 : 400;
+        containerWidth = Math.max(containerWidth, minWidth);
+
         const maxWidth = Math.min(containerWidth - 40, this.slideWidth); // 40px for margins
 
-        // Calculate scale factor
-        this.scaleFactor = maxWidth / this.slideWidth;
+        // Calculate scale factor, ensure it's not zero
+        this.scaleFactor = Math.max(maxWidth / this.slideWidth, 0.3); // Minimum 30% scale
 
-        // Set actual dimensions
-        this.actualWidth = maxWidth;
-        this.actualHeight = this.slideHeight * this.scaleFactor;
+        // Set actual dimensions with minimums to prevent 0 size (mobile-responsive)
+        const minActualWidth = isMobile ? 280 : 400;
+        const minActualHeight = isMobile ? 200 : 300;
+        this.actualWidth = Math.max(maxWidth, minActualWidth);
+        this.actualHeight = Math.max(this.slideHeight * this.scaleFactor, minActualHeight);
 
         console.log('Calculated dimensions:', {
             containerWidth,
             scaleFactor: this.scaleFactor,
             actualWidth: this.actualWidth,
-            actualHeight: this.actualHeight
+            actualHeight: this.actualHeight,
+            containerElement: container?.tagName || 'undefined',
+            containerClientWidth: container?.clientWidth || 'undefined'
         });
+
+        // Ensure stage has proper dimensions before any drawing operations
+        if (this.stage) {
+            this.stage.width(this.actualWidth);
+            this.stage.height(this.actualHeight);
+        }
+    }
+
+    /**
+     * Check if container is ready for dimension calculation
+     */
+    checkContainerReadiness(container) {
+        // Primary container checks
+        if (!container) {
+            console.log('🔍 Container readiness: No container provided');
+            return false;
+        }
+
+        // DOM presence check
+        if (!container.isConnected || !document.body.contains(container)) {
+            console.log('🔍 Container readiness: Container not in DOM');
+            return false;
+        }
+
+        // CSS computation check
+        const computedStyle = window.getComputedStyle(container);
+        if (computedStyle.display === 'none' || computedStyle.visibility === 'hidden') {
+            console.log('🔍 Container readiness: Container hidden via CSS');
+            return false;
+        }
+
+        // Parent readiness check (containers can inherit 0 width from parents)
+        let parent = container.parentElement;
+        let depth = 0;
+        while (parent && depth < 5) { // Check up to 5 levels up
+            const parentStyle = window.getComputedStyle(parent);
+            if (parentStyle.display === 'none' || parent.clientWidth === 0) {
+                console.log(`🔍 Container readiness: Parent at depth ${depth} has zero width or hidden`);
+                return false;
+            }
+            parent = parent.parentElement;
+            depth++;
+        }
+
+        // Basic dimension check
+        const hasValidDimensions = container.clientWidth > 0 && container.clientHeight > 0;
+        if (!hasValidDimensions) {
+            // Additional CSS checks for containers with explicit width/height
+            const width = computedStyle.width;
+            const height = computedStyle.height;
+            const hasExplicitDimensions = (width && width !== 'auto' && parseInt(width) > 0) &&
+                                         (height && height !== 'auto' && parseInt(height) > 0);
+
+            if (!hasExplicitDimensions) {
+                console.log('🔍 Container readiness: No valid dimensions and no explicit CSS sizes');
+                return false;
+            }
+        }
+
+        console.log('✅ Container readiness: Container is ready', {
+            clientWidth: container.clientWidth,
+            clientHeight: container.clientHeight,
+            display: computedStyle.display,
+            visibility: computedStyle.visibility
+        });
+
+        return true;
+    }
+
+    /**
+     * Circuit breaker pattern for handling repeated failures
+     */
+    handleCanvasFailure(errorContext) {
+        const breaker = this.circuitBreaker;
+        const now = Date.now();
+
+        breaker.failureCount++;
+        breaker.lastFailureTime = now;
+
+        console.log(`🚨 Canvas failure #${breaker.failureCount} in context: ${errorContext}`);
+
+        if (breaker.failureCount >= breaker.maxFailures) {
+            // Open the circuit - stop trying operations
+            breaker.state = 'OPEN';
+            console.log('🚫 Circuit breaker OPEN - canvas operations suspended');
+            this.showErrorRecoveryUI();
+        }
+
+        // Auto-reset after timeout
+        setTimeout(() => {
+            if (now - breaker.lastFailureTime >= breaker.resetTimeout) {
+                this.resetCircuitBreaker();
+            }
+        }, breaker.resetTimeout);
+    }
+
+    resetCircuitBreaker() {
+        console.log('🔄 Circuit breaker reset - attempting recovery');
+        this.circuitBreaker = {
+            failureCount: 0,
+            maxFailures: 5,
+            resetTimeout: 30000,
+            state: 'CLOSED',
+            lastFailureTime: 0,
+            errorNotificationShown: false
+        };
+        this.hideErrorRecoveryUI();
+    }
+
+    canPerformCanvasOperation() {
+        return this.circuitBreaker.state !== 'OPEN';
+    }
+
+    /**
+     * Show user-visible error recovery interface
+     */
+    showErrorRecoveryUI() {
+        if (this.circuitBreaker.errorNotificationShown) return;
+
+        const errorDiv = document.createElement('div');
+        errorDiv.id = 'konva-error-recovery';
+        errorDiv.innerHTML = `
+            <div style="
+                position: fixed;
+                top: 20px;
+                right: 20px;
+                background: #fee2e2;
+                border: 1px solid #fecaca;
+                border-left: 4px solid #ef4444;
+                border-radius: 6px;
+                padding: 16px;
+                max-width: 400px;
+                box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+                z-index: 10000;
+                font-family: system-ui, -apple-system, sans-serif;
+                font-size: 14px;
+                line-height: 1.4;
+            ">
+                <div style="display: flex; align-items: flex-start; gap: 12px;">
+                    <div style="flex-shrink: 0; font-size: 18px;">⚠️</div>
+                    <div style="flex: 1;">
+                        <h4 style="margin: 0 0 8px 0; color: #991b1b; font-weight: 600;">Editor Temporarily Unavailable</h4>
+                        <p style="margin: 0 0 12px 0; color: #7f1d1d;">
+                            The slide editor is experiencing technical difficulties. This usually resolves automatically.
+                        </p>
+                        <div style="display: flex; gap: 8px; margin-top: 12px;">
+                            <button id="konva-retry-btn" style="
+                                background: #ef4444;
+                                color: white;
+                                border: none;
+                                padding: 6px 12px;
+                                border-radius: 4px;
+                                font-size: 12px;
+                                cursor: pointer;
+                                font-weight: 500;
+                            ">Try Again</button>
+                            <button id="konva-dismiss-btn" style="
+                                background: transparent;
+                                color: #7f1d1d;
+                                border: 1px solid #fecaca;
+                                padding: 6px 12px;
+                                border-radius: 4px;
+                                font-size: 12px;
+                                cursor: pointer;
+                            ">Dismiss</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        `;
+
+        document.body.appendChild(errorDiv);
+        this.circuitBreaker.errorNotificationShown = true;
+
+        // Event listeners
+        document.getElementById('konva-retry-btn').addEventListener('click', () => {
+            this.resetCircuitBreaker();
+            this.recreateCanvas();
+        });
+
+        document.getElementById('konva-dismiss-btn').addEventListener('click', () => {
+            this.hideErrorRecoveryUI();
+        });
+
+        // Auto-hide after 10 seconds
+        setTimeout(() => {
+            this.hideErrorRecoveryUI();
+        }, 10000);
+    }
+
+    hideErrorRecoveryUI() {
+        const errorDiv = document.getElementById('konva-error-recovery');
+        if (errorDiv) {
+            errorDiv.remove();
+        }
+        this.circuitBreaker.errorNotificationShown = false;
     }
 
     setupResizeHandler(container) {
-        const resizeObserver = new ResizeObserver(() => {
-            this.handleResize(container);
+        // Single debounced resize handler with infinite loop protection
+        this.resizeCount = 0;
+        this.resizeStartTime = 0;
+        this.maxResizesPerSecond = 10; // Prevent more than 10 resizes per second
+        this.resizeTimeout = null;
+
+        const debouncedResize = () => {
+            if (this.resizeTimeout) {
+                clearTimeout(this.resizeTimeout);
+            }
+
+            this.resizeTimeout = setTimeout(() => {
+                this.handleResize(container);
+                this.resizeTimeout = null;
+            }, 100); // 100ms debounce
+        };
+
+        // Use ResizeObserver as primary trigger with loop protection
+        const resizeObserver = new ResizeObserver((entries) => {
+            // Infinite loop detection
+            const now = Date.now();
+            if (now - this.resizeStartTime > 1000) {
+                // Reset counter every second
+                this.resizeCount = 0;
+                this.resizeStartTime = now;
+            }
+
+            this.resizeCount++;
+            if (this.resizeCount > this.maxResizesPerSecond) {
+                console.warn('🚨 Resize loop detected, throttling resize events');
+                return;
+            }
+
+            debouncedResize();
         });
+
         resizeObserver.observe(this.container);
 
-        // Store reference for cleanup
+        // Store references for cleanup
         this.resizeObserver = resizeObserver;
+        this.debouncedResize = debouncedResize;
     }
 
     handleResize(container = null) {
+        console.log('🔄 Resize event triggered', {
+            isResizing: this.isResizing,
+            isTransitioning: this.isTransitioning,
+            resizeCount: this.resizeCount,
+            currentDimensions: { width: this.actualWidth, height: this.actualHeight }
+        });
+
+        // Prevent concurrent resize operations
+        if (this.isResizing) {
+            console.log('⏸️ Resize already in progress, skipping');
+            return;
+        }
+
+        // Additional safety check for container readiness
+        if (!this.container || !this.stage) {
+            console.log('⚠️ Container or stage not ready for resize');
+            return;
+        }
+
+        this.isResizing = true;
         const oldWidth = this.actualWidth;
         const oldHeight = this.actualHeight;
 
         this.calculateResponsiveDimensions(container || this.canvasContainer);
 
+        console.log('📐 Resize calculation complete', {
+            oldDimensions: { width: oldWidth, height: oldHeight },
+            newDimensions: { width: this.actualWidth, height: this.actualHeight },
+            changed: this.actualWidth !== oldWidth || this.actualHeight !== oldHeight
+        });
+
         if (this.actualWidth !== oldWidth || this.actualHeight !== oldHeight) {
+            // Cancel any ongoing transitions before resizing
+            if (this.currentTween) {
+                console.log('🛑 Cancelling ongoing transition for resize');
+                this.currentTween.destroy();
+                this.currentTween = null;
+                this.isTransitioning = false;
+                this.layer.opacity(1);
+            }
+
             // Update stage size
             this.stage.width(this.actualWidth);
             this.stage.height(this.actualHeight);
@@ -469,6 +821,8 @@ class KonvaSlideSystem {
             // Redraw current slide to apply new dimensions
             this.showSlide(this.currentSlideIndex);
         }
+
+        this.isResizing = false;
     }
 
     scaleAllObjects(scale) {
@@ -484,29 +838,15 @@ class KonvaSlideSystem {
     createNavigationControls() {
         const navContainer = document.createElement('div');
         navContainer.className = 'konva-slide-navigation';
-        navContainer.style.cssText = `
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 15px 20px;
-            background: rgba(255, 255, 255, 0.95);
-            border: 1px solid #e5e7eb;
-            border-radius: 8px;
-            margin-bottom: 15px;
-            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-        `;
 
         navContainer.innerHTML = `
             <div class="slide-counter">
                 <span class="current-slide">1</span> / <span class="total-slides">1</span>
             </div>
-            <div class="slide-title-display">
-                <h2 id="current-slide-title" contenteditable="true" style="margin: 0; padding: 8px; border: 2px solid transparent; border-radius: 4px;">Slide Title</h2>
-            </div>
             <div class="navigation-buttons">
                 <button class="nav-btn undo-btn" onclick="window.konvaSlideSystem?.undo()" title="Undo (Ctrl+Z)">↶ Undo</button>
                 <button class="nav-btn redo-btn" onclick="window.konvaSlideSystem?.redo()" title="Redo (Ctrl+Y)">↷ Redo</button>
-                <span style="margin: 0 8px; border-left: 1px solid #d1d5db; height: 20px;"></span>
+                <span class="nav-btn-divider"></span>
                 <button class="nav-btn prev-btn" onclick="window.konvaSlideSystem?.previousSlide()">◀ Previous</button>
                 <button class="nav-btn next-btn" onclick="window.konvaSlideSystem?.nextSlide()">Next ▶</button>
             </div>
@@ -541,6 +881,22 @@ class KonvaSlideSystem {
                     font-weight: 600;
                     color: #374151;
                 }
+
+                /* Dark mode for navigation buttons */
+                @media (prefers-color-scheme: dark) {
+                    .nav-btn {
+                        background: #334155 !important;
+                        border-color: #475569 !important;
+                        color: #F8FAFC !important;
+                    }
+                    .nav-btn:hover {
+                        background: #475569 !important;
+                        border-color: #60A5FA !important;
+                    }
+                    .slide-counter {
+                        color: #F8FAFC !important;
+                    }
+                }
                 #current-slide-title:focus {
                     border-color: #60a5fa;
                     background: rgba(255, 255, 255, 0.95);
@@ -555,39 +911,14 @@ class KonvaSlideSystem {
         // Create main container with left sidebar layout
         const mainContainer = document.createElement('div');
         mainContainer.className = 'konva-editor-layout';
-        mainContainer.style.cssText = `
-            display: flex;
-            gap: 20px;
-            margin-top: 15px;
-            height: auto;
-            min-height: 600px;
-        `;
 
         // Create left sidebar toolbar
         const toolbar = document.createElement('div');
         toolbar.className = 'konva-slide-sidebar';
-        toolbar.style.cssText = `
-            width: 280px;
-            min-width: 280px;
-            background: rgba(255, 255, 255, 0.98);
-            border: 1px solid #e5e7eb;
-            border-radius: 12px;
-            padding: 20px 16px;
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
-            backdrop-filter: blur(10px);
-            max-height: 90vh;
-            overflow-y: auto;
-            position: sticky;
-            top: 20px;
-        `;
 
         // Create content area wrapper for slides
         const contentWrapper = document.createElement('div');
         contentWrapper.className = 'konva-content-wrapper';
-        contentWrapper.style.cssText = `
-            flex: 1;
-            min-width: 0;
-        `;
 
         toolbar.innerHTML = `
             <div class="accordion-container">
@@ -842,11 +1173,11 @@ class KonvaSlideSystem {
                 <div class="category-content">
                     <div class="style-controls">
                         <div class="control-group">
-                            <label>Text Color:</label>
+                            <label for="text-color">Text Color:</label>
                             <input type="color" id="text-color" value="#000000" onchange="window.konvaSlideSystem?.updateSelectedColor(this.value)">
                         </div>
                         <div class="control-group">
-                            <label>Font Size: <span id="font-size-display">24px</span></label>
+                            <label for="font-size">Font Size: <span id="font-size-display">24px</span></label>
                             <input type="range" id="font-size" min="12" max="72" value="24" onchange="window.konvaSlideSystem?.updateSelectedFontSize(this.value)">
                         </div>
                     </div>
@@ -897,472 +1228,53 @@ class KonvaSlideSystem {
         // Set up color scheme functionality
         this.setupColorSchemes();
 
-        // Add toolbar styles
-        if (!document.getElementById('konva-slide-toolbar-styles')) {
-            const style = document.createElement('style');
-            style.id = 'konva-slide-toolbar-styles';
-            style.textContent = `
-                .toolbar-group {
-                    display: flex;
-                    align-items: center;
-                    gap: 8px;
-                    padding: 0 12px;
-                    border-right: 1px solid #e5e7eb;
-                }
-                .toolbar-group:last-child {
-                    border-right: none;
-                }
-                .toolbar-group label {
-                    font-weight: 600;
-                    color: #374151;
-                    margin-right: 4px;
-                }
-                .tool-btn {
-                    padding: 8px 12px;
-                    border: 1px solid #d1d5db;
-                    border-radius: 6px;
-                    background: white;
-                    cursor: pointer;
-                    font-size: 13px;
-                    transition: all 0.2s ease;
-                }
-                .tool-btn:hover {
-                    background: #f3f4f6;
-                    border-color: #60a5fa;
-                    transform: translateY(-1px);
-                }
-                .delete-btn:hover {
-                    background: #fee2e2;
-                    border-color: #ef4444;
-                }
-                #font-size {
-                    width: 80px;
-                }
-                #text-color {
-                    width: 40px;
-                    height: 32px;
-                    border: 1px solid #d1d5db;
-                    border-radius: 4px;
-                    cursor: pointer;
-                }
-
-                /* Sidebar Layout */
-                .konva-slide-sidebar {
-                    scrollbar-width: thin;
-                    scrollbar-color: #d1d5db #f9fafb;
-                }
-
-                .konva-slide-sidebar::-webkit-scrollbar {
-                    width: 8px;
-                }
-
-                .konva-slide-sidebar::-webkit-scrollbar-track {
-                    background: #f9fafb;
-                    border-radius: 4px;
-                }
-
-                .konva-slide-sidebar::-webkit-scrollbar-thumb {
-                    background: #d1d5db;
-                    border-radius: 4px;
-                }
-
-                .konva-slide-sidebar::-webkit-scrollbar-thumb:hover {
-                    background: #9ca3af;
-                }
-
-                /* Accordion Container */
-                .accordion-container {
-                    border: 1px solid #e5e7eb;
-                    border-radius: 12px;
-                    overflow: hidden;
-                    background: white;
-                    margin: 0;
-                    padding: 0;
-                }
-
-                /* Accordion Categories */
-                .accordion-category {
-                    margin: 0;
-                    border: none;
-                    border-radius: 0;
-                    overflow: hidden;
-                    transition: all 0.2s ease;
-                }
-
-                .category-header {
-                    display: flex;
-                    align-items: center;
-                    gap: 12px;
-                    padding: 16px 18px;
-                    background: #f8fafc;
-                    cursor: pointer;
-                    transition: all 0.2s ease;
-                    border-top: 1px solid #e5e7eb;
-                    position: relative;
-                }
-
-                .accordion-category:first-child .category-header {
-                    border-top: none;
-                }
-
-                .category-header:hover {
-                    background: #f1f5f9;
-                }
-
-                .accordion-category.expanded .category-header {
-                    background: #eff6ff;
-                    border-bottom: 1px solid #e5e7eb;
-                }
-
-                .category-icon {
-                    font-size: 24px;
-                    line-height: 1;
-                    color: #374151;
-                    transition: all 0.2s ease;
-                    min-width: 32px;
-                    width: auto;
-                    text-align: center;
-                    display: flex;
-                    align-items: center;
-                    justify-content: center;
-                }
-
-                .accordion-category.expanded .category-icon {
-                    color: #1e40af;
-                    transform: scale(1.1);
-                }
-
-                /* Custom CSS Icons */
-                .category-icon span[class^="icon-"] {
-                    color: #374151;
-                    font-size: 20px;
-                    line-height: 1;
-                    display: inline-block;
-                    width: 20px;
-                    height: 20px;
-                    position: relative;
-                }
-
-                .accordion-category.expanded .category-icon span[class^="icon-"] {
-                    color: #1e40af;
-                }
-
-                /* Icon definitions using CSS */
-                .icon-tint:before { content: "●"; }
-                .icon-plus:before { content: "+"; font-weight: bold; }
-                .icon-stop:before { content: "■"; }
-                .icon-picture:before { content: "🖼"; }
-                .icon-th-large:before { content: "▦"; }
-                .icon-flash:before { content: "✦"; }
-                .icon-play-circle:before { content: "▶"; }
-                .icon-brush:before { content: "🖌"; }
-                .icon-cog:before { content: "⚙"; }
-
-                .category-title {
-                    font-size: 15px;
-                    font-weight: 600;
-                    color: #374151;
-                    flex: 1;
-                    transition: color 0.2s ease;
-                }
-
-                .accordion-category.expanded .category-title {
-                    color: #1e40af;
-                }
-
-                .chevron {
-                    font-size: 16px;
-                    color: #9ca3af;
-                    transition: all 0.2s ease;
-                    font-weight: bold;
-                }
-
-                .accordion-category.expanded .chevron {
-                    transform: rotate(90deg);
-                    color: #2563eb;
-                }
-
-                .category-content {
-                    padding: 0;
-                    margin: 0;
-                    max-height: 0;
-                    overflow: hidden;
-                    transition: all 0.3s ease;
-                    background: #fafbfc;
-                    opacity: 0;
-                    border: none;
-                    box-sizing: border-box;
-                }
-
-                .accordion-category.expanded .category-content {
-                    padding: 18px;
-                    max-height: 500px; /* Large enough for content but still allows animation */
-                    opacity: 1;
-                    overflow: visible; /* Ensure content isn't clipped */
-                }
-
-                /* Content Area Reset */
-                .category-content * {
-                    margin: 0 !important;
-                    box-sizing: border-box;
-                }
-
-                .category-content {
-                    margin: 0 !important;
-                }
-
-                /* Color Schemes Grid */
-                .color-schemes-grid {
-                    display: grid;
-                    grid-template-columns: 1fr 1fr;
-                    gap: 12px;
-                    margin: 0;
-                    min-height: fit-content;
-                    width: 100%;
-                }
-
-                .color-scheme-tile {
-                    display: flex;
-                    flex-direction: column;
-                    align-items: center;
-                    padding: 12px 8px;
-                    border: 2px solid #e5e7eb;
-                    border-radius: 8px;
-                    cursor: pointer;
-                    transition: all 0.2s ease;
-                    background: white;
-                    min-height: 80px;
-                    width: 100%;
-                    box-sizing: border-box;
-                }
-
-                .color-scheme-tile:hover {
-                    border-color: #60a5fa;
-                    background: #f8fafc;
-                }
-
-                .color-scheme-tile.selected {
-                    border-color: #2563eb;
-                    background: #eff6ff;
-                }
-
-                .scheme-preview {
-                    display: flex;
-                    flex-direction: row;
-                    height: 40px;
-                    border-radius: 4px;
-                    overflow: hidden;
-                    position: relative;
-                    margin-bottom: 6px;
-                    border: 1px solid rgba(0, 0, 0, 0.1);
-                    width: 100%;
-                }
-
-                .color-stripe {
-                    flex: 1 1 33.333%;
-                    height: 100%;
-                    border: none;
-                    display: block;
-                    min-width: 12px;
-                    width: auto;
-                }
-
-                .edit-theme-btn {
-                    position: absolute;
-                    top: 4px;
-                    right: 4px;
-                    width: 20px;
-                    height: 20px;
-                    background: rgba(255, 255, 255, 0.95);
-                    border-radius: 50%;
-                    display: none;
-                    align-items: center;
-                    justify-content: center;
-                    cursor: pointer;
-                    font-size: 12px;
-                    color: #666;
-                    border: 1px solid #ddd;
-                    font-weight: normal;
-                    z-index: 10;
-                    transition: all 0.2s ease;
-                    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-                }
-
-                .edit-theme-btn:hover {
-                    background: rgba(255, 255, 255, 1);
-                    color: #333;
-                    transform: scale(1.1);
-                }
-
-                .scheme-name {
-                    font-size: 11px;
-                    font-weight: 600;
-                    color: #6b7280;
-                    text-transform: uppercase;
-                    letter-spacing: 0.5px;
-                }
-
-                /* Tool Grid */
-                .tool-grid {
-                    display: grid;
-                    grid-template-columns: 1fr 1fr;
-                    gap: 8px;
-                    margin: 0;
-                }
-
-                .sidebar-tool-btn {
-                    display: flex;
-                    flex-direction: column;
-                    align-items: center;
-                    gap: 6px;
-                    padding: 12px 8px;
-                    border: 1px solid #e5e7eb;
-                    border-radius: 8px;
-                    background: white;
-                    cursor: pointer;
-                    transition: all 0.2s ease;
-                    text-decoration: none;
-                    color: inherit;
-                    min-height: 60px;
-                }
-
-                .sidebar-tool-btn:hover {
-                    background: #f8fafc;
-                    border-color: #60a5fa;
-                    transform: translateY(-1px);
-                    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
-                }
-
-                .sidebar-tool-btn.delete-btn:hover {
-                    background: #fef2f2;
-                    border-color: #ef4444;
-                }
-
-                .tool-icon {
-                    font-size: 20px;
-                    line-height: 1;
-                    filter: grayscale(0.2);
-                }
-
-                .sidebar-tool-btn:hover .tool-icon {
-                    filter: grayscale(0);
-                    transform: scale(1.1);
-                }
-
-                .sidebar-tool-btn span {
-                    font-size: 11px;
-                    font-weight: 600;
-                    color: #6b7280;
-                    text-align: center;
-                    line-height: 1.2;
-                }
-
-                /* Style Controls */
-                .style-controls {
-                    display: flex;
-                    flex-direction: column;
-                    gap: 12px;
-                    margin: 0;
-                }
-
-                .control-group {
-                    display: flex;
-                    flex-direction: column;
-                    gap: 6px;
-                }
-
-                .control-group label {
-                    font-size: 12px;
-                    font-weight: 600;
-                    color: #6b7280;
-                }
-
-                .control-group input[type="color"] {
-                    width: 100%;
-                    height: 36px;
-                    border: 1px solid #e5e7eb;
-                    border-radius: 6px;
-                    cursor: pointer;
-                    background: white;
-                }
-
-                .control-group input[type="range"] {
-                    width: 100%;
-                    height: 6px;
-                    background: #e5e7eb;
-                    border-radius: 3px;
-                    outline: none;
-                    cursor: pointer;
-                }
-
-                .control-group input[type="range"]::-webkit-slider-thumb {
-                    appearance: none;
-                    width: 16px;
-                    height: 16px;
-                    background: #2563eb;
-                    border-radius: 50%;
-                    cursor: pointer;
-                }
-
-                .control-group input[type="range"]::-moz-range-thumb {
-                    width: 16px;
-                    height: 16px;
-                    background: #2563eb;
-                    border-radius: 50%;
-                    cursor: pointer;
-                    border: none;
-                }
-
-                /* Responsive adjustments */
-                @media (max-width: 1200px) {
-                    .konva-slide-sidebar {
-                        width: 240px;
-                        min-width: 240px;
-                    }
-                }
-
-                @media (max-width: 768px) {
-                    .konva-editor-layout {
-                        flex-direction: column;
-                    }
-
-                    .konva-slide-sidebar {
-                        width: 100%;
-                        position: static;
-                        max-height: none;
-                        order: 2;
-                    }
-
-                    .tool-grid {
-                        grid-template-columns: repeat(4, 1fr);
-                    }
-
-                    .color-schemes-grid {
-                        grid-template-columns: repeat(4, 1fr);
-                    }
-                }
-            `;
-            document.head.appendChild(style);
-        }
+        // Toolbar and accordion styles now loaded from accordion-toolbar.css module
     }
 
     // Load slides from the AI-generated data format
     loadSlidesFromData(slideData) {
+        // Set initialization flag to prevent premature state saving
+        this.isInitializing = true;
+
         this.slides = slideData.slides || [];
         this.slideObjects = [];
+
+        // Ensure slidesAppState is properly initialized here to fix race condition
+        if (!window.slidesAppState) {
+            window.slidesAppState = {
+                currentSlideData: slideData,
+                currentSlideIndex: 0,
+                currentTheme: null
+            };
+            console.log('🔧 Initialized slidesAppState within KonvaSlideSystem');
+        } else {
+            // Update existing state with new data
+            window.slidesAppState.currentSlideData = slideData;
+            console.log('🔄 Updated existing slidesAppState with new slide data');
+        }
 
         console.log('Loading slides data:', slideData);
         console.log('Number of slides to load:', this.slides.length);
 
         // Convert each slide data to Konva objects
         this.slides.forEach((slide, index) => {
-            console.log(`Processing slide ${index + 1}:`, slide);
+            console.log(`🎯 Processing slide ${index + 1}:`, {
+                title: slide.title,
+                contentType: typeof slide.content,
+                contentLength: slide.content?.length || 0,
+                contentPreview: typeof slide.content === 'string'
+                    ? slide.content.substring(0, 100) + '...'
+                    : Array.isArray(slide.content)
+                        ? slide.content.slice(0, 2)
+                        : slide.content,
+                visualSuggestions: slide.visualSuggestions
+            });
             try {
                 const slideContent = this.createSlideFromData(slide, index);
-                console.log(`Created ${slideContent.length} objects for slide ${index + 1}`);
+                console.log(`✅ Created ${slideContent.length} objects for slide ${index + 1}`);
                 this.slideObjects.push(slideContent);
             } catch (error) {
-                console.error(`Error creating slide ${index + 1}:`, error);
+                console.error(`❌ Error creating slide ${index + 1}:`, error);
                 this.slideObjects.push([]); // Add empty slide to maintain indexing
             }
         });
@@ -1381,14 +1293,46 @@ class KonvaSlideSystem {
         }
 
         // Force recalculation of dimensions after slides are loaded
-        setTimeout(() => {
+        // Use requestAnimationFrame for better timing
+        const initializeSlides = () => {
             console.log('Forcing resize and redraw after slide load');
+
+            // Ensure container is ready
+            if (!this.canvasContainer || this.canvasContainer.clientWidth === 0) {
+                console.log('Container not ready, retrying...');
+                setTimeout(initializeSlides, 50);
+                return;
+            }
+
             this.calculateResponsiveDimensions();
-            this.stage.width(this.actualWidth);
-            this.stage.height(this.actualHeight);
-            this.showSlide(this.currentSlideIndex);
-            this.updateNavigation();
-        }, 100);
+
+            // Verify stage has valid dimensions
+            if (this.actualWidth > 0 && this.actualHeight > 0) {
+                this.stage.width(this.actualWidth);
+                this.stage.height(this.actualHeight);
+                this.showSlide(this.currentSlideIndex);
+                this.updateNavigation();
+
+                // Clear initialization flag - now ready for state saving
+                this.isInitializing = false;
+                console.log('✅ Slide initialization complete - state saving now enabled');
+
+                // Process any queued save operations
+                if (this.pendingSaveOperations.length > 0) {
+                    console.log(`🔄 Processing ${this.pendingSaveOperations.length} queued save operations`);
+                    // Execute the last save operation (most recent state)
+                    const lastSave = this.pendingSaveOperations.pop();
+                    this.pendingSaveOperations = []; // Clear the queue
+                    if (lastSave) lastSave();
+                }
+            } else {
+                console.error('Invalid stage dimensions, retrying...');
+                setTimeout(initializeSlides, 100);
+            }
+        };
+
+        // Start initialization after a brief delay to ensure DOM is ready
+        setTimeout(initializeSlides, 150);
     }
 
     addSlideFromData(slideData) {
@@ -1481,7 +1425,30 @@ class KonvaSlideSystem {
 
         // Enhanced content with staggered animations
         if (slide.content && slide.content.length > 0) {
-            slide.content.forEach((point, index) => {
+            // Handle both string and array content formats
+            let contentArray;
+            if (typeof slide.content === 'string') {
+                // Split string content by bullet points, newlines, or semicolons
+                contentArray = slide.content.split(/[•\n;]/)
+                    .map(item => item.trim())
+                    .filter(item => item.length > 0);
+                console.log(`📝 Converted string content to array for slide ${slideIndex + 1}:`, {
+                    originalString: slide.content.substring(0, 200) + '...',
+                    arrayLength: contentArray.length,
+                    arrayItems: contentArray.slice(0, 3)
+                });
+            } else if (Array.isArray(slide.content)) {
+                contentArray = slide.content;
+                console.log(`📋 Using array content for slide ${slideIndex + 1}:`, {
+                    arrayLength: contentArray.length,
+                    arrayItems: contentArray.slice(0, 3)
+                });
+            } else {
+                contentArray = [String(slide.content)];
+                console.log(`🔄 Converted other content type to array for slide ${slideIndex + 1}:`, typeof slide.content);
+            }
+
+            contentArray.forEach((point, index) => {
                 // Skip empty content
                 if (!point || point.trim() === '') return;
 
@@ -1619,7 +1586,21 @@ class KonvaSlideSystem {
 
         // Enhanced content with cards
         if (slide.content) {
-            slide.content.slice(0, 3).forEach((point, index) => {
+            // Handle both string and array content
+            let contentArray;
+            if (typeof slide.content === 'string') {
+                // Split string content by bullet points or newlines
+                contentArray = slide.content.split(/[•\n]/)
+                    .map(item => item.trim())
+                    .filter(item => item.length > 0)
+                    .slice(0, 3);
+            } else if (Array.isArray(slide.content)) {
+                contentArray = slide.content.slice(0, 3);
+            } else {
+                contentArray = [String(slide.content)];
+            }
+
+            contentArray.forEach((point, index) => {
                 const cardY = this.actualHeight * 0.3 + (index * 120 * this.scaleFactor);
 
                 // Card background
@@ -1741,11 +1722,11 @@ class KonvaSlideSystem {
 
         // Add visual feedback
         textObj.on('mouseenter', () => {
-            this.stage.container().style.cursor = 'pointer';
+            this.stage.container().className = 'konva-canvas-pointer';
         });
 
         textObj.on('mouseleave', () => {
-            this.stage.container().style.cursor = 'default';
+            this.stage.container().className = 'konva-canvas-default';
         });
     }
 
@@ -1754,11 +1735,11 @@ class KonvaSlideSystem {
 
         // Add visual feedback
         shapeObj.on('mouseenter', () => {
-            this.stage.container().style.cursor = 'move';
+            this.stage.container().className = 'konva-canvas-move';
         });
 
         shapeObj.on('mouseleave', () => {
-            this.stage.container().style.cursor = 'default';
+            this.stage.container().className = 'konva-canvas-default';
         });
     }
 
@@ -1767,6 +1748,12 @@ class KonvaSlideSystem {
         if (index < 0 || index >= this.slideObjects.length) {
             console.log('Invalid slide index:', index);
             return;
+        }
+
+        // Auto-apply default theme if slide doesn't have theme data
+        if (this.slides[index] && !this.slides[index].visualSuggestions?.backgroundColor) {
+            console.log('📄 Auto-applying default theme to slide', index + 1);
+            this.applyThemeToSlide(index, this.getDefaultTheme());
         }
 
         // Clear current layer but preserve the transformer and slide selection
@@ -1802,16 +1789,54 @@ class KonvaSlideSystem {
             this.layer.add(this.transformer);
         }
 
-        this.layer.draw();
+        // Validate canvas dimensions and draw safely
+        if (this.validateCanvasDimensions()) {
+            try {
+                this.layer.draw();
+                console.log(`✅ Slide ${index + 1} drawn successfully`);
+            } catch (drawError) {
+                console.error(`❌ Failed to draw slide ${index + 1}:`, drawError);
+                this.handleCanvasFailure('draw-error');
+
+                if (this.canPerformCanvasOperation()) {
+                    // Try to recover with basic drawing
+                    this.layer.clear();
+                    this.layer.add(backgroundRect);
+                    try {
+                        this.layer.draw();
+                        console.log(`🔄 Recovery draw successful for slide ${index + 1}`);
+                    } catch (recoveryError) {
+                        console.error(`❌ Recovery draw also failed:`, recoveryError);
+                        this.handleCanvasFailure('recovery-error');
+                        // Last resort: wait and retry
+                        setTimeout(() => {
+                            if (this.validateCanvasDimensions() && this.canPerformCanvasOperation()) {
+                                try {
+                                    this.layer.draw();
+                                    console.log(`🔄 Delayed recovery draw successful for slide ${index + 1}`);
+                                } catch (finalError) {
+                                    console.error(`❌ Final recovery attempt failed:`, finalError);
+                                    this.handleCanvasFailure('final-recovery-error');
+                                }
+                            }
+                        }, 100);
+                    }
+                }
+            }
+        } else {
+            console.error(`❌ Canvas validation failed for slide ${index + 1}`);
+            // Force recalculate dimensions and retry with exponential backoff
+            this.retrySlideShow(index, 0);
+        }
+
         this.currentSlideIndex = index;
 
         // Apply any pending animations now that objects are in the layer
         this.applyPendingAnimations(index);
 
-        // Update slide title in navigation
-        const titleElement = document.getElementById('current-slide-title');
-        if (titleElement && this.slides[index]) {
-            titleElement.textContent = this.slides[index].title || `Slide ${index + 1}`;
+        // Ensure current theme is applied to background
+        if (this.slides[index]?.visualSuggestions?.backgroundColor) {
+            this.currentTheme.backgroundColor = this.slides[index].visualSuggestions.backgroundColor;
         }
     }
 
@@ -1838,16 +1863,10 @@ class KonvaSlideSystem {
         const totalSpan = document.querySelector('.total-slides');
         const prevBtn = document.querySelector('.prev-btn');
         const nextBtn = document.querySelector('.next-btn');
-        const titleElement = document.getElementById('current-slide-title');
 
         // Update slide counter
         if (currentSpan) currentSpan.textContent = this.currentSlideIndex + 1;
         if (totalSpan) totalSpan.textContent = this.slideObjects.length;
-
-        // Update slide title
-        if (titleElement && this.slides[this.currentSlideIndex]) {
-            titleElement.textContent = this.slides[this.currentSlideIndex].title || `Slide ${this.currentSlideIndex + 1}`;
-        }
 
         // Update button states
         if (prevBtn) prevBtn.disabled = this.currentSlideIndex === 0;
@@ -2026,14 +2045,14 @@ class KonvaSlideSystem {
         imageObj.on('dragend', () => this.saveSlideState());
 
         imageObj.on('mouseenter', () => {
-            this.stage.container().style.cursor = 'pointer';
+            this.stage.container().className = 'konva-canvas-pointer';
             imageObj.stroke(this.currentTheme.textColor);
             imageObj.strokeWidth(2 * this.scaleFactor);
             this.layer.draw();
         });
 
         imageObj.on('mouseleave', () => {
-            this.stage.container().style.cursor = 'default';
+            this.stage.container().className = 'konva-canvas-default';
             imageObj.stroke(this.currentTheme.borderColor);
             imageObj.strokeWidth(1 * this.scaleFactor);
             this.layer.draw();
@@ -2319,7 +2338,7 @@ class KonvaSlideSystem {
             y: 0,
             width: this.actualWidth,
             height: this.actualHeight,
-            fill: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+            fill: '#2563EB',
             opacity: 0.8
         });
 
@@ -2683,23 +2702,34 @@ class KonvaSlideSystem {
     }
 
     updateSelectedColor(color) {
-        const selected = this.stage.getIntersection(this.stage.getPointerPosition());
-        if (selected && selected.getClassName() === 'Text') {
-            selected.fill(color);
+        if (this.selectedObject) {
+            if (this.selectedObject.getClassName() === 'Text') {
+                this.selectedObject.fill(color);
+            } else if (this.selectedObject.fill) {
+                this.selectedObject.fill(color);
+            } else if (this.selectedObject.stroke) {
+                this.selectedObject.stroke(color);
+            }
             this.layer.draw();
             this.saveSlideState();
+        } else {
+            console.log('No object selected. Click an element first to change its color.');
         }
     }
 
     updateSelectedFontSize(size) {
-        const selected = this.stage.getIntersection(this.stage.getPointerPosition());
-        if (selected && selected.getClassName() === 'Text') {
-            selected.fontSize(parseInt(size));
+        if (this.selectedObject && this.selectedObject.getClassName() === 'Text') {
+            this.selectedObject.fontSize(parseInt(size));
             this.layer.draw();
             this.saveSlideState();
+        } else {
+            console.log('No text object selected. Click a text element first to change its font size.');
         }
 
-        document.getElementById('font-size-display').textContent = `${size}px`;
+        const display = document.getElementById('font-size-display');
+        if (display) {
+            display.textContent = `${size}px`;
+        }
     }
 
     deleteSelected() {
@@ -2742,14 +2772,51 @@ class KonvaSlideSystem {
     }
 
     saveSlideState() {
-        // Sync Konva objects back to slidesAppState for persistence
-        if (!window.slidesAppState || !window.slidesAppState.currentSlideData) {
-            console.warn('No slidesAppState available for saving');
+        // Skip if slides haven't been loaded yet
+        if (!this.slides || this.slides.length === 0) {
+            console.log('⏭️ Skipping saveSlideState - no slides loaded yet');
             return;
         }
 
+        // Sync Konva objects back to slidesAppState for persistence
+        console.log('🔄 saveSlideState called, checking slidesAppState...', {
+            hasWindow: !!window,
+            hasSlidesAppState: !!window.slidesAppState,
+            hasCurrentSlideData: !!(window.slidesAppState?.currentSlideData),
+            currentSlideIndex: this.currentSlideIndex,
+            totalSlides: this.slides?.length || 0
+        });
+
+        if (!window.slidesAppState || !window.slidesAppState.currentSlideData) {
+            // If we're still initializing or don't have slide data, skip silently
+            if (this.isInitializing || !this.slides || this.slides.length === 0) {
+                console.log('⏳ Skipping saveSlideState - slides not ready yet', {
+                    isInitializing: this.isInitializing,
+                    hasSlides: this.slides?.length > 0
+                });
+                return;
+            }
+
+            // slidesAppState should now be initialized early during app startup
+            if (!window.slidesAppState) {
+                console.error('❌ No slidesAppState available for saving - this should not happen after initialization fix:', {
+                    hasWindow: !!window,
+                    isInitializing: this.isInitializing,
+                    slideCount: this.slides?.length || 0
+                });
+                return;
+            }
+        }
+
         try {
-            // Ensure we have a slide to save to
+            // Skip saving during initialization when no slides exist yet
+            if (!window.slidesAppState.currentSlideData.slides ||
+                window.slidesAppState.currentSlideData.slides.length === 0) {
+                // This is normal during initialization - no warning needed
+                return;
+            }
+
+            // Ensure we have a slide to save to at the current index
             if (!window.slidesAppState.currentSlideData.slides[this.currentSlideIndex]) {
                 console.warn(`No slide data at index ${this.currentSlideIndex}`);
                 return;
@@ -3438,7 +3505,7 @@ class KonvaSlideSystem {
                     fillLinearGradient: {
                         start: { x: 0, y: 0 },
                         end: { x: textObj.width(), y: 0 },
-                        colorStops: [0, '#667eea', 1, '#764ba2']
+                        colorStops: [0, '#2563EB', 1, '#2563EB']
                     }
                 });
             }
@@ -3742,51 +3809,350 @@ class KonvaSlideSystem {
         return shape;
     }
 
+    validateCanvasDimensions() {
+        // Check if stage and layer are valid and have proper dimensions
+        if (!this.stage || !this.layer) {
+            console.warn('Stage or layer not initialized');
+            return false;
+        }
+
+        if (!this.actualWidth || !this.actualHeight ||
+            this.actualWidth <= 0 || this.actualHeight <= 0) {
+            console.warn('Invalid canvas dimensions:', {
+                actualWidth: this.actualWidth,
+                actualHeight: this.actualHeight
+            });
+            return false;
+        }
+
+        // Check all canvas elements in the DOM for 0 dimensions
+        const canvasElements = this.stage.content?.querySelectorAll('canvas') || [];
+        let hasZeroDimensions = false;
+
+        canvasElements.forEach((canvas, index) => {
+            if (canvas.width === 0 || canvas.height === 0) {
+                console.error(`❌ Canvas element ${index} has zero dimensions:`, {
+                    width: canvas.width,
+                    height: canvas.height,
+                    clientWidth: canvas.clientWidth,
+                    clientHeight: canvas.clientHeight,
+                    offsetWidth: canvas.offsetWidth,
+                    offsetHeight: canvas.offsetHeight
+                });
+                hasZeroDimensions = true;
+            }
+        });
+
+        if (hasZeroDimensions) {
+            console.error('Found canvas elements with zero dimensions - triggering recreation');
+            this.handleCanvasFailure('zero-dimensions');
+
+            if (this.canPerformCanvasOperation()) {
+                // Trigger canvas recreation on next tick to avoid recursion
+                setTimeout(() => {
+                    this.recreateCanvas();
+                }, 50);
+            }
+            return false;
+        }
+
+        // Ensure stage dimensions match our calculated dimensions
+        if (this.stage.width() !== this.actualWidth || this.stage.height() !== this.actualHeight) {
+            console.log('Stage dimensions mismatch, updating...', {
+                stageWidth: this.stage.width(),
+                stageHeight: this.stage.height(),
+                actualWidth: this.actualWidth,
+                actualHeight: this.actualHeight
+            });
+            this.stage.width(this.actualWidth);
+            this.stage.height(this.actualHeight);
+        }
+
+        return true;
+    }
+
+    /**
+     * Emergency canvas recreation when validation fails repeatedly
+     */
+    recreateCanvas() {
+        console.log('🚑 Emergency canvas recreation triggered');
+
+        // Store current state before destruction
+        const currentIndex = this.currentSlideIndex;
+        const currentSlides = [...this.slides];
+        const currentSlideObjects = [...this.slideObjects];
+        const currentTheme = {...this.currentTheme};
+
+        try {
+            // Clean up current stage
+            if (this.stage) {
+                console.log('🧨 Cleaning up existing stage');
+                if (this.currentTween) {
+                    this.currentTween.destroy();
+                    this.currentTween = null;
+                }
+                this.stage.destroy();
+                this.stage = null;
+                this.layer = null;
+                this.transformer = null;
+            }
+
+            // Force garbage collection pause
+            setTimeout(() => {
+                try {
+                    console.log('🔄 Recreating Konva stage with fresh dimensions');
+
+                    // Recalculate container dimensions
+                    this.calculateResponsiveDimensions();
+
+                    // Ensure minimum viable dimensions (mobile-responsive)
+                    const isMobile = window.innerWidth <= 767;
+                    const minWidth = isMobile ? 280 : 300;
+                    const minHeight = isMobile ? 200 : 200;
+                    const fallbackWidth = isMobile ? 320 : 400;
+                    const fallbackHeight = isMobile ? 240 : 300;
+
+                    if (this.actualWidth < minWidth || this.actualHeight < minHeight) {
+                        console.warn('⚠️ Container too small, using fallback dimensions');
+                        this.actualWidth = Math.max(this.actualWidth, fallbackWidth);
+                        this.actualHeight = Math.max(this.actualHeight, fallbackHeight);
+                    }
+
+                    // Create new stage with explicit dimensions
+                    this.stage = new Konva.Stage({
+                        container: this.canvasContainer,
+                        width: this.actualWidth,
+                        height: this.actualHeight,
+                        draggable: false
+                    });
+
+                    // Create new layer
+                    this.layer = new Konva.Layer();
+                    this.stage.add(this.layer);
+
+                    // Create new transformer
+                    this.transformer = new Konva.Transformer({
+                        anchorSize: 8 * this.scaleFactor,
+                        borderStroke: this.currentTheme?.accentColor || '#60a5fa',
+                        borderStrokeWidth: 2,
+                        keepRatio: false,
+                        enabledAnchors: [
+                            'top-left', 'top-center', 'top-right',
+                            'middle-left', 'middle-right',
+                            'bottom-left', 'bottom-center', 'bottom-right'
+                        ]
+                    });
+                    this.layer.add(this.transformer);
+
+                    // Apply canvas styling
+                    const canvas = this.stage.content.querySelector('canvas');
+                    if (canvas) {
+                        canvas.className = 'konva-canvas';
+                    }
+
+                    // Restore state
+                    this.slides = currentSlides;
+                    this.slideObjects = currentSlideObjects;
+                    this.currentTheme = currentTheme;
+
+                    // Reset flags
+                    this.isResizing = false;
+                    this.isTransitioning = false;
+
+                    console.log('✨ Canvas recreation successful');
+
+                    // Restore current slide
+                    if (this.slides.length > 0) {
+                        this.showSlide(currentIndex);
+                    }
+
+                    return true;
+                } catch (recreationError) {
+                    console.error('❌ Canvas recreation failed:', recreationError);
+                    this.handleCanvasFailure('recreation-error');
+                    return false;
+                }
+            }, 100);
+        } catch (cleanupError) {
+            console.error('❌ Canvas cleanup failed:', cleanupError);
+            this.handleCanvasFailure('cleanup-error');
+            return false;
+        }
+    }
+
+    retrySlideShow(index, retryCount = 0) {
+        const maxRetries = 3;
+        const baseDelay = 100;
+
+        if (retryCount >= maxRetries) {
+            console.error(`❌ Failed to show slide ${index + 1} after ${maxRetries} retries`);
+            return;
+        }
+
+        const delay = baseDelay * Math.pow(2, retryCount); // Exponential backoff
+        console.log(`🔄 Retrying slide ${index + 1} show (attempt ${retryCount + 1}/${maxRetries}) in ${delay}ms`);
+
+        setTimeout(() => {
+            // Force recalculation
+            this.calculateResponsiveDimensions();
+
+            if (this.validateCanvasDimensions()) {
+                try {
+                    this.layer.draw();
+                    console.log(`✅ Slide ${index + 1} retry successful`);
+                } catch (error) {
+                    console.error(`❌ Slide ${index + 1} retry failed:`, error);
+                    this.retrySlideShow(index, retryCount + 1);
+                }
+            } else {
+                this.retrySlideShow(index, retryCount + 1);
+            }
+        }, delay);
+    }
+
     applySlideTransition(transitionType, callback) {
+        // Prevent transitions if already transitioning or resizing
+        if (this.isTransitioning) {
+            console.warn('Transition already in progress, skipping');
+            return;
+        }
+
+        if (this.isResizing) {
+            console.warn('Resize in progress, delaying transition');
+            setTimeout(() => this.applySlideTransition(transitionType, callback), 100);
+            return;
+        }
+
+        // Validate canvas dimensions before applying transitions
+        if (!this.validateCanvasDimensions()) {
+            console.warn('Canvas dimensions invalid during transition, executing callback without animation');
+            if (callback) callback();
+            return;
+        }
+
+        this.isTransitioning = true;
+
+        const safeCallback = () => {
+            if (callback) {
+                try {
+                    callback();
+                } catch (error) {
+                    console.error('Error during slide transition callback:', error);
+                }
+            }
+        };
+
         const transitions = {
             fade: () => {
+                // Skip animation entirely if canvas dimensions are invalid
+                if (!this.validateCanvasDimensions()) {
+                    console.warn('Skipping fade animation due to invalid canvas dimensions');
+                    this.isTransitioning = false;
+                    safeCallback();
+                    return;
+                }
+
                 this.layer.opacity(0);
-                if (callback) callback();
+                safeCallback();
+
+                // Additional validation before starting tween
+                if (!this.validateCanvasDimensions()) {
+                    console.warn('Canvas became invalid after callback, restoring opacity');
+                    this.layer.opacity(1);
+                    this.isTransitioning = false;
+                    return;
+                }
+
                 const tween = new Konva.Tween({
                     node: this.layer,
                     duration: 0.5,
                     opacity: 1,
-                    easing: Konva.Easings.EaseInOut
+                    easing: Konva.Easings.EaseInOut,
+                    onUpdate: () => {
+                        // Validate dimensions during animation to catch mid-animation issues
+                        if (!this.validateCanvasDimensions()) {
+                            console.warn('Canvas became invalid during fade animation, stopping tween');
+                            tween.destroy();
+                            this.currentTween = null;
+                            this.isTransitioning = false;
+                            this.layer.opacity(1);
+                        }
+                    },
+                    onFinish: () => {
+                        this.currentTween = null;
+                        this.isTransitioning = false;
+
+                        // Ensure layer is properly drawn after transition
+                        if (this.validateCanvasDimensions()) {
+                            try {
+                                this.layer.draw();
+                            } catch (error) {
+                                console.error('Failed to draw layer after fade transition:', error);
+                                // Try to recover by forcing redraw
+                                this.retrySlideShow(this.currentSlideIndex, 0);
+                            }
+                        }
+                    }
                 });
-                tween.play();
+
+                this.currentTween = tween;
+
+                try {
+                    tween.play();
+                } catch (error) {
+                    console.error('Failed to start fade transition:', error);
+                    this.layer.opacity(1);
+                    this.currentTween = null;
+                    this.isTransitioning = false;
+                }
             },
             slideLeft: () => {
                 this.layer.x(this.actualWidth);
-                if (callback) callback();
+                safeCallback();
                 const tween = new Konva.Tween({
                     node: this.layer,
                     duration: 0.6,
                     x: 0,
-                    easing: Konva.Easings.EaseOut
+                    easing: Konva.Easings.EaseOut,
+                    onFinish: () => {
+                        if (this.validateCanvasDimensions()) {
+                            this.layer.draw();
+                        }
+                    }
                 });
                 tween.play();
             },
             slideRight: () => {
                 this.layer.x(-this.actualWidth);
-                if (callback) callback();
+                safeCallback();
                 const tween = new Konva.Tween({
                     node: this.layer,
                     duration: 0.6,
                     x: 0,
-                    easing: Konva.Easings.EaseOut
+                    easing: Konva.Easings.EaseOut,
+                    onFinish: () => {
+                        if (this.validateCanvasDimensions()) {
+                            this.layer.draw();
+                        }
+                    }
                 });
                 tween.play();
             },
             scale: () => {
                 this.layer.scaleX(0);
                 this.layer.scaleY(0);
-                if (callback) callback();
+                safeCallback();
                 const tween = new Konva.Tween({
                     node: this.layer,
                     duration: 0.5,
                     scaleX: 1,
                     scaleY: 1,
-                    easing: Konva.Easings.BackEaseOut
+                    easing: Konva.Easings.BackEaseOut,
+                    onFinish: () => {
+                        if (this.validateCanvasDimensions()) {
+                            this.layer.draw();
+                        }
+                    }
                 });
                 tween.play();
             }
@@ -3795,7 +4161,8 @@ class KonvaSlideSystem {
         if (transitions[transitionType]) {
             transitions[transitionType]();
         } else {
-            if (callback) callback();
+            this.isTransitioning = false;
+            safeCallback();
         }
     }
 
@@ -3897,12 +4264,8 @@ class KonvaSlideSystem {
                     const scheme = tile.dataset.scheme;
                     console.log('Edit button clicked for scheme:', scheme);
                     if (colorSchemes[scheme]) {
-                        if (window.openColorEditor) {
-                            console.log('Opening color editor for:', scheme, colorSchemes[scheme]);
-                            window.openColorEditor(scheme, colorSchemes[scheme]);
-                        } else {
-                            console.error('window.openColorEditor function not available');
-                        }
+                        console.log('Opening color editor for:', scheme, colorSchemes[scheme]);
+                        this.openColorEditor(scheme, colorSchemes[scheme]);
                     } else {
                         console.error('Color scheme not found:', scheme);
                     }
@@ -4018,7 +4381,234 @@ class KonvaSlideSystem {
         // Clear container
         this.container.innerHTML = '';
     }
+
+    /**
+     * Create initial demo slide with default color scheme
+     */
+    createInitialSlide() {
+        // Only create if no slides exist
+        if (this.slides.length > 0) {
+            return;
+        }
+
+        // Create a sample slide with default lavender theme
+        const initialSlide = {
+            title: "Welcome to your presentation",
+            content: [
+                "Click any element to edit",
+                "Use the sidebar tools to add content",
+                "Choose colors, shapes, and layouts",
+                "Export when ready"
+            ],
+            visualSuggestions: {
+                backgroundColor: "#f0f9ff",
+                accentColor: "#8b5cf6",
+                layout: "hero"
+            },
+            isTitle: true,
+            slideNumber: 1
+        };
+
+        // Add the slide
+        this.slides.push(initialSlide);
+
+        // Create visual objects for the slide
+        const slideObjects = this.createSlideFromData(initialSlide, 0);
+        this.slideObjects.push(slideObjects);
+
+        // Show the slide
+        this.showSlide(0);
+        this.updateNavigation();
+
+        console.log('Created initial demo slide with default theme');
+    }
+
+    /**
+     * Open color editor modal for editing color schemes
+     */
+    openColorEditor(schemeKey, currentScheme) {
+        const modal = document.createElement('div');
+        modal.className = 'color-editor-modal';
+        modal.style.cssText = `
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0,0,0,0.7);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 10000;
+        `;
+
+        modal.innerHTML = `
+            <div class="color-editor-content" style="
+                background: white;
+                border-radius: 12px;
+                padding: 30px;
+                max-width: 500px;
+                width: 90%;
+                box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+            ">
+                <h3 style="margin-top: 0; margin-bottom: 20px;">Edit ${schemeKey.charAt(0).toUpperCase() + schemeKey.slice(1)} Color Scheme</h3>
+
+                <div class="color-inputs" style="display: flex; flex-direction: column; gap: 15px;">
+                    <div class="input-group">
+                        <label style="display: block; margin-bottom: 5px; font-weight: 500;">Text Color:</label>
+                        <input type="color" id="edit-text-color" value="${currentScheme.textColor}" style="width: 100%; height: 40px; border-radius: 6px; border: 1px solid #ddd;">
+                    </div>
+                    <div class="input-group">
+                        <label style="display: block; margin-bottom: 5px; font-weight: 500;">Border Color:</label>
+                        <input type="color" id="edit-border-color" value="${currentScheme.borderColor}" style="width: 100%; height: 40px; border-radius: 6px; border: 1px solid #ddd;">
+                    </div>
+                    <div class="input-group">
+                        <label style="display: block; margin-bottom: 5px; font-weight: 500;">Fill Color:</label>
+                        <input type="color" id="edit-fill-color" value="${currentScheme.fillColor}" style="width: 100%; height: 40px; border-radius: 6px; border: 1px solid #ddd;">
+                    </div>
+                </div>
+
+                <div class="color-preview" style="
+                    margin: 20px 0;
+                    padding: 15px;
+                    border-radius: 8px;
+                    border: 2px solid var(--border-color, ${currentScheme.borderColor});
+                    background-color: var(--fill-color, ${currentScheme.fillColor});
+                    color: var(--text-color, ${currentScheme.textColor});
+                    text-align: center;
+                    font-weight: 500;
+                ">Preview: Sample Text</div>
+
+                <div class="modal-buttons" style="display: flex; gap: 10px; justify-content: flex-end; margin-top: 25px;">
+                    <button type="button" class="btn-cancel" style="
+                        padding: 8px 16px;
+                        border: 1px solid #ddd;
+                        background: white;
+                        border-radius: 6px;
+                        cursor: pointer;
+                    ">Cancel</button>
+                    <button type="button" class="btn-save" style="
+                        padding: 8px 16px;
+                        border: none;
+                        background: #3b82f6;
+                        color: white;
+                        border-radius: 6px;
+                        cursor: pointer;
+                    ">Save Changes</button>
+                </div>
+            </div>
+        `;
+
+        // Add event listeners
+        const textColorInput = modal.querySelector('#edit-text-color');
+        const borderColorInput = modal.querySelector('#edit-border-color');
+        const fillColorInput = modal.querySelector('#edit-fill-color');
+        const preview = modal.querySelector('.color-preview');
+
+        const updatePreview = () => {
+            preview.style.color = textColorInput.value;
+            preview.style.borderColor = borderColorInput.value;
+            preview.style.backgroundColor = fillColorInput.value;
+        };
+
+        textColorInput.addEventListener('input', updatePreview);
+        borderColorInput.addEventListener('input', updatePreview);
+        fillColorInput.addEventListener('input', updatePreview);
+
+        // Save button
+        modal.querySelector('.btn-save').addEventListener('click', () => {
+            const updatedScheme = {
+                textColor: textColorInput.value,
+                borderColor: borderColorInput.value,
+                fillColor: fillColorInput.value
+            };
+
+            this.updateColorScheme(schemeKey, updatedScheme);
+            document.body.removeChild(modal);
+        });
+
+        // Cancel button
+        modal.querySelector('.btn-cancel').addEventListener('click', () => {
+            document.body.removeChild(modal);
+        });
+
+        // Close on backdrop click
+        modal.addEventListener('click', (e) => {
+            if (e.target === modal) {
+                document.body.removeChild(modal);
+            }
+        });
+
+        document.body.appendChild(modal);
+    }
+
+    /**
+     * Update color scheme and refresh UI
+     */
+    updateColorScheme(schemeKey, newScheme) {
+        // Update the color schemes object (assuming it exists globally)
+        if (window.colorSchemes) {
+            window.colorSchemes[schemeKey] = newScheme;
+        }
+
+        // Update the visual tile in the sidebar
+        this.updateColorSchemeTile(schemeKey, newScheme);
+
+        // Apply to current theme if this scheme is selected
+        const selectedTile = this.sidebar.querySelector('.color-scheme-tile.selected');
+        if (selectedTile && selectedTile.dataset.scheme === schemeKey) {
+            this.currentTheme = newScheme;
+            this.applyThemeToCurrentSlide();
+        }
+
+        console.log(`Updated color scheme '${schemeKey}':`, newScheme);
+    }
+
+    /**
+     * Handle window resize for mobile responsiveness
+     */
+    handleWindowResize() {
+        if (this.canvasContainer && this.stage) {
+            // Update container styles for mobile
+            if (window.innerWidth <= 767) {
+                this.canvasContainer.style.margin = '10px auto';
+                this.canvasContainer.style.maxWidth = '100%';
+                this.canvasContainer.style.borderRadius = '6px';
+            } else {
+                this.canvasContainer.style.margin = '20px auto';
+                this.canvasContainer.style.maxWidth = `${this.slideWidth}px`;
+                this.canvasContainer.style.borderRadius = '8px';
+            }
+
+            // Recalculate responsive dimensions
+            this.calculateResponsiveDimensions(this.canvasContainer);
+
+            // Update stage size
+            if (this.stage) {
+                this.stage.width(this.containerWidth);
+                this.stage.height(this.containerHeight);
+                this.stage.draw();
+            }
+        }
+    }
 }
 
 // Export for global use
 window.KonvaSlideSystem = KonvaSlideSystem;
+
+// Simplified global resize handler (ResizeObserver handles most cases)
+// Only handle window-specific changes like orientation
+let windowResizeTimeout;
+window.addEventListener('resize', () => {
+    clearTimeout(windowResizeTimeout);
+    windowResizeTimeout = setTimeout(() => {
+        if (window.konvaSlideSystem && typeof window.konvaSlideSystem.handleWindowResize === 'function') {
+            // Only call if this is a significant window change (orientation, etc)
+            const isSignificantChange = window.innerWidth !== window.konvaSlideSystem.lastWindowWidth;
+            if (isSignificantChange) {
+                window.konvaSlideSystem.lastWindowWidth = window.innerWidth;
+                window.konvaSlideSystem.handleWindowResize();
+            }
+        }
+    }, 300); // Longer debounce for window events
+});

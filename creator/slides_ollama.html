@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://cdn.jsdelivr.net https://unpkg.com; style-src 'self' 'unsafe-inline'; frame-src 'self'; img-src 'self' data: blob:; connect-src 'self' http://localhost:11434 http://127.0.0.1:11434 https://cdn.jsdelivr.net https://unpkg.com; font-src 'self'; object-src 'none'; base-uri 'self'; form-action 'self'; worker-src 'self' blob:;">
+    <title>Slides Creator - Ollama</title>
+    <link rel="icon" type="image/svg+xml" href="../favicon.svg">
+    <script src="./assets/js/lucide/lucide.min.js"></script>
+
+    <!-- Load CSS files in dependency order (replaces bundle for better debugging) -->
+    <link rel="stylesheet" href="./assets/css/core/variables.css">
+    <link rel="stylesheet" href="./assets/css/core/reset.css">
+    <link rel="stylesheet" href="./assets/css/core/typography.css">
+    <link rel="stylesheet" href="./assets/css/layouts/containers.css">
+    <link rel="stylesheet" href="./assets/css/layouts/grid.css">
+    <link rel="stylesheet" href="./assets/css/components/buttons.css">
+    <link rel="stylesheet" href="./assets/css/components/forms.css">
+    <link rel="stylesheet" href="./assets/css/components/cards.css">
+    <link rel="stylesheet" href="./assets/css/components/modals.css">
+    <link rel="stylesheet" href="./assets/css/components/status.css">
+    <link rel="stylesheet" href="./assets/css/components/launcher.css">
+    <link rel="stylesheet" href="./assets/css/components/puter.css">
+    <link rel="stylesheet" href="./assets/css/components/providers.css">
+    <link rel="stylesheet" href="./assets/css/components/icons.css">
+    <link rel="stylesheet" href="./assets/css/components/tabs.css">
+    <link rel="stylesheet" href="./assets/css/components/konva-components.css">
+    <link rel="stylesheet" href="./assets/css/components/modal-system.css">
+    <link rel="stylesheet" href="./assets/css/components/accordion-toolbar.css">
+    <link rel="stylesheet" href="./assets/css/core/utilities.css">
+    <link rel="stylesheet" href="./assets/css/responsive/mobile.css">
+    <link rel="stylesheet" href="./assets/css/themes/light.css">
+    <link rel="stylesheet" href="./assets/css/themes/dark.css">
+    <link rel="stylesheet" href="./assets/css/components/slides-creator.css">
+
+    <!-- Critical inline styles to prevent layout shift -->
+    <style>
+        /* Hide content until CSS is fully loaded */
+        body { visibility: hidden; opacity: 0; transition: opacity 0.3s ease; }
+        .container { transition: opacity 0.3s ease; }
+
+        /* Show content after DOM is ready */
+        body.loaded { visibility: visible; opacity: 1; }
+    </style>
+
+</head>
+<body>
+    <div class="container p-6 slides-creator">
+        <div id="ai-status" class="ai-status-initial"></div>
+
+        <!-- Provider Section (will be injected by ProviderSelector component) -->
+        <div id="provider-section" class="mb-6"></div>
+
+        <!-- Presentation Generator -->
+        <div class="card mb-6 presentation-generator-card">
+            <div class="card-header">
+                <h3>Presentation Generator</h3>
+                <p class="text-secondary">Create visual presentations with your local Ollama AI</p>
+            </div>
+            <div class="card-body">
+                <div class="ollama-info">
+                    <h4><i data-lucide="server"></i> Local AI (Ollama)</h4>
+                    <p>Connect to your local Ollama installation for private, unlimited AI generation.</p>
+                    <div id="ollama-connection-status" class="connection-indicator disconnected">
+                        <span class="status-dot disconnected"></span>
+                        <span>Checking connection...</span>
+                    </div>
+                </div>
+
+                <div class="prompt-header mb-4">
+                    <button type="button" id="enhance-prompt-btn" class="btn btn-ai" title="Enhance and expand your prompt with AI assistance">✦ Enhance Prompt</button>
+                </div>
+                <textarea id="presentation-topic" name="presentation-topic" placeholder="Presentation Topic - e.g., 'The Future of Artificial Intelligence in Healthcare'" title="Presentation Topic - Describe the presentation you want to create" class="prompt-textarea-large mb-4" required></textarea>
+
+                <div class="input-group course-generation-section">
+                    <select id="num-slides" name="num-slides" class="select-no-margin" title="Number of Slides - Select how many slides your presentation should have">
+                        <option value="1">1 Slide</option>
+                        <option value="2">2 Slides</option>
+                        <option value="3">3 Slides</option>
+                        <option value="4">4 Slides</option>
+                        <option value="5">5 Slides</option>
+                        <option value="6">6 Slides</option>
+                        <option value="8" selected>8 Slides</option>
+                        <option value="10">10 Slides</option>
+                        <option value="12">12 Slides</option>
+                        <option value="15">15 Slides</option>
+                    </select>
+                    <button type="button" id="generate-slides-btn" class="btn btn-secondary ml-4"><i data-lucide="zap"></i> Generate Presentation</button>
+                </div>
+                <div id="generation-status" class="status-display mt-4"></div>
+            </div>
+        </div>
+
+        <!-- Slides Editor -->
+        <div class="card mb-6 slides-editor-card">
+            <div class="card-header">
+                <h3>Visual Editor</h3>
+                <p class="text-secondary">Edit your slides with visual tools</p>
+            </div>
+            <div class="card-body">
+                <div id="slides-editor-container">
+                    <!-- Konva editor will be initialized here -->
+                </div>
+            </div>
+        </div>
+
+        <!-- Language Selection (will be injected by LanguageSelector component) -->
+        <div id="language-section"></div>
+
+        <!-- Export Section -->
+        <div class="card export-section-card">
+            <div class="card-header">
+                <h3>Export & Download</h3>
+                <p class="text-secondary">Export your presentation with automatic translation to selected languages</p>
+            </div>
+            <div class="card-body">
+                <div class="export-buttons-grid">
+                    <button type="button" id="export-pdf-btn" class="btn btn-primary">⟄ Export as PDF</button>
+                    <button type="button" id="export-pptx-btn" class="btn btn-primary">⟐ Export as PowerPoint</button>
+                    <button type="button" id="export-html-btn" class="btn btn-secondary">◰ Export as HTML</button>
+                    <button type="button" id="export-json-btn" class="btn btn-outline">{} Export Data</button>
+                </div>
+                <div id="export-status" class="status-display mt-4"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- JS Libraries -->
+    <script src="./assets/js/jszip/3.10.1/jszip.min.js"></script>
+    <script src="./assets/js/js-yaml/4.1.0/js-yaml.min.js"></script>
+
+    <!-- Provider Configuration -->
+    <script>
+        window.COURSE_CREATOR_PROVIDER = 'ollama';
+        window.CREATOR_TYPE = 'slides';
+
+        // Prevent FOUC by showing content after CSS is loaded
+        document.addEventListener('DOMContentLoaded', async function() {
+            // Wait a moment for CSS to be applied, then show content
+            setTimeout(async () => {
+                document.body.classList.add('loaded');
+
+                // Initialize Lucide icons
+                if (typeof lucide !== 'undefined') {
+                    lucide.createIcons();
+                }
+
+                await initializeKonvaEditor();
+            }, 50);
+        });
+
+        // Initialize Konva Editor
+        async function initializeKonvaEditor() {
+            try {
+                // Dynamically import KonvaEditor
+                const { KonvaEditor } = await import('./assets/js/components/KonvaEditor.js');
+
+                // Initialize the editor
+                const editor = new KonvaEditor('slides-editor-container', {
+                    width: 1000,
+                    height: 700,
+                    backgroundColor: '#ffffff',
+                    enableAccordion: true
+                });
+
+                await editor.init();
+                console.log('Konva editor initialized successfully');
+            } catch (error) {
+                console.error('Failed to initialize Konva editor:', error);
+            }
+        }
+    </script>
+
+</body>
+</html>

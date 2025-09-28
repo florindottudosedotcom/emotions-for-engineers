@@ -1,0 +1,1308 @@
+/**
+ * Dark Theme - Following CLAUDE.md Guidelines
+ * Dark theme color overrides with optimal contrast
+ */
+
+/* ========================================
+   DARK THEME COLOR OVERRIDES
+   ======================================== */
+@media (prefers-color-scheme: dark) {
+    :root {
+        /* Dark theme backgrounds */
+        --background-primary: #0F172A;      /* Near-black - Guidelines */
+        --background-secondary: #1E293B;    /* Dark slate - Guidelines */
+        --background-tertiary: #334155;     /* Medium slate - Guidelines */
+        --surface: #1E293B;                 /* Card backgrounds */
+        --surface-elevated: #334155;        /* Elevated surfaces for better contrast */
+
+        /* Dark theme text colors - Enhanced for better contrast */
+        --text-primary: #FFFFFF;            /* Pure white for maximum contrast */
+        --text-secondary: #E2E8F0;          /* Lighter gray for better readability */
+        --text-disabled: #94A3B8;           /* Medium gray - Guidelines */
+        --text-muted: #64748B;              /* More muted text for less emphasis */
+
+        /* Dark theme borders */
+        --border-light: #334155;            /* Darker borders */
+        --border-medium: #475569;           /* Medium borders */
+        --border-dark: #64748B;             /* Lighter borders */
+
+        /* Adapted shadows for dark backgrounds */
+        --shadow-small: 0 1px 2px 0 rgba(0, 0, 0, 0.3);
+        --shadow-medium: 0 4px 6px -1px rgba(0, 0, 0, 0.4);
+        --shadow-large: 0 10px 15px -3px rgba(0, 0, 0, 0.5);
+
+        /* Status colors backgrounds for dark theme */
+        --success-light: rgba(16, 185, 129, 0.15);
+        --warning-light: rgba(245, 158, 11, 0.15);
+        --error-light: rgba(239, 68, 68, 0.15);
+        --info-light: rgba(37, 99, 235, 0.15);
+        --primary-light: rgba(37, 99, 235, 0.15);
+        --secondary-light: rgba(99, 102, 241, 0.15);
+
+        /* Darker primary colors for better contrast */
+        --primary-color: #3B82F6;          /* Slightly brighter blue for dark mode */
+        --success-color: #10B981;          /* Keep success green */
+        --warning-color: #F59E0B;          /* Keep warning amber */
+        --error-color: #EF4444;            /* Keep error red */
+    }
+}
+
+[data-theme="dark"] {
+    :root {
+        /* Dark theme backgrounds */
+        --background-primary: #0F172A;      /* Near-black - Guidelines */
+        --background-secondary: #1E293B;    /* Dark slate - Guidelines */
+        --background-tertiary: #334155;     /* Medium slate - Guidelines */
+        --surface: #1E293B;                 /* Card backgrounds */
+        --surface-elevated: #334155;        /* Elevated surfaces for better contrast */
+
+        /* Dark theme text colors - Enhanced for better contrast */
+        --text-primary: #FFFFFF;            /* Pure white for maximum contrast */
+        --text-secondary: #E2E8F0;          /* Lighter gray for better readability */
+        --text-disabled: #94A3B8;           /* Medium gray - Guidelines */
+        --text-muted: #64748B;              /* More muted text for less emphasis */
+
+        /* Dark theme borders */
+        --border-light: #334155;            /* Darker borders */
+        --border-medium: #475569;           /* Medium borders */
+        --border-dark: #64748B;             /* Lighter borders */
+
+        /* Adapted shadows for dark backgrounds */
+        --shadow-small: 0 1px 2px 0 rgba(0, 0, 0, 0.3);
+        --shadow-medium: 0 4px 6px -1px rgba(0, 0, 0, 0.4);
+        --shadow-large: 0 10px 15px -3px rgba(0, 0, 0, 0.5);
+
+        /* Status colors backgrounds for dark theme */
+        --success-light: rgba(16, 185, 129, 0.15);
+        --warning-light: rgba(245, 158, 11, 0.15);
+        --error-light: rgba(239, 68, 68, 0.15);
+        --info-light: rgba(37, 99, 235, 0.15);
+        --primary-light: rgba(37, 99, 235, 0.15);
+        --secondary-light: rgba(99, 102, 241, 0.15);
+
+        /* Darker primary colors for better contrast */
+        --primary-color: #3B82F6;          /* Slightly brighter blue for dark mode */
+        --success-color: #10B981;          /* Keep success green */
+        --warning-color: #F59E0B;          /* Keep warning amber */
+        --error-color: #EF4444;            /* Keep error red */
+    }
+}
+
+/* ========================================
+   DARK THEME SPECIFIC COMPONENTS
+   ======================================== */
+
+/* Main container dark theme */
+@media (prefers-color-scheme: dark) {
+    .main-container {
+        background-color: var(--background-secondary) !important;
+    }
+
+    /* Cards and surfaces */
+    .help-section,
+    .card-minimal,
+    .container {
+        background-color: var(--surface) !important;
+        border-color: var(--border-light);
+        color: var(--text-primary);
+    }
+
+    /* Launcher buttons */
+    .launcher-container .launcher-btn {
+        background-color: var(--surface) !important;
+        border-color: var(--primary-color) !important;
+        color: var(--primary-color) !important;
+    }
+
+    /* Icons */
+    .icon-minimal.icon-book-large,
+    .icon-minimal.icon-slides-large {
+        background: var(--primary-color) !important;
+    }
+
+    /* Body background */
+    body {
+        background-color: var(--background-secondary) !important;
+        color: var(--text-primary) !important;
+    }
+}
+
+[data-theme="dark"] {
+    .main-container {
+        background-color: var(--background-secondary) !important;
+    }
+
+    /* Cards and surfaces */
+    .help-section,
+    .card-minimal,
+    .container {
+        background-color: var(--surface) !important;
+        border-color: var(--border-light);
+        color: var(--text-primary);
+    }
+
+    /* Launcher buttons */
+    .launcher-container .launcher-btn {
+        background-color: var(--surface) !important;
+        border-color: var(--primary-color) !important;
+        color: var(--primary-color) !important;
+    }
+
+    /* Icons */
+    .icon-minimal.icon-book-large,
+    .icon-minimal.icon-slides-large {
+        background: var(--primary-color) !important;
+    }
+
+    /* Body background */
+    body {
+        background-color: var(--background-secondary) !important;
+        color: var(--text-primary) !important;
+    }
+}
+
+/* ========================================
+   DARK THEME FORM ELEMENTS
+   ======================================== */
+@media (prefers-color-scheme: dark) {
+    /* Form inputs */
+    input[type="text"],
+    input[type="email"],
+    input[type="password"],
+    input[type="url"],
+    input[type="tel"],
+    input[type="search"],
+    input[type="number"],
+    textarea,
+    select {
+        background-color: var(--background-tertiary) !important;
+        color: var(--text-primary) !important;
+        border-color: var(--border-light) !important;
+    }
+
+    input[type="text"]:focus,
+    input[type="email"]:focus,
+    input[type="password"]:focus,
+    input[type="url"]:focus,
+    input[type="tel"]:focus,
+    input[type="search"]:focus,
+    input[type="number"]:focus,
+    textarea:focus,
+    select:focus {
+        background-color: var(--surface) !important;
+        border-color: var(--primary-color) !important;
+    }
+
+    /* Placeholder text */
+    input::placeholder,
+    textarea::placeholder {
+        color: var(--text-disabled) !important;
+    }
+
+    /* Select dropdown options */
+    option {
+        background-color: var(--background-tertiary) !important;
+        color: var(--text-primary) !important;
+    }
+
+    /* Fieldset and legend styling */
+    fieldset {
+        background-color: var(--surface) !important;
+        border-color: var(--border-light) !important;
+    }
+
+    legend {
+        color: var(--text-primary) !important;
+        background-color: var(--surface) !important;
+    }
+}
+
+[data-theme="dark"] {
+    /* Form inputs */
+    input[type="text"],
+    input[type="email"],
+    input[type="password"],
+    input[type="url"],
+    input[type="tel"],
+    input[type="search"],
+    input[type="number"],
+    textarea,
+    select {
+        background-color: var(--background-tertiary) !important;
+        color: var(--text-primary) !important;
+        border-color: var(--border-light) !important;
+    }
+
+    input[type="text"]:focus,
+    input[type="email"]:focus,
+    input[type="password"]:focus,
+    input[type="url"]:focus,
+    input[type="tel"]:focus,
+    input[type="search"]:focus,
+    input[type="number"]:focus,
+    textarea:focus,
+    select:focus {
+        background-color: var(--surface) !important;
+        border-color: var(--primary-color) !important;
+    }
+
+    /* Placeholder text */
+    input::placeholder,
+    textarea::placeholder {
+        color: var(--text-disabled) !important;
+    }
+
+    /* Select dropdown options */
+    option {
+        background-color: var(--background-tertiary) !important;
+        color: var(--text-primary) !important;
+    }
+
+    /* Fieldset and legend styling */
+    fieldset {
+        background-color: var(--surface) !important;
+        border-color: var(--border-light) !important;
+    }
+
+    legend {
+        color: var(--text-primary) !important;
+        background-color: var(--surface) !important;
+    }
+}
+
+/* ========================================
+   DARK THEME BUTTONS
+   ======================================== */
+@media (prefers-color-scheme: dark) {
+    /* Primary buttons filled style for dark theme */
+    .btn-primary {
+        background-color: var(--primary-color) !important;
+        color: white !important;
+        border-color: var(--primary-color) !important;
+    }
+
+    .btn-primary:hover {
+        background-color: #2563EB !important;
+    }
+
+    /* AI assistant button */
+    .btn-ai {
+        background-color: transparent !important;
+        color: var(--primary-color) !important;
+        border-color: var(--primary-color) !important;
+    }
+
+    .btn-ai:hover {
+        background-color: var(--primary-light) !important;
+    }
+}
+
+[data-theme="dark"] {
+    /* Primary buttons filled style for dark theme */
+    .btn-primary {
+        background-color: var(--primary-color) !important;
+        color: white !important;
+        border-color: var(--primary-color) !important;
+    }
+
+    .btn-primary:hover {
+        background-color: #2563EB !important;
+    }
+
+    /* AI assistant button */
+    .btn-ai {
+        background-color: transparent !important;
+        color: var(--primary-color) !important;
+        border-color: var(--primary-color) !important;
+    }
+
+    .btn-ai:hover {
+        background-color: var(--primary-light) !important;
+    }
+}
+
+/* ========================================
+   DARK THEME STATUS DISPLAYS
+   ======================================== */
+@media (prefers-color-scheme: dark) {
+    .status-display {
+        background-color: var(--surface) !important;
+        border-color: var(--border-light) !important;
+        color: var(--text-primary) !important;
+    }
+
+    .status-display.status-info {
+        background-color: var(--info-light) !important;
+        border-color: var(--info-color) !important;
+        color: var(--info-color) !important;
+    }
+
+    .status-display.status-success {
+        background-color: var(--success-light) !important;
+        border-color: var(--success-color) !important;
+        color: var(--success-color) !important;
+    }
+
+    .status-display.status-warning {
+        background-color: var(--warning-light) !important;
+        border-color: var(--warning-color) !important;
+        color: var(--warning-color) !important;
+    }
+
+    .status-display.status-error {
+        background-color: var(--error-light) !important;
+        border-color: var(--error-color) !important;
+        color: var(--error-color) !important;
+    }
+
+    /* Ollama status indicators */
+    .ollama-status-style {
+        background-color: var(--surface) !important;
+        color: var(--text-primary) !important;
+        border-color: var(--border-light) !important;
+    }
+
+    .ollama-status-ok {
+        color: #4ade80 !important;
+        background-color: #0f1b0f !important;
+        border-color: #22c55e !important;
+    }
+
+    .ollama-status-error {
+        color: #f87171 !important;
+        background-color: #1f1415 !important;
+        border-color: #dc2626 !important;
+    }
+
+    .ollama-status-info {
+        color: #60a5fa !important;
+        background-color: #0f1419 !important;
+        border-color: #2563eb !important;
+    }
+
+    /* WebLLM status */
+    .webllm-status-ok {
+        color: #4ade80 !important;
+        background-color: #0f1b0f !important;
+        border-color: #22c55e !important;
+    }
+
+    .webllm-status-error {
+        color: #f87171 !important;
+        background-color: #1f1415 !important;
+        border-color: #dc2626 !important;
+    }
+
+    .webllm-status-info {
+        color: #60a5fa !important;
+        background-color: #0f1419 !important;
+        border-color: #2563eb !important;
+    }
+}
+
+[data-theme="dark"] {
+    .status-display {
+        background-color: var(--surface) !important;
+        border-color: var(--border-light) !important;
+        color: var(--text-primary) !important;
+    }
+
+    .status-display.status-info {
+        background-color: var(--info-light) !important;
+        border-color: var(--info-color) !important;
+        color: var(--info-color) !important;
+    }
+
+    .status-display.status-success {
+        background-color: var(--success-light) !important;
+        border-color: var(--success-color) !important;
+        color: var(--success-color) !important;
+    }
+
+    .status-display.status-warning {
+        background-color: var(--warning-light) !important;
+        border-color: var(--warning-color) !important;
+        color: var(--warning-color) !important;
+    }
+
+    .status-display.status-error {
+        background-color: var(--error-light) !important;
+        border-color: var(--error-color) !important;
+        color: var(--error-color) !important;
+    }
+
+    /* Ollama status indicators */
+    .ollama-status-style {
+        background-color: var(--surface) !important;
+        color: var(--text-primary) !important;
+        border-color: var(--border-light) !important;
+    }
+
+    .ollama-status-ok {
+        color: #4ade80 !important;
+        background-color: #0f1b0f !important;
+        border-color: #22c55e !important;
+    }
+
+    .ollama-status-error {
+        color: #f87171 !important;
+        background-color: #1f1415 !important;
+        border-color: #dc2626 !important;
+    }
+
+    .ollama-status-info {
+        color: #60a5fa !important;
+        background-color: #0f1419 !important;
+        border-color: #2563eb !important;
+    }
+
+    /* WebLLM status */
+    .webllm-status-ok {
+        color: #4ade80 !important;
+        background-color: #0f1b0f !important;
+        border-color: #22c55e !important;
+    }
+
+    .webllm-status-error {
+        color: #f87171 !important;
+        background-color: #1f1415 !important;
+        border-color: #dc2626 !important;
+    }
+
+    .webllm-status-info {
+        color: #60a5fa !important;
+        background-color: #0f1419 !important;
+        border-color: #2563eb !important;
+    }
+}
+
+/* ========================================
+   DARK THEME MODALS
+   ======================================== */
+@media (prefers-color-scheme: dark) {
+    .modal-content {
+        background-color: var(--surface) !important;
+        color: var(--text-primary) !important;
+        border-color: var(--border-light) !important;
+    }
+
+    .modal-overlay {
+        background-color: rgba(0, 0, 0, 0.7) !important;
+    }
+}
+
+[data-theme="dark"] {
+    .modal-content {
+        background-color: var(--surface) !important;
+        color: var(--text-primary) !important;
+        border-color: var(--border-light) !important;
+    }
+
+    .modal-overlay {
+        background-color: rgba(0, 0, 0, 0.7) !important;
+    }
+}
+
+/* ========================================
+   DARK THEME TAB NAVIGATION
+   ======================================== */
+@media (prefers-color-scheme: dark) {
+    .tab-nav {
+        background-color: var(--background-tertiary) !important;
+        border-color: var(--border-light) !important;
+    }
+
+    .tab-link {
+        color: var(--text-secondary) !important;
+        background-color: transparent !important;
+    }
+
+    .tab-link:hover {
+        background-color: var(--background-primary) !important;
+        color: var(--text-primary) !important;
+    }
+
+    .tab-link.active {
+        background-color: var(--surface) !important;
+        color: var(--primary-color) !important;
+        border-color: var(--primary-color) !important;
+    }
+}
+
+[data-theme="dark"] {
+    .tab-nav {
+        background-color: var(--background-tertiary) !important;
+        border-color: var(--border-light) !important;
+    }
+
+    .tab-link {
+        color: var(--text-secondary) !important;
+        background-color: transparent !important;
+    }
+
+    .tab-link:hover {
+        background-color: var(--background-primary) !important;
+        color: var(--text-primary) !important;
+    }
+
+    .tab-link.active {
+        background-color: var(--surface) !important;
+        color: var(--primary-color) !important;
+        border-color: var(--primary-color) !important;
+    }
+}
+
+/* ========================================
+   DARK THEME COURSE SPECIFIC ELEMENTS
+   ======================================== */
+@media (prefers-color-scheme: dark) {
+    /* Course generation section */
+    .course-generation-section {
+        background-color: transparent !important;
+    }
+
+    /* Chapter content container */
+    #chapter-content-container,
+    .chapter-content-container {
+        background-color: transparent !important;
+        color: var(--text-primary) !important;
+    }
+
+    /* Chapter container */
+    .chapter {
+        background-color: var(--surface) !important;
+        border-color: var(--border-light) !important;
+        color: var(--text-primary) !important;
+    }
+
+    /* Chapter content */
+    .chapter-content {
+        background-color: transparent !important;
+        color: var(--text-primary) !important;
+    }
+
+    /* Chapter header */
+    .chapter-header {
+        background-color: transparent !important;
+        color: var(--text-primary) !important;
+    }
+
+    .chapter-header h3 {
+        color: var(--text-primary) !important;
+    }
+
+    /* Chapter title input */
+    .chapter-title,
+    input[class*="chapter-title"] {
+        background-color: var(--background-tertiary) !important;
+        color: var(--text-primary) !important;
+        border-color: var(--border-light) !important;
+    }
+
+    .chapter-title:focus,
+    input[class*="chapter-title"]:focus {
+        background-color: var(--surface) !important;
+        border-color: var(--primary-color) !important;
+        color: var(--text-primary) !important;
+    }
+
+    /* Editor label */
+    .editor-label {
+        color: var(--text-primary) !important;
+        background-color: transparent !important;
+    }
+
+    /* Editor iframe */
+    .editor-iframe {
+        background-color: var(--surface) !important;
+        border-color: var(--border-light) !important;
+    }
+
+    /* Remove chapter button */
+    .remove-chapter-btn {
+        background-color: transparent !important;
+        color: var(--error-color) !important;
+        border-color: var(--error-color) !important;
+    }
+
+    .remove-chapter-btn:hover {
+        background-color: var(--error-light) !important;
+        color: var(--error-color) !important;
+        border-color: var(--error-color) !important;
+    }
+}
+
+[data-theme="dark"] {
+    /* Course generation section */
+    .course-generation-section {
+        background-color: transparent !important;
+    }
+
+    /* Chapter content container */
+    #chapter-content-container,
+    .chapter-content-container {
+        background-color: transparent !important;
+        color: var(--text-primary) !important;
+    }
+
+    /* Chapter container */
+    .chapter {
+        background-color: var(--surface) !important;
+        border-color: var(--border-light) !important;
+        color: var(--text-primary) !important;
+    }
+
+    /* Chapter content */
+    .chapter-content {
+        background-color: transparent !important;
+        color: var(--text-primary) !important;
+    }
+
+    /* Chapter header */
+    .chapter-header {
+        background-color: transparent !important;
+        color: var(--text-primary) !important;
+    }
+
+    .chapter-header h3 {
+        color: var(--text-primary) !important;
+    }
+
+    /* Chapter title input */
+    .chapter-title,
+    input[class*="chapter-title"] {
+        background-color: var(--background-tertiary) !important;
+        color: var(--text-primary) !important;
+        border-color: var(--border-light) !important;
+    }
+
+    .chapter-title:focus,
+    input[class*="chapter-title"]:focus {
+        background-color: var(--surface) !important;
+        border-color: var(--primary-color) !important;
+        color: var(--text-primary) !important;
+    }
+
+    /* Editor label */
+    .editor-label {
+        color: var(--text-primary) !important;
+        background-color: transparent !important;
+    }
+
+    /* Editor iframe */
+    .editor-iframe {
+        background-color: var(--surface) !important;
+        border-color: var(--border-light) !important;
+    }
+
+    /* Remove chapter button */
+    .remove-chapter-btn {
+        background-color: transparent !important;
+        color: var(--error-color) !important;
+        border-color: var(--error-color) !important;
+    }
+
+    .remove-chapter-btn:hover {
+        background-color: var(--error-light) !important;
+        color: var(--error-color) !important;
+        border-color: var(--error-color) !important;
+    }
+}
+
+/* ========================================
+   DARK THEME PROVIDER SECTIONS
+   ======================================== */
+@media (prefers-color-scheme: dark) {
+    /* Provider sections */
+    #provider-section {
+        background-color: transparent !important;
+    }
+
+    .provider-info,
+    .provider-info-container {
+        background: transparent !important;
+        color: var(--text-primary) !important;
+        border-color: var(--border-light) !important;
+    }
+
+    /* Free provider highlight */
+    .free-provider-highlight {
+        background: var(--background-tertiary) !important;
+        color: var(--text-primary) !important;
+        border: 1px solid var(--border-light) !important;
+    }
+
+    .puter-info {
+        background: var(--background-tertiary) !important;
+        color: var(--text-primary) !important;
+    }
+
+    .puter-status {
+        background: var(--background-tertiary) !important;
+        border-color: var(--border-light) !important;
+        color: var(--text-primary) !important;
+    }
+
+    /* Provider text */
+    .puter-status-text,
+    .course-description {
+        color: var(--text-secondary) !important;
+    }
+
+    /* Model selector */
+    .model-selector {
+        background: var(--background-tertiary) !important;
+        color: var(--text-primary) !important;
+    }
+}
+
+[data-theme="dark"] {
+    /* Provider sections */
+    #provider-section {
+        background-color: transparent !important;
+    }
+
+    .provider-info,
+    .provider-info-container {
+        background: transparent !important;
+        color: var(--text-primary) !important;
+        border-color: var(--border-light) !important;
+    }
+
+    /* Free provider highlight */
+    .free-provider-highlight {
+        background: var(--background-tertiary) !important;
+        color: var(--text-primary) !important;
+        border: 1px solid var(--border-light) !important;
+    }
+
+    .puter-info {
+        background: var(--background-tertiary) !important;
+        color: var(--text-primary) !important;
+    }
+
+    .puter-status {
+        background: var(--background-tertiary) !important;
+        border-color: var(--border-light) !important;
+        color: var(--text-primary) !important;
+    }
+
+    /* Provider text */
+    .puter-status-text,
+    .course-description {
+        color: var(--text-secondary) !important;
+    }
+
+    /* Model selector */
+    .model-selector {
+        background: var(--background-tertiary) !important;
+        color: var(--text-primary) !important;
+    }
+}
+
+/* ========================================
+   DARK THEME AI SECTIONS
+   ======================================== */
+@media (prefers-color-scheme: dark) {
+    /* AI status sections */
+    #ai-status {
+        background-color: var(--background-tertiary) !important;
+        border-color: var(--border-light) !important;
+        color: var(--text-primary) !important;
+    }
+
+    .ai-assistant {
+        background-color: var(--surface) !important;
+        border-color: var(--border-light) !important;
+        color: var(--text-primary) !important;
+    }
+
+    /* Download section */
+    #download-section {
+        background-color: var(--background-tertiary) !important;
+        border-color: var(--success-color) !important;
+        color: var(--text-primary) !important;
+    }
+
+    /* Debug area */
+    .debug-container {
+        background-color: var(--surface) !important;
+        border-color: var(--border-light) !important;
+        color: var(--text-primary) !important;
+    }
+
+    .debug-log-area {
+        background-color: var(--background-tertiary) !important;
+        border-color: var(--border-light) !important;
+        color: var(--text-primary) !important;
+    }
+}
+
+[data-theme="dark"] {
+    /* AI status sections */
+    #ai-status {
+        background-color: var(--background-tertiary) !important;
+        border-color: var(--border-light) !important;
+        color: var(--text-primary) !important;
+    }
+
+    .ai-assistant {
+        background-color: var(--surface) !important;
+        border-color: var(--border-light) !important;
+        color: var(--text-primary) !important;
+    }
+
+    /* Download section */
+    #download-section {
+        background-color: var(--background-tertiary) !important;
+        border-color: var(--success-color) !important;
+        color: var(--text-primary) !important;
+    }
+
+    /* Debug area */
+    .debug-container {
+        background-color: var(--surface) !important;
+        border-color: var(--border-light) !important;
+        color: var(--text-primary) !important;
+    }
+
+    .debug-log-area {
+        background-color: var(--background-tertiary) !important;
+        border-color: var(--border-light) !important;
+        color: var(--text-primary) !important;
+    }
+}
+
+/* ========================================
+   DARK THEME HEADINGS
+   ======================================== */
+@media (prefers-color-scheme: dark) {
+    h1, h2, h3, h4, h5, h6 {
+        color: var(--text-primary) !important;
+    }
+
+    /* Header text and navigation */
+    .header-container h1,
+    .header-container h2,
+    .header-container h3 {
+        color: var(--text-primary) !important;
+    }
+}
+
+[data-theme="dark"] {
+    h1, h2, h3, h4, h5, h6 {
+        color: var(--text-primary) !important;
+    }
+
+    /* Header text and navigation */
+    .header-container h1,
+    .header-container h2,
+    .header-container h3 {
+        color: var(--text-primary) !important;
+    }
+}
+
+/* ========================================
+   DARK THEME SLIDES SPECIFIC
+   ======================================== */
+@media (prefers-color-scheme: dark) {
+    /* Slides container */
+    .slides-container {
+        background-color: transparent !important;
+        color: var(--text-primary) !important;
+    }
+
+    /* Slide preview elements */
+    .slide-preview {
+        background-color: var(--surface) !important;
+        border-color: var(--border-light) !important;
+        color: var(--text-primary) !important;
+    }
+
+    /* Export options */
+    .export-options {
+        background-color: var(--background-tertiary) !important;
+        color: var(--text-primary) !important;
+    }
+
+    /* Presentation viewer */
+    #presentation-viewer {
+        background-color: var(--background-secondary) !important;
+        color: var(--text-primary) !important;
+    }
+
+    /* Reveal.js dark mode */
+    .reveal {
+        background-color: var(--background-secondary) !important;
+        color: var(--text-primary) !important;
+    }
+
+    .reveal .slides {
+        background-color: transparent !important;
+    }
+
+    .reveal .slides section {
+        color: var(--text-primary) !important;
+    }
+
+    /* Navigation controls */
+    .reveal .controls {
+        color: var(--text-primary) !important;
+    }
+
+    .reveal .controls .navigate-left,
+    .reveal .controls .navigate-right,
+    .reveal .controls .navigate-up,
+    .reveal .controls .navigate-down {
+        border-color: var(--text-primary) !important;
+    }
+
+    .reveal .controls .navigate-left.enabled:hover,
+    .reveal .controls .navigate-right.enabled:hover,
+    .reveal .controls .navigate-up.enabled:hover,
+    .reveal .controls .navigate-down.enabled:hover {
+        border-color: var(--primary-color) !important;
+    }
+
+    /* Progress bar */
+    .reveal .progress {
+        background: rgba(0,0,0,0.3) !important;
+    }
+
+    .reveal .progress span {
+        background: var(--primary-color) !important;
+    }
+}
+
+[data-theme="dark"] {
+    /* Slides container */
+    .slides-container {
+        background-color: transparent !important;
+        color: var(--text-primary) !important;
+    }
+
+    /* Slide preview elements */
+    .slide-preview {
+        background-color: var(--surface) !important;
+        border-color: var(--border-light) !important;
+        color: var(--text-primary) !important;
+    }
+
+    /* Export options */
+    .export-options {
+        background-color: var(--background-tertiary) !important;
+        color: var(--text-primary) !important;
+    }
+
+    /* Presentation viewer */
+    #presentation-viewer {
+        background-color: var(--background-secondary) !important;
+        color: var(--text-primary) !important;
+    }
+
+    /* Reveal.js dark mode */
+    .reveal {
+        background-color: var(--background-secondary) !important;
+        color: var(--text-primary) !important;
+    }
+
+    .reveal .slides {
+        background-color: transparent !important;
+    }
+
+    .reveal .slides section {
+        color: var(--text-primary) !important;
+    }
+
+    /* Navigation controls */
+    .reveal .controls {
+        color: var(--text-primary) !important;
+    }
+
+    .reveal .controls .navigate-left,
+    .reveal .controls .navigate-right,
+    .reveal .controls .navigate-up,
+    .reveal .controls .navigate-down {
+        border-color: var(--text-primary) !important;
+    }
+
+    .reveal .controls .navigate-left.enabled:hover,
+    .reveal .controls .navigate-right.enabled:hover,
+    .reveal .controls .navigate-up.enabled:hover,
+    .reveal .controls .navigate-down.enabled:hover {
+        border-color: var(--primary-color) !important;
+    }
+
+    /* Progress bar */
+    .reveal .progress {
+        background: rgba(0,0,0,0.3) !important;
+    }
+
+    .reveal .progress span {
+        background: var(--primary-color) !important;
+    }
+}
+
+/* ========================================
+   DARK THEME LANGUAGE SELECTION
+   ======================================== */
+@media (prefers-color-scheme: dark) {
+    .lang-item {
+        background-color: transparent !important;
+        border: none;
+        min-height: 44px;
+        height: 44px;
+        min-width: 120px;
+        padding: var(--spacing-2) var(--spacing-4);
+    }
+
+    .lang-item:hover {
+        background-color: var(--background-secondary);
+    }
+
+    .lang-item label {
+        color: var(--text-primary);
+    }
+}
+
+[data-theme="dark"] {
+    .lang-item {
+        background-color: transparent !important;
+        border: none;
+        min-height: 44px;
+        height: 44px;
+        min-width: 120px;
+        padding: var(--spacing-2) var(--spacing-4);
+    }
+
+    .lang-item:hover {
+        background-color: var(--background-secondary);
+    }
+
+    .lang-item label {
+        color: var(--text-primary);
+    }
+}
+
+/* ========================================
+   DARK THEME OVERRIDES FOR INLINE STYLES
+   ======================================== */
+@media (prefers-color-scheme: dark) {
+    /* Override any remaining white backgrounds */
+    *[style*="background: white"],
+    *[style*="background-color: white"],
+    *[style*="background: #ffffff"],
+    *[style*="background-color: #ffffff"],
+    *[style*="background: #fff"],
+    *[style*="background-color: #fff"] {
+        background-color: var(--surface) !important;
+        color: var(--text-primary) !important;
+    }
+
+    /* Fix any remaining light backgrounds */
+    div[style*="background-color: #f8f9fa"],
+    div[style*="background: #f8f9fa"],
+    .light-bg {
+        background-color: var(--surface) !important;
+    }
+
+    /* Ensure all text in dark areas is visible */
+    div[style*="background"] * {
+        color: inherit !important;
+    }
+}
+
+[data-theme="dark"] {
+    /* Override any remaining white backgrounds */
+    *[style*="background: white"],
+    *[style*="background-color: white"],
+    *[style*="background: #ffffff"],
+    *[style*="background-color: #ffffff"],
+    *[style*="background: #fff"],
+    *[style*="background-color: #fff"] {
+        background-color: var(--surface) !important;
+        color: var(--text-primary) !important;
+    }
+
+    /* Fix any remaining light backgrounds */
+    div[style*="background-color: #f8f9fa"],
+    div[style*="background: #f8f9fa"],
+    .light-bg {
+        background-color: var(--surface) !important;
+    }
+
+    /* Ensure all text in dark areas is visible */
+    div[style*="background"] * {
+        color: inherit !important;
+    }
+}
+
+/* ========================================
+   DARK THEME SCROLLBARS
+   ======================================== */
+@media (prefers-color-scheme: dark) {
+    /* Webkit scrollbars */
+    ::-webkit-scrollbar {
+        width: 8px;
+        height: 8px;
+    }
+
+    ::-webkit-scrollbar-track {
+        background: var(--background-tertiary);
+    }
+
+    ::-webkit-scrollbar-thumb {
+        background: var(--border-medium);
+        border-radius: 4px;
+    }
+
+    ::-webkit-scrollbar-thumb:hover {
+        background: var(--border-dark);
+    }
+
+    /* Firefox scrollbars */
+    * {
+        scrollbar-width: thin;
+        scrollbar-color: var(--border-medium) var(--background-tertiary);
+    }
+}
+
+[data-theme="dark"] {
+    /* Webkit scrollbars */
+    ::-webkit-scrollbar {
+        width: 8px;
+        height: 8px;
+    }
+
+    ::-webkit-scrollbar-track {
+        background: var(--background-tertiary);
+    }
+
+    ::-webkit-scrollbar-thumb {
+        background: var(--border-medium);
+        border-radius: 4px;
+    }
+
+    ::-webkit-scrollbar-thumb:hover {
+        background: var(--border-dark);
+    }
+
+    /* Firefox scrollbars */
+    * {
+        scrollbar-width: thin;
+        scrollbar-color: var(--border-medium) var(--background-tertiary);
+    }
+}
+
+/* Chapter tabs dark mode */
+[data-theme="dark"] .chapter-tab {
+    background-color: var(--surface) !important;
+    color: var(--text-secondary) !important;
+    border-color: var(--border-light) !important;
+}
+
+[data-theme="dark"] .chapter-tab.active {
+    background-color: var(--primary-color) !important;
+    color: var(--text-on-primary) !important;
+    border-color: var(--primary-color) !important;
+}
+
+[data-theme="dark"] .chapter-tab:hover:not(.active) {
+    background-color: var(--surface-elevated) !important;
+    color: var(--text-primary) !important;
+    border-color: var(--border-medium) !important;
+}
+
+[data-theme="dark"] .chapter-tab .remove-chapter {
+    color: inherit !important;
+    opacity: 0.7;
+}
+
+[data-theme="dark"] .chapter-tab .remove-chapter:hover {
+    opacity: 1 !important;
+    color: var(--error-color) !important;
+}
+
+[data-theme="dark"] .add-chapter-tab {
+    background-color: var(--surface) !important;
+    color: var(--text-secondary) !important;
+    border-color: var(--border-light) !important;
+}
+
+[data-theme="dark"] .add-chapter-tab:hover {
+    background-color: var(--surface-elevated) !important;
+    color: var(--text-primary) !important;
+    border-color: var(--border-medium) !important;
+}
+
+/* ToastUI Editor container sizing */
+[data-theme="dark"] .toastui-editor-container {
+    height: 100% !important;
+    background-color: var(--surface) !important;
+}
+
+[data-theme="dark"] .editor-container {
+    height: 400px !important;
+    min-height: 400px !important;
+}
+
+[data-theme="dark"] .toastui-editor {
+    height: 100% !important;
+}
+
+@media (prefers-color-scheme: dark) {
+    .chapter-tab {
+        background-color: var(--surface) !important;
+        color: var(--text-secondary) !important;
+        border-color: var(--border-light) !important;
+    }
+
+    .chapter-tab.active {
+        background-color: var(--primary-color) !important;
+        color: var(--text-on-primary) !important;
+        border-color: var(--primary-color) !important;
+    }
+
+    .chapter-tab:hover:not(.active) {
+        background-color: var(--surface-elevated) !important;
+        color: var(--text-primary) !important;
+        border-color: var(--border-medium) !important;
+    }
+
+    .chapter-tab .remove-chapter {
+        color: inherit !important;
+        opacity: 0.7;
+    }
+
+    .chapter-tab .remove-chapter:hover {
+        opacity: 1 !important;
+        color: var(--error-color) !important;
+    }
+
+    .add-chapter-tab {
+        background-color: var(--surface) !important;
+        color: var(--text-secondary) !important;
+        border-color: var(--border-light) !important;
+    }
+
+    .add-chapter-tab:hover {
+        background-color: var(--surface-elevated) !important;
+        color: var(--text-primary) !important;
+        border-color: var(--border-medium) !important;
+    }
+
+    /* ToastUI Editor container sizing */
+    .toastui-editor-container {
+        height: 100% !important;
+        background-color: var(--surface) !important;
+    }
+
+    .editor-container {
+        height: 400px !important;
+        min-height: 400px !important;
+    }
+
+    .toastui-editor {
+        height: 100% !important;
+    }
+}

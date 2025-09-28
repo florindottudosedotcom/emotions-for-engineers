@@ -1,0 +1,47 @@
+<div class="card-header">
+    <h3><i data-lucide="globe"></i> OpenRouter Provider</h3>
+    <p class="text-secondary">Professional cloud AI with 200+ models and transparent billing</p>
+</div>
+<div class="card-body">
+    {{!+isAuthenticated}}
+    <div id="openrouter-auth" class="provider-auth">
+        <div class="form-group mb-4">
+            <label for="openrouter-api-key" class="form-label">OpenRouter API Key</label>
+            <input type="password" id="openrouter-api-key" class="form-input" placeholder="sk-or-..." style="width: 100%; padding: 8px; border: 1px solid var(--border-light); border-radius: 4px; background: var(--surface); color: var(--text-primary);" />
+            <small class="form-help" style="display: block; margin-top: 4px; color: var(--text-secondary);">Get your free API key at <a href="https://openrouter.ai/keys" target="_blank" style="color: var(--primary-color);">openrouter.ai/keys</a></small>
+        </div>
+        <button type="button" id="openrouter-connect-btn" class="btn btn-primary"><i data-lucide="link"></i> Connect to OpenRouter</button>
+    </div>
+    {{/isAuthenticated}}
+
+    <!-- Model Selection (always visible for preview/selection) -->
+    <div class="form-group mb-4">
+        <label class="form-label">Model Selection</label>
+        <div id="openrouter-model-dropdown" class="custom-dropdown" style="position: relative;">
+            <button type="button" id="dropdown-trigger" class="dropdown-trigger" aria-expanded="false">
+                <span id="selected-model" class="selected-model">{{selectedModelText}}</span>
+                <span class="dropdown-arrow">▼</span>
+            </button>
+            <div id="dropdown-content" class="dropdown-content">
+                <div class="search-container">
+                    <input type="text" id="dropdown-search" class="dropdown-search" placeholder="Search models..." />
+                </div>
+                <div class="model-count">
+                    <span id="model-count-info">{{modelCountText}}</span>
+                </div>
+                <div id="models-list" class="models-list">
+                    <!-- Models will be populated dynamically -->
+                </div>
+            </div>
+        </div>
+    </div>
+
+    {{#isAuthenticated}}
+    <div id="openrouter-authenticated" class="provider-authenticated">
+        <div class="provider-status mb-4" style="display: flex; justify-content: space-between; align-items: center; padding: 8px; background: var(--background-tertiary); border-radius: 4px;">
+            <div class="account-balance">{{accountBalanceText}}</div>
+            <button type="button" id="openrouter-disconnect-btn" class="btn btn-secondary btn-sm"><i data-lucide="unplug"></i> Disconnect</button>
+        </div>
+    </div>
+    {{/isAuthenticated}}
+</div>

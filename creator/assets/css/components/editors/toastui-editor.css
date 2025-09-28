@@ -1,0 +1,217 @@
+/**
+ * ToastUI Editor Component Styles - Following CLAUDE.md Guidelines
+ * Proper CSS-First styling for ToastUI Editor containers and elements
+ */
+
+/* ========================================
+   TOASTUI EDITOR CONTAINERS
+   ======================================== */
+
+.toastui-editor-container {
+    height: 100%;
+    width: 100%;
+    background-color: var(--surface);
+    border: 1px solid var(--border-light);
+    border-radius: var(--border-radius);
+    overflow: hidden;
+    position: relative;
+}
+
+.toastui-editor-element {
+    height: 100%;
+    width: 100%;
+}
+
+/* Editor container sizing in chapter context */
+.editor-container {
+    height: 400px;
+    min-height: 400px;
+    width: 100%;
+    margin-top: var(--spacing-2);
+}
+
+.editor-container .toastui-editor-container {
+    height: 100%;
+}
+
+/* ========================================
+   CHAPTER EDITOR SPECIFIC STYLES
+   ======================================== */
+
+.chapter-content .editor-container {
+    border: 1px solid var(--border-light);
+    border-radius: var(--border-radius);
+    background-color: var(--surface);
+}
+
+.chapter-content .toastui-editor-container {
+    border: none; /* Avoid double borders */
+    border-radius: 0;
+}
+
+/* ========================================
+   RESPONSIVE BEHAVIOR
+   ======================================== */
+
+@media (max-width: 768px) {
+    .editor-container {
+        height: 300px;
+        min-height: 300px;
+    }
+}
+
+@media (max-width: 480px) {
+    .editor-container {
+        height: 250px;
+        min-height: 250px;
+    }
+}
+
+/* ========================================
+   THEME SUPPORT
+   ======================================== */
+
+/* Light theme (default) */
+:root {
+    --editor-background: var(--surface);
+    --editor-border: var(--border-light);
+    --editor-text: var(--text-primary);
+}
+
+/* Dark theme */
+[data-theme="dark"] .toastui-editor-container {
+    background-color: var(--surface);
+    border-color: var(--border-light);
+}
+
+[data-theme="dark"] .editor-container {
+    background-color: var(--surface);
+    border-color: var(--border-light);
+}
+
+@media (prefers-color-scheme: dark) {
+    .toastui-editor-container {
+        background-color: var(--surface);
+        border-color: var(--border-light);
+    }
+
+    .editor-container {
+        background-color: var(--surface);
+        border-color: var(--border-light);
+    }
+}
+
+/* ========================================
+   LOADING STATES
+   ======================================== */
+
+.toastui-editor-container.loading {
+    opacity: 0.6;
+    pointer-events: none;
+}
+
+.toastui-editor-container.loading::after {
+    content: 'Loading editor...';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background: var(--surface);
+    padding: var(--spacing-2) var(--spacing-4);
+    border-radius: var(--border-radius);
+    border: 1px solid var(--border-light);
+    color: var(--text-secondary);
+    font-size: var(--font-size-sm);
+    z-index: 10;
+}
+
+/* ========================================
+   TOASTUI EDITOR MODE SWITCH POSITIONING
+   ======================================== */
+
+/* Fix mode switch positioning - should be at bottom right */
+.toastui-editor-mode-switch {
+    position: absolute !important;
+    bottom: 8px !important;
+    right: 8px !important;
+    top: auto !important;
+    left: auto !important;
+    z-index: 100 !important;
+    background: var(--surface) !important;
+    border: 1px solid var(--border-light) !important;
+    border-radius: var(--border-radius) !important;
+    box-shadow: var(--shadow-small) !important;
+    transform: none !important;
+    margin: 0 !important;
+    padding: 0 !important;
+}
+
+.toastui-editor-mode-switch .tab-item {
+    padding: 4px 8px !important;
+    font-size: 12px !important;
+    background: transparent !important;
+    border: none !important;
+    color: var(--text-secondary) !important;
+    cursor: pointer !important;
+    transition: all 0.2s ease !important;
+}
+
+.toastui-editor-mode-switch .tab-item.active {
+    background: var(--primary-color) !important;
+    color: var(--text-on-primary) !important;
+}
+
+.toastui-editor-mode-switch .tab-item:hover:not(.active) {
+    background: var(--background-tertiary) !important;
+    color: var(--text-primary) !important;
+}
+
+/* Dark theme mode switch */
+[data-theme="dark"] .toastui-editor-mode-switch {
+    background: var(--surface-elevated) !important;
+    border-color: var(--border-medium) !important;
+}
+
+[data-theme="dark"] .toastui-editor-mode-switch .tab-item {
+    color: var(--text-secondary) !important;
+}
+
+[data-theme="dark"] .toastui-editor-mode-switch .tab-item:hover:not(.active) {
+    background: var(--background-tertiary) !important;
+    color: var(--text-primary) !important;
+}
+
+@media (prefers-color-scheme: dark) {
+    .toastui-editor-mode-switch {
+        background: var(--surface-elevated) !important;
+        border-color: var(--border-medium) !important;
+    }
+
+    .toastui-editor-mode-switch .tab-item {
+        color: var(--text-secondary) !important;
+    }
+
+    .toastui-editor-mode-switch .tab-item:hover:not(.active) {
+        background: var(--background-tertiary) !important;
+        color: var(--text-primary) !important;
+    }
+}
+
+/* ========================================
+   INTEGRATION WITH EXISTING STYLES
+   ======================================== */
+
+/* Ensure proper integration with chapter tabs */
+.chapter-content.active .editor-container {
+    display: block;
+}
+
+.chapter-content:not(.active) .editor-container {
+    display: none;
+}
+
+/* Focus states for accessibility */
+.toastui-editor-container:focus-within {
+    outline: 2px solid var(--primary-color);
+    outline-offset: 2px;
+}

@@ -1,0 +1,11 @@
+{
+  "name": "creator-screenshot-tools",
+  "version": "1.0.0",
+  "description": "Screenshot tools for responsive design testing",
+  "scripts": {
+    "screenshots": "node tools/screenshot-automation/take-responsive-screenshots.js"
+  },
+  "dependencies": {
+    "puppeteer": "file:/usr/local/lib/node_modules/puppeteer"
+  }
+}

@@ -1,0 +1,758 @@
+/**
+ * Container Layout System - Following CLAUDE.md Guidelines
+ * Responsive containers and layout utilities
+ */
+
+/* ========================================
+   BASE CONTAINER SYSTEM
+   ======================================== */
+.container {
+    width: 100%;
+    max-width: none;
+    margin: 0 auto;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+.container-minimal {
+    max-width: 100%;
+    width: 100%;
+    margin: 0 auto;
+    padding: 0;
+}
+
+/* ========================================
+   CONTAINER SIZES - Design Guidelines
+   ======================================== */
+.container-sm {
+    max-width: 640px;
+}
+
+.container-md {
+    max-width: 768px;
+}
+
+.container-lg {
+    max-width: 1024px;
+}
+
+.container-xl {
+    max-width: var(--max-width-content); /* 1200px - Guidelines */
+}
+
+.container-2xl {
+    max-width: 1400px;
+}
+
+/* Reading content container - optimal width */
+.container-reading {
+    max-width: var(--max-width-reading); /* 600px - Guidelines */
+    margin: 0 auto;
+}
+
+/* Full width container */
+.container-full {
+    max-width: none;
+    padding: 0;
+}
+
+.container-fluid {
+    max-width: none;
+    width: 100%;
+}
+
+/* ========================================
+   SPECIALIZED CONTAINERS (From Original Code)
+   ======================================== */
+
+/* Main Application Container */
+.main-container {
+    background-color: var(--background-secondary);
+    min-height: 100vh;
+    padding: var(--spacing-2) var(--spacing-2);
+    max-width: none;
+    width: 100%;
+    margin: 0;
+    box-sizing: border-box;
+}
+
+/* Content Container */
+.content-container {
+    background-color: var(--surface);
+    padding: 0;
+    border-radius: var(--radius-medium);
+    box-shadow: var(--shadow-medium);
+    border: none;
+    width: 100%;
+    max-width: 100%;
+    margin: 0;
+    box-sizing: border-box;
+}
+
+/* Section Containers */
+.section {
+    padding: var(--spacing-12) 0;
+}
+
+.section-sm {
+    padding: var(--spacing-6) 0;
+}
+
+.section-lg {
+    padding: var(--spacing-16) 0;
+}
+
+.section-xl {
+    padding: var(--spacing-24) 0;
+}
+
+/* ========================================
+   LAYOUT WRAPPERS
+   ======================================== */
+
+/* Page wrapper */
+.page-wrapper {
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+}
+
+/* Content wrapper */
+.content-wrapper {
+    flex: 1;
+    padding: var(--spacing-4);
+}
+
+/* Header wrapper */
+.header-wrapper {
+    background-color: var(--surface);
+    border-bottom: 1px solid var(--border-light);
+    position: sticky;
+    top: 0;
+    z-index: var(--z-overlay);
+}
+
+/* Footer wrapper */
+.footer-wrapper {
+    background-color: var(--surface);
+    border-top: 1px solid var(--border-light);
+    margin-top: auto;
+}
+
+/* ========================================
+   INNER CONTAINERS
+   ======================================== */
+
+/* Form container */
+.form-container {
+    max-width: 600px;
+    margin: 0 auto;
+    padding: var(--spacing-6);
+    background-color: var(--surface);
+    border-radius: var(--radius-large);
+    box-shadow: var(--shadow-small);
+}
+
+/* Card container */
+.card-container {
+    padding: var(--spacing-6);
+    background-color: var(--surface);
+    border-radius: var(--radius-large);
+    border: 1px solid var(--border-light);
+}
+
+/* List container */
+.list-container {
+    background-color: var(--surface);
+    border-radius: var(--radius-medium);
+    border: 1px solid var(--border-light);
+    overflow: hidden;
+}
+
+/* ========================================
+   CHAPTER CONTAINERS (Specific to App)
+   ======================================== */
+#chapter-tabs-container,
+.chapter-tabs-container {
+    width: auto !important;
+    margin-top: var(--spacing-4) !important;
+    margin-bottom: 0 !important;
+    background-color: var(--background-tertiary);
+    border-radius: var(--radius-medium) var(--radius-medium) 0 0;
+    border: 1px solid var(--border-light);
+    border-bottom: none;
+    justify-content: flex-start;
+}
+
+.chapter-content-container {
+    background-color: transparent;
+    color: var(--text-primary);
+}
+
+/* ========================================
+   PROVIDER CONTAINERS (Specific to App)
+   ======================================== */
+.provider-section {
+    background-color: transparent;
+    margin-bottom: var(--spacing-6);
+}
+
+.provider-info-container {
+    background: transparent;
+    border: 1px solid var(--border-light);
+    border-radius: var(--radius-medium);
+    padding: var(--spacing-4);
+    color: var(--text-primary);
+}
+
+/* ========================================
+   SPECIAL SECTIONS
+   ======================================== */
+
+/* Help Section */
+.help-section {
+    background-color: var(--surface);
+    border: 1px solid var(--border-light);
+    border-radius: var(--radius-medium);
+    padding: var(--spacing-6) 0;
+    margin-top: var(--spacing-8);
+}
+
+/* Instructions Section */
+.instructions {
+    background-color: var(--info-light);
+    border-left: 4px solid var(--info-color);
+    padding: var(--spacing-4) 0;
+    margin-bottom: var(--spacing-8);
+    border-radius: var(--radius-medium);
+}
+
+/* AI Assistant Section */
+.ai-assistant {
+    background-color: var(--surface);
+    border: 1px solid var(--border-light);
+    border-radius: var(--radius-medium);
+    padding: var(--spacing-4) 0;
+    margin-top: var(--spacing-4);
+}
+
+/* Debug Container */
+.debug-container {
+    margin-top: var(--spacing-8);
+    border: 1px solid var(--border-light);
+    padding: var(--spacing-4) 0;
+    background-color: var(--background-tertiary);
+    border-radius: var(--radius-medium);
+}
+
+/* ========================================
+   SPACING UTILITIES
+   ======================================== */
+
+/* Margin utilities */
+.m-0 { margin: 0; }
+.m-1 { margin: var(--spacing-1); }
+.m-2 { margin: var(--spacing-2); }
+.m-4 { margin: var(--spacing-4); }
+.m-6 { margin: var(--spacing-6); }
+.m-8 { margin: var(--spacing-8); }
+.m-12 { margin: var(--spacing-12); }
+.m-16 { margin: var(--spacing-16); }
+
+/* Margin top */
+.mt-0 { margin-top: 0; }
+.mt-1 { margin-top: var(--spacing-1); }
+.mt-2 { margin-top: var(--spacing-2); }
+.mt-4 { margin-top: var(--spacing-4); }
+.mt-6 { margin-top: var(--spacing-6); }
+.mt-8 { margin-top: var(--spacing-8); }
+.mt-12 { margin-top: var(--spacing-12); }
+.mt-16 { margin-top: var(--spacing-16); }
+
+/* Margin bottom */
+.mb-0 { margin-bottom: 0; }
+.mb-1 { margin-bottom: var(--spacing-1); }
+.mb-2 { margin-bottom: var(--spacing-2); }
+.mb-4 { margin-bottom: var(--spacing-4); }
+.mb-6 { margin-bottom: var(--spacing-6); }
+.mb-8 { margin-bottom: var(--spacing-8); }
+.mb-12 { margin-bottom: var(--spacing-12); }
+.mb-16 { margin-bottom: var(--spacing-16); }
+
+/* Margin left/right */
+.ml-0 { margin-left: 0; }
+.ml-1 { margin-left: var(--spacing-1); }
+.ml-2 { margin-left: var(--spacing-2); }
+.ml-4 { margin-left: var(--spacing-4); }
+.ml-auto { margin-left: auto; }
+
+.mr-0 { margin-right: 0; }
+.mr-1 { margin-right: var(--spacing-1); }
+.mr-2 { margin-right: var(--spacing-2); }
+.mr-4 { margin-right: var(--spacing-4); }
+.mr-auto { margin-right: auto; }
+
+/* Margin horizontal/vertical */
+.mx-0 { margin-left: 0; margin-right: 0; }
+.mx-1 { margin-left: var(--spacing-1); margin-right: var(--spacing-1); }
+.mx-2 { margin-left: var(--spacing-2); margin-right: var(--spacing-2); }
+.mx-4 { margin-left: var(--spacing-4); margin-right: var(--spacing-4); }
+.mx-auto { margin-left: auto; margin-right: auto; }
+
+.my-0 { margin-top: 0; margin-bottom: 0; }
+.my-1 { margin-top: var(--spacing-1); margin-bottom: var(--spacing-1); }
+.my-2 { margin-top: var(--spacing-2); margin-bottom: var(--spacing-2); }
+.my-4 { margin-top: var(--spacing-4); margin-bottom: var(--spacing-4); }
+.my-6 { margin-top: var(--spacing-6); margin-bottom: var(--spacing-6); }
+.my-8 { margin-top: var(--spacing-8); margin-bottom: var(--spacing-8); }
+
+/* Padding utilities */
+.p-0 { padding: 0; }
+.p-1 { padding: var(--spacing-1); }
+.p-2 { padding: var(--spacing-2); }
+.p-4 { padding: var(--spacing-4); }
+.p-6 { padding: var(--spacing-6); }
+.p-8 { padding: var(--spacing-8); }
+.p-12 { padding: var(--spacing-12); }
+.p-16 { padding: var(--spacing-16); }
+
+/* Padding top */
+.pt-0 { padding-top: 0; }
+.pt-1 { padding-top: var(--spacing-1); }
+.pt-2 { padding-top: var(--spacing-2); }
+.pt-4 { padding-top: var(--spacing-4); }
+.pt-6 { padding-top: var(--spacing-6); }
+.pt-8 { padding-top: var(--spacing-8); }
+
+/* Padding bottom */
+.pb-0 { padding-bottom: 0; }
+.pb-1 { padding-bottom: var(--spacing-1); }
+.pb-2 { padding-bottom: var(--spacing-2); }
+.pb-4 { padding-bottom: var(--spacing-4); }
+.pb-6 { padding-bottom: var(--spacing-6); }
+.pb-8 { padding-bottom: var(--spacing-8); }
+
+/* Padding left/right */
+.pl-0 { padding-left: 0; }
+.pl-1 { padding-left: var(--spacing-1); }
+.pl-2 { padding-left: var(--spacing-2); }
+.pl-4 { padding-left: var(--spacing-4); }
+.pl-6 { padding-left: var(--spacing-6); }
+
+.pr-0 { padding-right: 0; }
+.pr-1 { padding-right: var(--spacing-1); }
+.pr-2 { padding-right: var(--spacing-2); }
+.pr-4 { padding-right: var(--spacing-4); }
+.pr-6 { padding-right: var(--spacing-6); }
+
+/* Padding horizontal/vertical */
+.px-0 { padding-left: 0; padding-right: 0; }
+.px-1 { padding-left: var(--spacing-1); padding-right: var(--spacing-1); }
+.px-2 { padding-left: var(--spacing-2); padding-right: var(--spacing-2); }
+.px-4 { padding-left: var(--spacing-4); padding-right: var(--spacing-4); }
+.px-6 { padding-left: var(--spacing-6); padding-right: var(--spacing-6); }
+.px-8 { padding-left: var(--spacing-8); padding-right: var(--spacing-8); }
+
+.py-0 { padding-top: 0; padding-bottom: 0; }
+.py-1 { padding-top: var(--spacing-1); padding-bottom: var(--spacing-1); }
+.py-2 { padding-top: var(--spacing-2); padding-bottom: var(--spacing-2); }
+.py-4 { padding-top: var(--spacing-4); padding-bottom: var(--spacing-4); }
+.py-6 { padding-top: var(--spacing-6); padding-bottom: var(--spacing-6); }
+.py-8 { padding-top: var(--spacing-8); padding-bottom: var(--spacing-8); }
+
+/* ========================================
+   RESPONSIVE DESIGN
+   ======================================== */
+
+/* Mobile: 320px-767px */
+@media (max-width: 767px) {
+    .container-minimal {
+        padding: 0 var(--spacing-4);       /* 16px minimum - Guidelines */
+    }
+
+    .main-container {
+        padding: var(--spacing-4) var(--spacing-2); /* Reduced padding on mobile */
+        margin: 0;
+        min-height: 100vh;
+    }
+
+    .content-container {
+        padding: 0;
+        margin: 0;
+        box-sizing: border-box;
+    }
+
+    .form-container {
+        padding: var(--spacing-4);
+        margin: var(--spacing-2);
+    }
+
+    .card-container {
+        padding: var(--spacing-4);
+        margin: var(--spacing-2) 0;
+    }
+
+    /* Chapter containers mobile */
+    .chapter-tabs-container {
+        margin: 0;
+        padding: 0;
+    }
+
+    .chapter-content-container {
+        padding: var(--spacing-2) 0;
+    }
+
+    /* Provider containers mobile */
+    .provider-info-container {
+        padding: var(--spacing-4);
+        margin: var(--spacing-2) 0;
+    }
+
+    /* Help section mobile */
+    .help-section {
+        padding: var(--spacing-4) 0;
+        margin-top: var(--spacing-4);
+    }
+
+    /* Instructions mobile */
+    .instructions {
+        padding: var(--spacing-4) 0;
+        margin-bottom: var(--spacing-4);
+    }
+
+    /* AI assistant mobile */
+    .ai-assistant {
+        padding: var(--spacing-4) 0;
+        margin: var(--spacing-4) 0;
+    }
+
+    /* Debug container mobile */
+    .debug-container {
+        padding: var(--spacing-4) 0;
+        margin: var(--spacing-4) 0;
+    }
+
+    /* Section spacing mobile */
+    .section {
+        padding: var(--spacing-8) 0;
+    }
+
+    .section-sm {
+        padding: var(--spacing-4) 0;
+    }
+
+    .section-lg {
+        padding: var(--spacing-12) 0;
+    }
+
+    .section-xl {
+        padding: var(--spacing-16) 0;
+    }
+}
+
+/* Tablet: 768px-1023px */
+@media (min-width: 768px) and (max-width: 1023px) {
+    .container-minimal {
+        padding: 0 var(--spacing-6);       /* 24px on tablet */
+        max-width: 1024px;
+    }
+
+    .main-container {
+        padding: var(--spacing-6) var(--spacing-4);
+        max-width: 1024px;
+    }
+
+    .form-container {
+        max-width: 500px;
+        padding: var(--spacing-6);
+    }
+}
+
+/* Desktop: 1024px+ */
+@media (min-width: 1024px) {
+    .container-minimal {
+        max-width: var(--max-width-content);  /* 1200px - Guidelines */
+        padding: 0 var(--spacing-8);         /* 32px on desktop */
+    }
+
+    .main-container {
+        max-width: 900px;
+        padding: var(--spacing-8) var(--spacing-6);
+    }
+
+    .content-container {
+        max-width: var(--max-width-content);
+        padding: 0;
+    }
+
+    .form-container {
+        max-width: 600px;
+        padding: var(--spacing-8);
+    }
+}
+
+/* ========================================
+   EDITOR SPECIFIC STYLES
+   ======================================== */
+
+/* Toastui Editor Full Width */
+.toastui-editor,
+.toastui-editor-contents,
+.toastui-editor-main,
+.toastui-editor-defaultUI,
+.ProseMirror {
+    width: 100% !important;
+    max-width: none !important;
+}
+
+.toastui-editor-defaultUI {
+    margin: 0 !important;
+    min-height: 600px !important;
+}
+
+/* Creator iframe styling */
+.creator-frame,
+.chapter-editor {
+    width: 100% !important;
+    min-height: 500px !important;
+    border: none;
+    background: transparent;
+}
+
+/* Chapter tabs should be visible */
+.tab-nav,
+.chapter-tabs-container .tab-nav {
+    display: flex !important;
+    background-color: var(--background-tertiary);
+    border-bottom: 1px solid var(--border-light);
+    margin-bottom: 0;
+    padding: 0;
+    border-radius: var(--radius-medium) var(--radius-medium) 0 0;
+    justify-content: flex-start;
+    align-items: stretch;
+    width: auto !important;
+    max-width: fit-content !important;
+}
+
+.tab-nav .tab {
+    padding: var(--spacing-2) var(--spacing-4);
+    background-color: var(--surface);
+    border: 1px solid var(--border-light);
+    border-bottom: none;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    margin-right: 2px;
+    border-radius: var(--radius-small) var(--radius-small) 0 0;
+}
+
+.tab-nav .tab.active {
+    background-color: var(--primary-color);
+    color: white;
+    border-color: var(--primary-color);
+}
+
+.tab-nav .tab:hover:not(.active) {
+    background-color: var(--background-tertiary);
+}
+
+/* Chapter tab specific styling */
+.chapter-tab {
+    display: inline-flex;
+    align-items: center;
+    padding: var(--spacing-2) var(--spacing-4);
+    background-color: var(--surface);
+    border: 1px solid var(--border-light);
+    border-bottom: none;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    margin-right: 2px;
+    border-radius: var(--radius-small) var(--radius-small) 0 0;
+    font-size: var(--font-size-sm);
+    font-weight: var(--font-weight-medium);
+    white-space: nowrap;
+    position: relative;
+    width: auto;
+    min-width: fit-content;
+}
+
+.chapter-tab.active {
+    background-color: var(--text-primary);
+    color: var(--surface);
+    border-color: var(--text-primary);
+    z-index: 1;
+}
+
+.chapter-tab:hover:not(.active) {
+    background-color: var(--background-tertiary);
+}
+
+.chapter-tab .remove-chapter {
+    margin-left: var(--spacing-2);
+    color: inherit;
+    font-weight: bold;
+    cursor: pointer;
+    opacity: 0.7;
+    transition: opacity 0.2s ease;
+}
+
+.chapter-tab .remove-chapter:hover {
+    opacity: 1;
+}
+
+/* Add chapter tab (+ button) styling */
+.add-chapter-tab {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: var(--spacing-2) var(--spacing-3);
+    background-color: transparent;
+    border: 1px dashed var(--border-light);
+    border-bottom: none;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    margin-right: 2px;
+    border-radius: var(--radius-small) var(--radius-small) 0 0;
+    font-size: var(--font-size-lg);
+    font-weight: var(--font-weight-bold);
+    color: var(--text-tertiary);
+    min-width: 40px;
+    width: 40px;
+    height: 36px;
+}
+
+.add-chapter-tab:hover {
+    background-color: var(--surface);
+    border-color: var(--border-primary);
+    color: var(--text-secondary);
+    border-style: solid;
+}
+
+.add-chapter-tab:focus {
+    outline: 2px solid var(--color-primary);
+    outline-offset: 2px;
+}
+
+/* Add gap between tabs and course description */
+.course-description,
+.chapter-tabs-container + *:not(h1):not(h2):not(h3):not(h4):not(h5):not(h6) {
+    margin-top: var(--spacing-4);
+}
+
+/* Remove gap between "Chapters" heading and tab navigation */
+h2 + .chapter-tabs-container,
+h2 + #chapter-tabs-container {
+    margin-top: 0;
+}
+
+/* Chapter content visibility - only show active chapter */
+.chapter-content {
+    display: none;
+}
+
+.chapter-content.active {
+    display: block;
+}
+
+/* ========================================
+   UTILITY CLASSES
+   ======================================== */
+
+/* Width utilities */
+.w-full { width: 100%; }
+.w-auto { width: auto; }
+.w-fit { width: fit-content; }
+.w-min { width: min-content; }
+.w-max { width: max-content; }
+
+/* Height utilities */
+.h-full { height: 100%; }
+.h-screen { height: 100vh; }
+.h-auto { height: auto; }
+.h-fit { height: fit-content; }
+.h-min { height: min-content; }
+.h-max { height: max-content; }
+
+/* Min/Max width */
+.min-w-0 { min-width: 0; }
+.min-w-full { min-width: 100%; }
+.max-w-none { max-width: none; }
+.max-w-full { max-width: 100%; }
+.max-w-reading { max-width: var(--max-width-reading); }
+.max-w-content { max-width: var(--max-width-content); }
+
+/* Min/Max height */
+.min-h-0 { min-height: 0; }
+.min-h-full { min-height: 100%; }
+.min-h-screen { min-height: 100vh; }
+.max-h-full { max-height: 100%; }
+.max-h-screen { max-height: 100vh; }
+
+/* Box sizing */
+.box-border { box-sizing: border-box; }
+.box-content { box-sizing: content-box; }
+
+/* Overflow */
+.overflow-hidden { overflow: hidden; }
+.overflow-auto { overflow: auto; }
+.overflow-scroll { overflow: scroll; }
+.overflow-visible { overflow: visible; }
+
+.overflow-x-hidden { overflow-x: hidden; }
+.overflow-x-auto { overflow-x: auto; }
+.overflow-x-scroll { overflow-x: scroll; }
+
+.overflow-y-hidden { overflow-y: hidden; }
+.overflow-y-auto { overflow-y: auto; }
+.overflow-y-scroll { overflow-y: scroll; }
+
+/* ========================================
+   USAGE WARNING COMPONENT
+   ======================================== */
+
+/* Usage warning styling for API limit notifications */
+.usage-warning {
+    position: relative;
+    transition: opacity var(--transition-fast);
+    z-index: var(--z-overlay);
+    font-family: var(--font-primary);
+    font-weight: var(--font-weight-medium);
+    display: flex;
+    align-items: flex-start;
+    gap: var(--spacing-2);
+}
+
+.usage-warning::before {
+    content: '';
+    flex-shrink: 0;
+    width: 4px;
+    height: 100%;
+    background: rgba(255, 255, 255, 0.5);
+    border-radius: 2px;
+    margin-right: var(--spacing-2);
+}
+
+/* Warning animation on insert */
+@keyframes warningSlideIn {
+    from {
+        opacity: 0;
+        transform: translateY(-10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.usage-warning {
+    animation: warningSlideIn var(--transition-normal) ease-out;
+}
+
+/* Mobile responsive adjustments */
+@media (max-width: 767px) {
+    .usage-warning {
+        font-size: 0.85em;
+        padding: var(--spacing-3) var(--spacing-4) !important;
+        margin: var(--spacing-2) 0 !important;
+        border-radius: var(--radius-medium) !important;
+    }
+}

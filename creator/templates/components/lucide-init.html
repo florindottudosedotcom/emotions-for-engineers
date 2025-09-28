@@ -1,0 +1,31 @@
+<!-- Initialize Lucide icons after DOM is ready -->
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+    if (typeof lucide !== 'undefined') {
+        lucide.createIcons();
+
+        // Re-initialize icons after dynamic content updates
+        const observer = new MutationObserver((mutations) => {
+            let hasNewIcons = false;
+            mutations.forEach((mutation) => {
+                if (mutation.addedNodes.length > 0) {
+                    mutation.addedNodes.forEach((node) => {
+                        if (node.nodeType === 1 &&
+                            (node.matches('[data-lucide]') || node.querySelector('[data-lucide]'))) {
+                            hasNewIcons = true;
+                        }
+                    });
+                }
+            });
+            if (hasNewIcons) {
+                lucide.createIcons();
+            }
+        });
+
+        observer.observe(document.body, {
+            childList: true,
+            subtree: true
+        });
+    }
+});
+</script>

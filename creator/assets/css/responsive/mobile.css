@@ -1,0 +1,809 @@
+/**
+ * Mobile-First Responsive Design
+ * Comprehensive mobile optimizations for course creator
+ */
+
+/* ========================================
+   MOBILE PROVIDER TABS OPTIMIZATION
+   ======================================== */
+
+/* Mobile: Stack provider tabs vertically */
+@media (max-width: 767px) {
+    .provider-row {
+        padding-left: 0;
+        gap: 1rem;
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    .provider-tabs {
+        flex-direction: column;
+        width: 100%;
+        gap: 0.5rem;
+    }
+
+    .provider-tab {
+        min-width: unset;
+        width: 100%;
+        margin-bottom: 0;
+        padding: 16px 20px; /* 44px+ touch target */
+        border-radius: var(--radius-medium);
+        border: 2px solid var(--border-light);
+        justify-content: flex-start;
+        font-size: var(--font-size-base);
+        min-height: 44px; /* Accessibility requirement */
+        box-sizing: border-box;
+    }
+
+    .provider-tab:first-child {
+        border-radius: var(--radius-medium);
+    }
+
+    .provider-tab:last-child {
+        border-radius: var(--radius-medium);
+        border: 2px solid var(--border-light);
+    }
+
+    .provider-tab.active {
+        border-color: var(--primary-color);
+        background: var(--primary-color);
+    }
+
+    .provider-tab.active:last-child {
+        border-color: var(--primary-color);
+    }
+
+    /* Full width iframe */
+    .creator-frame {
+        height: auto;
+        min-height: 60vh;
+        max-height: 80vh;
+        border-radius: var(--radius-medium);
+    }
+
+    /* Adjust main container for mobile */
+    .main-container {
+        padding: 0.5rem;
+    }
+}
+
+/* Small Mobile: Ultra-compact layout */
+@media (max-width: 479px) {
+    .provider-tab {
+        padding: 12px 16px;
+        font-size: var(--font-size-sm);
+    }
+
+    .provider-tab .icon-rocket-css,
+    .provider-tab .icon-cloud-css,
+    .provider-tab .icon-brain-css,
+    .provider-tab .icon-desktop-css {
+        width: 1em;
+        height: 1em;
+    }
+
+    .main-container {
+        padding: 0.25rem;
+    }
+}
+
+/* Tablet: Horizontal scrollable tabs */
+@media (min-width: 768px) and (max-width: 1023px) {
+    .provider-row {
+        padding-left: 8px;
+    }
+
+    .provider-tabs {
+        overflow-x: auto;
+        scrollbar-width: thin;
+        gap: 0;
+        flex-wrap: nowrap;
+        padding-bottom: 4px;
+    }
+
+    .provider-tab {
+        min-width: 120px;
+        flex-shrink: 0;
+        white-space: nowrap;
+        padding: 12px 20px;
+    }
+
+    .creator-frame {
+        min-height: 70vh;
+    }
+}
+
+/* ========================================
+   MOBILE LANGUAGE GRID OPTIMIZATION
+   ======================================== */
+
+@media (max-width: 767px) {
+    .lang-grid {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 0.75rem;
+        margin: 0;
+        padding: 0;
+    }
+
+    .lang-item {
+        min-height: 44px;
+        padding: 0.75rem;
+        border-radius: var(--radius-small);
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        border: 1px solid var(--border-light);
+        background: var(--surface);
+        transition: all var(--transition-fast);
+    }
+
+    .lang-item:hover {
+        border-color: var(--primary-color);
+        background: var(--primary-light);
+    }
+
+    .lang-item input[type="checkbox"] {
+        min-width: 18px;
+        min-height: 18px;
+    }
+
+    .flag-icon {
+        width: 20px;
+        height: 15px;
+        flex-shrink: 0;
+    }
+
+    .label-flex-grow {
+        font-size: var(--font-size-sm);
+        font-weight: var(--font-weight-medium);
+    }
+}
+
+/* Ultra-small screens: Single column */
+@media (max-width: 359px) {
+    .lang-grid {
+        grid-template-columns: 1fr;
+    }
+}
+
+/* ========================================
+   MOBILE FORM OPTIMIZATION
+   ======================================== */
+
+@media (max-width: 767px) {
+    /* Course generation section */
+    .course-generation-section {
+        flex-direction: column;
+        gap: 1rem;
+        align-items: stretch;
+    }
+
+    .course-generation-section .select-no-margin {
+        width: 100%;
+        min-height: 44px;
+        padding: 12px 16px;
+        font-size: var(--font-size-base);
+        border-radius: var(--radius-medium);
+    }
+
+    .course-generation-section .btn {
+        width: 100%;
+        min-height: 44px;
+        padding: 12px 20px;
+        font-size: var(--font-size-base);
+        margin-left: 0;
+    }
+
+    /* Prompt textarea */
+    .prompt-textarea-large {
+        min-height: 120px;
+        padding: 16px;
+        font-size: var(--font-size-base);
+        line-height: 1.5;
+        border-radius: var(--radius-medium);
+    }
+
+    /* Course form inputs */
+    #course-name,
+    #course-desc {
+        min-height: 44px;
+        padding: 12px 16px;
+        font-size: var(--font-size-base);
+        border-radius: var(--radius-medium);
+    }
+
+    #course-desc {
+        min-height: 100px;
+    }
+
+    /* Button groups */
+    .input-group {
+        flex-direction: column;
+        gap: 0.75rem;
+        align-items: stretch;
+    }
+
+    .input-group .btn {
+        width: 100%;
+        margin-left: 0;
+        margin-right: 0;
+    }
+
+    /* Status displays */
+    .status-display {
+        padding: 12px 16px;
+        font-size: var(--font-size-sm);
+        border-radius: var(--radius-medium);
+        margin: 0.5rem 0;
+    }
+}
+
+/* ========================================
+   MOBILE MODAL OPTIMIZATION
+   ======================================== */
+
+@media (max-width: 767px) {
+    .modal-overlay {
+        padding: var(--spacing-2);
+        align-items: flex-start;
+        padding-top: var(--spacing-4);
+    }
+
+    .modal-content {
+        width: 95%;
+        max-width: none;
+        margin: var(--spacing-2);
+        border-radius: var(--radius-medium);
+    }
+
+    .modal-header {
+        padding: var(--spacing-4);
+        flex-direction: column;
+        align-items: flex-start;
+        gap: var(--spacing-2);
+    }
+
+    .modal-body {
+        padding: var(--spacing-4);
+        font-size: var(--font-size-base);
+    }
+
+    .modal-footer {
+        padding: var(--spacing-4);
+        flex-direction: column;
+        gap: var(--spacing-2);
+    }
+
+    .modal-footer .btn {
+        width: 100%;
+        min-height: 44px;
+    }
+}
+
+/* ========================================
+   MOBILE CHAPTER TABS OPTIMIZATION
+   ======================================== */
+
+@media (max-width: 767px) {
+    .chapter-tabs-container {
+        margin: 0;
+        padding: 0;
+        background: transparent;
+        border: none;
+        border-radius: 0;
+    }
+
+    .tab-nav {
+        overflow-x: auto;
+        scrollbar-width: thin;
+        padding-bottom: 4px;
+        background: transparent;
+        border: none;
+        justify-content: flex-start;
+        gap: 4px;
+    }
+
+    .chapter-tab {
+        min-width: fit-content;
+        padding: 12px 16px;
+        font-size: var(--font-size-sm);
+        border-radius: var(--radius-small);
+        white-space: nowrap;
+        flex-shrink: 0;
+        min-height: 44px;
+        display: flex;
+        align-items: center;
+    }
+
+    .add-chapter-tab {
+        min-width: 44px;
+        width: 44px;
+        height: 44px;
+        border-radius: var(--radius-small);
+        flex-shrink: 0;
+    }
+
+    /* Chapter content */
+    .chapter-content {
+        padding: var(--spacing-2) 0;
+    }
+
+    .chapter-title {
+        width: 100%;
+        min-height: 44px;
+        padding: 12px 16px;
+        font-size: var(--font-size-base);
+        border-radius: var(--radius-medium);
+        margin-bottom: var(--spacing-4);
+    }
+
+    .editor-container {
+        min-height: 300px;
+        border-radius: var(--radius-medium);
+        overflow: hidden;
+    }
+
+    .chapter-editor {
+        min-height: 300px;
+        border-radius: var(--radius-medium);
+    }
+}
+
+/* ========================================
+   MOBILE NAVIGATION OPTIMIZATION
+   ======================================== */
+
+@media (max-width: 767px) {
+    .back-button {
+        padding: 12px 16px;
+        margin-bottom: 1rem;
+        border-radius: var(--radius-medium);
+        font-size: var(--font-size-base);
+        min-height: 44px;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+
+    .back-button:hover {
+        background-color: var(--background-tertiary);
+    }
+}
+
+/* ========================================
+   MOBILE TYPOGRAPHY SCALING
+   ======================================== */
+
+@media (max-width: 767px) {
+    h1 {
+        font-size: var(--font-size-2xl);
+        line-height: 1.2;
+        margin-bottom: var(--spacing-4);
+    }
+
+    h2 {
+        font-size: var(--font-size-xl);
+        line-height: 1.3;
+        margin-bottom: var(--spacing-4);
+    }
+
+    h3 {
+        font-size: var(--font-size-lg);
+        line-height: 1.4;
+        margin-bottom: var(--spacing-2);
+    }
+
+    p {
+        font-size: var(--font-size-base);
+        line-height: 1.5;
+        margin-bottom: var(--spacing-4);
+    }
+
+    /* Ensure readable text in all contexts */
+    label {
+        font-size: var(--font-size-base);
+        font-weight: var(--font-weight-medium);
+    }
+
+    .prompt-header {
+        margin-bottom: var(--spacing-2);
+    }
+
+    .prompt-header .btn {
+        min-height: 44px;
+        padding: 12px 20px;
+        font-size: var(--font-size-base);
+    }
+}
+
+/* ========================================
+   TOUCH TARGET OPTIMIZATION
+   ======================================== */
+
+@media (max-width: 767px) {
+    /* Ensure all interactive elements meet 44px minimum */
+    button,
+    input[type="button"],
+    input[type="submit"],
+    input[type="reset"],
+    .btn,
+    a.btn,
+    select,
+    input[type="checkbox"],
+    input[type="radio"] {
+        min-height: 44px;
+    }
+
+    /* Checkbox and radio specific sizing */
+    input[type="checkbox"],
+    input[type="radio"] {
+        min-width: 18px;
+        min-height: 18px;
+        margin: 0 8px 0 0;
+    }
+
+    /* Link buttons */
+    a {
+        min-height: 44px;
+        display: inline-flex;
+        align-items: center;
+        padding: 8px 12px;
+        text-decoration: none;
+        border-radius: var(--radius-small);
+    }
+
+    /* Improve tap target spacing */
+    .btn + .btn {
+        margin-top: 0.5rem;
+    }
+
+    .input-group > * {
+        margin-bottom: 0.5rem;
+    }
+
+    .input-group > *:last-child {
+        margin-bottom: 0;
+    }
+}
+
+/* ========================================
+   MOBILE LAYOUT IMPROVEMENTS
+   ======================================== */
+
+@media (max-width: 767px) {
+    /* Remove unnecessary margins */
+    .container,
+    .main-container {
+        margin: 0;
+    }
+
+    /* Optimize iframe sizing for mobile */
+    .creator-frame {
+        border-radius: var(--radius-medium);
+        border: 1px solid var(--border-light);
+        box-shadow: var(--shadow-small);
+    }
+
+    /* Loading states */
+    .loading-state {
+        height: 50vh;
+        padding: var(--spacing-4);
+        text-align: center;
+    }
+
+    .loading-state p {
+        font-size: var(--font-size-sm);
+        color: var(--text-secondary);
+    }
+
+    /* Download section */
+    #download-section {
+        padding: var(--spacing-4);
+        border-radius: var(--radius-medium);
+        background: var(--surface);
+        border: 1px solid var(--border-light);
+        margin-top: var(--spacing-4);
+    }
+
+    #download-section h3 {
+        margin-bottom: var(--spacing-2);
+    }
+
+    #download-section .btn {
+        width: 100%;
+        min-height: 44px;
+    }
+}
+
+/* ========================================
+   LANDSCAPE MOBILE OPTIMIZATION
+   ======================================== */
+
+@media (max-width: 767px) and (orientation: landscape) {
+    .creator-frame {
+        min-height: 50vh;
+        max-height: 70vh;
+    }
+
+    .modal-content {
+        max-height: 85vh;
+        overflow-y: auto;
+    }
+
+    .provider-tabs {
+        flex-direction: row;
+        overflow-x: auto;
+        gap: 0;
+    }
+
+    .provider-tab {
+        flex-shrink: 0;
+        min-width: 140px;
+        width: auto;
+    }
+}
+
+/* ========================================
+   SLIDES CREATOR MOBILE OPTIMIZATION
+   ======================================== */
+
+/* Mobile: Slides provider tabs */
+@media (max-width: 767px) {
+    /* Override slides.html inline styles for mobile */
+    .slides-provider-row {
+        padding-left: 0 !important;
+        gap: 1rem !important;
+        flex-direction: column !important;
+        align-items: stretch !important;
+        margin-bottom: 1rem !important;
+    }
+
+    .slides-provider-tabs {
+        flex-direction: column !important;
+        width: 100% !important;
+        gap: 0.5rem !important;
+    }
+
+    .slides-provider-tab {
+        min-width: unset !important;
+        width: 100% !important;
+        margin-bottom: 0 !important;
+        padding: 16px 20px !important;
+        border-radius: var(--border-radius) !important;
+        border: 2px solid var(--border-light) !important;
+        justify-content: flex-start !important;
+        font-size: var(--font-size-base) !important;
+        min-height: 44px !important;
+        box-sizing: border-box !important;
+    }
+
+    .slides-provider-tab:first-child,
+    .slides-provider-tab:last-child {
+        border-radius: var(--border-radius) !important;
+        border: 2px solid var(--border-light) !important;
+    }
+
+    .slides-provider-tab.active {
+        border-color: var(--primary-color) !important;
+        background: var(--primary-color) !important;
+        color: white !important;
+    }
+
+    .slides-provider-tab.active:last-child {
+        border-color: var(--primary-color) !important;
+    }
+
+    /* Slides creator frame */
+    .slides-creator-frame {
+        height: auto !important;
+        min-height: 60vh !important;
+        max-height: 80vh !important;
+        border-radius: var(--border-radius) !important;
+        border-top: 1px solid var(--border-light) !important;
+    }
+
+    /* Slides main container mobile adjustments */
+    .slides-main-container {
+        padding: 0.5rem !important;
+        max-width: none !important;
+        width: 100% !important;
+    }
+}
+
+/* Mobile: Slides editor container optimization */
+@media (max-width: 767px) {
+    #slides-editor-container {
+        padding: var(--spacing-2);
+        border-radius: var(--border-radius);
+        overflow: visible; /* Allow stage to be fully visible */
+        min-width: 280px !important; /* Reduced for better mobile fit */
+        width: 100% !important;
+    }
+
+    /* Konva canvas mobile optimization */
+    #konva-slide-stage {
+        width: 100% !important;
+        max-width: none !important;
+        height: auto !important;
+        border-radius: var(--border-radius);
+        touch-action: manipulation;
+    }
+
+    #konva-slide-stage canvas {
+        width: 100% !important;
+        height: auto !important;
+        max-width: 100% !important;
+        border-radius: var(--border-radius);
+    }
+
+    /* Slides generation form mobile */
+    #presentation-topic {
+        min-height: 120px !important;
+        padding: 16px !important;
+        font-size: var(--font-size-base) !important;
+        line-height: 1.5 !important;
+        border-radius: var(--border-radius) !important;
+        width: 100% !important;
+        box-sizing: border-box !important;
+    }
+
+    #num-slides {
+        min-height: 44px !important;
+        padding: 12px 16px !important;
+        font-size: var(--font-size-base) !important;
+        border-radius: var(--border-radius) !important;
+        width: 100% !important;
+    }
+
+    #enhance-prompt-btn,
+    #generate-slides-btn {
+        width: 100% !important;
+        min-height: 44px !important;
+        padding: 12px 20px !important;
+        font-size: var(--font-size-base) !important;
+        margin: 0.5rem 0 !important;
+    }
+
+    /* Slides export buttons mobile */
+    #export-pdf-btn,
+    #export-pptx-btn,
+    #export-html-btn,
+    #export-json-btn {
+        width: 100% !important;
+        min-height: 44px !important;
+        padding: 12px 20px !important;
+        font-size: var(--font-size-base) !important;
+        margin: 0.5rem 0 !important;
+    }
+
+    /* Slides status displays mobile */
+    #ai-status,
+    #generation-status,
+    #export-status {
+        padding: 12px 16px !important;
+        font-size: var(--font-size-sm) !important;
+        border-radius: var(--border-radius) !important;
+        margin: 0.5rem 0 !important;
+    }
+}
+
+/* Small Mobile: Ultra-compact slides layout */
+@media (max-width: 479px) {
+    .slides-provider-tab {
+        padding: 12px 16px !important;
+        font-size: var(--font-size-sm) !important;
+    }
+
+    .slides-provider-tab .icon-rocket-css,
+    .slides-provider-tab .icon-cloud-css,
+    .slides-provider-tab .icon-brain-css,
+    .slides-provider-tab .icon-desktop-css,
+    .slides-provider-tab .icon-slides-css {
+        width: 1em !important;
+        height: 1em !important;
+    }
+
+    .slides-main-container {
+        padding: 0.25rem !important;
+    }
+
+    #slides-editor-container {
+        padding: var(--spacing-1) !important;
+    }
+}
+
+/* Tablet: Horizontal scrollable slides tabs */
+@media (min-width: 768px) and (max-width: 1023px) {
+    .slides-provider-row {
+        padding-left: 8px !important;
+    }
+
+    .slides-provider-tabs {
+        overflow-x: auto !important;
+        scrollbar-width: thin !important;
+        gap: 0 !important;
+        flex-wrap: nowrap !important;
+        padding-bottom: 4px !important;
+    }
+
+    .slides-provider-tab {
+        min-width: 120px !important;
+        flex-shrink: 0 !important;
+        white-space: nowrap !important;
+        padding: 12px 20px !important;
+    }
+
+    .slides-creator-frame {
+        min-height: 70vh !important;
+    }
+
+    #slides-editor-container {
+        min-height: 400px !important; /* Reduced height for tablets */
+        min-width: 320px !important; /* Reduced width for tablets */
+        width: 100% !important;
+    }
+}
+
+/* Landscape Mobile: Slides optimization */
+@media (max-width: 767px) and (orientation: landscape) {
+    .slides-creator-frame {
+        min-height: 50vh !important;
+        max-height: 70vh !important;
+    }
+
+    .slides-provider-tabs {
+        flex-direction: row !important;
+        overflow-x: auto !important;
+        gap: 0 !important;
+    }
+
+    .slides-provider-tab {
+        flex-shrink: 0 !important;
+        min-width: 140px !important;
+        width: auto !important;
+    }
+
+    #slides-editor-container {
+        min-height: 250px !important; /* Reduced for small screens */
+        min-width: 280px !important; /* Reduced for small screens */
+        width: 100% !important;
+    }
+}
+
+/* ========================================
+   ACCESSIBILITY & INTERACTION IMPROVEMENTS
+   ======================================== */
+
+@media (max-width: 767px) {
+    /* Improve focus visibility on mobile */
+    *:focus {
+        outline: 2px solid var(--primary-color);
+        outline-offset: 2px;
+    }
+
+    /* Reduce motion for users who prefer it */
+    @media (prefers-reduced-motion: reduce) {
+        * {
+            animation-duration: 0.01ms !important;
+            animation-iteration-count: 1 !important;
+            transition-duration: 0.01ms !important;
+        }
+    }
+
+    /* High contrast mode support (Alternative approach) */
+    @media (forced-colors: active) {
+        .provider-tab,
+        .slides-provider-tab,
+        .btn,
+        .lang-item {
+            border: 2px solid;
+        }
+
+        .provider-tab.active,
+        .slides-provider-tab.active,
+        .btn:hover {
+            background: var(--text-primary);
+            color: var(--surface);
+        }
+    }
+}

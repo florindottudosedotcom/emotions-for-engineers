@@ -1,0 +1,210 @@
+/**
+ * Modern CSS Reset - Following Best Practices
+ * Provides consistent baseline across browsers
+ */
+
+/* ========================================
+   BOX SIZING & BASIC RESET
+   ======================================== */
+*,
+*::before,
+*::after {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
+
+/* ========================================
+   ROOT & BODY SETUP
+   ======================================== */
+html {
+    font-size: 16px; /* Base font size for rem calculations */
+    line-height: 1.5;
+    -webkit-text-size-adjust: 100%;
+    /* text-size-adjust properties removed for Firefox compatibility */
+}
+
+body {
+    font-family: var(--font-family);
+    font-size: var(--font-size-base);
+    line-height: var(--line-height-normal);
+    font-weight: var(--font-weight-normal);
+    color: var(--text-primary);
+    background-color: var(--background-secondary);
+    margin: 0;
+    padding: 0;
+    min-height: 100vh;
+    overflow-x: hidden;
+}
+
+/* ========================================
+   TYPOGRAPHY RESET
+   ======================================== */
+h1, h2, h3, h4, h5, h6 {
+    margin: 0;
+    font-weight: var(--font-weight-semibold);
+    line-height: var(--line-height-tight);
+    color: var(--text-primary);
+}
+
+p {
+    margin: 0;
+    line-height: var(--line-height-relaxed);
+}
+
+/* ========================================
+   INTERACTIVE ELEMENTS
+   ======================================== */
+button,
+input,
+optgroup,
+select,
+textarea {
+    font-family: inherit;
+    font-size: inherit;
+    line-height: inherit;
+}
+
+button {
+    background: none;
+    border: none;
+    cursor: pointer;
+    outline: none;
+}
+
+/* Remove default button styling */
+/* Firefox-specific button styling removed for compatibility */
+button {
+    border: 0;
+    padding: 0;
+}
+
+/* ========================================
+   LINKS
+   ======================================== */
+a {
+    color: var(--primary-color);
+    text-decoration: none;
+    transition: color var(--transition-fast);
+}
+
+a:hover {
+    color: var(--primary-dark);
+}
+
+/* ========================================
+   LISTS
+   ======================================== */
+ul, ol {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+}
+
+/* ========================================
+   MEDIA ELEMENTS
+   ======================================== */
+img,
+picture,
+video,
+canvas,
+svg {
+    display: block;
+    max-width: 100%;
+    height: auto;
+}
+
+img {
+    border-style: none;
+}
+
+/* ========================================
+   FORM ELEMENTS
+   ======================================== */
+input,
+button,
+textarea,
+select {
+    background-color: transparent;
+    border: none;
+    outline: none;
+}
+
+input:focus,
+textarea:focus,
+select:focus {
+    outline: none;
+}
+
+/* Remove default styling for inputs */
+input[type="search"]::-webkit-search-decoration,
+input[type="search"]::-webkit-search-cancel-button,
+input[type="search"]::-webkit-search-results-button,
+input[type="search"]::-webkit-search-results-decoration {
+    -webkit-appearance: none;
+}
+
+/* ========================================
+   TABLE ELEMENTS
+   ======================================== */
+table {
+    border-collapse: collapse;
+    border-spacing: 0;
+}
+
+/* ========================================
+   ACCESSIBILITY
+   ======================================== */
+
+/* Focus styles for keyboard navigation */
+:focus-visible {
+    outline: 2px solid var(--primary-color);
+    outline-offset: 2px;
+}
+
+/* Remove focus outline for mouse users */
+:focus:not(:focus-visible) {
+    outline: none;
+}
+
+/* Ensure clickable elements have proper cursor */
+[role="button"],
+button,
+input[type="submit"],
+input[type="button"],
+input[type="reset"],
+label[for] {
+    cursor: pointer;
+}
+
+/* Disabled state */
+[disabled],
+[aria-disabled="true"] {
+    cursor: not-allowed;
+    opacity: 0.6;
+}
+
+/* ========================================
+   REDUCED MOTION SUPPORT
+   ======================================== */
+@media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+        scroll-behavior: auto !important;
+    }
+}
+
+/* ========================================
+   HIGH CONTRAST SUPPORT (Alternative approach)
+   ======================================== */
+@media (forced-colors: active) {
+    :root {
+        --border-light: #000000;
+        --border-medium: #000000;
+        --text-secondary: #000000;
+    }
+}

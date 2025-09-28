@@ -1,0 +1,129 @@
+/**
+ * Design System Variables - Following CLAUDE.md Guidelines
+ * Core design tokens for consistent theming
+ */
+
+:root {
+    /* ========================================
+       PRIMARY COLORS - Design Guidelines Compliant
+       ======================================== */
+    --primary-color: #2563EB;          /* Primary blue - Guidelines */
+    --primary-dark: #1d4ed8;           /* Darker blue for hover states */
+    --primary-light: #dbeafe;          /* Light blue backgrounds */
+
+    /* Secondary Colors */
+    --secondary-color: #6366f1;         /* Indigo accent */
+    --secondary-dark: #4f46e5;          /* Darker indigo */
+    --secondary-light: #e0e7ff;         /* Light indigo backgrounds */
+
+    /* ========================================
+       NEUTRAL COLORS - Design Guidelines
+       ======================================== */
+    --background-primary: #FFFFFF;      /* Pure white - Guidelines */
+    --background-secondary: #F8FAFC;    /* Subtle off-white - Guidelines */
+    --background-tertiary: #F1F5F9;     /* Light gray - Guidelines */
+    --surface: #FFFFFF;                 /* Card/surface backgrounds */
+    --surface-elevated: #FFFFFF;        /* Elevated surfaces (same as surface in light) */
+
+    /* Text Colors - Design Guidelines */
+    --text-primary: #0F172A;            /* Near-black - Guidelines */
+    --text-secondary: #64748B;          /* Medium gray - Guidelines */
+    --text-disabled: #94A3B8;           /* Light gray - Guidelines */
+    --text-muted: #94A3B8;              /* Muted text for less emphasis */
+    --text-on-primary: #FFFFFF;         /* Text on primary color */
+
+    /* Border Colors - Design Guidelines */
+    --border-light: #E2E8F0;            /* Light borders - Guidelines */
+    --border-medium: #CBD5E1;           /* Medium borders - Guidelines */
+    --border-dark: #64748B;             /* Dark borders - Guidelines */
+
+    /* ========================================
+       STATUS COLORS - Semantic Colors
+       ======================================== */
+    --success-color: #10B981;           /* Success green - Guidelines */
+    --success-light: #d1fae5;           /* Success background */
+    --warning-color: #F59E0B;           /* Warning amber - Guidelines */
+    --warning-light: #fef3c7;           /* Warning background */
+    --error-color: #EF4444;             /* Error red - Guidelines */
+    --error-light: #fecaca;             /* Error background */
+    --info-color: #2563EB;              /* Info blue - same as primary */
+    --info-light: #dbeafe;             /* Info background */
+
+    /* ========================================
+       SHADOWS - Design Guidelines Compliant
+       ======================================== */
+    --shadow-small: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+    --shadow-medium: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+    --shadow-large: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+
+    /* ========================================
+       BORDER RADIUS - Design Guidelines
+       ======================================== */
+    --radius-small: 4px;     /* Buttons - Guidelines */
+    --radius-medium: 8px;    /* Small components - Guidelines */
+    --radius-large: 12px;    /* Cards - Guidelines */
+    --radius-xl: 16px;       /* Large cards - Guidelines */
+
+    /* ========================================
+       SPACING - 8px Grid System (Design Guidelines)
+       ======================================== */
+    --spacing-1: 4px;     /* 0.25rem - Base spacing unit */
+    --spacing-2: 8px;     /* 0.5rem - Small spacing */
+    --spacing-4: 16px;    /* 1rem - Medium spacing */
+    --spacing-6: 24px;    /* 1.5rem - Large spacing */
+    --spacing-8: 32px;    /* 2rem - Extra large spacing */
+    --spacing-12: 48px;   /* 3rem - Section spacing */
+    --spacing-16: 64px;   /* 4rem - Major spacing */
+    --spacing-24: 96px;   /* 6rem - Hero/banner spacing */
+
+    /* ========================================
+       TYPOGRAPHY - Design Guidelines Compliant
+       ======================================== */
+    --font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+
+    /* Font Sizes - Following Design Guidelines Scale */
+    --font-size-xs: 0.75rem;    /* 12px - Small text */
+    --font-size-sm: 0.875rem;   /* 14px - Secondary text */
+    --font-size-base: 1rem;     /* 16px - Body text */
+    --font-size-lg: 1.125rem;   /* 18px - Large body text */
+    --font-size-xl: 1.25rem;    /* 20px - Subheadings */
+    --font-size-2xl: 1.5rem;    /* 24px - H3 - Guidelines */
+    --font-size-3xl: 2rem;      /* 32px - H2 - Guidelines */
+    --font-size-4xl: 2.5rem;    /* 40px - H1 - Guidelines */
+
+    /* Line Heights - Design Guidelines */
+    --line-height-tight: 1.2;   /* For headings */
+    --line-height-normal: 1.5;  /* For body text */
+    --line-height-relaxed: 1.6; /* For reading content */
+
+    /* Font Weights - Limited as per guidelines */
+    --font-weight-normal: 400;
+    --font-weight-medium: 500;
+    --font-weight-semibold: 600;
+
+    /* ========================================
+       TRANSITIONS - Design Guidelines (200ms-300ms)
+       ======================================== */
+    --transition-fast: 200ms ease-out;
+    --transition-normal: 250ms ease-out;
+    --transition-slow: 300ms ease-out;
+
+    /* ========================================
+       LAYOUT CONSTRAINTS - Design Guidelines
+       ======================================== */
+    --max-width-content: 1200px;        /* Max content width - Guidelines */
+    --max-width-reading: 600px;         /* Optimal reading width - Guidelines */
+
+    /* Breakpoints */
+    --breakpoint-mobile: 767px;
+    --breakpoint-tablet: 1023px;
+    --breakpoint-desktop: 1024px;
+
+    /* ========================================
+       Z-INDEX LAYERS
+       ======================================== */
+    --z-base: 1;
+    --z-overlay: 100;
+    --z-modal: 1000;
+    --z-tooltip: 2000;
+}

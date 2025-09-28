@@ -1,0 +1,478 @@
+/**
+ * Modal Component System - Following CLAUDE.md Guidelines
+ * Accessible modal dialogs with proper focus management
+ */
+
+/* ========================================
+   MODAL OVERLAY
+   ======================================== */
+.modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.5);
+    z-index: var(--z-modal);
+    display: none;
+    justify-content: center;
+    align-items: center;
+    padding: var(--spacing-4);
+    box-sizing: border-box;
+    opacity: 0;
+    transition: opacity var(--transition-normal);
+}
+
+.modal-overlay.visible {
+    display: flex;
+    opacity: 1;
+}
+
+/* ========================================
+   MODAL CONTENT
+   ======================================== */
+.modal-content {
+    background-color: var(--surface);
+    border-radius: var(--radius-large);
+    box-shadow: var(--shadow-large);
+    padding: var(--spacing-8) 0;
+    width: 90%;
+    max-width: 500px;
+    max-height: 90vh;
+    overflow-y: auto;
+    position: relative;
+    transform: scale(0.9);
+    transition: transform var(--transition-normal);
+    border: 1px solid var(--border-light);
+}
+
+.modal-overlay.visible .modal-content {
+    transform: scale(1);
+}
+
+/* ========================================
+   MODAL HEADER
+   ======================================== */
+.modal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0 var(--spacing-8) var(--spacing-4) var(--spacing-8);
+    border-bottom: 1px solid var(--border-light);
+}
+
+.modal-title {
+    font-size: var(--font-size-xl);
+    font-weight: var(--font-weight-semibold);
+    color: var(--text-primary);
+    margin: 0;
+}
+
+.modal-close {
+    background: none;
+    border: none;
+    font-size: var(--font-size-2xl);
+    color: var(--text-secondary);
+    cursor: pointer;
+    padding: var(--spacing-1);
+    border-radius: var(--radius-small);
+    transition: color var(--transition-fast), background-color var(--transition-fast);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 32px;
+    height: 32px;
+}
+
+.modal-close:hover {
+    color: var(--text-primary);
+    background-color: var(--background-tertiary);
+}
+
+.modal-close:focus {
+    outline: 2px solid var(--primary-color);
+    outline-offset: 2px;
+}
+
+/* ========================================
+   MODAL BODY
+   ======================================== */
+.modal-body {
+    padding: var(--spacing-6) var(--spacing-8);
+    color: var(--text-primary);
+    line-height: var(--line-height-relaxed);
+}
+
+.modal-body p:last-child {
+    margin-bottom: 0;
+}
+
+/* ========================================
+   MODAL FOOTER
+   ======================================== */
+.modal-footer {
+    display: flex;
+    justify-content: flex-end;
+    gap: var(--spacing-2);
+    padding: var(--spacing-4) var(--spacing-8) 0 var(--spacing-8);
+    border-top: 1px solid var(--border-light);
+    margin-top: var(--spacing-6);
+}
+
+/* ========================================
+   MODAL SIZES
+   ======================================== */
+.modal-sm .modal-content {
+    max-width: 400px;
+}
+
+.modal-lg .modal-content {
+    max-width: 800px;
+}
+
+.modal-xl .modal-content {
+    max-width: 1200px;
+}
+
+.modal-fullscreen .modal-content {
+    width: 95%;
+    height: 95%;
+    max-width: none;
+    max-height: none;
+}
+
+/* ========================================
+   MODAL VARIANTS
+   ======================================== */
+
+/* Confirmation Modal */
+.modal-confirm .modal-header {
+    background-color: var(--warning-light);
+    border-bottom-color: var(--warning-color);
+}
+
+.modal-confirm .modal-title {
+    color: var(--warning-color);
+}
+
+/* Error Modal */
+.modal-error .modal-header {
+    background-color: var(--error-light);
+    border-bottom-color: var(--error-color);
+}
+
+.modal-error .modal-title {
+    color: var(--error-color);
+}
+
+/* Success Modal */
+.modal-success .modal-header {
+    background-color: var(--success-light);
+    border-bottom-color: var(--success-color);
+}
+
+.modal-success .modal-title {
+    color: var(--success-color);
+}
+
+/* Info Modal */
+.modal-info .modal-header {
+    background-color: var(--info-light);
+    border-bottom-color: var(--info-color);
+}
+
+.modal-info .modal-title {
+    color: var(--info-color);
+}
+
+/* ========================================
+   SPECIFIC MODALS (From Original Code)
+   ======================================== */
+
+/* Overwrite Modal */
+#overwrite-modal .modal-content {
+    background-color: var(--surface);
+    color: var(--text-primary);
+    border-color: var(--border-light);
+}
+
+#overwrite-modal h2 {
+    color: var(--text-primary);
+    margin-bottom: var(--spacing-4);
+}
+
+#overwrite-modal p {
+    color: var(--text-secondary);
+    margin-bottom: var(--spacing-6);
+}
+
+/* Export Modal */
+#export-modal .modal-content {
+    background: var(--surface);
+    color: var(--text-primary);
+}
+
+/* ========================================
+   MODAL ANIMATIONS
+   ======================================== */
+@keyframes modalFadeIn {
+    from {
+        opacity: 0;
+    }
+    to {
+        opacity: 1;
+    }
+}
+
+@keyframes modalSlideIn {
+    from {
+        transform: translateY(-50px) scale(0.9);
+        opacity: 0;
+    }
+    to {
+        transform: translateY(0) scale(1);
+        opacity: 1;
+    }
+}
+
+.modal-overlay.animate {
+    animation: modalFadeIn var(--transition-normal) ease-out;
+}
+
+.modal-overlay.animate .modal-content {
+    animation: modalSlideIn var(--transition-normal) ease-out;
+}
+
+/* ========================================
+   ACCESSIBILITY FEATURES
+   ======================================== */
+
+/* Focus trap styling */
+.modal-content:focus {
+    outline: none;
+}
+
+/* Skip to content when tabbing */
+.modal-content [tabindex="-1"]:focus {
+    outline: none;
+}
+
+/* Ensure modal is announced to screen readers */
+.modal-overlay[aria-hidden="false"] {
+    display: flex;
+}
+
+.modal-overlay[aria-hidden="true"] {
+    display: none;
+}
+
+/* ========================================
+   BACKDROP VARIANTS
+   ======================================== */
+.modal-backdrop-blur {
+    backdrop-filter: blur(4px);
+    background-color: rgba(0, 0, 0, 0.3);
+}
+
+.modal-backdrop-dark {
+    background-color: rgba(0, 0, 0, 0.7);
+}
+
+.modal-backdrop-light {
+    background-color: rgba(255, 255, 255, 0.8);
+}
+
+/* ========================================
+   ADDITIONAL MODAL UTILITIES
+   ======================================== */
+
+/* Export buttons grid for slides modals */
+.export-buttons-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: var(--spacing-4);
+    margin: var(--spacing-4) 0;
+}
+
+/* Close button alternative style */
+.btn-close {
+    background: none;
+    border: none;
+    font-size: 1.5em;
+    cursor: pointer;
+    padding: var(--spacing-1);
+    color: var(--text-secondary);
+    border-radius: var(--radius-small);
+    transition: all var(--transition-fast);
+    line-height: 1;
+    width: 32px;
+    height: 32px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.btn-close:hover {
+    background-color: var(--background-tertiary);
+    color: var(--text-primary);
+}
+
+.btn-close:focus {
+    outline: 2px solid var(--primary-color);
+    outline-offset: 2px;
+}
+
+/* Checkbox label styling for modals */
+.checkbox-label {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-2);
+    cursor: pointer;
+    font-size: var(--font-size-base);
+    color: var(--text-primary);
+}
+
+.form-checkbox {
+    margin: 0;
+    width: 16px;
+    height: 16px;
+}
+
+/* Spacing utilities for modals */
+.mb-md {
+    margin-bottom: var(--spacing-6);
+}
+
+.mt-md {
+    margin-top: var(--spacing-6);
+}
+
+/* ========================================
+   RESPONSIVE DESIGN
+   ======================================== */
+
+/* Mobile: 320px-767px */
+@media (max-width: 767px) {
+    .modal-overlay {
+        padding: var(--spacing-2);
+        align-items: flex-start;
+        padding-top: var(--spacing-4);
+    }
+
+    .modal-content {
+        width: 95%;
+        max-width: none;
+        margin: var(--spacing-4);
+        padding: var(--spacing-4) 0;
+        max-height: 90vh;
+        overflow-y: auto;
+        box-sizing: border-box;
+    }
+
+    .modal-header {
+        padding: 0 var(--spacing-4) var(--spacing-2) var(--spacing-4);
+        flex-direction: column;
+        align-items: flex-start;
+        gap: var(--spacing-2);
+    }
+
+    .modal-title {
+        font-size: var(--font-size-lg);
+    }
+
+    .modal-body {
+        padding: var(--spacing-4);
+    }
+
+    .modal-footer {
+        padding: var(--spacing-2) var(--spacing-4) 0 var(--spacing-4);
+        flex-direction: column;
+        gap: var(--spacing-2);
+    }
+
+    .modal-footer .btn {
+        width: 100%;
+    }
+
+    /* Export buttons single column on mobile */
+    .export-buttons-grid {
+        grid-template-columns: 1fr;
+        gap: var(--spacing-2);
+    }
+
+    /* Full height on mobile for large modals */
+    .modal-lg .modal-content,
+    .modal-xl .modal-content {
+        height: 90vh;
+        max-height: none;
+    }
+
+    /* Fullscreen modal takes full viewport */
+    .modal-fullscreen .modal-content {
+        width: 100%;
+        height: 100%;
+        border-radius: 0;
+        margin: 0;
+    }
+
+    .modal-fullscreen .modal-overlay {
+        padding: 0;
+    }
+}
+
+/* Tablet: 768px-1023px */
+@media (min-width: 768px) and (max-width: 1023px) {
+    .modal-content {
+        max-width: 600px;
+    }
+
+    .modal-lg .modal-content {
+        max-width: 90%;
+    }
+}
+
+/* ========================================
+   UTILITY CLASSES
+   ======================================== */
+
+/* Hide modal content for screen readers when modal is closed */
+.modal-hidden {
+    display: none !important;
+}
+
+/* Center modal content */
+.modal-center {
+    align-items: center;
+}
+
+/* Top-aligned modal */
+.modal-top {
+    align-items: flex-start;
+    padding-top: var(--spacing-12);
+}
+
+/* Bottom-aligned modal */
+.modal-bottom {
+    align-items: flex-end;
+    padding-bottom: var(--spacing-12);
+}
+
+/* Disable body scroll when modal is open */
+body.modal-open {
+    overflow: hidden;
+}
+
+/* ========================================
+   REDUCED MOTION SUPPORT
+   ======================================== */
+@media (prefers-reduced-motion: reduce) {
+    .modal-overlay,
+    .modal-content {
+        transition: none;
+        animation: none;
+    }
+
+    .modal-overlay.visible .modal-content {
+        transform: scale(1);
+    }
+}

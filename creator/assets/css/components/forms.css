@@ -1,0 +1,541 @@
+/**
+ * Form Component System - Following CLAUDE.md Guidelines
+ * Comprehensive form styles with accessibility support
+ */
+
+/* ========================================
+   BASE FORM STYLES
+   ======================================== */
+form {
+    margin: 0;
+}
+
+fieldset {
+    border: 1px solid var(--border-light);
+    border-radius: var(--radius-medium);
+    padding: var(--spacing-6) var(--spacing-4);
+    margin-bottom: var(--spacing-6);
+    background-color: var(--surface);
+}
+
+legend {
+    font-weight: var(--font-weight-semibold);
+    font-size: var(--font-size-lg);
+    color: var(--text-primary);
+    padding: 0 var(--spacing-2);
+    background-color: var(--surface);
+}
+
+/* ========================================
+   LABELS
+   ======================================== */
+label {
+    display: block;
+    margin-bottom: var(--spacing-2);
+    font-weight: var(--font-weight-medium);
+    color: var(--text-primary);
+    font-size: var(--font-size-base);
+    line-height: var(--line-height-normal);
+}
+
+.label-inline {
+    display: inline-block;
+    margin-bottom: 0;
+    margin-right: var(--spacing-2);
+}
+
+.label-flex-grow {
+    flex-grow: 1;
+}
+
+.label-no-shrink-no-margin {
+    flex-shrink: 0;
+    margin-bottom: 0;
+}
+
+/* Required field indicator */
+.label-required::after {
+    content: " *";
+    color: var(--error-color);
+}
+
+/* ========================================
+   INPUT FIELDS - Design Guidelines Compliant
+   ======================================== */
+.input,
+input[type="text"],
+input[type="email"],
+input[type="password"],
+input[type="url"],
+input[type="tel"],
+input[type="search"],
+input[type="number"],
+input[type="date"],
+input[type="time"],
+input[type="datetime-local"] {
+    /* Layout */
+    width: 100%;
+    min-height: 40px;                    /* Minimum touch target - Guidelines */
+    padding: var(--spacing-2) var(--spacing-4); /* 8px-16px - Guidelines */
+
+    /* Typography */
+    font-family: var(--font-family);
+    font-size: var(--font-size-base);
+    color: var(--text-primary);
+
+    /* Visual */
+    background-color: var(--surface);
+    border: 1px solid var(--border-light);
+    border-radius: var(--radius-medium);
+    box-sizing: border-box;
+
+    /* Animation */
+    transition: border-color var(--transition-fast), box-shadow var(--transition-fast);
+
+    /* Remove default styling */
+    appearance: none;
+    outline: none;
+}
+
+.input:focus,
+input[type="text"]:focus,
+input[type="email"]:focus,
+input[type="password"]:focus,
+input[type="url"]:focus,
+input[type="tel"]:focus,
+input[type="search"]:focus,
+input[type="number"]:focus,
+input[type="date"]:focus,
+input[type="time"]:focus,
+input[type="datetime-local"]:focus {
+    border-color: var(--primary-color);
+    box-shadow: 0 0 0 2px rgba(37, 99, 235, 0.1);
+}
+
+.input:disabled,
+input:disabled {
+    background-color: var(--background-tertiary);
+    color: var(--text-disabled);
+    cursor: not-allowed;
+    opacity: 0.6;
+}
+
+.input:invalid,
+input:invalid {
+    border-color: var(--error-color);
+}
+
+.input:invalid:focus,
+input:invalid:focus {
+    box-shadow: 0 0 0 2px rgba(239, 68, 68, 0.1);
+}
+
+/* Placeholder styling */
+.input::placeholder,
+input::placeholder {
+    color: var(--text-disabled);
+    opacity: 1;
+}
+
+/* ========================================
+   TEXTAREA
+   ======================================== */
+.textarea,
+textarea {
+    width: 100%;
+    min-height: 100px;
+    padding: var(--spacing-2) var(--spacing-4);
+    font-family: var(--font-family);
+    font-size: var(--font-size-base);
+    color: var(--text-primary);
+    background-color: var(--surface);
+    border: 1px solid var(--border-light);
+    border-radius: var(--radius-medium);
+    box-sizing: border-box;
+    resize: vertical;
+    transition: border-color var(--transition-fast), box-shadow var(--transition-fast);
+    outline: none;
+    appearance: none;
+}
+
+.textarea:focus,
+textarea:focus {
+    border-color: var(--primary-color);
+    box-shadow: 0 0 0 2px rgba(37, 99, 235, 0.1);
+}
+
+.textarea:disabled,
+textarea:disabled {
+    background-color: var(--background-tertiary);
+    color: var(--text-disabled);
+    cursor: not-allowed;
+    opacity: 0.6;
+    resize: none;
+}
+
+/* Large textarea variant */
+.textarea-large,
+.prompt-textarea-large {
+    min-height: 200px;
+}
+
+/* ========================================
+   SELECT ELEMENTS
+   ======================================== */
+.select,
+select {
+    width: 100%;
+    min-height: 40px;
+    padding: var(--spacing-2) var(--spacing-4);
+    font-family: var(--font-family);
+    font-size: var(--font-size-base);
+    color: var(--text-primary);
+    background-color: var(--surface);
+    border: 1px solid var(--border-light);
+    border-radius: var(--radius-medium);
+    box-sizing: border-box;
+    cursor: pointer;
+    transition: border-color var(--transition-fast), box-shadow var(--transition-fast);
+    outline: none;
+    appearance: none;
+
+    /* Custom dropdown arrow */
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='%2364748B'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M19 9l-7 7-7-7'%3E%3C/path%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right var(--spacing-2) center;
+    background-size: 20px;
+    padding-right: var(--spacing-8);
+}
+
+.select:focus,
+select:focus {
+    border-color: var(--primary-color);
+    box-shadow: 0 0 0 2px rgba(37, 99, 235, 0.1);
+}
+
+.select:disabled,
+select:disabled {
+    background-color: var(--background-tertiary);
+    color: var(--text-disabled);
+    cursor: not-allowed;
+    opacity: 0.6;
+}
+
+.select-no-margin {
+    margin-bottom: 0;
+}
+
+/* Option styling */
+option {
+    background-color: var(--surface);
+    color: var(--text-primary);
+    padding: var(--spacing-2);
+}
+
+/* ========================================
+   CHECKBOX AND RADIO
+   ======================================== */
+.checkbox,
+.radio,
+input[type="checkbox"],
+input[type="radio"] {
+    width: 18px;
+    height: 18px;
+    margin-right: var(--spacing-2);
+    cursor: pointer;
+    position: relative;
+    appearance: none;
+    border: 2px solid var(--border-medium);
+    background-color: var(--surface);
+    transition: all var(--transition-fast);
+}
+
+.checkbox,
+input[type="checkbox"] {
+    border-radius: var(--radius-small);
+}
+
+.radio,
+input[type="radio"] {
+    border-radius: 50%;
+}
+
+.checkbox:checked,
+.radio:checked,
+input[type="checkbox"]:checked,
+input[type="radio"]:checked {
+    background-color: var(--primary-color);
+    border-color: var(--primary-color);
+}
+
+.checkbox:checked::after,
+input[type="checkbox"]:checked::after {
+    content: '✓';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    color: white;
+    font-size: 12px;
+    font-weight: bold;
+}
+
+.radio:checked::after,
+input[type="radio"]:checked::after {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 8px;
+    height: 8px;
+    background-color: white;
+    border-radius: 50%;
+}
+
+.checkbox:focus,
+.radio:focus,
+input[type="checkbox"]:focus,
+input[type="radio"]:focus {
+    outline: 2px solid var(--primary-color);
+    outline-offset: 2px;
+}
+
+/* ========================================
+   INPUT GROUPS
+   ======================================== */
+.input-group {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-2);
+    margin-bottom: var(--spacing-4);
+}
+
+.input-group .input,
+.input-group input,
+.input-group .select,
+.input-group select,
+.input-group .textarea,
+.input-group textarea {
+    flex: 1;
+    margin-bottom: 0;
+}
+
+.input-group .btn {
+    flex-shrink: 0;
+}
+
+/* Stacked input group */
+.input-group-stacked {
+    flex-direction: column;
+    align-items: stretch;
+}
+
+.input-group-stacked > * {
+    width: 100%;
+}
+
+/* ========================================
+   FORM VALIDATION STYLES
+   ======================================== */
+.form-field {
+    margin-bottom: var(--spacing-4);
+}
+
+.form-field.has-error .input,
+.form-field.has-error input,
+.form-field.has-error .textarea,
+.form-field.has-error textarea,
+.form-field.has-error .select,
+.form-field.has-error select {
+    border-color: var(--error-color);
+}
+
+.form-field.has-error .input:focus,
+.form-field.has-error input:focus,
+.form-field.has-error .textarea:focus,
+.form-field.has-error textarea:focus,
+.form-field.has-error .select:focus,
+.form-field.has-error select:focus {
+    box-shadow: 0 0 0 2px rgba(239, 68, 68, 0.1);
+}
+
+.form-field.has-success .input,
+.form-field.has-success input,
+.form-field.has-success .textarea,
+.form-field.has-success textarea,
+.form-field.has-success .select,
+.form-field.has-success select {
+    border-color: var(--success-color);
+}
+
+.form-field.has-success .input:focus,
+.form-field.has-success input:focus,
+.form-field.has-success .textarea:focus,
+.form-field.has-success textarea:focus,
+.form-field.has-success .select:focus,
+.form-field.has-success select:focus {
+    box-shadow: 0 0 0 2px rgba(16, 185, 129, 0.1);
+}
+
+/* Field messages */
+.field-message {
+    font-size: var(--font-size-sm);
+    margin-top: var(--spacing-1);
+}
+
+.field-message-error {
+    color: var(--error-color);
+}
+
+.field-message-success {
+    color: var(--success-color);
+}
+
+.field-message-info {
+    color: var(--info-color);
+}
+
+/* ========================================
+   LANGUAGE GRID (Special Component)
+   ======================================== */
+.lang-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+    gap: var(--spacing-4);
+    margin: var(--spacing-4) 0;
+}
+
+.lang-item {
+    display: flex;
+    align-items: center;
+    padding: var(--spacing-2) var(--spacing-4);
+    border-radius: var(--radius-small);
+    background-color: transparent !important;
+    transition: background-color var(--transition-fast);
+    min-height: 44px;
+    height: 44px;
+    border: none;
+    min-width: 140px;
+}
+
+.lang-item:hover {
+    background-color: var(--background-tertiary) !important;
+}
+
+.lang-item input[type="checkbox"] {
+    margin-right: var(--spacing-2);
+    min-width: 24px;
+    min-height: 24px;
+}
+
+.lang-item .flag-icon {
+    width: 24px;
+    height: auto;
+    margin-right: var(--spacing-2);
+    border-radius: var(--radius-small);
+}
+
+.lang-item label {
+    margin: 0;
+    cursor: pointer;
+    flex-grow: 1;
+}
+
+/* ========================================
+   RESPONSIVE DESIGN
+   ======================================== */
+
+/* Mobile: 320px-767px */
+@media (max-width: 767px) {
+    /* Input fields mobile optimization */
+    .input,
+    input,
+    .textarea,
+    textarea,
+    .select,
+    select {
+        font-size: 16px;                    /* Prevent zoom on iOS */
+        min-height: 48px;                   /* Larger touch target */
+    }
+
+    .textarea,
+    textarea {
+        min-height: 120px;
+    }
+
+    /* Form groups stack on mobile */
+    .input-group {
+        flex-direction: column;
+        align-items: stretch;
+        gap: var(--spacing-2);
+    }
+
+    .input-group .btn {
+        width: 100%;
+    }
+
+    /* Language grid mobile */
+    .lang-grid {
+        grid-template-columns: 1fr;
+        gap: var(--spacing-2);
+    }
+
+    /* Ensure touch targets are large enough */
+    .checkbox,
+    .radio,
+    input[type="checkbox"],
+    input[type="radio"] {
+        min-width: 24px;
+        min-height: 24px;
+        width: 24px;
+        height: 24px;
+    }
+
+    /* Fieldset mobile layout */
+    fieldset {
+        margin: 0 0 var(--spacing-4) 0;
+        padding: var(--spacing-4);
+    }
+
+    legend {
+        font-size: var(--font-size-lg);
+        padding: 0 var(--spacing-2);
+    }
+}
+
+/* Tablet: 768px-1023px */
+@media (min-width: 768px) and (max-width: 1023px) {
+    .input-group {
+        flex-direction: row;
+        align-items: center;
+        gap: var(--spacing-4);
+    }
+
+    .lang-grid {
+        grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    }
+}
+
+/* ========================================
+   UTILITY CLASSES
+   ======================================== */
+.input-flex-grow {
+    flex-grow: 1;
+}
+
+.margin-top-1-5rem {
+    margin-top: 1.5rem;
+}
+
+.margin-left-auto {
+    margin-left: auto;
+}
+
+.margin-left-1rem {
+    margin-left: 1rem;
+}
+
+.hidden {
+    display: none;
+}

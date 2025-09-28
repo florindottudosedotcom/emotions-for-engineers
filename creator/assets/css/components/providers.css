@@ -1,0 +1,167 @@
+/**
+ * Provider Components CSS - Master Import File
+ * Following CLAUDE.md Guidelines - Unified provider styling
+ */
+
+/* Import all provider-specific CSS files */
+@import url('./providers/openrouter.css');
+@import url('./providers/webllm.css');
+@import url('./providers/ollama.css');
+
+/* ========================================
+   SHARED PROVIDER STYLES
+   ======================================== */
+
+/* Common fieldset styling for all providers */
+fieldset {
+    border: 1px solid var(--border-light);
+    border-radius: var(--radius-medium);
+    padding: var(--spacing-6) var(--spacing-4);
+    margin-bottom: var(--spacing-6);
+    background-color: var(--surface);
+}
+
+legend {
+    font-weight: var(--font-weight-semibold);
+    font-size: var(--font-size-lg);
+    color: var(--text-primary);
+    padding: 0 var(--spacing-2);
+    background-color: var(--surface);
+}
+
+/* Provider info cards base styling */
+.provider-info {
+    padding: var(--spacing-4);
+    border-radius: 8px;
+    margin-bottom: var(--spacing-4);
+    color: white;
+}
+
+.provider-info h3 {
+    margin: 0 0 var(--spacing-2) 0;
+    font-size: var(--font-size-lg);
+}
+
+.provider-info p {
+    margin: 0 0 var(--spacing-2) 0;
+    font-size: var(--font-size-sm);
+    opacity: 0.95;
+}
+
+.features-list {
+    display: flex;
+    gap: var(--spacing-4);
+    margin-top: var(--spacing-2);
+    flex-wrap: wrap;
+}
+
+.feature-item {
+    font-size: var(--font-size-sm);
+    opacity: 0.9;
+}
+
+/* Auth sections */
+.auth-section {
+    margin-bottom: var(--spacing-4);
+}
+
+.auth-section h4 {
+    margin: 0 0 var(--spacing-3) 0;
+    color: var(--text-primary);
+}
+
+/* Setup info cards */
+.setup-info {
+    background: var(--background-secondary);
+    border: 1px solid var(--border-light);
+    border-radius: 6px;
+    padding: var(--spacing-3);
+    margin-bottom: var(--spacing-3);
+}
+
+.setup-title {
+    font-weight: 600;
+    margin-bottom: var(--spacing-2);
+    color: var(--text-primary);
+}
+
+.setup-content {
+    font-size: var(--font-size-sm);
+    color: var(--text-secondary);
+    margin-bottom: var(--spacing-2);
+}
+
+.setup-content a {
+    color: var(--primary-color);
+    font-weight: 600;
+}
+
+/* Status displays */
+.status-display {
+    margin-top: var(--spacing-4);
+}
+
+/* ========================================
+   RESPONSIVE DESIGN
+   ======================================== */
+
+/* Mobile: 320px-767px */
+@media (max-width: 767px) {
+    fieldset {
+        margin: 0 0 var(--spacing-4) 0;
+        padding: var(--spacing-4);
+    }
+
+    legend {
+        font-size: var(--font-size-lg);
+        padding: 0 var(--spacing-2);
+    }
+
+    .features-list {
+        flex-direction: column;
+        gap: var(--spacing-2);
+    }
+
+    .provider-info {
+        padding: var(--spacing-3);
+    }
+
+    .setup-info {
+        padding: var(--spacing-2);
+    }
+}
+
+/* Tablet: 768px-1023px */
+@media (min-width: 768px) and (max-width: 1023px) {
+    .features-list {
+        justify-content: center;
+    }
+}
+
+/* ========================================
+   DARK MODE SUPPORT
+   ======================================== */
+@media (prefers-color-scheme: dark) {
+    fieldset {
+        border-color: var(--border-dark);
+        background-color: var(--surface-dark);
+    }
+
+    legend {
+        background-color: var(--surface-dark);
+        color: var(--text-primary-dark);
+    }
+
+    .setup-info {
+        background: var(--background-secondary-dark);
+        border-color: var(--border-light-dark);
+    }
+
+    .setup-title {
+        color: var(--text-primary-dark);
+    }
+
+    .setup-content {
+        color: var(--text-secondary-dark);
+    }
+}

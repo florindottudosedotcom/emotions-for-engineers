@@ -1,0 +1,63 @@
+/**
+ * Icon System - Minimal CSS Icons
+ * Following CLAUDE.md guidelines for component architecture
+ */
+
+/* Icon base class - inherit colors from parent */
+.icon-minimal {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 24px;
+    height: 24px;
+    border-radius: var(--radius-small);
+    font-size: var(--font-size-sm);
+    font-weight: var(--font-weight-semibold);
+    color: inherit;
+    background-color: transparent;
+    margin-right: var(--spacing-2);
+}
+
+.icon-minimal::before {
+    color: inherit;
+}
+
+/* Pure glyphicon variants - inherit color from parent */
+.icon-cloud::before { content: '☁'; color: inherit; }
+.icon-brain::before { content: '⧉'; color: inherit; }
+.icon-desktop::before { content: '⌂'; color: inherit; }
+.icon-slides::before { content: '▤'; color: inherit; }
+.icon-export::before { content: '↓'; color: inherit; }
+.icon-generate::before { content: '✦'; color: inherit; }
+.icon-edit::before { content: '✎'; color: inherit; }
+.icon-delete::before { content: '×'; color: inherit; }
+.icon-settings::before { content: '⚙'; color: inherit; }
+.icon-help::before { content: '?'; color: inherit; }
+.icon-document::before { content: '⟄'; color: inherit; }
+.icon-palette::before { content: '◉'; color: inherit; }
+.icon-shape::before { content: '◆'; color: inherit; }
+.icon-image::before { content: '◪'; color: inherit; }
+.icon-notes::before { content: '≡'; color: inherit; }
+
+/* Geometric icon variants for main buttons */
+.icon-minimal.geometric {
+    border-radius: 50%;
+    width: 32px;
+    height: 32px;
+    font-size: var(--font-size-lg);
+    background-color: transparent;
+    border: 2px solid currentColor;
+    color: inherit;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.icon-minimal.geometric::before {
+    color: inherit;
+}
+
+.icon-minimal.geometric.icon-cloud::before { content: '☁'; }
+.icon-minimal.geometric.icon-brain::before { content: '⧉'; }
+.icon-minimal.geometric.icon-desktop::before { content: '⌂'; }
+.icon-minimal.geometric.icon-slides::before { content: '▤'; }

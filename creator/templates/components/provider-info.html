@@ -1,0 +1,20 @@
+{{#providerInfo}}
+<div class="{{providerClass}}">
+    <h4>{{icon}} {{title}}</h4>
+    <p>{{description}}</p>
+    {{#connectionStatus}}
+    <div id="{{connectionStatusId}}" class="connection-indicator {{connectionClass}}">
+        <span class="status-dot {{connectionClass}}"></span>
+        <span>{{connectionText}}</span>
+    </div>
+    {{/connectionStatus}}
+    {{#modelStatus}}
+    <div id="{{modelStatusId}}" class="model-loading-progress hidden">
+        <div class="progress-bar">
+            <div class="progress-fill" data-progress="0"></div>
+        </div>
+        <p class="mt-2 text-sm">{{modelLoadingText}}</p>
+    </div>
+    {{/modelStatus}}
+</div>
+{{/providerInfo}}

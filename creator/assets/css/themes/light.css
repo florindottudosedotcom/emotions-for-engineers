@@ -1,0 +1,441 @@
+/**
+ * Light Theme - Following CLAUDE.md Guidelines
+ * Light theme color overrides and specific styling
+ */
+
+/* ========================================
+   LIGHT THEME COLOR OVERRIDES
+   ======================================== */
+:root,
+[data-theme="light"] {
+    /* Light theme colors (explicit) */
+    --background-primary: #FFFFFF;
+    --background-secondary: #F8FAFC;
+    --background-tertiary: #F1F5F9;
+    --surface: #FFFFFF;
+
+    --text-primary: #0F172A;
+    --text-secondary: #64748B;
+    --text-disabled: #94A3B8;
+
+    --border-light: #E2E8F0;
+    --border-medium: #CBD5E1;
+    --border-dark: #64748B;
+
+    /* Light theme shadows */
+    --shadow-small: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+    --shadow-medium: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+    --shadow-large: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+
+    /* Status colors light backgrounds */
+    --success-light: #d1fae5;
+    --warning-light: #fef3c7;
+    --error-light: #fecaca;
+    --info-light: #dbeafe;
+    --primary-light: #dbeafe;
+    --secondary-light: #e0e7ff;
+}
+
+/* ========================================
+   LIGHT THEME SPECIFIC COMPONENTS
+   ======================================== */
+
+/* Main container light theme */
+.main-container,
+[data-theme="light"] .main-container {
+    background-color: #f8f9fa !important;
+}
+
+/* Cards and surfaces */
+.help-section,
+.card-minimal,
+.container,
+[data-theme="light"] .help-section,
+[data-theme="light"] .card-minimal,
+[data-theme="light"] .container {
+    background-color: #ffffff !important;
+    color: var(--text-primary);
+    border-color: var(--border-light);
+}
+
+/* Launcher buttons */
+.launcher-container .launcher-btn,
+[data-theme="light"] .launcher-container .launcher-btn {
+    background-color: var(--background-primary) !important;
+    border-color: var(--primary-color) !important;
+    color: var(--primary-color) !important;
+}
+
+/* Form elements */
+input[type="text"],
+input[type="email"],
+input[type="password"],
+input[type="url"],
+input[type="tel"],
+input[type="search"],
+input[type="number"],
+textarea,
+select,
+[data-theme="light"] input[type="text"],
+[data-theme="light"] input[type="email"],
+[data-theme="light"] input[type="password"],
+[data-theme="light"] input[type="url"],
+[data-theme="light"] input[type="tel"],
+[data-theme="light"] input[type="search"],
+[data-theme="light"] input[type="number"],
+[data-theme="light"] textarea,
+[data-theme="light"] select {
+    background-color: var(--surface);
+    color: var(--text-primary);
+    border-color: var(--border-light);
+}
+
+input:focus,
+textarea:focus,
+select:focus,
+[data-theme="light"] input:focus,
+[data-theme="light"] textarea:focus,
+[data-theme="light"] select:focus {
+    border-color: var(--primary-color);
+    box-shadow: 0 0 0 2px rgba(37, 99, 235, 0.1);
+}
+
+/* Placeholder text */
+input::placeholder,
+textarea::placeholder,
+[data-theme="light"] input::placeholder,
+[data-theme="light"] textarea::placeholder {
+    color: var(--text-disabled);
+}
+
+/* Select dropdown options */
+option,
+[data-theme="light"] option {
+    background-color: var(--surface);
+    color: var(--text-primary);
+}
+
+/* ========================================
+   LIGHT THEME STATUS DISPLAYS
+   ======================================== */
+
+/* Status displays */
+.status-display,
+[data-theme="light"] .status-display {
+    background-color: var(--surface);
+    border-color: var(--border-light);
+    color: var(--text-primary);
+}
+
+.status-display.status-info,
+[data-theme="light"] .status-display.status-info {
+    background-color: var(--info-light);
+    border-color: var(--info-color);
+    color: var(--info-color);
+}
+
+.status-display.status-success,
+[data-theme="light"] .status-display.status-success {
+    background-color: var(--success-light);
+    border-color: var(--success-color);
+    color: var(--success-color);
+}
+
+.status-display.status-warning,
+[data-theme="light"] .status-display.status-warning {
+    background-color: var(--warning-light);
+    border-color: var(--warning-color);
+    color: var(--warning-color);
+}
+
+.status-display.status-error,
+[data-theme="light"] .status-display.status-error {
+    background-color: var(--error-light);
+    border-color: var(--error-color);
+    color: var(--error-color);
+}
+
+.status-display.status-loading,
+[data-theme="light"] .status-display.status-loading {
+    background-color: var(--info-light);
+    border-color: var(--info-color);
+    color: var(--info-color);
+}
+
+/* ========================================
+   LIGHT THEME MODALS
+   ======================================== */
+
+.modal-content,
+[data-theme="light"] .modal-content {
+    background-color: var(--surface);
+    color: var(--text-primary);
+    border-color: var(--border-light);
+}
+
+.modal-overlay,
+[data-theme="light"] .modal-overlay {
+    background-color: rgba(0, 0, 0, 0.5);
+}
+
+/* ========================================
+   LIGHT THEME TABS
+   ======================================== */
+
+.tab-nav,
+[data-theme="light"] .tab-nav {
+    background-color: var(--background-tertiary);
+    border-color: var(--border-light);
+}
+
+.tab-link,
+[data-theme="light"] .tab-link {
+    color: var(--text-secondary);
+    background-color: transparent;
+}
+
+.tab-link:hover,
+[data-theme="light"] .tab-link:hover {
+    background-color: var(--background-secondary);
+    color: var(--text-primary);
+}
+
+.tab-link.active,
+[data-theme="light"] .tab-link.active {
+    background-color: var(--surface);
+    color: var(--primary-color);
+    border-color: var(--primary-color);
+}
+
+/* ========================================
+   LIGHT THEME BUTTONS
+   ======================================== */
+
+.btn-primary,
+[data-theme="light"] .btn-primary {
+    background-color: var(--background-primary);
+    color: var(--primary-color);
+    border-color: var(--primary-color);
+}
+
+.btn-primary:hover,
+[data-theme="light"] .btn-primary:hover {
+    background-color: var(--primary-light);
+    border-color: var(--primary-dark);
+    color: var(--primary-dark);
+}
+
+.btn-ai,
+[data-theme="light"] .btn-ai {
+    background-color: var(--background-primary);
+    color: #9b59b6;
+    border-color: #9b59b6;
+}
+
+.btn-ai:hover,
+[data-theme="light"] .btn-ai:hover {
+    background-color: rgba(155, 89, 182, 0.1);
+    border-color: #8e44ad;
+    color: #8e44ad;
+}
+
+/* ========================================
+   LIGHT THEME SPECIFIC ADJUSTMENTS
+   ======================================== */
+
+/* Ensure text contrast in light theme */
+h1, h2, h3, h4, h5, h6,
+[data-theme="light"] h1,
+[data-theme="light"] h2,
+[data-theme="light"] h3,
+[data-theme="light"] h4,
+[data-theme="light"] h5,
+[data-theme="light"] h6 {
+    color: var(--text-primary);
+}
+
+/* Body background */
+body,
+[data-theme="light"] body {
+    background-color: var(--background-secondary);
+    color: var(--text-primary);
+}
+
+/* Fieldset styling */
+fieldset,
+[data-theme="light"] fieldset {
+    background-color: var(--surface);
+    border-color: var(--border-light);
+}
+
+legend,
+[data-theme="light"] legend {
+    color: var(--text-primary);
+    background-color: var(--surface);
+}
+
+/* ========================================
+   LIGHT THEME ICONS
+   ======================================== */
+
+.icon-minimal.icon-book-large,
+.icon-minimal.icon-slides-large,
+[data-theme="light"] .icon-minimal.icon-book-large,
+[data-theme="light"] .icon-minimal.icon-slides-large {
+    background: var(--primary-color) !important;
+}
+
+/* ========================================
+   LIGHT THEME COURSE SPECIFIC ELEMENTS
+   ======================================== */
+
+/* Chapter elements */
+.chapter,
+[data-theme="light"] .chapter {
+    background-color: var(--surface);
+    border-color: var(--border-light);
+    color: var(--text-primary);
+}
+
+.chapter-content,
+[data-theme="light"] .chapter-content {
+    background-color: var(--surface);
+    color: var(--text-primary);
+}
+
+.chapter-header,
+[data-theme="light"] .chapter-header {
+    background-color: transparent;
+    color: var(--text-primary);
+}
+
+.chapter-header h3,
+[data-theme="light"] .chapter-header h3 {
+    color: var(--text-primary);
+}
+
+/* Chapter title input */
+.chapter-title,
+input[class*="chapter-title"],
+[data-theme="light"] .chapter-title,
+[data-theme="light"] input[class*="chapter-title"] {
+    background-color: var(--surface);
+    color: var(--text-primary);
+    border-color: var(--border-light);
+}
+
+/* Editor label */
+.editor-label,
+[data-theme="light"] .editor-label {
+    color: var(--text-primary);
+    background-color: transparent;
+}
+
+/* Editor iframe */
+.editor-iframe,
+[data-theme="light"] .editor-iframe {
+    background-color: var(--surface);
+    border-color: var(--border-light);
+}
+
+/* ========================================
+   LIGHT THEME PROVIDER SECTIONS
+   ======================================== */
+
+.provider-info-container,
+[data-theme="light"] .provider-info-container {
+    background: transparent;
+    color: var(--text-primary);
+    border-color: var(--border-light);
+}
+
+/* AI status sections */
+#ai-status,
+[data-theme="light"] #ai-status {
+    background-color: var(--warning-light);
+    border-color: var(--warning-color);
+    color: var(--warning-color);
+}
+
+.ai-assistant,
+[data-theme="light"] .ai-assistant {
+    background-color: var(--surface);
+    border-color: var(--border-light);
+    color: var(--text-primary);
+}
+
+/* Download section */
+#download-section,
+[data-theme="light"] #download-section {
+    background-color: var(--success-light);
+    border-color: var(--success-color);
+    color: var(--success-color);
+}
+
+/* Debug area */
+.debug-container,
+[data-theme="light"] .debug-container {
+    background-color: var(--background-tertiary);
+    border-color: var(--border-light);
+    color: var(--text-primary);
+}
+
+.debug-log-area,
+[data-theme="light"] .debug-log-area {
+    background-color: var(--background-secondary);
+    border-color: var(--border-light);
+    color: var(--text-primary);
+}
+
+/* ========================================
+   LIGHT THEME LANGUAGE SELECTION
+   ======================================== */
+
+.lang-grid,
+[data-theme="light"] .lang-grid {
+    /* Inherits from parent */
+}
+
+.lang-item,
+[data-theme="light"] .lang-item {
+    background-color: transparent !important;
+    border: none;
+    min-height: 44px;
+    height: 44px;
+    min-width: 120px;
+    padding: var(--spacing-2) var(--spacing-4);
+}
+
+.lang-item:hover,
+[data-theme="light"] .lang-item:hover {
+    background-color: var(--background-secondary);
+}
+
+.lang-item label,
+[data-theme="light"] .lang-item label {
+    color: var(--text-primary);
+}
+
+/* ========================================
+   LIGHT THEME PRINT STYLES
+   ======================================== */
+
+@media print {
+    /* Ensure light theme for printing */
+    * {
+        background: white !important;
+        color: black !important;
+        text-shadow: none !important;
+        box-shadow: none !important;
+    }
+
+    .container,
+    .card-minimal,
+    .help-section {
+        border: 1px solid #ccc !important;
+    }
+
+    .btn {
+        border: 1px solid #000 !important;
+    }
+}

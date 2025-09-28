@@ -1,0 +1,28 @@
+{
+  "mcpServers": {
+    "puppeteer-screenshots": {
+      "command": "node",
+      "args": ["mcp-server.js"],
+      "cwd": "/home/florin/repos/emotions-for-engineers/tools/screenshot-automation",
+      "env": {}
+    },
+    "typescript-lsp": {
+      "command": "npx",
+      "args": ["--yes", "github:erans/lsp-mcp", "--lsp", "typescript", "--workspace", "/home/florin/repos/emotions-for-engineers"],
+      "cwd": "/home/florin/repos/emotions-for-engineers",
+      "env": {}
+    },
+    "html-lsp": {
+      "command": "npx",
+      "args": ["--yes", "github:erans/lsp-mcp", "--lsp", "html", "--workspace", "/home/florin/repos/emotions-for-engineers"],
+      "cwd": "/home/florin/repos/emotions-for-engineers",
+      "env": {}
+    },
+    "css-lsp": {
+      "command": "npx",
+      "args": ["--yes", "github:erans/lsp-mcp", "--lsp", "css", "--workspace", "/home/florin/repos/emotions-for-engineers"],
+      "cwd": "/home/florin/repos/emotions-for-engineers",
+      "env": {}
+    }
+  }
+}
