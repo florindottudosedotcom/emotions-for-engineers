@@ -51,55 +51,26 @@ export class OpenRouterProvider extends BaseProvider {
     }
 
     async getTemplate() {
-        const data = this.getTemplateData();
-        const { isAuthenticated, accountBalanceText, selectedModelText, modelGroups } = data;
-
-        return `
-            <div class="card-header">
-                <h3>🌐 OpenRouter Provider</h3>
-                <p class="text-secondary">Professional cloud AI with 200+ models and transparent billing</p>
-            </div>
-            <div class="card-body">
-                ${!isAuthenticated ? `
-                    <div id="openrouter-auth" class="provider-auth">
-                        <div class="form-group mb-4">
-                            <label for="openrouter-api-key" class="form-label">OpenRouter API Key</label>
-                            <input type="password" id="openrouter-api-key" class="form-input" placeholder="sk-or-..." style="width: 100%; padding: 8px; border: 1px solid #d1d5db; border-radius: 4px;" />
-                            <small class="form-help" style="display: block; margin-top: 4px; color: #6b7280;">Get your free API key at <a href="https://openrouter.ai/keys" target="_blank" style="color: #2563eb;">openrouter.ai/keys</a></small>
-                        </div>
-                        <button type="button" id="openrouter-connect-btn" class="btn btn-primary" style="background: #2563eb; color: white; padding: 8px 16px; border: none; border-radius: 4px; cursor: pointer;">🔗 Connect to OpenRouter</button>
-                    </div>
-                ` : `
-                    <div id="openrouter-authenticated" class="provider-authenticated">
-                        <div class="provider-status mb-4" style="display: flex; justify-content: space-between; align-items: center; padding: 8px; background: var(--background-tertiary); border-radius: 4px;">
-                            <div class="account-balance">${accountBalanceText}</div>
-                            <button type="button" id="openrouter-disconnect-btn" class="btn btn-secondary btn-sm" style="padding: 4px 8px; border: 1px solid var(--border-light); border-radius: 4px; background: var(--surface); color: var(--text-primary); cursor: pointer;">🔌 Disconnect</button>
-                        </div>
-
-                        <div class="form-group mb-4">
-                            <label class="form-label" style="display: block; margin-bottom: 4px; font-weight: 500;">Model Selection</label>
-                            <div id="openrouter-model-dropdown" class="custom-dropdown" style="position: relative;">
-                                <button type="button" id="dropdown-trigger" class="dropdown-trigger" aria-expanded="false" style="width: 100%; padding: 8px; border: 1px solid var(--border-light); border-radius: 4px; background: var(--surface); color: var(--text-primary); text-align: left; cursor: pointer; display: flex; justify-content: space-between; align-items: center;">
-                                    <span id="selected-model">${selectedModelText}</span>
-                                    <span class="dropdown-icon">▼</span>
-                                </button>
-                                <div id="dropdown-content" class="dropdown-content" style="display: none; position: fixed; top: auto; left: auto; background: var(--surface); border: 1px solid var(--border-light); border-radius: 4px; box-shadow: var(--shadow-small); z-index: 9999; max-height: 300px; overflow-y: auto; min-width: 400px;">
-                                    <div class="dropdown-search" style="padding: 8px;">
-                                        <input type="text" id="dropdown-search" placeholder="Search models..." class="form-input-sm" style="width: 100%; padding: 4px; border: 1px solid var(--border-light); border-radius: 2px; background: var(--surface); color: var(--text-primary);" />
-                                    </div>
-                                    <div class="dropdown-info" style="padding: 4px 8px; font-size: 12px; color: var(--text-secondary); border-bottom: 1px solid var(--border-light);">
-                                        <span id="model-count-info">${data.modelCountText}</span>
-                                    </div>
-                                    <div id="models-list" class="models-list">
-                                        ${this.generateModelsHTML(modelGroups)}
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                `}
-            </div>
-        `;
+        try {
+            return await templateEngine.loadProviderTemplate('openrouter', {
+                isAuthenticated: this.isAuthenticated,
+                accountBalanceText: this.getAccountBalanceText(),
+                selectedModelText: this.getSelectedModelText(),
+                modelCountText: this.getModelCountText()
+            });
+        } catch (error) {
+            console.error('Failed to load OpenRouter template:', error);
+            // Fallback to minimal template
+            return `
+                <div class="card-header">
+                    <h3>🌐 OpenRouter Provider</h3>
+                    <p class="text-secondary">Professional cloud AI with 200+ models and transparent billing</p>
+                </div>
+                <div class="card-body">
+                    <div class="provider-error">Template loading failed. Please refresh the page.</div>
+                </div>
+            `;
+        }
     }
 
     /**
@@ -320,6 +291,11 @@ export class OpenRouterProvider extends BaseProvider {
     getModelCountText() {
         const allModels = this.availableModels || this.config.models;
         return `Showing all ${allModels.length} models`;
+    }
+
+    getSelectedModelText() {
+        const selectedModel = this.getCurrentSelectedModel();
+        return selectedModel ? `${selectedModel.name} - ${selectedModel.description}` : 'Select a model...';
     }
 
     shouldShowCostEstimation() {

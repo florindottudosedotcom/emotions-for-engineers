@@ -21,46 +21,25 @@ export class OllamaProvider extends BaseProvider {
     }
 
     async getTemplate() {
-        return `
-            <div class="card-header">
-                <h3>🦙 Ollama Provider</h3>
-                <p class="text-secondary">Local AI models running on your machine</p>
-            </div>
-            <div class="card-body">
-                <div class="form-group mb-4">
-                    <label for="ai-model-select" class="form-label">AI Model</label>
-                    <div class="model-selection-container" style="display: flex; gap: 8px; align-items: center;">
-                        <select id="ai-model-select" name="ai-model" class="form-select" style="flex: 1;">
-                            <option value="">Loading models...</option>
-                        </select>
-                        <button type="button" id="refresh-models-btn" class="btn btn-secondary btn-sm" title="Refresh model list">
-                            🔄 Refresh
-                        </button>
-                    </div>
-                    <small class="form-help" style="display: block; margin-top: 4px; color: #6b7280;">
-                        Make sure Ollama is running at <code>http://localhost:11434</code>
-                    </small>
+        try {
+            return await templateEngine.loadProviderTemplate('ollama', {
+                loadingText: this.availableModels?.length > 0 ? 'Select a model...' : 'Loading models...',
+                models: this.availableModels || [],
+                currentModel: this.currentModel
+            });
+        } catch (error) {
+            console.error('Failed to load Ollama template:', error);
+            // Fallback to minimal template
+            return `
+                <div class="card-header">
+                    <h3>🦙 Ollama Provider</h3>
+                    <p class="text-secondary">Local AI models running on your machine</p>
                 </div>
-
-                <div id="connection-status" class="connection-status" style="padding: 8px; background: #f3f4f6; border-radius: 4px;">
-                    <span class="status-indicator">🔍 Checking connection...</span>
+                <div class="card-body">
+                    <div class="provider-error">Template loading failed. Please refresh the page.</div>
                 </div>
-
-                <div class="ollama-info" style="margin-top: 16px;">
-                    <details class="info-details">
-                        <summary style="cursor: pointer; color: #2563eb;">📋 Setup Instructions</summary>
-                        <div class="setup-instructions" style="margin-top: 8px; padding: 8px; background: #f9fafb; border-radius: 4px;">
-                            <ol style="margin: 0; padding-left: 20px;">
-                                <li>Install Ollama from <a href="https://ollama.com" target="_blank" style="color: #2563eb;">ollama.com</a></li>
-                                <li>Start Ollama: <code style="background: #e5e7eb; padding: 2px 4px; border-radius: 2px;">ollama serve</code></li>
-                                <li>Pull a model: <code style="background: #e5e7eb; padding: 2px 4px; border-radius: 2px;">ollama pull llama3.2</code></li>
-                                <li>Refresh the model list above</li>
-                            </ol>
-                        </div>
-                    </details>
-                </div>
-            </div>
-        `;
+            `;
+        }
     }
 
     /**

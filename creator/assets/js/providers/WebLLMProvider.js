@@ -46,64 +46,29 @@ export class WebLLMProvider extends BaseProvider {
     }
 
     async getTemplate() {
-        const data = this.getTemplateData();
+        try {
+            // Prepare models with selection state
+            const modelsWithSelection = this.config.models.map(model => ({
+                ...model,
+                isSelected: model.id === this.currentModelId
+            }));
 
-        return `
-            <div class="card-header">
-                <h3>🌐 WebLLM Provider</h3>
-                <p class="text-secondary">Run AI models locally in your browser - no server required</p>
-            </div>
-            <div class="card-body">
-                <div class="form-group mb-4">
-                    <label for="webllm-model-select" class="form-label">AI Model</label>
-                    <select id="webllm-model-select" name="webllm-model" class="form-select" style="width: 100%; padding: 8px; border: 1px solid #d1d5db; border-radius: 4px;">
-                        <option value="">Select a model...</option>
-                        ${data.models.map(model => `
-                            <option value="${model.id}" ${model.id === this.currentModelId ? 'selected' : ''}>
-                                ${model.name} (${model.sizeGB}GB) - ${model.description}
-                            </option>
-                        `).join('')}
-                    </select>
-                    <small class="form-help" style="display: block; margin-top: 4px; color: #6b7280;">
-                        Models run entirely in your browser using WebAssembly
-                    </small>
+            return await templateEngine.loadProviderTemplate('webllm', {
+                models: modelsWithSelection
+            });
+        } catch (error) {
+            console.error('Failed to load WebLLM template:', error);
+            // Fallback to minimal template
+            return `
+                <div class="card-header">
+                    <h3>🌐 WebLLM Provider</h3>
+                    <p class="text-secondary">Run AI models locally in your browser - no server required</p>
                 </div>
-
-                <div id="webllm-status" class="webllm-status" style="padding: 8px; background: #f3f4f6; border-radius: 4px; margin-bottom: 16px;">
-                    <div class="status-indicator">⚡ Ready to load models</div>
-                    <div id="loading-progress" class="loading-progress" style="display: none; margin-top: 8px;">
-                        <div class="progress-bar" style="width: 100%; height: 6px; background: #e5e7eb; border-radius: 3px; overflow: hidden;">
-                            <div id="progress-fill" class="progress-fill" style="height: 100%; background: #2563eb; width: 0%; transition: width 0.3s;"></div>
-                        </div>
-                        <div id="progress-text" class="progress-text" style="margin-top: 4px; font-size: 12px; color: #6b7280;"></div>
-                    </div>
+                <div class="card-body">
+                    <div class="provider-error">Template loading failed. Please refresh the page.</div>
                 </div>
-
-                <div class="webllm-controls" style="display: flex; gap: 8px; margin-bottom: 16px;">
-                    <button type="button" id="load-model-btn" class="btn btn-primary" style="background: #2563eb; color: white; padding: 8px 16px; border: none; border-radius: 4px; cursor: pointer;">
-                        📥 Load Model
-                    </button>
-                    <button type="button" id="unload-model-btn" class="btn btn-secondary" style="padding: 8px 16px; border: 1px solid #d1d5db; border-radius: 4px; background: white; cursor: pointer;" disabled>
-                        🗑️ Unload Model
-                    </button>
-                </div>
-
-                <div class="webllm-info">
-                    <details class="info-details">
-                        <summary style="cursor: pointer; color: #2563eb;">💡 How WebLLM Works</summary>
-                        <div class="info-content" style="margin-top: 8px; padding: 8px; background: #f9fafb; border-radius: 4px;">
-                            <ul style="margin: 0; padding-left: 20px; font-size: 14px; color: #374151;">
-                                <li>Models download once and run locally in your browser</li>
-                                <li>No data sent to external servers - complete privacy</li>
-                                <li>First load takes a few minutes, then instant startup</li>
-                                <li>Requires a modern browser with WebAssembly support</li>
-                                <li>Works offline after initial model download</li>
-                            </ul>
-                        </div>
-                    </details>
-                </div>
-            </div>
-        `;
+            `;
+        }
     }
 
     /**

@@ -1,45 +1,39 @@
-<fieldset>
-    <legend>🏠 Private AI</legend>
-
-    <div class="ollama-info">
-        <h3>🔒 Your Own AI Models, Your Own Hardware</h3>
-        <p>Run powerful AI models locally with Ollama. Complete privacy and control over your data.</p>
-        <div class="features-list">
-            <div class="feature-item">🛡️ <strong>100% Private</strong></div>
-            <div class="feature-item">⚡ <strong>No Usage Limits</strong></div>
-            <div class="feature-item">💰 <strong>Free to Use</strong></div>
+<div class="card-header">
+    <h3>🦙 Ollama Provider</h3>
+    <p class="text-secondary">Local AI models running on your machine</p>
+</div>
+<div class="card-body">
+    <div class="form-group mb-4">
+        <label for="ai-model-select" class="form-label">AI Model</label>
+        <div class="model-selection-container" style="display: flex; gap: 8px; align-items: center;">
+            <select id="ai-model-select" name="ai-model" class="form-select" style="flex: 1;">
+                <option value="">{{loadingText}}</option>
+                {{@models}}
+                <option value="{{this}}">{{this}}</option>
+                {{/models}}
+            </select>
+            <button type="button" id="refresh-models-btn" class="btn btn-secondary btn-sm" title="Refresh model list">🔄 Refresh</button>
         </div>
+        <small class="form-help" style="display: block; margin-top: 4px; color: var(--text-secondary);">
+            Make sure Ollama is running at <code>http://localhost:11434</code>
+        </small>
     </div>
 
-    <div id="ollama-setup" class="ollama-setup {{#!showSetup}}hidden{{/!showSetup}}">
-        <div class="setup-title">📋 Quick Setup</div>
-        <div class="setup-content">
-            1. Install Ollama: <a href="https://ollama.ai" target="_blank">https://ollama.ai</a><br>
-            2. Download a model: <code>ollama pull llama3.1</code><br>
-            3. Start Ollama server (it runs automatically on install)
-        </div>
+    <div id="connection-status" class="connection-status" style="padding: 8px; background: var(--background-tertiary); border-radius: 4px;">
+        <span class="status-indicator">🔍 Checking connection...</span>
     </div>
 
-    <div class="input-group" id="ai-model-selection-group">
-        <label for="ai-model-select" class="label-no-shrink-no-margin">AI Model:</label>
-        <select id="ai-model-select" class="select-no-margin">
-            <option value="">{{loadingText}}</option>
-            {{@models}}
-            <option value="{{name}}">{{name}} {{#size}}({{size}}){{/size}}</option>
-            {{/models}}
-        </select>
-        <button type="button" id="refresh-models-btn" class="btn btn-secondary">🔄 Refresh</button>
+    <div class="ollama-info" style="margin-top: 16px;">
+        <details class="info-details">
+            <summary style="cursor: pointer; color: var(--primary-color);">📋 Setup Instructions</summary>
+            <div class="setup-instructions" style="margin-top: 8px; padding: 8px; background: var(--background-secondary); border-radius: 4px;">
+                <ol style="margin: 0; padding-left: 20px;">
+                    <li>Install Ollama from <a href="https://ollama.com" target="_blank" style="color: var(--primary-color);">ollama.com</a></li>
+                    <li>Start Ollama: <code style="background: var(--background-tertiary); padding: 2px 4px; border-radius: 2px;">ollama serve</code></li>
+                    <li>Pull a model: <code style="background: var(--background-tertiary); padding: 2px 4px; border-radius: 2px;">ollama pull llama3.2</code></li>
+                    <li>Refresh the model list above</li>
+                </ol>
+            </div>
+        </details>
     </div>
-
-    <div id="model-recommendations" class="model-recommendations {{#!showRecommendations}}hidden{{/!showRecommendations}}">
-        <div class="recommendations-title">💡 Recommended Models</div>
-        <div class="recommendation-item"><strong>Beginner:</strong> llama3.1:8b (Fast, 4.7GB)</div>
-        <div class="recommendation-item"><strong>Balanced:</strong> llama3.1:70b (High quality, 40GB)</div>
-        <div class="recommendation-item"><strong>Coding:</strong> codellama:13b (Code specialist, 7.4GB)</div>
-        <div class="download-note">
-            Download with: <code>ollama pull &lt;model-name&gt;</code>
-        </div>
-    </div>
-
-    <div id="connection-status" class="status-display"></div>
-</fieldset>
+</div>
