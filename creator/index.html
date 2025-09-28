@@ -5,6 +5,10 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>AI Creator Hub</title>
     <link rel="icon" type="image/svg+xml" href="favicon.svg">
+
+    <!-- Lucide Icons -->
+    <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.js"></script>
+
     <!-- Load CSS files in dependency order (replaces bundle for better debugging) -->
     <link rel="stylesheet" href="./assets/css/core/variables.css">
     <link rel="stylesheet" href="./assets/css/core/reset.css">
@@ -26,19 +30,19 @@
 </head>
 <body class="text-minimal">
     <div class="main-container container-minimal">
-        <h1>⚙️ AI Creator Hub</h1>
+        <h1><i data-lucide="settings"></i> AI Creator Hub</h1>
         <p>Create courses and presentations using AI. Choose what you want to create:</p>
 
         <div class="launcher-container grid-minimal grid-2">
             <a href="course.html" class="launcher-btn btn-minimal btn-primary card-minimal">
-                <span class="icon-minimal geometric icon-book-large"></span>
+                <i data-lucide="book-open" class="icon-minimal geometric"></i>
                 <div>
                     <div class="launcher-title">Course Creator</div>
                     <div class="launcher-description">Generate complete multi-chapter courses</div>
                 </div>
             </a>
             <a href="slides.html" class="launcher-btn btn-minimal btn-primary card-minimal">
-                <span class="icon-minimal geometric icon-slides-large"></span>
+                <i data-lucide="presentation" class="icon-minimal geometric"></i>
                 <div>
                     <div class="launcher-title">Slides Creator</div>
                     <div class="launcher-description">Create beautiful AI-powered presentations</div>
@@ -50,15 +54,15 @@
             <h2>AI Providers Available</h2>
             <div class="providers-grid">
                 <div class="provider-card">
-                    <h3 class="provider-title"><span class="icon-cloud-provider"></span> 🌐 OpenRouter</h3>
+                    <h3 class="provider-title"><span class="icon-cloud-provider"></span> <i data-lucide="globe"></i> OpenRouter</h3>
                     <p class="provider-description">Professional cloud AI with 200+ models (GPT-4o, Claude, Gemini). Transparent pricing and usage analytics.</p>
                 </div>
                 <div class="provider-card">
-                    <h3 class="provider-title"><span class="icon-brain-provider"></span> 🖥️ WebLLM</h3>
+                    <h3 class="provider-title"><span class="icon-brain-provider"></span> <i data-lucide="cpu"></i> WebLLM</h3>
                     <p class="provider-description">Run AI models directly in your browser. 100% private, no server required, completely free.</p>
                 </div>
                 <div class="provider-card">
-                    <h3 class="provider-title"><span class="icon-desktop-provider"></span> 🏠 Ollama</h3>
+                    <h3 class="provider-title"><span class="icon-desktop-provider"></span> <i data-lucide="server"></i> Ollama</h3>
                     <p class="provider-description">Connect to your local Ollama server. Complete privacy and control, unlimited usage.</p>
                 </div>
             </div>
@@ -69,6 +73,13 @@
         // Initialize theme management for the launcher page
         import { ThemeManager } from './assets/js/core/theme.js';
         new ThemeManager();
+
+        // Initialize Lucide icons
+        document.addEventListener('DOMContentLoaded', () => {
+            if (typeof lucide !== 'undefined') {
+                lucide.createIcons();
+            }
+        });
     </script>
 </body>
 </html>

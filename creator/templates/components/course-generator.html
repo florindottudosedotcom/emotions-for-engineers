@@ -1,10 +1,10 @@
 <div class="input-group course-generation-section">
     <select id="course-depth" name="course-depth" class="select-no-margin" title="Course Depth - Control content length and detail level">
-        <option value="outline">📋 Outline Only (50-100 words/chapter)</option>
-        <option value="brief">📝 Brief (200-400 words/chapter)</option>
-        <option value="standard" selected>📚 Standard (500-800 words/chapter)</option>
-        <option value="detailed">📖 Detailed (1000-1500 words/chapter)</option>
-        <option value="comprehensive">📚📚 Comprehensive (2000+ words/chapter)</option>
+        <option value="outline"><i data-lucide="clipboard-list"></i> Outline Only (50-100 words/chapter)</option>
+        <option value="brief"><i data-lucide="file-text"></i> Brief (200-400 words/chapter)</option>
+        <option value="standard" selected><i data-lucide="book"></i> Standard (500-800 words/chapter)</option>
+        <option value="detailed"><i data-lucide="book-open"></i> Detailed (1000-1500 words/chapter)</option>
+        <option value="comprehensive"><i data-lucide="library"></i> Comprehensive (2000+ words/chapter)</option>
     </select>
     <select id="num-chapters" name="num-chapters" class="select-no-margin" title="Number of Chapters - Select how many chapters your course should have">
         <option value="1">1 Chapter</option>
@@ -18,6 +18,6 @@
         <option value="9">9 Chapters</option>
         <option value="10">10 Chapters</option>
     </select>
-    <button type="button" id="generate-course-btn" class="btn btn-secondary ml-4">⚡ Generate Entire Course</button>
+    <button type="button" id="generate-course-btn" class="btn btn-secondary ml-4"><i data-lucide="zap"></i> Generate Entire Course</button>
 </div>
 <div id="generation-status" class="status-display mt-4"></div>

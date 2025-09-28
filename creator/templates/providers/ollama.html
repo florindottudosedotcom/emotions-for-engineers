@@ -1,5 +1,5 @@
 <div class="card-header">
-    <h3>🦙 Ollama Provider</h3>
+    <h3><i data-lucide="server"></i> Ollama Provider</h3>
     <p class="text-secondary">Local AI models running on your machine</p>
 </div>
 <div class="card-body">
@@ -12,7 +12,7 @@
                 <option value="{{this}}">{{this}}</option>
                 {{/models}}
             </select>
-            <button type="button" id="refresh-models-btn" class="btn btn-secondary btn-sm" title="Refresh model list">🔄 Refresh</button>
+            <button type="button" id="refresh-models-btn" class="btn btn-secondary btn-sm" title="Refresh model list"><i data-lucide="refresh-cw"></i> Refresh</button>
         </div>
         <small class="form-help" style="display: block; margin-top: 4px; color: var(--text-secondary);">
             Make sure Ollama is running at <code>http://localhost:11434</code>
@@ -20,12 +20,12 @@
     </div>
 
     <div id="connection-status" class="connection-status" style="padding: 8px; background: var(--background-tertiary); border-radius: 4px;">
-        <span class="status-indicator">🔍 Checking connection...</span>
+        <span class="status-indicator"><i data-lucide="search"></i> Checking connection...</span>
     </div>
 
     <div class="ollama-info" style="margin-top: 16px;">
         <details class="info-details">
-            <summary style="cursor: pointer; color: var(--primary-color);">📋 Setup Instructions</summary>
+            <summary style="cursor: pointer; color: var(--primary-color);"><i data-lucide="clipboard-list"></i> Setup Instructions</summary>
             <div class="setup-instructions" style="margin-top: 8px; padding: 8px; background: var(--background-secondary); border-radius: 4px;">
                 <ol style="margin: 0; padding-left: 20px;">
                     <li>Install Ollama from <a href="https://ollama.com" target="_blank" style="color: var(--primary-color);">ollama.com</a></li>

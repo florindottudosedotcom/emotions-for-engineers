@@ -181,13 +181,31 @@ Always use context7 when I need code generation, setup or configuration steps, o
    }
    ```
 
-2. **Security-First Development**
+2. **Icon System Standards**
+   - **ALWAYS use Lucide icons** for all interface icons
+   - **NEVER use emojis** in UI elements - they render inconsistently across platforms
+   - **NEVER use custom glyphicons** or Unicode symbols - use semantic icon names
+   - Use `<i data-lucide="icon-name"></i>` syntax for all icons
+   - Initialize icons with `lucide.createIcons()` after DOM changes
+   - Include Lucide CDN: `<script src="https://unpkg.com/lucide@latest/dist/umd/lucide.js"></script>`
+
+   ```html
+   <!-- ❌ DON'T: Emojis or custom symbols -->
+   <button>🔄 Refresh</button>
+   <span class="icon-custom">⚙</span>
+
+   <!-- ✅ DO: Lucide icons with semantic names -->
+   <button><i data-lucide="refresh-cw"></i> Refresh</button>
+   <span><i data-lucide="settings"></i></span>
+   ```
+
+3. **Security-First Development**
    - Use `createElement()` and `textContent`, never `innerHTML`
    - Validate and sanitize ALL user inputs
    - Implement proper CORS policies and CSP headers
    - Regularly audit and update third-party libraries
 
-3. **Third-Party Integration Philosophy - "Don't Fight the Framework"**
+4. **Third-Party Integration Philosophy - "Don't Fight the Framework"**
    - **Start simple**: Use library defaults with minimal configuration
    - **Respect boundaries**: Don't override internal library classes unless absolutely necessary
    - **Test early**: Verify basic functionality before adding customizations
