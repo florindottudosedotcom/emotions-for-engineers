@@ -364,7 +364,13 @@ export class OpenRouterProvider extends BaseProvider {
     }
 
     openDropdown() {
-        if (!this.dom.dropdownContent || !this.dom.dropdownTrigger) return;
+        if (!this.dom.dropdownContent || !this.dom.dropdownTrigger) {
+            console.warn('OpenRouter: Dropdown elements not found', {
+                dropdownContent: !!this.dom.dropdownContent,
+                dropdownTrigger: !!this.dom.dropdownTrigger
+            });
+            return;
+        }
 
         // Position the dropdown relative to the trigger button
         const triggerRect = this.dom.dropdownTrigger.getBoundingClientRect();
@@ -373,8 +379,15 @@ export class OpenRouterProvider extends BaseProvider {
         this.dom.dropdownContent.style.width = `${triggerRect.width}px`;
         this.dom.dropdownContent.style.minWidth = `${Math.max(triggerRect.width, 400)}px`;
 
+        console.log('OpenRouter: Opening dropdown', {
+            triggerRect,
+            top: triggerRect.bottom + window.scrollY,
+            left: triggerRect.left + window.scrollX,
+            width: triggerRect.width
+        });
+
         this.dropdownOpen = true;
-        this.dom.dropdownContent.style.display = 'block';
+        this.dom.dropdownContent.classList.add('show');
         this.dom.dropdownTrigger.classList.add('open');
         this.dom.dropdownTrigger.setAttribute('aria-expanded', 'true');
 
@@ -391,7 +404,7 @@ export class OpenRouterProvider extends BaseProvider {
         if (!this.dom.dropdownContent) return;
 
         this.dropdownOpen = false;
-        this.dom.dropdownContent.style.display = 'none';
+        this.dom.dropdownContent.classList.remove('show');
         this.dom.dropdownTrigger?.classList.remove('open');
         this.dom.dropdownTrigger?.setAttribute('aria-expanded', 'false');
 
