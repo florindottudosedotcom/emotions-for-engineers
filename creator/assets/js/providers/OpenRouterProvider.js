@@ -298,6 +298,20 @@ export class OpenRouterProvider extends BaseProvider {
         return selectedModel ? `${selectedModel.name} - ${selectedModel.description}` : 'Select a model...';
     }
 
+    populateModelDropdown() {
+        if (this.dom.modelsList) {
+            const modelsHtml = this.generateDropdownContent();
+            this.dom.modelsList.innerHTML = modelsHtml;
+
+            // Update count info
+            const totalCount = (this.availableModels || this.config.models).length;
+            this.updateModelCountInfo(totalCount, totalCount, '');
+
+            // Setup handlers for the new content
+            this.setupModelOptionHandlers();
+        }
+    }
+
     shouldShowCostEstimation() {
         return this.isAuthenticated && this.currentModel;
     }
@@ -515,6 +529,11 @@ export class OpenRouterProvider extends BaseProvider {
         // Setup event listeners
         this.setupEventListeners();
 
+        // Populate models in dropdown if authenticated
+        if (this.isAuthenticated) {
+            this.populateModelDropdown();
+        }
+
         // Set up model option handlers if we have models and are authenticated
         if (this.isAuthenticated && this.availableModels && this.availableModels.length > 0) {
             this.setupModelOptionHandlers();
@@ -549,7 +568,9 @@ export class OpenRouterProvider extends BaseProvider {
             this.showMessage('Successfully connected to OpenRouter!', 'success');
             await this.updateAccountInfo();
             this.refreshModelSelection(); // Update model list with fresh data
-            this.updateUI();
+
+            // Regenerate template with authenticated state
+            await this.regenerateTemplate();
         } catch (error) {
             this.apiKey = null;
             this.isAuthenticated = false;

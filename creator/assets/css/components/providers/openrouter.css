@@ -169,16 +169,12 @@
    DROPDOWN CONTENT
    ======================================== */
 .dropdown-content {
-    position: absolute;
-    top: 100%;
-    left: 0;
-    right: 0;
+    position: fixed;
     background: var(--background-primary);
     border: 1px solid var(--primary-color);
-    border-top: none;
-    border-radius: 0 0 4px 4px;
+    border-radius: 4px;
     box-shadow: 0 8px 16px rgba(0, 0, 0, 0.15);
-    z-index: 1000;
+    z-index: 9999;
     max-height: 400px;
     overflow: hidden;
 }

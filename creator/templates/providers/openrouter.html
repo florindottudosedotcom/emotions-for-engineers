@@ -23,14 +23,14 @@
             <label class="form-label">Model Selection</label>
             <div id="openrouter-model-dropdown" class="custom-dropdown" style="position: relative;">
                 <button type="button" id="dropdown-trigger" class="dropdown-trigger" aria-expanded="false">
-                    <span id="selected-model">{{selectedModelText}}</span>
-                    <span class="dropdown-icon">▼</span>
+                    <span id="selected-model" class="selected-model">{{selectedModelText}}</span>
+                    <span class="dropdown-arrow">▼</span>
                 </button>
                 <div id="dropdown-content" class="dropdown-content" style="display: none;">
-                    <div class="dropdown-search">
-                        <input type="text" id="dropdown-search" placeholder="Search models..." />
+                    <div class="search-container">
+                        <input type="text" id="dropdown-search" class="dropdown-search" placeholder="Search models..." />
                     </div>
-                    <div class="dropdown-info">
+                    <div class="model-count">
                         <span id="model-count-info">{{modelCountText}}</span>
                     </div>
                     <div id="models-list" class="models-list">
