@@ -974,8 +974,10 @@ export class OpenRouterProvider extends BaseProvider {
 
         // Close dropdown when clicking outside
         Events.on(document, 'click', (e) => {
-            const dropdown = document.querySelector('#openrouter-model-dropdown');
-            if (this.dropdownOpen && dropdown && !dropdown.contains(e.target)) {
+            if (this.dropdownOpen &&
+                this.dom.dropdownContent &&
+                !this.dom.dropdownContent.contains(e.target) &&
+                !this.dom.dropdownTrigger.contains(e.target)) {
                 this.closeDropdown();
             }
         });

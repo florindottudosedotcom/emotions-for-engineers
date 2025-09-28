@@ -174,7 +174,7 @@
     border: 1px solid var(--primary-color);
     border-radius: 4px;
     box-shadow: 0 8px 16px rgba(0, 0, 0, 0.15);
-    z-index: 9999;
+    z-index: 99999;
     max-height: 400px;
     overflow: hidden;
     display: none;
@@ -208,6 +208,7 @@
 .models-list {
     max-height: 300px;
     overflow-y: auto;
+    overflow-x: hidden;
     background: var(--background-primary);
 }
 
@@ -236,10 +237,11 @@
     border-bottom: 1px solid var(--border-light);
     background: transparent;
     color: var(--text-primary);
+    transition: background-color 0.1s ease;
 }
 
 .model-option:hover {
-    background: var(--background-tertiary);
+    background: var(--background-tertiary) !important;
 }
 
 .model-option.selected {
